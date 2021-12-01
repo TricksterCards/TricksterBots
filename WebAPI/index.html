@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Trickster Web Bot API</title>
+    <style>
+        body {
+            font-family: Segoe UI, sans-serif;
+            padding: 0 2rem 2rem;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-top: 0;
+        }
+
+        a:link, a:visited {
+            text-decoration: none;
+            color: rgb(0, 0, 238);
+        }
+
+            a:link:hover, a:visited:hover {
+                text-decoration: underline;
+            }
+
+        .copyright {
+            margin: 1rem 0 0 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Trickster Web Bot API</h1>
+    <p>To test, run <a id="test-link" href="https://tricksterwest.azurewebsites.net/game/?bot=" target="_blank"></a> (loads slowly)</p>
+    <p class='copyright'>Copyright © 2021 Trickster Cards, Inc. All rights reserved.</p>
+    <script>
+        var tl = document.getElementById("test-link");
+        var botUrl = window.location.origin.replace(/\/?$/, "");
+        tl.setAttribute("href", `${tl.href}${botUrl}`);
+        tl.textContent = tl.href;
+    </script>
+</body>
+</html>

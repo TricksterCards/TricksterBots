@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6679F4FE-DFDD-4099-8E43-6D45EA361723}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TricksterBots</RootNamespace>
+    <AssemblyName>TricksterBots</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="TricksterBotClasses, Version=0.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TricksterBotClasses.0.0.4-alpha\lib\net48\TricksterBotClasses.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Bots\BaseBot.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\BasicBidding.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\BidWhy.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\BridgeBid.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\BridgeBidHistory.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\ArtificialInquiry.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\Blackwood.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\Cappelletti.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\ControlBid.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\FourthSuitForcing.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\Gerber.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\Jacoby2NT.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\JacobyTransfer.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\MichaelsCuebid.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\NegativeDouble.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\Relay.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\Stayman.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\StrongOpening.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\conventions\TakeoutDouble.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\DeclareBid.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\InterpretedBid.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\phases\Advance.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\phases\OpenerRebid.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\phases\Opening.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\phases\Overcall.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\phases\ResponderRebid.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\phases\Response.cs" />
+    <Compile Include="Bots\Bridge\BridgeBot.cs" />
+    <Compile Include="Bots\Euchre\EuchreBot.cs" />
+    <Compile Include="Bots\FiveHundred\FiveHundredBot.cs" />
+    <Compile Include="Bots\Hearts\HeartsBot.cs" />
+    <Compile Include="Bots\PlayersCollectionBase.cs" />
+    <Compile Include="Bots\Spades\SpadesBid.cs" />
+    <Compile Include="Bots\Spades\SpadesBot.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

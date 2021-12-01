@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Trickster Web Bots</title>
+    <style>
+        body {
+            font-family: Segoe UI, sans-serif;
+            padding: 0 2rem 2rem;
+        }
+
+        h1, h2 {
+            font-weight: 600;
+            margin-top: 0;
+        }
+
+        pre {
+            margin-left: 1.5rem;
+            font-family: Consolas, monospace;
+        }
+
+        code {
+            font-family: Consolas, monospace;
+        }
+
+        b, strong {
+            font-weight: 600;
+        }
+
+        a:link, a:visited {
+            text-decoration: none;
+            color: rgb(0, 0, 238);
+        }
+
+        a:link:hover, a:visited:hover {
+            text-decoration: underline;
+        }
+
+        .important {
+            border: 1px solid black;
+            padding: 8px 12px;
+        }
+
+        .copyright {
+            margin: 1rem 0 0 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<h1>Getting Started</h1>
+<h2>Test Environment</h2>
+<p>
+    Create an account on our Trickster West testing website at <a href="https://tricksterwest.azurewebsites.net/game/" target="trickster">https://tricksterwest.azurewebsites.net/game/</a>.
+    This site may start up slowly because it uses shared infrastructure.
+</p>
+<p>
+    Visit <a href="https://tricksterwest.azurewebsites.net/webbotconfig/" target="trickster">https://tricksterwest.azurewebsites.net/webbotconfig/</a> to configure the endpoints for your bot.
+    An empty JSON structure is presented. Replace the game methods you support with the absolute URLs of your endpoint.
+</p>
+<p>
+    Here is an example filled out with endpoints that return random suggestions:
+</p>
+<pre>
+{
+  "Euchre": {
+    "card": "https://tricksterbotswest.azurewebsites.net/suggest/random/card",
+    "bid": "https://tricksterbotswest.azurewebsites.net/suggest/random/bid"
+  },
+  "Hearts": {
+    "card": "https://tricksterbotswest.azurewebsites.net/suggest/random/card",
+    "pass": "https://tricksterbotswest.azurewebsites.net/suggest/random/pass"
+  }
+}
+</pre>
+<h2>Creating Endpoints</h2>
+<p>We strongly recommend building your bots in C# and .NET Framework 4.8 starting with our example project and using the base types it provides.</p>
+<p class="important">
+    <b>Note:</b> Our code that calls these endpoints use Newtonsoft.Json for JSON serialization.
+    If you don’t use Newtonsoft.Json in your endpoint, you will see some class fields with different names in your deserialized objects.
+</p>
+<p>
+    All endpoints are called with POST. The POST data is a string of serialized JSON. The objects serialized differ somewhat for each call.
+    See the <code>SuggestXxxxState</code> objects in the <a href="typesdoc.html">API Types Documentation</a>.
+</p>
+<p>Similarly, each endpoint should return a JSON-serialized string of BidBase, Card, Hand, or List&lt;Card&gt; depending on the method called.</p>
+<p>More to come&hellip;</p>
+<p class='copyright'>Copyright © 2021 Trickster Cards, Inc. All rights reserved.</p>
+</body>
+</html>
