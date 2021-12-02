@@ -13,6 +13,8 @@ After installing the requirements and cloning this repository, open the Visual S
 
 Bot source is located in the Bots folder in the TricksterBots project. It is organized into game folders. Most games have only file file: *game*Bot.cs.
 
+Documentation on the classes and interfaces used by the bots can be viewed at https://tricksterwest.azurewebsites.net/home/help/BotClasses.html.
+
 ## Testing
 
 Local testing is done using the WebAPI project. It contains Web API controllers that invoke the _suggest_ methods on a game's bot. Start this project -- generally with debugging -- and reference it with the bot=_origin_ query string parameter when running our test server at https://tricksterwest.azurewebsites.net/game/.

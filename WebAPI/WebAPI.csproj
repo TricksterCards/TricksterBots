@@ -144,7 +144,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="gettingstarted.html" />
     <Content Include="Global.asax" />
     <Content Include="index.html" />
     <Content Include="Web.config" />
