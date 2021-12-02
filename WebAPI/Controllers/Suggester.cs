@@ -17,7 +17,9 @@ namespace Trickster.Bots.Controllers
 
             var bot = getBot(state);
             var bid = bot.SuggestBid(state);
-            return JsonSerializer.Serialize(bid);
+            var returnBid = state.legalBids.SingleOrDefault(lb => lb.value == bid.value);
+
+            return JsonSerializer.Serialize(returnBid);
         }
 
         public static string SuggestNextCard<OT>(string postData, Func<SuggestCardState<OT>, BaseBot<OT>> getBot)
@@ -34,7 +36,9 @@ namespace Trickster.Bots.Controllers
 
             var bot = getBot(state);
             var card = bot.SuggestNextCard(state);
-            return JsonSerializer.Serialize(card != null ? SuitRank.FromCard(card) : null);
+            var returnCard = state.legalCards.SingleOrDefault(lc => lc.SameAs(card));
+
+            return JsonSerializer.Serialize(returnCard != null ? SuitRank.FromCard(card) : null);
         }
         
         public static string SuggestPass<OT>(string postData, Func<SuggestPassState<OT>, BaseBot<OT>> getBot)
