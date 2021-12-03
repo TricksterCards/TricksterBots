@@ -128,8 +128,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="TricksterBotClasses, Version=0.0.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\Trickster\Hearts\packages\TricksterBotClasses.0.0.5-alpha\lib\net48\TricksterBotClasses.dll</HintPath>
+    <Reference Include="TricksterBotClasses, Version=0.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\Trickster\Hearts\packages\TricksterBotClasses.0.0.6-alpha\lib\net48\TricksterBotClasses.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

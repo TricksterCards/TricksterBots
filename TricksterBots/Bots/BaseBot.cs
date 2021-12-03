@@ -19,6 +19,9 @@ namespace Trickster.Bots
         {
             this.options = options;
             trump = trumpSuit;
+
+            //  force update of highRankBySuit on first call since the client can't send valid info
+            options.highRankBySuit = null;
         }
 
         protected T options { get; }
@@ -67,6 +70,10 @@ namespace Trickster.Bots
 
         protected int HighRankInSuit(Suit suit)
         {
+            if (options.highRankBySuit == null)
+                options.highRankBySuit = DeckBuilder.BuildDeck(DeckType).GroupBy(c => EffectiveSuit(c, trump))
+                    .ToDictionary(g => g.Key, g => g.Max(c => RankSort(c, trump)));
+
             return options.highRankBySuit.TryGetValue(suit, out var s) ? s : (int)Rank.Ace;
         }
 
@@ -91,7 +98,7 @@ namespace Trickster.Bots
             return IsOfValue(card) && EffectiveSuit(card) == trump;
         }
 
-        protected int RankSort(Card c)
+        public int RankSort(Card c)
         {
             return RankSort(c, trump);
         }
