@@ -1,12 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Trickster.cloud;
 
 namespace Trickster.Bots
 {
     public class EuchreBot : BaseBot<EuchreOptions>
     {
+        private static readonly Dictionary<Suit, int> suitOrder = new Dictionary<Suit, int>
+        {
+            { Suit.Unknown, 0 },
+            { Suit.Diamonds, 1 },
+            { Suit.Clubs, 2 },
+            { Suit.Hearts, 3 },
+            { Suit.Spades, 4 },
+            { Suit.Joker, 5 }
+        };
+
         public EuchreBot(EuchreOptions options, Suit trumpSuit) : base(options, trumpSuit)
         {
         }
@@ -31,6 +43,11 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<EuchreOptions> state)
         {
+#if DEBUG
+            if (state.cloudBid == null)
+                File.WriteAllText(@"C:\Users\tedjo\LastBidState.json", JsonSerializer.Serialize(state));
+#endif
+
             var (players, dealerSeat, hand, legalBids, player, upCard, upCardSuit) =
                 (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand, state.legalBids, state.player, state.upCard, state.upCardSuit);
 
@@ -78,7 +95,16 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<EuchreOptions> state)
         {
-            var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
+#if DEBUG
+            if (state.cloudCard == null)
+            {
+                state.trumpSuit = trump;
+                File.WriteAllText(@"C:\Users\tedjo\LastCardState.json", JsonSerializer.Serialize(state));
+            }
+#endif
+
+            var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players),
+                state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
 
             var playerBid = BidBid(player);
@@ -209,6 +235,20 @@ namespace Trickster.Bots
             throw new NotImplementedException();
         }
 
+        public override int SuitSort(Card c)
+        {
+            var suitSort = suitOrder[c.suit];
+
+            if (trump == Suit.Unknown)
+                return suitSort;
+
+            var trumpSort = suitOrder[trump];
+            if (c.suit == Suit.Joker || c.rank == Rank.Jack && c.Color == Card.ColorOfSuit(trump))
+                return trumpSort;
+
+            return suitSort > trumpSort ? suitSort - 4 : suitSort;
+        }
+
         protected override Suit EffectiveSuit(Card c, Suit trumpSuit)
         {
             return c.suit == Suit.Joker || c.rank == Rank.Jack && c.Color == Card.ColorOfSuit(trumpSuit) ? trumpSuit : c.suit;
@@ -236,30 +276,6 @@ namespace Trickster.Bots
         private static EuchreBid BidBid(int bidValue)
         {
             return (EuchreBid)(bidValue - bidValue % 10);
-        }
-
-        private static Suit EffectiveUpCardSuit(SuitRank upCard)
-        {
-            return upCard.suit == Suit.Joker ? Suit.Spades : upCard.suit;
-        }
-
-        private static double EstimatedNotrumpTricks(Hand hand)
-        {
-            var est = 0.0;
-
-            var countsBySuit = hand.GroupBy(c => c.suit).ToDictionary(g => g.Key, g => g.Count());
-
-            foreach (var card in hand)
-            {
-                var count = countsBySuit[card.suit];
-
-                if (card.rank == Rank.Ace && count <= 3)
-                    est += 1;
-                else if (card.rank == Rank.King && count == 2)
-                    est += hand.Any(c => c.rank == Rank.Ace && c.suit == card.suit) ? 1 : 0.75;
-            }
-
-            return est;
         }
 
         private BidBase BidSuggester(Hand hand, Card upCard, Suit upCardSuit, bool isDealer)
@@ -323,6 +339,30 @@ namespace Trickster.Bots
             return new BidBase(BidBase.Pass);
         }
 
+        private static Suit EffectiveUpCardSuit(SuitRank upCard)
+        {
+            return upCard.suit == Suit.Joker ? Suit.Spades : upCard.suit;
+        }
+
+        private static double EstimatedNotrumpTricks(Hand hand)
+        {
+            var est = 0.0;
+
+            var countsBySuit = hand.GroupBy(c => c.suit).ToDictionary(g => g.Key, g => g.Count());
+
+            foreach (var card in hand)
+            {
+                var count = countsBySuit[card.suit];
+
+                if (card.rank == Rank.Ace && count <= 3)
+                    est += 1;
+                else if (card.rank == Rank.King && count == 2)
+                    est += hand.Any(c => c.rank == Rank.Ace && c.suit == card.suit) ? 1 : 0.75;
+            }
+
+            return est;
+        }
+
         private double EstimatedTricks(Hand hand, Suit maybeTrump, bool withJoker)
         {
             //  ensure all suits have at least some value so we never pick Suit.Unknown
@@ -352,12 +392,10 @@ namespace Trickster.Bots
             var offSuitCards = hand.Where(c => EffectiveSuit(c, maybeTrump) != maybeTrump).ToList();
             var offSuitAces = offSuitCards.Where(c => c.rank == Rank.Ace);
             foreach (var nCardsOfAceSuit in offSuitAces.Select(ace => offSuitCards.Count(c => EffectiveSuit(c, maybeTrump) == ace.suit)))
-            {
                 if (nCardsOfAceSuit == 1 && trumpCards.Count > 1)
                     est += 0.5;
                 else if (nCardsOfAceSuit <= 2)
                     est += 0.25;
-            }
 
             if (trumpCards.Count == 3 &&
                 offSuitCards.Any(c1 => offSuitCards.Any(c2 => c1 != c2 && EffectiveSuit(c2, maybeTrump) == EffectiveSuit(c1, maybeTrump))))
