@@ -112,5 +112,11 @@ namespace Trickster.Bots
         {
             return (int)s;
         }
+
+        public virtual int SuitSort(Card c)
+        {
+            var suitOrder = SuitOrder(EffectiveSuit(c));
+            return suitOrder > SuitOrder(trump) ? suitOrder - 5 : suitOrder;
+        }
     }
 }
