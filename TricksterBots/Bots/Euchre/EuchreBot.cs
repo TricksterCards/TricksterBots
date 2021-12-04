@@ -45,7 +45,7 @@ namespace Trickster.Bots
         {
 #if DEBUG
             if (state.cloudBid == null)
-                File.WriteAllText(@"C:\Users\tedjo\LastBidState.json", JsonSerializer.Serialize(state));
+                File.WriteAllText($@"C:\Users\tedjo\LastBidState_{state.player.Seat}.json", JsonSerializer.Serialize(state));
 #endif
 
             var (players, dealerSeat, hand, legalBids, player, upCard, upCardSuit) =

@@ -27,7 +27,7 @@ namespace Trickster.Bots.Controllers
 
                 try
                 {
-                    var lastCloudState = File.ReadAllText(@"C:\Users\tedjo\LastBidState.json");
+                    var lastCloudState = File.ReadAllText($@"C:\Users\tedjo\LastBidState_{state.player.Seat}.json");
                     state.cloudBid = null;
                     state.options = null;
                     Debug.WriteLine($"Last used cloud state:\n{lastCloudState}\nCalled state:\n{JsonSerializer.Serialize(state)}\n");
