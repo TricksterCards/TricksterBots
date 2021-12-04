@@ -111,7 +111,7 @@ namespace Trickster.Bots
             var partnerIsMaker = players.PartnersOf(player).Any(p => BidBid(p) == EuchreBid.Make);
             var weAreMaker = playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone || partnerIsMaker;
 
-            var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).First();
+            var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).ThenBy(SuitSort).First();
 
             if (trick.Count == 0)
             {
@@ -141,7 +141,7 @@ namespace Trickster.Bots
                 {
                     //  play the lowest card in non-trump suit with fewest cards
                     var suitCounts = nonTrump.GroupBy(EffectiveSuit).Select(g => new { suit = g.Key, count = g.Count() }).OrderBy(sc => sc.count).ToList();
-                    return nonTrump.Where(c => EffectiveSuit(c) == suitCounts[0].suit).OrderBy(RankSort).First();
+                    return nonTrump.Where(c => EffectiveSuit(c) == suitCounts[0].suit).OrderBy(RankSort).ThenBy(SuitSort).First();
                 }
 
                 //  We want to lead a high (best in suit) card with conditions:
@@ -154,7 +154,8 @@ namespace Trickster.Bots
                 //  otherwise, play the non-trump high card from the suit with the fewest cards
                 if (highCards.Count > 1)
                 {
-                    if (weAreMaker && highCards.Any(IsTrump)) return highCards.Single(IsTrump);
+                    if (weAreMaker && highCards.Any(IsTrump))
+                        return highCards.Single(IsTrump);
 
                     //  play the high non-trump card from the suit with fewest cards
                     var nonTrumpHighCards = highCards.Where(c => !IsTrump(c)).ToList();
@@ -193,7 +194,7 @@ namespace Trickster.Bots
 
                         if (isLastToPlay)
                             //  we're last to play; play only as high as we need to
-                            return legalCards.OrderBy(RankSort).FirstOrDefault(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(cardTakingTrick));
+                            return legalCards.OrderBy(RankSort).First(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(cardTakingTrick));
 
                         //  otherwise play our highest card
                         return highFollow;
