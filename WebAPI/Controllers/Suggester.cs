@@ -58,19 +58,42 @@ namespace Trickster.Bots.Controllers
 
             Debug.Assert(state.legalCards.Any(lc => lc.SameAs(card)));
 
-            if (card?.suit != state.cloudCard.suit || card.rank != state.cloudCard.rank)
+            var cloudCard = state.cloudCard;
+            if (card?.suit != cloudCard.suit || card.rank != cloudCard.rank)
             {
-                Debug.WriteLine($"Bot-suggested card of {card?.rank.ToString() ?? "null"} of {card?.suit.ToString() ?? "null"} mismatches the cloud-suggested bid of {state.cloudCard.rank} of {state.cloudCard.suit}.");
-
-                Debugger.Break();
-                var redo = bot.SuggestNextCard(state);
+                Debug.WriteLine($"\nBot-suggested card of {card?.rank.ToString() ?? "null"} of {card?.suit.ToString() ?? "null"} mismatches the cloud-suggested card of {cloudCard.rank} of {cloudCard.suit}.");
 
                 try
                 {
-                    var lastCloudState = File.ReadAllText(@"C:\Users\tedjo\LastCardState.json");
+                    var lastCloudStateJson = File.ReadAllText($@"C:\Users\tedjo\LastCardState_{state.player.Seat}.json");
+
+                    //  this isn't sent by the cloud
                     state.cloudCard = null;
-                    state.options = null;
-                    Debug.WriteLine($"Last used cloud state:\n{lastCloudState}\nCalled state:\n{JsonSerializer.Serialize(state)}\n");
+
+                    //  this is always cleared in the BaseBot contructor
+                    state.options.highRankBySuit = null;
+
+                    Debug.WriteLine($"Last used cloud state:\n{lastCloudStateJson}\nCalled state:\n{JsonSerializer.Serialize(state)}");
+
+                    var cloudState = JsonSerializer.Deserialize<SuggestCardState<OT>>(lastCloudStateJson);
+                    Debug.Assert(cloudState != null, nameof(cloudState) + " != null");
+                    var bot2 = getBot(cloudState);
+                    var card2 = bot2.SuggestNextCard(cloudState);
+                    Debug.WriteLine($"Invoking SuggestNextCard using last used cloud state returned {card2.rank} of {card2.suit}, "
+                                    + $"which is {(card2.suit == cloudCard.suit && card2.rank == cloudCard.rank ? "correct." : "WRONG!")}");
+
+                    if (state.trumpSuit != cloudState.trumpSuit)
+                    {
+                        Debug.WriteLine($"Client-sent state has trumpSuit of {state.trumpSuit} whereas cloud state has trumpSuit of {cloudState.trumpSuit}.");
+                        state.trumpSuit = cloudState.trumpSuit;
+                        var bot3 = getBot(state);
+                        var card3 = bot3.SuggestNextCard(state);
+                        Debug.WriteLine($"Invoking SuggestNextCard using client-sent state with corrected trumpSuit returned {card3.rank} of {card3.suit}, "
+                                        + $"which is {(card3.suit == cloudCard.suit && card3.rank == cloudCard.rank ? "correct." : "WRONG!")}");
+                    }
+
+                    Debug.WriteLine($"Returning expected card {cloudCard.rank} of {cloudCard.suit}.");
+                    return JsonSerializer.Serialize(cloudCard);
                 }
                 catch
                 {

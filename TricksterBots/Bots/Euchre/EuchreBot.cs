@@ -98,8 +98,7 @@ namespace Trickster.Bots
 #if DEBUG
             if (state.cloudCard == null)
             {
-                state.trumpSuit = trump;
-                File.WriteAllText(@"C:\Users\tedjo\LastCardState.json", JsonSerializer.Serialize(state));
+                File.WriteAllText($@"C:\Users\tedjo\LastCardState_{state.player.Seat}.json", JsonSerializer.Serialize(state));
             }
 #endif
 
@@ -139,9 +138,11 @@ namespace Trickster.Bots
                 var nonTrump = legalCards.Where(c => !IsTrump(c)).ToList();
                 if (sortedTrump.Count == 1 && nonTrump.All(c => !IsCardHigh(c, cardsPlayed)))
                 {
-                    //  play the lowest card in non-trump suit with fewest cards
-                    var suitCounts = nonTrump.GroupBy(EffectiveSuit).Select(g => new { suit = g.Key, count = g.Count() }).OrderBy(sc => sc.count).ToList();
-                    return nonTrump.Where(c => EffectiveSuit(c) == suitCounts[0].suit).OrderBy(RankSort).ThenBy(SuitSort).First();
+                    //  get the number of cards in each non-trump suit
+                    var countsBySuit = nonTrump.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
+
+                    //  play the lowest card in non-trump suit with fewest cards (sort by Suit to break ties in countsBySuit)
+                    return nonTrump.OrderBy(c => countsBySuit[EffectiveSuit(c)]).ThenBy(SuitSort).ThenBy(RankSort).First();
                 }
 
                 //  We want to lead a high (best in suit) card with conditions:
@@ -159,7 +160,7 @@ namespace Trickster.Bots
 
                     //  play the high non-trump card from the suit with fewest cards
                     var nonTrumpHighCards = highCards.Where(c => !IsTrump(c)).ToList();
-                    var theSuit = nonTrumpHighCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s)).First();
+                    var theSuit = nonTrumpHighCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s)).ThenBy(s => suitOrder[s]).First();
                     return nonTrumpHighCards.Single(c => EffectiveSuit(c) == theSuit);
                 }
 
