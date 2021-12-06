@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -43,6 +45,13 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<HeartsOptions> state)
         {
+#if DEBUG
+            if (state.cloudCard == null)
+            {
+                File.WriteAllText($@"C:\Users\tedjo\LastCardState_{state.player.Seat}.json", JsonSerializer.Serialize(state));
+            }
+#endif
+
             var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
             var nPlayers = players.Count;
