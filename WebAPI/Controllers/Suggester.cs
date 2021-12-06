@@ -17,6 +17,7 @@ namespace Trickster.Bots.Controllers
             if (state == null)
                 return null;
 
+            state.SortCardMembers();
             var bot = getBot(state);
             var bid = bot.SuggestBid(state);
             var returnBid = state.legalBids.SingleOrDefault(lb => lb.value == bid.value);
@@ -53,6 +54,7 @@ namespace Trickster.Bots.Controllers
             if (state.legalCards.Count == 1)
                 return JsonSerializer.Serialize(SuitRank.FromCard(state.legalCards[0]));
 
+            state.SortCardMembers();
             var bot = getBot(state);
             var card = bot.SuggestNextCard(state);
 
@@ -66,6 +68,11 @@ namespace Trickster.Bots.Controllers
                 try
                 {
                     var lastCloudStateJson = File.ReadAllText($@"C:\Users\tedjo\LastCardState_{state.player.Seat}.json");
+                    var cloudState = JsonSerializer.Deserialize<SuggestCardState<OT>>(lastCloudStateJson);
+                    Debug.Assert(cloudState != null, nameof(cloudState) + " != null");
+
+                    if (state.trumpSuit != cloudState.trumpSuit)
+                        Debug.WriteLine($"Client-sent state has trumpSuit of {state.trumpSuit} whereas cloud state has trumpSuit of {cloudState.trumpSuit}.");
 
                     //  this isn't sent by the cloud
                     state.cloudCard = null;
@@ -75,8 +82,6 @@ namespace Trickster.Bots.Controllers
 
                     Debug.WriteLine($"Last used cloud state:\n{lastCloudStateJson}\nCalled state:\n{JsonSerializer.Serialize(state)}");
 
-                    var cloudState = JsonSerializer.Deserialize<SuggestCardState<OT>>(lastCloudStateJson);
-                    Debug.Assert(cloudState != null, nameof(cloudState) + " != null");
                     var bot2 = getBot(cloudState);
                     var card2 = bot2.SuggestNextCard(cloudState);
                     Debug.WriteLine($"Invoking SuggestNextCard using last used cloud state returned {card2.rank} of {card2.suit}, "
@@ -84,7 +89,6 @@ namespace Trickster.Bots.Controllers
 
                     if (state.trumpSuit != cloudState.trumpSuit)
                     {
-                        Debug.WriteLine($"Client-sent state has trumpSuit of {state.trumpSuit} whereas cloud state has trumpSuit of {cloudState.trumpSuit}.");
                         state.trumpSuit = cloudState.trumpSuit;
                         var bot3 = getBot(state);
                         var card3 = bot3.SuggestNextCard(state);
@@ -112,6 +116,7 @@ namespace Trickster.Bots.Controllers
             if (state == null)
                 return null;
 
+            state.SortCardMembers();
             var bot = getBot(state);
             var pass = bot.SuggestPass(state);
             return JsonSerializer.Serialize(pass.Select(SuitRank.FromCard));
@@ -125,6 +130,7 @@ namespace Trickster.Bots.Controllers
             if (state == null)
                 return null;
 
+            state.SortCardMembers();
             var bot = getBot(state);
             var discard = bot.SuggestDiscard(state);
             return JsonSerializer.Serialize(discard.Select(SuitRank.FromCard));
