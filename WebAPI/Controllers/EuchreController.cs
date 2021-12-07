@@ -16,7 +16,7 @@ namespace Trickster.Bots.Controllers
         [Route("suggest/euchre/bid")]
         public string SuggestEuchreBid([FromBody] string postData)
         {
-            return Suggester.SuggestBid<EuchreOptions>(postData, state => new EuchreBot(state.options, state.trumpSuit));
+            return Suggester.SuggestBid<EuchreOptions>(postData, state => new EuchreBot(state.options, Suit.Unknown));
         }
 
         [HttpPost]

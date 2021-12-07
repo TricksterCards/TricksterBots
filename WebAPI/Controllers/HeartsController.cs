@@ -16,7 +16,7 @@ namespace Trickster.Bots.Controllers
         [Route("suggest/hearts/pass")]
         public string SuggestHeartsPass([FromBody] string postData)
         {
-            return Suggester.SuggestPass<HeartsOptions>(postData, state => new HeartsBot(state.options, state.trumpSuit));
+            return Suggester.SuggestPass<HeartsOptions>(postData, state => new HeartsBot(state.options, Suit.Unknown));
         }
     }
 }
