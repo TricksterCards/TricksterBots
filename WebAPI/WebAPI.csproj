@@ -154,6 +154,7 @@
     <Compile Include="Controllers\EuchreController.cs" />
     <Compile Include="Controllers\FiveHundredController.cs" />
     <Compile Include="Controllers\HeartsController.cs" />
+    <Compile Include="Controllers\OhHellController.cs" />
     <Compile Include="Controllers\SpadesController.cs" />
     <Compile Include="Controllers\Suggester.cs" />
     <Compile Include="Global.asax.cs">

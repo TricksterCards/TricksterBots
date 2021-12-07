@@ -108,6 +108,8 @@
     <Compile Include="Bots\Euchre\EuchreBot.cs" />
     <Compile Include="Bots\FiveHundred\FiveHundredBot.cs" />
     <Compile Include="Bots\Hearts\HeartsBot.cs" />
+    <Compile Include="Bots\OhHell\OhHellBid.cs" />
+    <Compile Include="Bots\OhHell\OhHellBot.cs" />
     <Compile Include="Bots\PlayersCollectionBase.cs" />
     <Compile Include="Bots\Spades\SpadesBid.cs" />
     <Compile Include="Bots\Spades\SpadesBot.cs" />
