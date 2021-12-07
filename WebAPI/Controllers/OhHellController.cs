@@ -9,7 +9,7 @@ namespace Trickster.Bots.Controllers
         [Route("suggest/ohhell/bid")]
         public string SuggestOhHellBid([FromBody] string postData)
         {
-            return Suggester.SuggestBid<OhHellOptions>(postData, state => new OhHellBot(state.options, Suit.Unknown));
+            return Suggester.SuggestBid<OhHellOptions>(postData, state => new OhHellBot(state.options, state.trumpSuit));
         }
 
         [HttpPost]
