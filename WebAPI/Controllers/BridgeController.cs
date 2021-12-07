@@ -9,7 +9,7 @@ namespace Trickster.Bots.Controllers
         [Route("suggest/bridge/bid")]
         public string SuggestBridgeBid([FromBody] string postData)
         {
-            return Suggester.SuggestBid<BridgeOptions>(postData, state => new BridgeBot(state.options, Suit.Unknown));
+            return Suggester.SuggestBid<BridgeOptions>(postData, state => new BridgeBot(state.options, state.trumpSuit));
         }
 
         [HttpPost]
