@@ -837,10 +837,53 @@ namespace Trickster.Bots
             return TryDumpEm(trick, legalCards, players.Count, stillNeedToMakeBid);
         }
 
-
         public override List<Card> SuggestPass(SuggestPassState<SpadesOptions> state)
         {
-            throw new NotImplementedException();
+            var (player, nCards) = (state.player, state.passCount);
+
+            var cards = new List<Card>();
+            var hand = new Hand(player.Hand);
+            var playerBid = new SpadesBid(player.Bid);
+
+            if (playerBid.IsNil)
+            {
+                var nTrump = hand.Count(IsTrump);
+                if (nTrump > 3)
+                {
+                    cards.AddRange(hand.Where(IsTrump).OrderByDescending(RankSort).Take(Math.Min(nTrump - 3, nCards)));
+                }
+
+                if (cards.Count < nCards)
+                {
+                    var highTrump = hand.RemoveCards(cards).Where(c => IsTrump(c) && RankSort(c) > options.highRankBySuit[trump] - 3).ToList();
+
+                    if (highTrump.Count > 0)
+                    {
+                        cards.AddRange(highTrump.OrderByDescending(RankSort).Take(nCards - cards.Count));
+                    }
+                }
+
+                if (cards.Count < nCards)
+                {
+                    hand = hand.RemoveCards(cards);
+                    var countsBySuit = hand.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
+
+                    //  if we still need cards to throw, choose the highest ranks from the shortest suits
+                    cards.AddRange(hand.OrderByDescending(RankSort).ThenBy(c => countsBySuit[EffectiveSuit(c)]).Take(nCards - cards.Count));
+                }
+            }
+            else
+            {
+                var countsBySuit = hand.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
+
+                //  if we still need cards to throw, choose the highest ranks from the shortest suits
+                cards.AddRange(hand.Where(c => !IsTrump(c)).OrderBy(RankSort).ThenByDescending(c => countsBySuit[EffectiveSuit(c)]).Take(nCards));
+
+                if (cards.Count < nCards)
+                    cards.AddRange(hand.Where(IsTrump).OrderBy(RankSort).Take(nCards - cards.Count));
+            }
+
+            return cards;
         }
 
         protected override Suit EffectiveSuit(Card c, Suit trumpSuit)
