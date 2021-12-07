@@ -77,9 +77,6 @@ namespace Trickster.Bots.Controllers
                     //  this isn't sent by the cloud
                     state.cloudCard = null;
 
-                    //  this is always cleared in the BaseBot contructor
-                    state.options.highRankBySuit = null;
-
                     Debug.WriteLine($"Last used cloud state:\n{lastCloudStateJson}\nCalled state:\n{JsonSerializer.Serialize(state)}");
 
                     var bot2 = getBot(cloudState);

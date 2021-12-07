@@ -15,14 +15,17 @@ namespace Trickster.Bots
 
     public abstract class BaseBot<T> : IBaseBot where T : GameOptions
     {
+        private Dictionary<Suit, int> _highRankBySuit;
+
         protected BaseBot(T options, Suit trumpSuit)
         {
             this.options = options;
             trump = trumpSuit;
-
-            //  force update of highRankBySuit on first call since the client can't send valid info
-            options.highRankBySuit = null;
         }
+
+        protected Dictionary<Suit, int> highRankBySuit =>
+            _highRankBySuit ?? (_highRankBySuit = DeckBuilder.BuildDeck(DeckType).GroupBy(c => EffectiveSuit(c, trump))
+                .ToDictionary(g => g.Key, g => g.Max(c => RankSort(c, trump))));
 
         protected T options { get; }
 
@@ -50,6 +53,11 @@ namespace Trickster.Bots
         /// </summary>
         public bool IsTwoTeams => options.isTwoTeams;
 
+        public int RankSort(Card c)
+        {
+            return RankSort(c, trump);
+        }
+
         public abstract BidBase SuggestBid(SuggestBidState<T> state);
 
         public abstract List<Card> SuggestDiscard(SuggestDiscardState<T> state);
@@ -57,6 +65,12 @@ namespace Trickster.Bots
         public abstract Card SuggestNextCard(SuggestCardState<T> state);
 
         public abstract List<Card> SuggestPass(SuggestPassState<T> state);
+
+        public virtual int SuitSort(Card c)
+        {
+            var suitOrder = SuitOrder(EffectiveSuit(c));
+            return suitOrder > SuitOrder(trump) ? suitOrder - 5 : suitOrder;
+        }
 
         protected virtual Suit EffectiveSuit(Card c, Suit trumpSuit)
         {
@@ -70,11 +84,7 @@ namespace Trickster.Bots
 
         protected int HighRankInSuit(Suit suit)
         {
-            if (options.highRankBySuit == null)
-                options.highRankBySuit = DeckBuilder.BuildDeck(DeckType).GroupBy(c => EffectiveSuit(c, trump))
-                    .ToDictionary(g => g.Key, g => g.Max(c => RankSort(c, trump)));
-
-            return options.highRankBySuit.TryGetValue(suit, out var s) ? s : (int)Rank.Ace;
+            return highRankBySuit.TryGetValue(suit, out var s) ? s : (int)Rank.Ace;
         }
 
         protected bool IsCardHigh(Card highestCard, IEnumerable<Card> cardsPlayed)
@@ -98,11 +108,6 @@ namespace Trickster.Bots
             return IsOfValue(card) && EffectiveSuit(card) == trump;
         }
 
-        public int RankSort(Card c)
-        {
-            return RankSort(c, trump);
-        }
-
         protected virtual int RankSort(Card c, Suit trumpSuit)
         {
             return (int)c.rank;
@@ -111,12 +116,6 @@ namespace Trickster.Bots
         protected virtual int SuitOrder(Suit s)
         {
             return (int)s;
-        }
-
-        public virtual int SuitSort(Card c)
-        {
-            var suitOrder = SuitOrder(EffectiveSuit(c));
-            return suitOrder > SuitOrder(trump) ? suitOrder - 5 : suitOrder;
         }
     }
 }

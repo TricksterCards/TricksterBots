@@ -25,5 +25,12 @@ namespace Trickster.Bots.Controllers
         {
             return Suggester.SuggestDiscard<EuchreOptions>(postData, state => new EuchreBot(state.options, state.trumpSuit));
         }
+
+        [HttpPost]
+        [Route("suggest/euchre/pass")]
+        public string SuggestEuchrePass([FromBody] string postData)
+        {
+            return Suggester.SuggestPass<EuchreOptions>(postData, state => new EuchreBot(state.options, state.trumpSuit));
+        }
     }
 }

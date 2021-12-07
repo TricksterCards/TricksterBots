@@ -232,9 +232,28 @@ namespace Trickster.Bots
             return lowestCard;
         }
 
+        private static bool IsMakeAlone(PlayerBase player) => BidBid(player.Bid) == EuchreBid.MakeAlone;
+
+        //  used for call for best
         public override List<Card> SuggestPass(SuggestPassState<EuchreOptions> state)
         {
-            throw new NotImplementedException();
+            var player = state.player;
+
+            var hand = new Hand(player.Hand);
+            if (IsMakeAlone(player))
+            {
+                //  if we bid alone, treat this like an extra discard
+                return SuggestDiscard(new SuggestDiscardState<EuchreOptions> { player = player, hand = hand });
+            }
+
+            //  if partner bid, try to give our partner trump if we can
+            var list = hand.Where(IsTrump).OrderByDescending(RankSort).Take(1).ToList();
+            if (list.Count > 0)
+                return list;
+
+            //  otherwise give them our highest-ranked off-suit card, tie-breaking using the shortest suit
+            var suitCounts = hand.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
+            return hand.OrderByDescending(RankSort).ThenBy(c => suitCounts[EffectiveSuit(c)]).Take(1).ToList();
         }
 
         public override int SuitSort(Card c)
