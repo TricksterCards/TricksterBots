@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -43,7 +41,7 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<EuchreOptions> state)
         {
-#if DEBUG
+#if SAVESTATELOCAL
             if (state.cloudBid == null)
                 File.WriteAllText($@"C:\Users\tedjo\LastBidState_{state.player.Seat}.json", JsonSerializer.Serialize(state));
 #endif
@@ -95,7 +93,7 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<EuchreOptions> state)
         {
-#if DEBUG
+#if SAVESTATELOCAL
             if (state.cloudCard == null)
             {
                 File.WriteAllText($@"C:\Users\tedjo\LastCardState_{state.player.Seat}.json", JsonSerializer.Serialize(state));

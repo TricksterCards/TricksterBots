@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Trickster.cloud;
@@ -26,6 +25,7 @@ namespace Trickster.Bots.Controllers
             {
                 Debug.WriteLine($"Bot-suggested bid of {bid?.value.ToString() ?? "null"} mismatches the cloud-suggested bid of {state.cloudBid.value}.");
 
+#if SAVESTATELOCAL
                 try
                 {
                     var lastCloudState = File.ReadAllText($@"C:\Users\tedjo\LastBidState_{state.player.Seat}.json");
@@ -37,6 +37,7 @@ namespace Trickster.Bots.Controllers
                 {
                     //  ignore
                 }
+#endif
             }
 
             return JsonSerializer.Serialize(returnBid);
@@ -65,6 +66,7 @@ namespace Trickster.Bots.Controllers
             {
                 Debug.WriteLine($"\nBot-suggested card of {card?.rank.ToString() ?? "null"} of {card?.suit.ToString() ?? "null"} mismatches the cloud-suggested card of {cloudCard.rank} of {cloudCard.suit}.");
 
+#if SAVESTATELOCAL
                 try
                 {
                     var lastCloudStateJson = File.ReadAllText($@"C:\Users\tedjo\LastCardState_{state.player.Seat}.json");
@@ -100,6 +102,7 @@ namespace Trickster.Bots.Controllers
                 {
                     //  ignore
                 }
+#endif
             }
 
             return JsonSerializer.Serialize(card != null ? SuitRank.FromCard(card) : null);
