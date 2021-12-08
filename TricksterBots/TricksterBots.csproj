@@ -110,6 +110,7 @@
     <Compile Include="Bots\Hearts\HeartsBot.cs" />
     <Compile Include="Bots\OhHell\OhHellBid.cs" />
     <Compile Include="Bots\OhHell\OhHellBot.cs" />
+    <Compile Include="Bots\Pitch\PitchBot.cs" />
     <Compile Include="Bots\PlayersCollectionBase.cs" />
     <Compile Include="Bots\Spades\SpadesBid.cs" />
     <Compile Include="Bots\Spades\SpadesBot.cs" />
@@ -119,6 +120,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\packages\System.Text.Json.6.0.0\build\System.Text.Json.targets" Condition="Exists('$(SolutionDir)\packages\System.Text.Json.6.0.0\build\System.Text.Json.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
