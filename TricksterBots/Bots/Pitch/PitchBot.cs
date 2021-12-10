@@ -755,11 +755,7 @@ namespace Trickster.Bots
 
         private bool IsCalledPartner(PlayerBase player)
         {
-            return false;
-
-            //  TODO: Fix this as it uses both options._callPartnerId, which isn't reliable, and player.Id, which we don't have
-            //  We should think about a "called partner bid"
-            //return IsCallPartner && options._callPartnerId == player.Id;
+            return IsCallPartner && options._callPartnerSeat == player.Seat;
         }
 
         private bool IsTrickWorthTaking(IReadOnlyList<Card> trick)
