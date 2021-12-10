@@ -84,7 +84,7 @@ namespace Trickster.Bots
 
         protected int HighRankInSuit(Suit suit)
         {
-            return highRankBySuit.TryGetValue(suit, out var s) ? s : (int)Rank.Ace;
+            return highRankBySuit.TryGetValue(suit, out var r) ? r : (int)Rank.Ace;
         }
 
         protected bool IsCardHigh(Card highestCard, IEnumerable<Card> cardsPlayed)
