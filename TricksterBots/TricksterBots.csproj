@@ -110,6 +110,10 @@
     <Compile Include="Bots\Hearts\HeartsBot.cs" />
     <Compile Include="Bots\OhHell\OhHellBid.cs" />
     <Compile Include="Bots\OhHell\OhHellBot.cs" />
+    <Compile Include="Bots\BossMan.cs" />
+    <Compile Include="Bots\Pinochle\PinochleBid.cs" />
+    <Compile Include="Bots\Pinochle\PinochleBot.cs" />
+    <Compile Include="Bots\Pinochle\PinochleMelder.cs" />
     <Compile Include="Bots\Pitch\PitchBot.cs" />
     <Compile Include="Bots\PlayersCollectionBase.cs" />
     <Compile Include="Bots\Spades\SpadesBid.cs" />

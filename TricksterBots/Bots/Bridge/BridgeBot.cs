@@ -98,7 +98,7 @@ namespace Trickster.Bots
             throw new NotImplementedException();
         }
 
-        protected override int SuitOrder(Suit s)
+        public override int SuitOrder(Suit s)
         {
             return suitOrder[s];
         }

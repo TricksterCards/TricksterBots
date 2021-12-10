@@ -9,8 +9,16 @@ namespace Trickster.Bots
         DeckType DeckType { get; }
         bool IsPartnership { get; }
         bool IsTwoTeams { get; }
+        GameOptions Options { get; }
+        Suit TrumpSuit { get; }
         bool CanSeeHand(PlayersCollectionBase players, PlayerBase player, PlayerBase target);
         Suit EffectiveSuit(Card c);
+        bool IsOfValue(Card c);
+        bool IsTrump(Card card);
+        int RankSort(Card c);
+        int TrickHighCardIndex(IReadOnlyList<Card> trick);
+        int SuitSort(Card c);
+        int SuitOrder(Suit s);
     }
 
     public abstract class BaseBot<T> : IBaseBot where T : GameOptions
@@ -43,20 +51,53 @@ namespace Trickster.Bots
             return EffectiveSuit(c, trump);
         }
 
+        public virtual bool IsOfValue(Card c)
+        {
+            return true;
+        }
+
         /// <summary>
         ///     Indicates whether this game is played as a partner. Could be a 2- or 3- player partnership.
         /// </summary>
         public bool IsPartnership => options.isPartnership;
+
+        public bool IsTrump(Card card)
+        {
+            return IsOfValue(card) && EffectiveSuit(card) == trump;
+        }
 
         /// <summary>
         ///     Indicates if a 6-player game is played as 2 teams in 3v3 configuration.
         /// </summary>
         public bool IsTwoTeams => options.isTwoTeams;
 
+        public GameOptions Options => options;
+
         public int RankSort(Card c)
         {
             return RankSort(c, trump);
         }
+
+        public int TrickHighCardIndex(IReadOnlyList<Card> trick)
+        {
+            if (trick.Count(IsOfValue) == 0)
+                return -1;
+
+            var takeSuit = trick.Any(IsTrump) ? trump : EffectiveSuit(trick.First(IsOfValue));
+            var takeRank = RankSort(trick.Where(c => EffectiveSuit(c) == takeSuit).OrderBy(RankSort).Last());
+            var takeCard = trick.First(c => EffectiveSuit(c) == takeSuit && RankSort(c) == takeRank);
+
+            //  find the index of the takeCard
+            for (var i = 0; i < trick.Count; ++i)
+            {
+                if (trick[i] == takeCard)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public Suit TrumpSuit => trump;
 
         public abstract BidBase SuggestBid(SuggestBidState<T> state);
 
@@ -98,22 +139,12 @@ namespace Trickster.Bots
                    highRank - RankSort(highestCard);
         }
 
-        protected virtual bool IsOfValue(Card c)
-        {
-            return true;
-        }
-
-        protected bool IsTrump(Card card)
-        {
-            return IsOfValue(card) && EffectiveSuit(card) == trump;
-        }
-
         protected virtual int RankSort(Card c, Suit trumpSuit)
         {
             return (int)c.rank;
         }
 
-        protected virtual int SuitOrder(Suit s)
+        public virtual int SuitOrder(Suit s)
         {
             return (int)s;
         }

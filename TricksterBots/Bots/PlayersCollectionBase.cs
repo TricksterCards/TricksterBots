@@ -37,6 +37,12 @@ namespace Trickster.Bots
             return this.Where(p => p.Seat != player.Seat && !partnersSeats.Contains(p.Seat)).ToList();
         }
 
+        public Dictionary<Suit, bool> OpponentsVoidSuits(PlayerBase player)
+        {
+            var opponents = Opponents(player);
+            return SuitRank.allSuits.ToDictionary(s => s, s => opponents.All(p => p.VoidSuits.Contains(s)));
+        }
+
         public bool PartnerIsVoidInSuit(PlayerBase player, Card card, IReadOnlyList<Card> cardsPlayed)
         {
             return gameBot.IsPartnership && PartnersOf(player).All(target => TargetIsVoidInSuit(player, target, card, cardsPlayed));

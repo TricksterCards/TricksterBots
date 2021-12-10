@@ -221,7 +221,7 @@ namespace Trickster.Bots
             return (int)c.rank;
         }
 
-        protected override int SuitOrder(Suit s)
+        public override int SuitOrder(Suit s)
         {
             return FiveHundredBid.suitOrder[s];
         }
