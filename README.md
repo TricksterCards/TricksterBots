@@ -6,8 +6,14 @@ This repository contains the source for for the _suggest_ methods of the Trickst
 
 - Visual Studio 2019 or 2022
 - .NET Framework 4.8
+- GitHub Desktop (optional, but recommended)
 
 ## Getting Started
+
+Create and clone a fork of this repository from which to submit pull requests. If you're not familiar with GitHub's pull request process
+you can learn about using GitHub Desktop to accomplish this here:
+- [Cloning and Forking Repositories](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/adding-and-cloning-repositories/cloning-and-forking-repositories-from-github-desktop)
+- [Creating a Pull Request](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/working-with-your-remote-repository-on-github-or-github-enterprise/creating-an-issue-or-pull-request#creating-a-pull-request)
 
 After installing the requirements and cloning this repository, open the Visual Studio solution file TricksterBots.sln. This will open a solution with 2 projects: TricksterBots and WebAPI.
 
