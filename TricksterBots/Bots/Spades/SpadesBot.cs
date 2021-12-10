@@ -855,7 +855,7 @@ namespace Trickster.Bots
 
                 if (cards.Count < nCards)
                 {
-                    var highTrump = hand.RemoveCards(cards).Where(c => IsTrump(c) && RankSort(c) > options.highRankBySuit[trump] - 3).ToList();
+                    var highTrump = hand.RemoveCards(cards).Where(c => IsTrump(c) && RankSort(c) > highRankBySuit[trump] - 3).ToList();
 
                     if (highTrump.Count > 0)
                     {
