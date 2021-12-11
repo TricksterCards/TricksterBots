@@ -18,7 +18,7 @@ namespace Trickster.Bots.Controllers
         {
             return Suggester.SuggestNextCard<SpadesOptions>(postData, state => new SpadesBot(state.options, Suit.Spades));
         }
-        
+
         [HttpPost]
         [Route("suggest/spades/pass")]
         public string SuggestSpadesPass([FromBody] string postData)

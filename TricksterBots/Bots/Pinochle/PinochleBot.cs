@@ -19,9 +19,9 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<PinochleOptions> state)
         {
-            var (bids, players, player, hand) = (state.legalBids, new PlayersCollectionBase(this, state.players), state.player, state.hand);
+            var (legalBids, players, player, hand) = (state.legalBids, new PlayersCollectionBase(this, state.players), state.player, state.hand);
 
-            var passBid = bids.FirstOrDefault(b => b.value == BidBase.Pass);
+            var passBid = legalBids.FirstOrDefault(b => b.value == BidBase.Pass);
 
             //  don't bid up your partner if the opponents have passed and we can pass
             var partner = players.PartnerOf(player);
@@ -29,7 +29,7 @@ namespace Trickster.Bots
                 return passBid;
 
             //  we're bidding to choose trump if all the legal bids are choose trump bids
-            var chooseTrumpRound = bids.All(b => new PinochleBid(b).IsTrumpBid || b.value == BidBase.NoBid);
+            var chooseTrumpRound = legalBids.All(b => new PinochleBid(b).IsTrumpBid || b.value == BidBase.NoBid);
 
             var winnersBySuit = BossMan.GetWinnersBySuit(this, hand);
             var existingMeldsBySuit = SuitRank.stdSuits.ToDictionary(s => s, s => new PinochleMelder(this, hand, s).GetMeldCards(collapseMelds: false));
@@ -79,7 +79,7 @@ namespace Trickster.Bots
                 .First();
 
             if (chooseTrumpRound)
-                return bids.Single(b => b.text == Card.SuitSymbol(bestSuit));
+                return legalBids.First(b => new PinochleBid(b).TrumpBidSuit == bestSuit);
 
             //  compute the tricks I might be able to take
             var myTricks = winnersBySuit.TryGetValue(bestSuit, out var j) ? j.Count : 0;
@@ -101,14 +101,14 @@ namespace Trickster.Bots
             var maybeGet = trickPoints + meldPoints + partnerMeldPoints;
             BidBase bid = PinochleBid.FromPoints((int)Math.Ceiling(maybeGet));
 
-            var legalPointsBids = bids.Where(b => PinochleBid.BidIsPoints(b.value));
+            var legalPointsBids = legalBids.Where(b => PinochleBid.BidIsPoints(b.value));
 
             //  bid the minimum if we're auction-style or last to bid. bid as high as we can if we're single-bid style
             var bidMin = options.bidStyle == PinochleBidStyle.Auction || players.Where(p => p.Seat != player.Seat).All(p => p.Bid != BidBase.NoBid);
             var pointsBid = bidMin ? legalPointsBids.FirstOrDefault(b => b.value <= bid.value) : legalPointsBids.LastOrDefault(b => b.value <= bid.value);
 
             //  be sure to cover the "stick the dealer" case when there is no pass bid
-            var theBid = pointsBid ?? bids.FirstOrDefault(b => b.value == BidBase.Pass) ?? bids.First();
+            var theBid = pointsBid ?? legalBids.FirstOrDefault(b => b.value == BidBase.Pass) ?? legalBids.First();
 
 #if DEBUG
             theBid.explanation = new BidExplanation

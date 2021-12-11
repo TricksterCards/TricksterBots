@@ -45,7 +45,7 @@ namespace Trickster.Bots
                 if (options.bidderGetsKitty)
                     tricks += 1; //  estimate one more trick if we get the kitty
 
-                if (options._highBidderSeat != -1)
+                if (options._highBidderSeat.HasValue)
                 {
                     //  second round of bidding
                     //  get the correct estimated tricks based on suit and whether high or low wins
