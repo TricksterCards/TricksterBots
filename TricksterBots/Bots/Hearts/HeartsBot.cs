@@ -43,13 +43,6 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<HeartsOptions> state)
         {
-#if SAVESTATELOCAL
-            if (state.cloudCard == null)
-            {
-                File.WriteAllText($@"C:\Users\tedjo\LastCardState_{state.player.Seat}.json", JsonSerializer.Serialize(state));
-            }
-#endif
-
             var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
             var nPlayers = players.Count;

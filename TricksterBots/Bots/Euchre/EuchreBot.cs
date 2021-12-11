@@ -41,11 +41,6 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<EuchreOptions> state)
         {
-#if SAVESTATELOCAL
-            if (state.cloudBid == null)
-                File.WriteAllText($@"C:\Users\tedjo\LastBidState_{state.player.Seat}.json", JsonSerializer.Serialize(state));
-#endif
-
             var (players, dealerSeat, hand, legalBids, player, upCard, upCardSuit) =
                 (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand, state.legalBids, state.player, state.upCard, state.upCardSuit);
 
@@ -93,13 +88,6 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<EuchreOptions> state)
         {
-#if SAVESTATELOCAL
-            if (state.cloudCard == null)
-            {
-                File.WriteAllText($@"C:\Users\tedjo\LastCardState_{state.player.Seat}.json", JsonSerializer.Serialize(state));
-            }
-#endif
-
             var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players),
                 state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
