@@ -265,23 +265,6 @@ namespace Trickster.Bots
             return highRank - lowRank - 1 - knownCards.Count(c => EffectiveSuit(c) == suit && highRank > RankSort(c) && lowRank < RankSort(c));
         }
 
-        public int TrickHighCardIndex(IReadOnlyList<Card> trick)
-        {
-            if (trick.Count(IsOfValue) == 0)
-                return -1;
-
-            var takeSuit = trick.Any(IsTrump) ? trump : EffectiveSuit(trick.First(IsOfValue));
-            var takeRank = RankSort(trick.Where(c => EffectiveSuit(c) == takeSuit).OrderBy(RankSort).Last());
-            var takeCard = trick.First(c => EffectiveSuit(c) == takeSuit && RankSort(c) == takeRank);
-
-            //  find the index of the takeCard
-            for (var i = 0; i < trick.Count; ++i)
-                if (trick[i] == takeCard)
-                    return i;
-
-            return -1;
-        }
-
         private Card TryProtectNil(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, PlayersCollectionBase players, IReadOnlyList<Card> cardsPlayed)
         {
             Card suggestion = null;

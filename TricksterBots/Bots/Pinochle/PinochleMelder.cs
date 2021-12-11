@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Trickster.cloud;
-using Trickster.cloud.rules;
 
 namespace Trickster.Bots
 {

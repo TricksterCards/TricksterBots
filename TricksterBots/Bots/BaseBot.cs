@@ -89,10 +89,8 @@ namespace Trickster.Bots
 
             //  find the index of the takeCard
             for (var i = 0; i < trick.Count; ++i)
-            {
                 if (trick[i] == takeCard)
                     return i;
-            }
 
             return -1;
         }
