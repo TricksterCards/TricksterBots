@@ -10,7 +10,7 @@ namespace Trickster.Bots
         //  use a dictionary for RankSort. Tens take the place of King and King, Queen, and Jack go down one rank
         private static readonly Dictionary<Rank, int> SortByRank = SuitRank.stdRanks.Where(r => r >= Rank.Nine)
             .ToDictionary(r => r, r => r == Rank.Ten ? (int)Rank.King : r == Rank.King || r == Rank.Queen || r == Rank.Jack ? (int)r - 1 : (int)r);
-        
+
         public PinochleBot(PinochleOptions options, Suit trumpSuit) : base(options, trumpSuit)
         {
         }
@@ -25,7 +25,8 @@ namespace Trickster.Bots
 
             //  don't bid up your partner if the opponents have passed and we can pass
             var partner = players.PartnerOf(player);
-            if (partner != null && PinochleBid.BidIsPoints(partner.Bid) && players.Opponents(player).All(o => PinochleBid.BidIsLikePass(o.Bid)) && passBid != null)
+            if (partner != null && PinochleBid.BidIsPoints(partner.Bid) && players.Opponents(player).All(o => PinochleBid.BidIsLikePass(o.Bid)) &&
+                passBid != null)
                 return passBid;
 
             //  we're bidding to choose trump if all the legal bids are choose trump bids
@@ -38,10 +39,9 @@ namespace Trickster.Bots
             //  only adjust for the kitty when we're in the points round of bidding. we've picked up the kitty by the time we bid the choose trump round.
             //  only adjust for kitty when there's 4 cards in it.
             if (options.kitty == PinochleKitty.FourCard && !chooseTrumpRound || options.passCount > 0)
-            {
                 foreach (var suitMelds in existingMeldsBySuit)
-                    possibleMeldsBySuit[suitMelds.Key] = new PinochleMelder(this, hand, suitMelds.Key).GetPossibleMelds(PinochleMelder.NearMeldsAggressiveness.Medium);
-            }
+                    possibleMeldsBySuit[suitMelds.Key] =
+                        new PinochleMelder(this, hand, suitMelds.Key).GetPossibleMelds(PinochleMelder.NearMeldsAggressiveness.Medium);
             else
                 possibleMeldsBySuit = existingMeldsBySuit;
 
@@ -74,7 +74,9 @@ namespace Trickster.Bots
 
             //  select the best suit as the one with the most combined meld and trick taking points
             var bestSuit = suitsToBid
-                .OrderByDescending(s => possibleMeldsBySuit[s].Sum(m => m.Points(options)) + (winnersBySuit.TryGetValue(s, out var n) ? n.Count : 0) * assumedPointsPerTrick / options.TrickScoreDivisor)
+                .OrderByDescending(s =>
+                    possibleMeldsBySuit[s].Sum(m => m.Points(options)) +
+                    (winnersBySuit.TryGetValue(s, out var n) ? n.Count : 0) * assumedPointsPerTrick / options.TrickScoreDivisor)
                 .ThenByDescending(s => hand.Count(c => EffectiveSuit(c) == s))
                 .First();
 
@@ -113,11 +115,12 @@ namespace Trickster.Bots
 #if DEBUG
             theBid.explanation = new BidExplanation
             {
-                Description = $"{bestSuit} to {maybeGet:N0}. Winners = {(winnersBySuit.TryGetValue(bestSuit, out var w) ? string.Join(" ", w.Select(c => c.StdNotation)) : "none")}."
-                              + $" Thinking {totalTricks} tricks ({myTricks} mine + {partnerTricks} partner + {addlTricks} kitty or passed) for {trickPoints:N0}."
-                              + $" Possible melds = [ {string.Join(", ", possibleMeldsBySuit[bestSuit].OrderByDescending(m => m.Points(options)).Select(m => m.m.ToString()))} ] for {possibleMeldPoints}"
-                              + $" (current = [ {string.Join(", ", existingMeldsBySuit[bestSuit].OrderByDescending(m => m.Points(options)).Select(m => m.m.ToString()))} ] for {existingMeldPoints})."
-                              + $" Plus {partnerMeldPoints} for partner melds."
+                Description =
+                    $"{bestSuit} to {maybeGet:N0}. Winners = {(winnersBySuit.TryGetValue(bestSuit, out var w) ? string.Join(" ", w.Select(c => c.StdNotation)) : "none")}."
+                    + $" Thinking {totalTricks} tricks ({myTricks} mine + {partnerTricks} partner + {addlTricks} kitty or passed) for {trickPoints:N0}."
+                    + $" Possible melds = [ {string.Join(", ", possibleMeldsBySuit[bestSuit].OrderByDescending(m => m.Points(options)).Select(m => m.m.ToString()))} ] for {possibleMeldPoints}"
+                    + $" (current = [ {string.Join(", ", existingMeldsBySuit[bestSuit].OrderByDescending(m => m.Points(options)).Select(m => m.m.ToString()))} ] for {existingMeldPoints})."
+                    + $" Plus {partnerMeldPoints} for partner melds."
             };
 #endif
 
@@ -131,7 +134,8 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<PinochleOptions> state)
         {
-            return PinochleTakeEm(new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed, state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
+            return PinochleTakeEm(new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed, state.player,
+                state.isPartnerTakingTrick, state.cardTakingTrick);
         }
 
         public override List<Card> SuggestPass(SuggestPassState<PinochleOptions> state)
@@ -151,10 +155,18 @@ namespace Trickster.Bots
             return DeckBuilder.DeckSize(DeckType) / nPlayers;
         }
 
-        private Card PinochleTakeEm(PlayersCollectionBase players, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayerBase player, bool isPartnerTakingTrick,
+        private IEnumerable<Card> GetCardsKnownToPlayerSeat(int playerSeat)
+        {
+            return new[] { options._cardsDiscardedBySeat, options._cardsPassedBySeat }.Where(d => d != null && d.ContainsKey(playerSeat))
+                .SelectMany(d => d[playerSeat]).ToList();
+        }
+
+        private Card PinochleTakeEm(PlayersCollectionBase players, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed,
+            PlayerBase player, bool isPartnerTakingTrick,
             Card cardTakingTrick)
         {
-            var bossMan = new BossMan(this, cardsPlayed, new Hand(player.Hand), options.GetCardsKnownToPlayerSeat(player.Seat), trick, players.OpponentsVoidSuits(player));
+            var bossMan = new BossMan(this, cardsPlayed, new Hand(player.Hand), GetCardsKnownToPlayerSeat(player.Seat), trick,
+                players.OpponentsVoidSuits(player));
 
             if (isPartnerTakingTrick)
             {
@@ -163,13 +175,11 @@ namespace Trickster.Bots
 
                 //  throw partner points (avoiding aces) if we're in the last seat or they're surely or likely to take the trick
                 if (lastSeat || bossMan.IsSureWinner(cardTakingTrick) || bossMan.IsLikelyWinner(cardTakingTrick))
-                {
                     return legalCards.OrderBy(IsTrump)
                         .ThenBy(c => RankSort(c) == rankSortOfAce)
                         .ThenByDescending(c => PinochleMelder.CardPoints(options, c))
                         .ThenBy(RankSort)
                         .First();
-                }
             }
 
             var countBySuit = legalCards.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
@@ -178,7 +188,9 @@ namespace Trickster.Bots
             if (trick.Count == 0)
             {
                 //  when leading, look first at trump (unless the opponents are void in trump) then at shorter suits, then top-down by rank
-                var orderedByTrump = bossMan.OpponentsVoidIn(trump) ? legalCards.All(IsTrump) ? legalCards : legalCards.Where(c => !IsTrump(c)).ToList() : legalCards.OrderByDescending(IsTrump).ToList();
+                var orderedByTrump = bossMan.OpponentsVoidIn(trump)
+                    ? legalCards.All(IsTrump) ? legalCards : legalCards.Where(c => !IsTrump(c)).ToList()
+                    : legalCards.OrderByDescending(IsTrump).ToList();
                 orderedLegalCards = orderedByTrump.OrderBy(c => countBySuit[EffectiveSuit(c)]).ThenBy(EffectiveSuit).ThenByDescending(RankSort).ToList();
             }
             else
