@@ -236,17 +236,24 @@ namespace Trickster.Bots.Controllers
 
         private static void SaveErrorState(object state, object cloudState, string filename)
         {
-            var cc = HttpContext.Current;
-            var apiPath = cc.Request.MapPath(".");
-            //  will be path like GitHub/TricksterBot/WebApi/suggest/pinochle/card
-
-            if (Directory.Exists($@"{apiPath}\..\..\Errors"))
+            try
             {
-                var savePath = Path.GetFullPath($@"{apiPath}\..\..\Errors\{filename}_client.json");
-                File.WriteAllText(savePath, JsonSerializer.Serialize(state));
+                var cc = HttpContext.Current;
+                var apiPath = cc.Request.MapPath(".");
+                //  will be path like GitHub/TricksterBot/WebApi/suggest/pinochle/card
 
-                savePath = Path.GetFullPath($@"{apiPath}\..\..\Errors\{filename}_cloud.json");
-                File.WriteAllText(savePath, JsonSerializer.Serialize(cloudState));
+                if (Directory.Exists($@"{apiPath}\..\..\Errors"))
+                {
+                    var savePath = Path.GetFullPath($@"{apiPath}\..\..\Errors\{filename}_client.json");
+                    File.WriteAllText(savePath, JsonSerializer.Serialize(state));
+
+                    savePath = Path.GetFullPath($@"{apiPath}\..\..\Errors\{filename}_cloud.json");
+                    File.WriteAllText(savePath, JsonSerializer.Serialize(cloudState));
+                }
+            }
+            catch
+            {
+                //  ignore
             }
         }
 
