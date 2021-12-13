@@ -128,8 +128,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="TricksterBotClasses, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TricksterBotClasses.0.9.0-beta\lib\net48\TricksterBotClasses.dll</HintPath>
+    <Reference Include="TricksterBotClasses, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TricksterBotClasses.0.9.1-beta\lib\net48\TricksterBotClasses.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +159,7 @@
     <Compile Include="Controllers\PitchController.cs" />
     <Compile Include="Controllers\SpadesController.cs" />
     <Compile Include="Controllers\Suggester.cs" />
+    <Compile Include="Controllers\TestFileController.cs" />
     <Compile Include="Controllers\WhistController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
