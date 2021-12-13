@@ -24,20 +24,23 @@
             }
 
         .copyright {
-            margin: 1rem 0 0 0;
+            margin: 2rem 0 0 0;
             font-size: 14px;
         }
 
         code {
             font-size: 120%;
+            background-color: whitesmoke;
+            padding-left: 4px;
+            padding-right: 4px;
         }
     </style>
 </head>
 <body>
     <h1>Trickster Web Bot API</h1>
     <p>To test, run <a id="test-link" href="https://tricksterwest.azurewebsites.net/game/?bot=" target="_blank"></a> (loads slowly)</p>
-    <p>By default the suggestions will be updated to those returned by the bot. If you'd prefer to have the bot automatically play you can add <code>&botPlay=true</code> to the end of the test link.</p>
-    <p>To verify bot suggestions and see how they compare to the built-in bots, press F12 to open the browser tools, go to the Console, and filter to messages containing "Bot".</p>
+    <p>By default, the suggestions will be updated to those returned by the bot. To have the bot suggestions automatically played, add <code>&botPlay=true</code> to the end of the URL.</p>
+    <p>We log console messages regarding bot suggestions and indicate when they differ. To see these messages, press F12 to open the browser dev tools, go to the Console tab, and enter "Bot" in the Filter field.</p>
     <p class='copyright'>Copyright © 2021 Trickster Cards, Inc. All rights reserved.</p>
     <script>
         var tl = document.getElementById("test-link");
