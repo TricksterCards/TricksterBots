@@ -40,7 +40,7 @@ namespace Trickster.Bots.Controllers
             {
                 Debug.WriteLine(string.Empty);
                 CompareBidState(state, bid);
-                Debug.WriteLine($"Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {state.cloudBid.value}.");
+                Debug.WriteLine($"Seat {state.player.Seat}: Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {state.cloudBid.value} ({state.options.gameCode}).");
             }
 
             return JsonSerializer.Serialize(bid);
@@ -159,7 +159,7 @@ namespace Trickster.Bots.Controllers
                 Debug.WriteLine(string.Empty);
                 CompareCardState(state, card);
                 Debug.WriteLine(
-                    $"Bot-suggested card of {card.rank} of {card.suit} mismatches the cloud-suggested card of {cloudCard.rank} of {cloudCard.suit}.");
+                    $"Seat {state.player.Seat}: Bot-suggested card of {card.rank} of {card.suit} mismatches the cloud-suggested card of {cloudCard.rank} of {cloudCard.suit} ({state.options.gameCode}).");
             }
 
             return JsonSerializer.Serialize(SuitRank.FromCard(card));
@@ -224,9 +224,9 @@ namespace Trickster.Bots.Controllers
 
             Debug.WriteLine($"Player in seat {state.player.Seat} is playing.");
 
-            //var stateJson = JsonConvert.SerializeObject(state);
-            //var savedStateJson = JsonConvert.SerializeObject(savedState);
-            //Debug.WriteLineIf(stateJson != savedStateJson, $"client-sent and cloud-saved states differ.\nclient: {stateJson}\ncloud: {savedStateJson}");
+            var stateJson = JsonConvert.SerializeObject(state);
+            var savedStateJson = JsonConvert.SerializeObject(savedState);
+            Debug.WriteLineIf(stateJson != savedStateJson, $"client-sent and cloud-saved states differ.\nclient: {stateJson}\ncloud: {savedStateJson}");
 
             if (savedState == null)
                 return;
