@@ -138,6 +138,9 @@ namespace Trickster.Bots.Controllers
                 return JsonSerializer.Serialize(SuitRank.FromCard(state.legalCards[0]));
 
             state.SortCardMembers();
+
+            CompareCardsPlayed(state);
+
             var bot = getBot(state);
 
             Card card;
@@ -224,7 +227,12 @@ namespace Trickster.Bots.Controllers
 
             Debug.WriteLine($"Player in seat {state.player.Seat} is playing.");
 
+            //  the saved state doesn't have cloudCard. save it, set it to null, and restore it so we don't create unnecessary differences.
+            var cloudCard = state.cloudCard;
+            state.cloudCard = null;
             var stateJson = JsonConvert.SerializeObject(state);
+            state.cloudCard = cloudCard;
+
             var savedStateJson = JsonConvert.SerializeObject(savedState);
             Debug.WriteLineIf(stateJson != savedStateJson, $"client-sent and cloud-saved states differ.\nclient: {stateJson}\ncloud: {savedStateJson}");
 
@@ -238,6 +246,19 @@ namespace Trickster.Bots.Controllers
                 ComparePlayer(state.players.Single(p => p.Seat == playerSeat), savedState.players.Single(p => p.Seat == playerSeat));
 
             SaveErrorState(state, savedState, $"Card_{state.options.gameCode}_bot_{botCard.StdNotation}_cloud_{new Card(state.cloudCard).StdNotation}");
+        }
+
+        private static void CompareCardsPlayed<OT>(SuggestCardState<OT> state) where OT : GameOptions
+        {
+            var savedState = LoadState<SuggestCardState<OT>>(state.player.Seat);
+
+            if (savedState == null)
+                return;
+
+            var cardsPlayedJson = JsonConvert.SerializeObject(state.cardsPlayed);
+            var savedCardsPlayedJson = JsonConvert.SerializeObject(savedState.cardsPlayed);
+
+            Debug.WriteLineIf(cardsPlayedJson != savedCardsPlayedJson, $"state.cardsPlayed differs ({cardsPlayedJson} != {savedCardsPlayedJson})");
         }
 
         private static void SaveErrorState(object state, object cloudState, string filename)
