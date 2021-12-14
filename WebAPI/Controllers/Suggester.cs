@@ -222,6 +222,12 @@ namespace Trickster.Bots.Controllers
         {
             var savedState = LoadState<SuggestCardState<OT>>(state.player.Seat);
 
+            Debug.WriteLine($"Player in seat {state.player.Seat} is playing.");
+
+            //var stateJson = JsonConvert.SerializeObject(state);
+            //var savedStateJson = JsonConvert.SerializeObject(savedState);
+            //Debug.WriteLineIf(stateJson != savedStateJson, $"client-sent and cloud-saved states differ.\nclient: {stateJson}\ncloud: {savedStateJson}");
+
             if (savedState == null)
                 return;
 
@@ -259,13 +265,23 @@ namespace Trickster.Bots.Controllers
 
         private static void ComparePlayer(PlayerBase statePlayer, PlayerBase savedStatePlayer)
         {
-            Debug.WriteLineIf(statePlayer.Folded != savedStatePlayer.Folded, $"Player in seat {statePlayer.Seat}: Folded differs");
-            Debug.WriteLineIf(statePlayer.Hand != savedStatePlayer.Hand, $"Player in seat {statePlayer.Seat}: Hand differs");
+            Debug.WriteLineIf(statePlayer.Folded != savedStatePlayer.Folded,
+                $"Player in seat {statePlayer.Seat}: Folded differs ({statePlayer.Folded} != {savedStatePlayer.Folded})");
+
+            Debug.WriteLineIf(statePlayer.GoodSuit != savedStatePlayer.GoodSuit,
+                $"Player in seat {statePlayer.Seat}: GoodSuit differs ({statePlayer.GoodSuit} != {savedStatePlayer.GoodSuit})");
+
+            Debug.WriteLineIf(statePlayer.Hand != savedStatePlayer.Hand,
+                $"Player in seat {statePlayer.Seat}: Hand differs ({statePlayer.Hand} != {savedStatePlayer.Hand})");
+
             Debug.WriteLineIf(JsonConvert.SerializeObject(statePlayer.VoidSuits) != JsonConvert.SerializeObject(savedStatePlayer.VoidSuits),
-                $"Player in seat {statePlayer.Seat}: VoidSuits differs");
-            Debug.WriteLineIf(statePlayer.CardsTaken != savedStatePlayer.CardsTaken, $"Player in seat {statePlayer.Seat}: CardsTaken differs");
+                $"Player in seat {statePlayer.Seat}: VoidSuits differs ({JsonConvert.SerializeObject(statePlayer.VoidSuits)} != {JsonConvert.SerializeObject(savedStatePlayer.VoidSuits)})");
+
+            Debug.WriteLineIf(statePlayer.CardsTaken != savedStatePlayer.CardsTaken,
+                $"Player in seat {statePlayer.Seat}: CardsTaken differs ({statePlayer.CardsTaken} != {savedStatePlayer.CardsTaken})");
+
             Debug.WriteLineIf(JsonConvert.SerializeObject(statePlayer.PlayedCards) != JsonConvert.SerializeObject(savedStatePlayer.PlayedCards),
-                $"Player in seat {statePlayer.Seat}: PlayedCards differs");
+                $"Player in seat {statePlayer.Seat}: PlayedCards differs ({JsonConvert.SerializeObject(statePlayer.PlayedCards)} != {JsonConvert.SerializeObject(savedStatePlayer.PlayedCards)})");
         }
 
 /*
