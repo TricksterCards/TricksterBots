@@ -34,6 +34,7 @@ namespace Trickster.Bots.Controllers
                 throw;
             }
 
+#if DEBUG
             Debug.Assert(state.legalBids.Any(lb => lb.value == bid.value));
 
             if (bid.value != state.cloudBid.value)
@@ -42,6 +43,7 @@ namespace Trickster.Bots.Controllers
                 CompareBidState(state, bid);
                 Debug.WriteLine($"Seat {state.player.Seat}: Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {state.cloudBid.value} ({state.options.gameCode}).");
             }
+#endif
 
             return JsonSerializer.Serialize(bid);
         }
@@ -139,7 +141,9 @@ namespace Trickster.Bots.Controllers
 
             state.SortCardMembers();
 
+#if DEBUG
             CompareCardsPlayed(state);
+#endif
 
             var bot = getBot(state);
 
@@ -154,6 +158,7 @@ namespace Trickster.Bots.Controllers
                 throw;
             }
 
+#if DEBUG
             Debug.Assert(state.legalCards.Any(lc => lc.SameAs(card)));
 
             var cloudCard = state.cloudCard;
@@ -164,6 +169,7 @@ namespace Trickster.Bots.Controllers
                 Debug.WriteLine(
                     $"Seat {state.player.Seat}: Bot-suggested card of {card.rank} of {card.suit} mismatches the cloud-suggested card of {cloudCard.rank} of {cloudCard.suit} ({state.options.gameCode}).");
             }
+#endif
 
             return JsonSerializer.Serialize(SuitRank.FromCard(card));
         }
