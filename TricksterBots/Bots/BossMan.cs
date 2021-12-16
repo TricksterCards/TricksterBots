@@ -68,7 +68,7 @@ namespace Trickster.Bots
                 .ToDictionary(g => g.Key, g => CardsThatMightTakeTrick(bot, deck, hand, g.Key).Concat(BossInOffSuits(bot, deck, hand, g.Key)).ToList());
         }
 
-        public bool IsLikelyWinner(Card card)
+        public bool IsLikelyWinner(Card card, bool isTakingTrick = false)
         {
             if (!PossibleWinner(card, out var isTrump, out var effectiveSuit, out var rankSort, out var isBossInSuit))
                 return false;
@@ -76,12 +76,12 @@ namespace Trickster.Bots
             if (isTrump && OpponentsVoidIn(_bot.TrumpSuit)
                 || isBossInSuit && !OpponentsVoidIn(effectiveSuit) && OutstandingInSuit(effectiveSuit) >= MinOutstandingInSuit
                 || isBossInSuit && OpponentsVoidIn(effectiveSuit) && OpponentsVoidIn(_bot.TrumpSuit))
-                return CanWinTrick(card, isTrump, rankSort);
+                return CanWinTrick(card, isTrump, rankSort, isTakingTrick);
 
             return false;
         }
 
-        public bool IsSureWinner(Card card)
+        public bool IsSureWinner(Card card, bool isTakingTrick = false)
         {
             if (!PossibleWinner(card, out var isTrump, out var effectiveSuit, out var rankSort, out var isBossInSuit))
                 return false;
@@ -90,7 +90,7 @@ namespace Trickster.Bots
                 return CanWinTrick(card, isTrump, rankSort);
 
             if (isTrump && isBossInSuit || isBossInSuit && OpponentsVoidIn(_bot.TrumpSuit) || OpponentsVoidIn(_bot.TrumpSuit) && OpponentsVoidIn(effectiveSuit))
-                return CanWinTrick(card, isTrump, rankSort);
+                return CanWinTrick(card, isTrump, rankSort, isTakingTrick);
 
             return false;
         }
@@ -139,7 +139,7 @@ namespace Trickster.Bots
             return takers;
         }
 
-        private bool CanWinTrick(Card card, bool isTrump, int rankSort)
+        private bool CanWinTrick(Card card, bool isTrump, int rankSort, bool isTakingTrick = false)
         {
             if (_trick.Count(_bot.IsOfValue) == 0)
                 return true;
@@ -147,7 +147,7 @@ namespace Trickster.Bots
             if (isTrump && !_trickContainsTrump)
                 return true;
 
-            return _bot.RankSort(_highCardInTrick) < rankSort || card.SameAs(_highCardInTrick);
+            return _bot.RankSort(_highCardInTrick) < rankSort || (isTakingTrick && card.SameAs(_highCardInTrick));
         }
 
         private bool IsBossInSuit(Suit effectiveSuit, int rankSort)

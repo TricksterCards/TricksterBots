@@ -174,7 +174,7 @@ namespace Trickster.Bots
                 var rankSortOfAce = RankSort(new Card(trump, Rank.Ace));
 
                 //  throw partner points (avoiding aces) if we're in the last seat or they're surely or likely to take the trick
-                if (lastSeat || bossMan.IsSureWinner(cardTakingTrick) || bossMan.IsLikelyWinner(cardTakingTrick))
+                if (lastSeat || bossMan.IsSureWinner(cardTakingTrick, true) || bossMan.IsLikelyWinner(cardTakingTrick, true))
                     return legalCards.OrderBy(IsTrump)
                         .ThenBy(c => RankSort(c) == rankSortOfAce)
                         .ThenByDescending(c => PinochleMelder.CardPoints(options, c))
