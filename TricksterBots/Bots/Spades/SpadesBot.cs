@@ -785,7 +785,7 @@ namespace Trickster.Bots
             {
                 //  nil bidder has played and is taking the trick:
                 //  try to get under them, but go high if we can't (this is the "risky" version of TryDumpEm)
-                if (trick[trick.Count - targetOffset] == cardTakingTrick)
+                if (trick[trick.Count - targetOffset].SameAs(cardTakingTrick))
                     return TryDumpEm(trick, legalCards, players.Count, stillNeedToMakeBid, false);
 
                 //  nil bidder has played, but is not taking the trick:

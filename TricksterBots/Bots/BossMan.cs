@@ -147,7 +147,7 @@ namespace Trickster.Bots
             if (isTrump && !_trickContainsTrump)
                 return true;
 
-            return _bot.RankSort(_highCardInTrick) < rankSort || card == _highCardInTrick;
+            return _bot.RankSort(_highCardInTrick) < rankSort || card.SameAs(_highCardInTrick);
         }
 
         private bool IsBossInSuit(Suit effectiveSuit, int rankSort)

@@ -416,7 +416,7 @@ namespace Trickster.Bots
             {
                 //  nullo bidder has played and is taking the trick:
                 //  try to get under them, but go high if we can't
-                if (trick[trick.Count - targetOffset] == cardTakingTrick)
+                if (trick[trick.Count - targetOffset].SameAs(cardTakingTrick))
                     return TryDumpEm(trick, legalCards, players.Count, true);
 
                 //  play our highest card, preferring trump; this improves our ability to duck under the nullo bidder later
