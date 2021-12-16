@@ -629,6 +629,11 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<SpadesOptions> state)
         {
+            return SuggestNextCard(state, false);
+        }
+
+        private Card SuggestNextCard(SuggestCardState<SpadesOptions> state, bool recalling)
+        {
             var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick, trickTaker) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick, state.trickTaker);
 
@@ -657,8 +662,8 @@ namespace Trickster.Bots
                     return TryProtectNil(player, trick, legalCards, players, cardsPlayed);
 
                 //  but play for myself if my partner blew their nil bid
-                if (partnerBid.IsNil)
-                    return SuggestNextCard(state);
+                if (partnerBid.IsNil && !recalling)
+                    return SuggestNextCard(state, true);
             }
 
             var hand = new Hand(player.Hand);
