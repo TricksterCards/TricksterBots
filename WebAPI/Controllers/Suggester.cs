@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Web;
+using Newtonsoft.Json;
 using Trickster.cloud;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Trickster.Bots.Controllers
 {
@@ -242,10 +243,10 @@ namespace Trickster.Bots.Controllers
 
             //  the saved state doesn't have cloudCard. save it, set it to null, and restore it so we don't create unnecessary differences.
             state.cloudCard = null;
-            var stateJson = JsonSerializer.Serialize(state);
+            var stateJson = JsonConvert.SerializeObject(state);
             state.cloudCard = cloudCard;
 
-            var cloudStateJson = JsonSerializer.Serialize(cloudState);
+            var cloudStateJson = JsonConvert.SerializeObject(cloudState);
 
             if (stateJson != cloudStateJson)
             {
@@ -276,8 +277,8 @@ namespace Trickster.Bots.Controllers
             if (savedState == default)
                 return;
 
-            var cardsPlayedJson = JsonSerializer.Serialize(state.cardsPlayed);
-            var savedCardsPlayedJson = JsonSerializer.Serialize(savedState.cardsPlayed);
+            var cardsPlayedJson = JsonConvert.SerializeObject(state.cardsPlayed);
+            var savedCardsPlayedJson = JsonConvert.SerializeObject(savedState.cardsPlayed);
 
             Debug.WriteLineIf(cardsPlayedJson != savedCardsPlayedJson, $"\nstate.cardsPlayed differs ({cardsPlayedJson} != {savedCardsPlayedJson})");
         }
@@ -293,10 +294,10 @@ namespace Trickster.Bots.Controllers
                 if (Directory.Exists($@"{apiPath}\..\..\Errors"))
                 {
                     var savePath = Path.GetFullPath($@"{apiPath}\..\..\Errors\{filename}_client.json");
-                    File.WriteAllText(savePath, JsonSerializer.Serialize(state));
+                    File.WriteAllText(savePath, JsonConvert.SerializeObject(state));
 
                     savePath = Path.GetFullPath($@"{apiPath}\..\..\Errors\{filename}_cloud.json");
-                    File.WriteAllText(savePath, JsonSerializer.Serialize(cloudState));
+                    File.WriteAllText(savePath, JsonConvert.SerializeObject(cloudState));
                 }
             }
             catch
@@ -316,14 +317,14 @@ namespace Trickster.Bots.Controllers
             Debug.WriteLineIf(statePlayer.Hand != savedStatePlayer.Hand,
                 $"Player in seat {statePlayer.Seat}: Hand differs ({statePlayer.Hand} != {savedStatePlayer.Hand})");
 
-            Debug.WriteLineIf(JsonSerializer.Serialize(statePlayer.VoidSuits) != JsonSerializer.Serialize(savedStatePlayer.VoidSuits),
-                $"Player in seat {statePlayer.Seat}: VoidSuits differs ({JsonSerializer.Serialize(statePlayer.VoidSuits)} != {JsonSerializer.Serialize(savedStatePlayer.VoidSuits)})");
+            Debug.WriteLineIf(JsonConvert.SerializeObject(statePlayer.VoidSuits) != JsonConvert.SerializeObject(savedStatePlayer.VoidSuits),
+                $"Player in seat {statePlayer.Seat}: VoidSuits differs ({JsonConvert.SerializeObject(statePlayer.VoidSuits)} != {JsonConvert.SerializeObject(savedStatePlayer.VoidSuits)})");
 
             Debug.WriteLineIf(statePlayer.CardsTaken != savedStatePlayer.CardsTaken,
                 $"Player in seat {statePlayer.Seat}: CardsTaken differs ({statePlayer.CardsTaken} != {savedStatePlayer.CardsTaken})");
 
-            Debug.WriteLineIf(JsonSerializer.Serialize(statePlayer.PlayedCards) != JsonSerializer.Serialize(savedStatePlayer.PlayedCards),
-                $"Player in seat {statePlayer.Seat}: PlayedCards differs ({JsonSerializer.Serialize(statePlayer.PlayedCards)} != {JsonSerializer.Serialize(savedStatePlayer.PlayedCards)})");
+            Debug.WriteLineIf(JsonConvert.SerializeObject(statePlayer.PlayedCards) != JsonConvert.SerializeObject(savedStatePlayer.PlayedCards),
+                $"Player in seat {statePlayer.Seat}: PlayedCards differs ({JsonConvert.SerializeObject(statePlayer.PlayedCards)} != {JsonConvert.SerializeObject(savedStatePlayer.PlayedCards)})");
         }
 
 /*
@@ -362,7 +363,7 @@ namespace Trickster.Bots.Controllers
 
                 savePath = Path.GetFullPath($@"{apiPath}\..\..\..\..\state_seat{seat}.json");
                 var savedJson = File.ReadAllText(savePath);
-                var loadedState = JsonSerializer.Deserialize<T>(FixPostedJson(savedJson));
+                var loadedState = JsonConvert.DeserializeObject<T>(FixPostedJson(savedJson));
                 Debug.WriteLineIf(loadedState == null, $"Loaded null state from {savePath}!");
                 return loadedState;
             }
@@ -375,8 +376,8 @@ namespace Trickster.Bots.Controllers
 
         private static void CompareOptions<OT>(OT options, OT savedOptions) where OT : GameOptions
         {
-            var optionsJson = JsonSerializer.Serialize(options);
-            var savedOptionsJson = JsonSerializer.Serialize(savedOptions);
+            var optionsJson = JsonConvert.SerializeObject(options);
+            var savedOptionsJson = JsonConvert.SerializeObject(savedOptions);
             Debug.WriteLineIf(optionsJson != savedOptionsJson,
                 $"client-passed options do not match cloud-saved options:\nclient: {optionsJson}\ncloud: {savedOptionsJson}");
 
@@ -393,40 +394,44 @@ namespace Trickster.Bots.Controllers
 
                 case GameCode.Pinochle:
                 {
-                    var same = JsonSerializer.Serialize((options as PinochleOptions)._cardsDiscardedBySeat) ==
-                               JsonSerializer.Serialize((savedOptions as PinochleOptions)._cardsDiscardedBySeat);
+                    var same = JsonConvert.SerializeObject((options as PinochleOptions)._cardsDiscardedBySeat) ==
+                               JsonConvert.SerializeObject((savedOptions as PinochleOptions)._cardsDiscardedBySeat);
                     var symbol = same ? "==" : "!=";
                     Debug.WriteLineIf(!same,
                         $"options._cardsDiscardedBySeat {symbol} savedOptions._cardsDiscardedBySeat"
-                        + $" ({JsonSerializer.Serialize((options as PinochleOptions)._cardsDiscardedBySeat)} {symbol} {JsonSerializer.Serialize((savedOptions as PinochleOptions)._cardsDiscardedBySeat)})");
+                        + $" ({JsonConvert.SerializeObject((options as PinochleOptions)._cardsDiscardedBySeat)} {symbol} {JsonConvert.SerializeObject((savedOptions as PinochleOptions)._cardsDiscardedBySeat)})");
 
-                    same = JsonSerializer.Serialize((options as PinochleOptions)._cardsPassedBySeat) ==
-                           JsonSerializer.Serialize((savedOptions as PinochleOptions)._cardsPassedBySeat);
+                    same = JsonConvert.SerializeObject((options as PinochleOptions)._cardsPassedBySeat) ==
+                           JsonConvert.SerializeObject((savedOptions as PinochleOptions)._cardsPassedBySeat);
                     symbol = same ? "==" : "!=";
                     Debug.WriteLineIf(!same,
                         $"options._cardsPassedBySeat {symbol} savedOptions._cardsPassedBySeat"
-                        + $" ({JsonSerializer.Serialize((options as PinochleOptions)._cardsPassedBySeat)} {symbol} {JsonSerializer.Serialize((savedOptions as PinochleOptions)._cardsPassedBySeat)})");
+                        + $" ({JsonConvert.SerializeObject((options as PinochleOptions)._cardsPassedBySeat)} {symbol} {JsonConvert.SerializeObject((savedOptions as PinochleOptions)._cardsPassedBySeat)})");
 
                     var cardsDiscardedByPlayerId = (options as PinochleOptions)._cardsDiscarded;
                     var cardsDiscardedByPlayerSeat = (options as PinochleOptions)._cardsDiscardedBySeat;
                     if (cardsDiscardedByPlayerId != null && cardsDiscardedByPlayerSeat != null)
+                    {
                         foreach (var kvp in cardsDiscardedByPlayerId)
                         {
-                            var discardedById = JsonSerializer.Serialize(kvp.Value);
-                            var discardedBySeat = JsonSerializer.Serialize(cardsDiscardedByPlayerSeat[(int)kvp.Key - 1]);
+                            var discardedById = JsonConvert.SerializeObject(kvp.Value);
+                            var discardedBySeat = JsonConvert.SerializeObject(cardsDiscardedByPlayerSeat[(int)kvp.Key - 1]);
                             Debug.WriteLineIf(discardedById != discardedBySeat,
                                 $"_cardsDiscarded by player id {kvp.Key} mismatch those discarded by seat {kvp.Key - 1}!");
                         }
+                    }
 
                     var cardsPassedByPlayerId = (options as PinochleOptions)._cardsPassed;
                     var cardsPassedByPlayerSeat = (options as PinochleOptions)._cardsPassedBySeat;
                     if (cardsPassedByPlayerId != null && cardsPassedByPlayerSeat != null)
+                    {
                         foreach (var kvp in cardsPassedByPlayerId)
                         {
-                            var passedById = JsonSerializer.Serialize(kvp.Value);
-                            var passedBySeat = JsonSerializer.Serialize(cardsPassedByPlayerSeat[(int)kvp.Key - 1]);
+                            var passedById = JsonConvert.SerializeObject(kvp.Value);
+                            var passedBySeat = JsonConvert.SerializeObject(cardsPassedByPlayerSeat[(int)kvp.Key - 1]);
                             Debug.WriteLineIf(passedById != passedBySeat, $"_cardsPassed by player id {kvp.Key} mismatch those passed by seat {kvp.Key - 1}!");
                         }
+                    }
 
                     break;
                 }
