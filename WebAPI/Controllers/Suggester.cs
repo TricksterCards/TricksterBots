@@ -354,7 +354,7 @@ namespace Trickster.Bots.Controllers
         private static void ComparePassResults<OT>(SuggestPassState<OT> state, List<Card> pass, object baseBot) where OT : GameOptions
         {
             var hand = new Hand(state.hand);
-            Debug.Assert(pass.All(c => hand.ContainsCard(c)));
+            Debug.Assert(pass.Count == state.passCount && pass.All(c => hand.ContainsCard(c)));
 
             var cloudPass = state.cloudPass;
             var passJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(pass));
