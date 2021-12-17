@@ -35,15 +35,7 @@ namespace Trickster.Bots.Controllers
             }
 
 #if DEBUG
-            Debug.Assert(state.legalBids.Any(lb => lb.value == bid.value));
-
-            if (bid.value != state.cloudBid.value)
-            {
-                Debug.WriteLine(string.Empty);
-                CompareBidState(state, bid);
-                Debug.WriteLine(
-                    $"Seat {state.player.Seat}: Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {state.cloudBid.value} ({state.options.gameCode}).");
-            }
+            CompareBidResults(state, bid, bot);
 #endif
 
             return JsonSerializer.Serialize(bid);
@@ -59,10 +51,6 @@ namespace Trickster.Bots.Controllers
 
             state.SortCardMembers();
 
-//#if DEBUG
-//            CompareDiscardState(state);
-//#endif
-
             var bot = getBot(state);
 
             List<Card> discard;
@@ -76,55 +64,11 @@ namespace Trickster.Bots.Controllers
                 throw;
             }
 
+#if DEBUG
+            CompareDiscardResults(state, discard, bot);
+#endif
+
             return JsonSerializer.Serialize(discard.Select(SuitRank.FromCard));
-        }
-
-        public static string SuggestFromStateFile(string filename)
-        {
-            var cc = HttpContext.Current;
-            var apiPath = cc.Request.MapPath(".");
-            //  will be path like GitHub/TricksterBot/WebApi/test/filename
-
-            var savePath = Path.GetFullPath($@"{apiPath}\..\Errors\{filename}.json");
-            var savedJson = File.ReadAllText(savePath);
-
-            var fnParts = filename.Split('_');
-            Enum.TryParse(fnParts[1], out GameCode gameCode);
-
-            switch (fnParts[0])
-            {
-                case "Card":
-                    switch (gameCode)
-                    {
-                        case GameCode.Hearts:
-                            break;
-                        case GameCode.Spades:
-                            break;
-                        case GameCode.Euchre:
-                            break;
-                        case GameCode.Pitch:
-                            break;
-                        case GameCode.Bridge:
-                            break;
-                        case GameCode.FiveHundred:
-                            break;
-                        case GameCode.OhHell:
-                            break;
-                        case GameCode.Pinochle:
-                            return SuggestNextCard<PinochleOptions>(savedJson, state => new PinochleBot(state.options, state.trumpSuit));
-                        case GameCode.Whist:
-                            break;
-                        case GameCode.Unknown:
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-
-                    break;
-                case "Bid":
-                    break;
-            }
-
-            return "Unimplemented game or suggestion type";
         }
 
         public static string SuggestNextCard<OT>(string postData, Func<SuggestCardState<OT>, BaseBot<OT>> getBot)
@@ -171,10 +115,6 @@ namespace Trickster.Bots.Controllers
 
             state.SortCardMembers();
 
-//#if DEBUG
-//            ComparePassState(state);
-//#endif
-
             var bot = getBot(state);
 
             List<Card> pass;
@@ -197,16 +137,51 @@ namespace Trickster.Bots.Controllers
         }
 
 #if DEBUG
-        private static void CompareBidState<OT>(SuggestBidState<OT> state, BidBase botBid) where OT : GameOptions
+        private static void CompareBidResults<OT>(SuggestBidState<OT> state, BidBase bid, BaseBot<OT> baseBot) where OT : GameOptions
         {
-            var savedState = LoadState<SuggestBidState<OT>>(state.player.Seat);
+            Debug.Assert(state.legalBids.Any(lb => lb.value == bid.value));
 
-            if (savedState == null)
+            var cloudBid = state.cloudBid;
+            if (bid.value == cloudBid.value)
                 return;
 
-            CompareOptions(state.options, savedState.options);
+            Debug.WriteLine(
+                $"\nSeat {state.player.Seat}: Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {cloudBid.value} ({state.options.gameCode}).");
 
-            SaveErrorState(state, savedState, $"Bid_{state.options.gameCode}_bot_{botBid}_cloud_{state.cloudBid}");
+            SuggestBidState<OT> cloudState;
+            try
+            {
+                cloudState = LoadState<SuggestBidState<OT>>(state.player.Seat);
+
+                if (cloudState == default)
+                {
+                    Debug.WriteLine("Null cloud state returned.");
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return;
+            }
+
+            //  the saved state doesn't have cloudBid. save it, set it to null, and restore it so we don't create unnecessary differences.
+            state.cloudBid = null;
+            var stateJson = JsonConvert.SerializeObject(state);
+            state.cloudBid = cloudBid;
+
+            var cloudStateJson = JsonConvert.SerializeObject(cloudState);
+
+            if (stateJson != cloudStateJson)
+            {
+                Debug.WriteLine($"client-sent and cloud-saved states differ.\nclient: {stateJson}\n cloud: {cloudStateJson}");
+
+                CompareOptions(state.options, cloudState.options);
+            }
+            else
+            {
+                Debug.WriteLine("client-sent and cloud-saved states are identical!");
+            }
         }
 
         private static void CompareCardResults<OT>(SuggestCardState<OT> state, Card botCard, BaseBot<OT> bot) where OT : GameOptions
@@ -258,13 +233,13 @@ namespace Trickster.Bots.Controllers
                 CompareOptions(state.options, cloudState.options);
                 ComparePlayer(state.player, cloudState.player);
 
-                foreach (var playerSeat in state.players.Select(p => p.Seat))
+                foreach (var playerSeat in state.players.Select(p => p.Seat).Where(seat => seat != state.player.Seat))
                     ComparePlayer(state.players.Single(p => p.Seat == playerSeat), cloudState.players.Single(p => p.Seat == playerSeat));
             }
             else
+            {
                 Debug.WriteLine("client-sent and cloud-saved states are identical!");
-
-            SaveErrorState(state, cloudState, $"Card_{state.options.gameCode}_bot_{botCard.StdNotation}_cloud_{new Card(state.cloudCard).StdNotation}");
+            }
         }
 
         private static void CompareCardsPlayed<OT>(SuggestCardState<OT> state, SuggestCardState<OT> cloudState) where OT : GameOptions
@@ -275,30 +250,7 @@ namespace Trickster.Bots.Controllers
             var cardsPlayedJson = JsonConvert.SerializeObject(state.cardsPlayed);
             var savedCardsPlayedJson = JsonConvert.SerializeObject(cloudState.cardsPlayed);
 
-            Debug.WriteLineIf(cardsPlayedJson != savedCardsPlayedJson, $"\nstate.cardsPlayed differs ({cardsPlayedJson} != {savedCardsPlayedJson})");
-        }
-
-        private static void SaveErrorState(object state, object cloudState, string filename)
-        {
-            try
-            {
-                var cc = HttpContext.Current;
-                var apiPath = cc.Request.MapPath(".");
-                //  will be path like GitHub/TricksterBot/WebApi/suggest/pinochle/card
-
-                if (Directory.Exists($@"{apiPath}\..\..\Errors"))
-                {
-                    var savePath = Path.GetFullPath($@"{apiPath}\..\..\Errors\{filename}_client.json");
-                    File.WriteAllText(savePath, JsonConvert.SerializeObject(state));
-
-                    savePath = Path.GetFullPath($@"{apiPath}\..\..\Errors\{filename}_cloud.json");
-                    File.WriteAllText(savePath, JsonConvert.SerializeObject(cloudState));
-                }
-            }
-            catch
-            {
-                //  ignore
-            }
+            Debug.WriteLineIf(cardsPlayedJson != savedCardsPlayedJson, $"state.cardsPlayed differs ({cardsPlayedJson} != {savedCardsPlayedJson})");
         }
 
         private static void ComparePlayer(PlayerBase statePlayer, PlayerBase savedStatePlayer)
@@ -322,30 +274,6 @@ namespace Trickster.Bots.Controllers
                 $"Player in seat {statePlayer.Seat}: PlayedCards differs ({JsonConvert.SerializeObject(statePlayer.PlayedCards)} != {JsonConvert.SerializeObject(savedStatePlayer.PlayedCards)})");
         }
 
-/*
-        private static void CompareDiscardState<OT>(SuggestDiscardState<OT> state) where OT : GameOptions
-        {
-            var savedState = LoadState<SuggestDiscardState<OT>>(state.player.Seat);
-
-            if (savedState == null)
-                return;
-
-            CompareOptions(state.options, savedState.options);
-        }
-*/
-
-/*
-        private static void ComparePassState<OT>(SuggestPassState<OT> state) where OT : GameOptions
-        {
-            var savedState = LoadState<SuggestPassState<OT>>(state.player.Seat);
-
-            if (savedState == null)
-                return;
-
-            CompareOptions(state.options, savedState.options);
-        }
-*/
-
         private static T LoadState<T>(int seat)
         {
             var savePath = string.Empty;
@@ -358,7 +286,7 @@ namespace Trickster.Bots.Controllers
 
                 savePath = Path.GetFullPath($@"{apiPath}\..\..\..\..\state_seat{seat}.json");
                 var savedJson = File.ReadAllText(savePath);
-                var loadedState = JsonConvert.DeserializeObject<T>(FixPostedJson(savedJson));
+                var loadedState = JsonConvert.DeserializeObject<T>(savedJson);
                 Debug.WriteLineIf(loadedState == null, $"Loaded null state from {savePath}!");
                 return loadedState;
             }
@@ -366,6 +294,54 @@ namespace Trickster.Bots.Controllers
             {
                 Debug.WriteLine($"{ex.Message} attempting to load {savePath}");
                 return default;
+            }
+        }
+
+        private static void CompareDiscardResults<OT>(SuggestDiscardState<OT> state, List<Card> discard, object baseBot) where OT : GameOptions
+        {
+            var hand = new Hand(state.hand);
+            Debug.Assert(discard.All(c => hand.ContainsCard(c)));
+
+            //var cloudDiscard = state.cloudDiscard;
+            //if (discard == cloudDiscard)
+            //    return;
+
+            //Debug.WriteLine(
+            //    $"\nSeat {state.player.Seat}: Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {cloudDiscard.value} ({state.options.gameCode}).");
+
+            SuggestDiscardState<OT> cloudState;
+            try
+            {
+                cloudState = LoadState<SuggestDiscardState<OT>>(state.player.Seat);
+
+                if (cloudState == default)
+                {
+                    Debug.WriteLine("Null cloud state returned.");
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return;
+            }
+
+            //  the saved state doesn't have cloudDiscard. save it, set it to null, and restore it so we don't create unnecessary differences.
+            //state.cloudDiscard = null;
+            var stateJson = JsonConvert.SerializeObject(state);
+            //state.cloudDiscard = cloudDiscard;
+
+            var cloudStateJson = JsonConvert.SerializeObject(cloudState);
+
+            if (stateJson != cloudStateJson)
+            {
+                Debug.WriteLine($"client-sent and cloud-saved states differ.\nclient: {stateJson}\n cloud: {cloudStateJson}");
+
+                CompareOptions(state.options, cloudState.options);
+            }
+            else
+            {
+                Debug.WriteLine("client-sent and cloud-saved states are identical!");
             }
         }
 
@@ -406,7 +382,6 @@ namespace Trickster.Bots.Controllers
                     var cardsDiscardedByPlayerId = (options as PinochleOptions)._cardsDiscarded;
                     var cardsDiscardedByPlayerSeat = (options as PinochleOptions)._cardsDiscardedBySeat;
                     if (cardsDiscardedByPlayerId != null && cardsDiscardedByPlayerSeat != null)
-                    {
                         foreach (var kvp in cardsDiscardedByPlayerId)
                         {
                             var discardedById = JsonConvert.SerializeObject(kvp.Value);
@@ -414,19 +389,16 @@ namespace Trickster.Bots.Controllers
                             Debug.WriteLineIf(discardedById != discardedBySeat,
                                 $"_cardsDiscarded by player id {kvp.Key} mismatch those discarded by seat {kvp.Key - 1}!");
                         }
-                    }
 
                     var cardsPassedByPlayerId = (options as PinochleOptions)._cardsPassed;
                     var cardsPassedByPlayerSeat = (options as PinochleOptions)._cardsPassedBySeat;
                     if (cardsPassedByPlayerId != null && cardsPassedByPlayerSeat != null)
-                    {
                         foreach (var kvp in cardsPassedByPlayerId)
                         {
                             var passedById = JsonConvert.SerializeObject(kvp.Value);
                             var passedBySeat = JsonConvert.SerializeObject(cardsPassedByPlayerSeat[(int)kvp.Key - 1]);
                             Debug.WriteLineIf(passedById != passedBySeat, $"_cardsPassed by player id {kvp.Key} mismatch those passed by seat {kvp.Key - 1}!");
                         }
-                    }
 
                     break;
                 }
