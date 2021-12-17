@@ -141,10 +141,6 @@ namespace Trickster.Bots.Controllers
 
             state.SortCardMembers();
 
-#if DEBUG
-            CompareCardsPlayed(state);
-#endif
-
             var bot = getBot(state);
 
             Card card;
@@ -258,6 +254,7 @@ namespace Trickster.Bots.Controllers
                 else
                     Debug.WriteLine($"Even using cloud-saved state, bot returns wrong card of {card2.rank} of {card2.suit}!");
 
+                CompareCardsPlayed(state, cloudState);
                 CompareOptions(state.options, cloudState.options);
                 ComparePlayer(state.player, cloudState.player);
 
@@ -270,15 +267,13 @@ namespace Trickster.Bots.Controllers
             SaveErrorState(state, cloudState, $"Card_{state.options.gameCode}_bot_{botCard.StdNotation}_cloud_{new Card(state.cloudCard).StdNotation}");
         }
 
-        private static void CompareCardsPlayed<OT>(SuggestCardState<OT> state) where OT : GameOptions
+        private static void CompareCardsPlayed<OT>(SuggestCardState<OT> state, SuggestCardState<OT> cloudState) where OT : GameOptions
         {
-            var savedState = LoadState<SuggestCardState<OT>>(state.player.Seat);
-
-            if (savedState == default)
+            if (cloudState == default)
                 return;
 
             var cardsPlayedJson = JsonConvert.SerializeObject(state.cardsPlayed);
-            var savedCardsPlayedJson = JsonConvert.SerializeObject(savedState.cardsPlayed);
+            var savedCardsPlayedJson = JsonConvert.SerializeObject(cloudState.cardsPlayed);
 
             Debug.WriteLineIf(cardsPlayedJson != savedCardsPlayedJson, $"\nstate.cardsPlayed differs ({cardsPlayedJson} != {savedCardsPlayedJson})");
         }
