@@ -39,9 +39,13 @@ namespace Trickster.Bots
             //  only adjust for the kitty when we're in the points round of bidding. we've picked up the kitty by the time we bid the choose trump round.
             //  only adjust for kitty when there's 4 cards in it.
             if (options.kitty == PinochleKitty.FourCard && !chooseTrumpRound || options.passCount > 0)
+            {
                 foreach (var suitMelds in existingMeldsBySuit)
+                {
                     possibleMeldsBySuit[suitMelds.Key] =
                         new PinochleMelder(this, hand, suitMelds.Key).GetPossibleMelds(PinochleMelder.NearMeldsAggressiveness.Medium);
+                }
+            }
             else
                 possibleMeldsBySuit = existingMeldsBySuit;
 
@@ -152,7 +156,12 @@ namespace Trickster.Bots
 
         private int CardsDealtPerPlayer(int nPlayers)
         {
-            return DeckBuilder.DeckSize(DeckType) / nPlayers;
+            var cardsDealtPerPlayer = DeckBuilder.DeckSize(DeckType) / nPlayers;
+
+            if (options.KittySize == nPlayers)
+                cardsDealtPerPlayer -= 1;
+
+            return cardsDealtPerPlayer;
         }
 
         private IEnumerable<Card> GetCardsKnownToPlayerSeat(int playerSeat)
@@ -175,11 +184,13 @@ namespace Trickster.Bots
 
                 //  throw partner points (avoiding aces) if we're in the last seat or they're surely or likely to take the trick
                 if (lastSeat || bossMan.IsSureWinner(cardTakingTrick, true) || bossMan.IsLikelyWinner(cardTakingTrick, true))
+                {
                     return legalCards.OrderBy(IsTrump)
                         .ThenBy(c => RankSort(c) == rankSortOfAce)
                         .ThenByDescending(c => PinochleMelder.CardPoints(options, c))
                         .ThenBy(RankSort)
                         .First();
+                }
             }
 
             var countBySuit = legalCards.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
