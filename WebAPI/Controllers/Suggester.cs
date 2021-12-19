@@ -143,7 +143,7 @@ namespace Trickster.Bots.Controllers
 #if DEBUG
         private static void CompareBidResults<OT>(SuggestBidState<OT> state, BidBase bid, BaseBot<OT> baseBot) where OT : GameOptions
         {
-            Debug.Assert(state.legalBids.Any(lb => lb.value == bid.value));
+            Debug.WriteLineIf(state.legalBids.All(lb => lb.value != bid.value), "Suggested bid is not in the legal bids.");
 
             var cloudBid = state.cloudBid;
             if (bid.value == cloudBid.value)
@@ -190,7 +190,7 @@ namespace Trickster.Bots.Controllers
 
         private static void CompareCardResults<OT>(SuggestCardState<OT> state, Card botCard, BaseBot<OT> bot) where OT : GameOptions
         {
-            Debug.Assert(state.legalCards.Any(lc => lc.SameAs(botCard)));
+            Debug.WriteLineIf(!state.legalCards.Any(lc => lc.SameAs(botCard)), "Suggested card is not in the legal cards.");
 
             var cloudCard = state.cloudCard;
             if (botCard.suit == cloudCard.suit && botCard.rank == cloudCard.rank)
@@ -304,7 +304,7 @@ namespace Trickster.Bots.Controllers
         private static void CompareDiscardResults<OT>(SuggestDiscardState<OT> state, List<Card> discard, object baseBot) where OT : GameOptions
         {
             var hand = new Hand(state.hand);
-            Debug.Assert(discard.All(c => hand.ContainsCard(c)));
+            Debug.WriteLineIf(!discard.All(c => hand.ContainsCard(c)), "Not all suggested discard cards are in the hand.");
 
             var cloudDiscard = state.cloudDiscard;
             var discardJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(discard));
@@ -354,7 +354,7 @@ namespace Trickster.Bots.Controllers
         private static void ComparePassResults<OT>(SuggestPassState<OT> state, List<Card> pass, object baseBot) where OT : GameOptions
         {
             var hand = new Hand(state.hand);
-            Debug.Assert(pass.Count == state.passCount && pass.All(c => hand.ContainsCard(c)));
+            Debug.WriteLineIf(pass.Count != state.passCount || !pass.All(c => hand.ContainsCard(c)), "Not all suggested pass cards are in the hand.");
 
             var cloudPass = state.cloudPass;
             var passJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(pass));
