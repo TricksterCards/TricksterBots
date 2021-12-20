@@ -9,7 +9,7 @@ namespace Trickster.Bots.Controllers
         [Route("suggest/pitch/bid")]
         public string SuggestPitchBid([FromBody] string postData)
         {
-            return Suggester.SuggestBid<PitchOptions>(postData, state => new PitchBot(state.options, Suit.Unknown));
+            return Suggester.SuggestBid<PitchOptions>(postData, state => new PitchBot(state.options, state.trumpSuit));
         }
 
         [HttpPost]
