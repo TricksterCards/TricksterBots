@@ -99,7 +99,7 @@ namespace Trickster.Bots.Controllers
             }
 
 #if DEBUG
-            CompareCardResults(state, card, bot);
+            CompareCardResults(state, card, bot, getBot);
 #endif
 
             return JsonSerializer.Serialize(SuitRank.FromCard(card));
@@ -179,7 +179,7 @@ namespace Trickster.Bots.Controllers
             Debug.Unindent();
         }
 
-        private static void CompareCardResults<OT>(SuggestCardState<OT> state, Card botCard, BaseBot<OT> bot) where OT : GameOptions
+        private static void CompareCardResults<OT>(SuggestCardState<OT> state, Card botCard, BaseBot<OT> bot, Func<SuggestCardState<OT>, BaseBot<OT>> getBot) where OT : GameOptions
         {
             var cloudCard = state.cloudCard;
             if (botCard.suit == cloudCard.suit && botCard.rank == cloudCard.rank)
@@ -207,7 +207,8 @@ namespace Trickster.Bots.Controllers
             {
                 Debug.WriteLine($"client-sent and cloud-saved states differ.\n\tclient: {stateJson}\n\t cloud: {cloudStateJson}");
 
-                var card2 = bot.SuggestNextCard(cloudState);
+                var bot2 = getBot(cloudState);
+                var card2 = bot2.SuggestNextCard(cloudState);
                 if (card2.suit == cloudCard.suit && card2.rank == cloudCard.rank)
                     Debug.WriteLine($"Using cloud-saved state, bot returns expected card of {card2.rank} of {card2.suit}.");
                 else
