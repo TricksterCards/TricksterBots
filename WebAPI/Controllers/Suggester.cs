@@ -74,7 +74,7 @@ namespace Trickster.Bots.Controllers
         public static string SuggestNextCard<OT>(string postData, Func<SuggestCardState<OT>, BaseBot<OT>> getBot)
             where OT : GameOptions
         {
-            var state = JsonSerializer.Deserialize<SuggestCardState<OT>>(FixPostedJson(postData));
+            var state = JsonSerializer.Deserialize<SuggestCardState<OT>>(FixPostedJson(postData), new System.Text.Json.JsonSerializerOptions{ IncludeFields = true });
 
             if (state == null || state.legalCards.Count == 0)
                 return null;
