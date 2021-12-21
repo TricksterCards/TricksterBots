@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Web;
 using Newtonsoft.Json;
 using Trickster.cloud;
@@ -12,10 +13,12 @@ namespace Trickster.Bots.Controllers
 {
     public class Suggester
     {
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { IncludeFields = true };
+
         public static string SuggestBid<OT>(string postData, Func<SuggestBidState<OT>, BaseBot<OT>> getBot)
             where OT : GameOptions
         {
-            var state = JsonSerializer.Deserialize<SuggestBidState<OT>>(FixPostedJson(postData));
+            var state = JsonSerializer.Deserialize<SuggestBidState<OT>>(FixPostedJson(postData), _jsonSerializerOptions);
 
             if (state == null)
                 return null;
@@ -44,7 +47,7 @@ namespace Trickster.Bots.Controllers
         public static string SuggestDiscard<OT>(string postData, Func<SuggestDiscardState<OT>, BaseBot<OT>> getBot)
             where OT : GameOptions
         {
-            var state = JsonSerializer.Deserialize<SuggestDiscardState<OT>>(FixPostedJson(postData));
+            var state = JsonSerializer.Deserialize<SuggestDiscardState<OT>>(FixPostedJson(postData), _jsonSerializerOptions);
 
             if (state == null)
                 return null;
@@ -74,7 +77,7 @@ namespace Trickster.Bots.Controllers
         public static string SuggestNextCard<OT>(string postData, Func<SuggestCardState<OT>, BaseBot<OT>> getBot)
             where OT : GameOptions
         {
-            var state = JsonSerializer.Deserialize<SuggestCardState<OT>>(FixPostedJson(postData), new System.Text.Json.JsonSerializerOptions{ IncludeFields = true });
+            var state = JsonSerializer.Deserialize<SuggestCardState<OT>>(FixPostedJson(postData), _jsonSerializerOptions);
 
             if (state == null || state.legalCards.Count == 0)
                 return null;
@@ -108,7 +111,7 @@ namespace Trickster.Bots.Controllers
         public static string SuggestPass<OT>(string postData, Func<SuggestPassState<OT>, BaseBot<OT>> getBot)
             where OT : GameOptions
         {
-            var state = JsonSerializer.Deserialize<SuggestPassState<OT>>(FixPostedJson(postData));
+            var state = JsonSerializer.Deserialize<SuggestPassState<OT>>(FixPostedJson(postData), _jsonSerializerOptions);
 
             if (state == null)
                 return null;
@@ -147,7 +150,8 @@ namespace Trickster.Bots.Controllers
             if (bid.value == cloudBid.value)
                 return;
 
-            Debug.WriteLine($"\nSeat {state.player.Seat}: Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {cloudBid.value} ({state.options.gameCode}).");
+            Debug.WriteLine(
+                $"\nSeat {state.player.Seat}: Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {cloudBid.value} ({state.options.gameCode}).");
             Debug.Indent();
             Debug.WriteLineIf(state.legalBids.All(lb => lb.value != bid.value), "Suggested bid is not in the legal bids.");
 
@@ -179,13 +183,15 @@ namespace Trickster.Bots.Controllers
             Debug.Unindent();
         }
 
-        private static void CompareCardResults<OT>(SuggestCardState<OT> state, Card botCard, BaseBot<OT> bot, Func<SuggestCardState<OT>, BaseBot<OT>> getBot) where OT : GameOptions
+        private static void CompareCardResults<OT>(SuggestCardState<OT> state, Card botCard, BaseBot<OT> bot, Func<SuggestCardState<OT>, BaseBot<OT>> getBot)
+            where OT : GameOptions
         {
             var cloudCard = state.cloudCard;
             if (botCard.suit == cloudCard.suit && botCard.rank == cloudCard.rank)
                 return;
 
-            Debug.WriteLine($"\nSeat {state.player.Seat}: Bot-suggested card of {botCard.rank} of {botCard.suit} mismatches the cloud-suggested card of {cloudCard.rank} of {cloudCard.suit} ({state.options.gameCode}).");
+            Debug.WriteLine(
+                $"\nSeat {state.player.Seat}: Bot-suggested card of {botCard.rank} of {botCard.suit} mismatches the cloud-suggested card of {cloudCard.rank} of {cloudCard.suit} ({state.options.gameCode}).");
             Debug.Indent();
             Debug.WriteLineIf(!state.legalCards.Any(lc => lc.SameAs(botCard)), "Suggested card is not in the legal cards.");
 
@@ -196,13 +202,8 @@ namespace Trickster.Bots.Controllers
                 return;
             }
 
-            //  the saved state doesn't have cloudCard. save it, set it to null, and restore it so we don't create unnecessary differences.
-            state.cloudCard = null;
             var stateJson = JsonConvert.SerializeObject(state);
-            state.cloudCard = cloudCard;
-
             var cloudStateJson = JsonConvert.SerializeObject(cloudState);
-
             if (stateJson != cloudStateJson)
             {
                 Debug.WriteLine($"client-sent and cloud-saved states differ.\n\tclient: {stateJson}\n\t cloud: {cloudStateJson}");
