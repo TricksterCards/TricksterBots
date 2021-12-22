@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -10,15 +12,16 @@ namespace Trickster.Bots
         bool IsPartnership { get; }
         bool IsTwoTeams { get; }
         GameOptions Options { get; }
+        bool returnLog { get; set; }
         Suit TrumpSuit { get; }
         bool CanSeeHand(PlayersCollectionBase players, PlayerBase player, PlayerBase target);
         Suit EffectiveSuit(Card c);
         bool IsOfValue(Card c);
         bool IsTrump(Card card);
         int RankSort(Card c);
-        int TrickHighCardIndex(IReadOnlyList<Card> trick);
-        int SuitSort(Card c);
         int SuitOrder(Suit s);
+        int SuitSort(Card c);
+        int TrickHighCardIndex(IReadOnlyList<Card> trick);
     }
 
     public abstract class BaseBot<T> : IBaseBot where T : GameOptions
@@ -78,6 +81,19 @@ namespace Trickster.Bots
             return RankSort(c, trump);
         }
 
+        public bool returnLog { get; set; }
+
+        public virtual int SuitOrder(Suit s)
+        {
+            return (int)s;
+        }
+
+        public virtual int SuitSort(Card c)
+        {
+            var suitOrder = SuitOrder(EffectiveSuit(c));
+            return suitOrder > SuitOrder(trump) ? suitOrder - 5 : suitOrder;
+        }
+
         public int TrickHighCardIndex(IReadOnlyList<Card> trick)
         {
             if (trick.Count(IsOfValue) == 0)
@@ -89,8 +105,10 @@ namespace Trickster.Bots
 
             //  find the index of the takeCard
             for (var i = 0; i < trick.Count; ++i)
+            {
                 if (trick[i] == takeCard)
                     return i;
+            }
 
             return -1;
         }
@@ -104,12 +122,6 @@ namespace Trickster.Bots
         public abstract Card SuggestNextCard(SuggestCardState<T> state);
 
         public abstract List<Card> SuggestPass(SuggestPassState<T> state);
-
-        public virtual int SuitSort(Card c)
-        {
-            var suitOrder = SuitOrder(EffectiveSuit(c));
-            return suitOrder > SuitOrder(trump) ? suitOrder - 5 : suitOrder;
-        }
 
         protected virtual Suit EffectiveSuit(Card c, Suit trumpSuit)
         {
@@ -137,14 +149,15 @@ namespace Trickster.Bots
                    highRank - RankSort(highestCard);
         }
 
+        protected void LogReturn(string message, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = null)
+        {
+            if (returnLog)
+                Debug.WriteLine($"{caller} line {lineNumber} returning {message}.");
+        }
+
         protected virtual int RankSort(Card c, Suit trumpSuit)
         {
             return (int)c.rank;
-        }
-
-        public virtual int SuitOrder(Suit s)
-        {
-            return (int)s;
         }
 
         //  NOTE: If you're going to edit this in a game-specific way, copy the method to your bot and edit it there
