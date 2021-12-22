@@ -632,13 +632,13 @@ namespace Trickster.Bots
             return SuggestNextCard(state, false);
         }
 
-        private Card SuggestNextCard(SuggestCardState<SpadesOptions> state, bool recalling)
+        private Card SuggestNextCard(SuggestCardState<SpadesOptions> state, bool recallingForPartnerNil)
         {
-            var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick, trickTaker) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
-                state.player, state.isPartnerTakingTrick, state.cardTakingTrick, state.trickTaker);
+            var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick, trickTaker) = (new PlayersCollectionBase(this, state.players),
+                state.trick, state.legalCards, state.cardsPlayed, state.player, state.isPartnerTakingTrick && !recallingForPartnerNil, state.cardTakingTrick, state.trickTaker);
 
             var nPlayers = players.Count;
-            var partner = players.PartnerOf(player);
+            var partner = recallingForPartnerNil ? null : players.PartnerOf(player);
 
             if (legalCards.Count == 0)
                 return null;
@@ -662,7 +662,7 @@ namespace Trickster.Bots
                     return TryProtectNil(player, trick, legalCards, players, cardsPlayed);
 
                 //  but play for myself if my partner blew their nil bid
-                if (partnerBid.IsNil && !recalling)
+                if (partnerBid.IsNil)
                     return SuggestNextCard(state, true);
             }
 
