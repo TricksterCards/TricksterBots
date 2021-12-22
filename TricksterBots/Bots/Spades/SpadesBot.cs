@@ -865,7 +865,7 @@ namespace Trickster.Bots
                 var countsBySuit = hand.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
 
                 //  if we still need cards to throw, choose the highest ranks from the shortest suits
-                cards.AddRange(hand.Where(c => !IsTrump(c)).OrderBy(SuitSort).ThenBy(RankSort).ThenByDescending(c => countsBySuit[EffectiveSuit(c)]).Take(nCards));
+                cards.AddRange(hand.Where(c => !IsTrump(c)).OrderBy(RankSort).ThenByDescending(c => countsBySuit[EffectiveSuit(c)]).Take(nCards));
 
                 if (cards.Count < nCards)
                     cards.AddRange(hand.Where(IsTrump).OrderBy(RankSort).Take(nCards - cards.Count));
