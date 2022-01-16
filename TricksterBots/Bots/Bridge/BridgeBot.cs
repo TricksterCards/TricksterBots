@@ -50,6 +50,11 @@ namespace Trickster.Bots
         {
             var (players, dealerSeat, hand) = (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand);
             var history = new BridgeBidHistory(players, dealerSeat);
+            return SuggestBid(history, hand);
+        }
+
+        public BidBase SuggestBid(BridgeBidHistory history, Hand hand)
+        {
             var interpretedHistory = InterpretedBid.InterpretHistory(history);
             var legalBids = AllPossibleBids().Where(history.IsBidLegal).ToList();
 
