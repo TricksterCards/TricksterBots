@@ -2,7 +2,7 @@
 
 namespace Trickster.Bots
 {
-    internal class OhHellBid
+    public class OhHellBid
     {
         private readonly int theBid;
 

@@ -3,7 +3,7 @@ using Trickster.cloud;
 
 namespace Trickster.Bots
 {
-    internal class SpadesBid : IComparable<SpadesBid>, IEquatable<SpadesBid>
+    public class SpadesBid : IComparable<SpadesBid>, IEquatable<SpadesBid>
     {
         private const int _BlindBidsStart = 20;
         private const int _BlindBidsStop = 39;
