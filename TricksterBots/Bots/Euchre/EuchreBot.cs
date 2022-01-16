@@ -38,6 +38,50 @@ namespace Trickster.Bots
             }
         }
 
+        public double EstimatedTricks(Hand hand, Suit maybeTrump, bool withJoker)
+        {
+            //  ensure all suits have at least some value so we never pick Suit.Unknown
+            var est = 0.1;
+
+            var trumpCards = hand.Where(c => EffectiveSuit(c, maybeTrump) == maybeTrump).ToList();
+            foreach (var card in trumpCards)
+            {
+                var nCardsAbove = trumpCards.Count(c => RankSort(c, maybeTrump) > RankSort(card, maybeTrump));
+                var nCardsBelow = trumpCards.Count(c => RankSort(c, maybeTrump) < RankSort(card, maybeTrump));
+                var nRanksAbove = RankSort(withJoker ? new Card(Suit.Joker, Rank.High) : new Card(maybeTrump, Rank.Jack), maybeTrump) -
+                                  RankSort(card, maybeTrump);
+                var nGapsAbove = nRanksAbove - nCardsAbove;
+
+                if (card.rank < Rank.Jack)
+                    //  adjust for the "artificial" gap left by promoting the Jack in the trump suit
+                    nGapsAbove--;
+
+                if (nCardsBelow >= nGapsAbove)
+                    est += 1;
+                else if (nCardsBelow == nGapsAbove - 1)
+                    est += 0.75;
+                else if (nCardsBelow == nGapsAbove - 2)
+                    est += 0.5;
+            }
+
+            var offSuitCards = hand.Where(c => EffectiveSuit(c, maybeTrump) != maybeTrump).ToList();
+            var offSuitAces = offSuitCards.Where(c => c.rank == Rank.Ace);
+            foreach (var nCardsOfAceSuit in offSuitAces.Select(ace => offSuitCards.Count(c => EffectiveSuit(c, maybeTrump) == ace.suit)))
+            {
+                if (nCardsOfAceSuit == 1 && trumpCards.Count > 1)
+                    est += 0.5;
+                else if (nCardsOfAceSuit <= 2)
+                    est += 0.25;
+            }
+
+            if (trumpCards.Count == 3 &&
+                offSuitCards.Any(c1 => offSuitCards.Any(c2 => c1 != c2 && EffectiveSuit(c2, maybeTrump) == EffectiveSuit(c1, maybeTrump))))
+                //  if we're two-suited with three trump, add most of a trick
+                est += 0.75;
+
+            return est;
+        }
+
         public override BidBase SuggestBid(SuggestBidState<EuchreOptions> state)
         {
             var (players, dealerSeat, hand, legalBids, player, upCard, upCardSuit) =
@@ -51,18 +95,80 @@ namespace Trickster.Bots
             if (options.goUnder && legalBids.Any(b => b.value == (int)EuchreBid.GoUnder))
             {
                 //  go under if we can and don't have any suit we think we want to bid
-                var bestBid = BidSuggester(hand, upCard, upCardSuit, isDealer);
+                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer);
 
                 if (bestBid.value == BidBase.Pass && upCard != null)
-                    bestBid = BidSuggester(hand, null, upCardSuit, isDealer);
+                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer);
 
                 return legalBids.Single(b => b.value == (bestBid.value == BidBase.Pass ? (int)EuchreBid.GoUnder : (int)EuchreBid.AfterGoUnder));
             }
 
-            var suggestion = BidSuggester(hand, upCard, upCardSuit, isDealer);
+            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer);
             var canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
 
             return canBidSuggestion ? suggestion : new BidBase(BidBase.Pass);
+        }
+
+        //  overload called above and for unit tests
+        public BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer)
+        {
+            var highSuit = Suit.Unknown;
+            var highEstimate = 0.0;
+
+            if (upCard != null)
+            {
+                var effectiveHand = new Hand();
+                effectiveHand.AddRange(hand);
+
+                if (isDealer)
+                    effectiveHand.Add(upCard);
+
+                highEstimate = EstimatedTricks(effectiveHand, EffectiveUpCardSuit(upCard), options.withJoker);
+                highSuit = EffectiveUpCardSuit(upCard);
+            }
+            else
+            {
+                foreach (var suit in SuitRank.stdSuits.Where(s => s != upCardSuit))
+                {
+                    var est = EstimatedTricks(hand, suit, options.withJoker);
+                    if (est > highEstimate)
+                    {
+                        highEstimate = est;
+                        highSuit = suit;
+                    }
+                }
+
+                if (options.allowNotrump)
+                {
+                    var est = EstimatedNotrumpTricks(hand);
+                    if (est > highEstimate)
+                    {
+                        highEstimate = est;
+                        highSuit = Suit.Unknown;
+                    }
+                }
+            }
+
+            //  bid alone if we think we'll take more than 4-tricks, so long as we hold the appropriate high cards
+            if (highEstimate >= 4.25)
+            {
+                //  when aloneTake5 is true, we need to hold the Joker (if present) or the high Jack to bid alone
+                if (options.aloneTake5 && hand.Any(c => options.withJoker ? c.rank == Rank.High : c.suit == highSuit && c.rank == Rank.Jack))
+                    return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
+
+                //  when aloneTake5 is false, we need to hold one of the top cards (Joker or either Jack) to bid alone
+                if (!options.aloneTake5 && hand.Any(c => EffectiveSuit(c, highSuit) == highSuit && (c.rank == Rank.Jack || c.rank == Rank.High)))
+                    return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
+            }
+
+            if (highEstimate >= 2.25)
+                return new BidBase((int)EuchreBid.Make + (int)highSuit);
+
+            //  if we're the dealer and this is the second round with stick-the-dealer enabled, we must bid
+            if (isDealer && options.stickTheDealer && upCard == null)
+                return new BidBase((int)EuchreBid.Make + (int)highSuit);
+
+            return new BidBase(BidBase.Pass);
         }
 
         public override List<Card> SuggestDiscard(SuggestDiscardState<EuchreOptions> state)
@@ -217,8 +323,6 @@ namespace Trickster.Bots
             return lowestCard;
         }
 
-        private static bool IsMakeAlone(PlayerBase player) => BidBid(player.Bid) == EuchreBid.MakeAlone;
-
         //  used for call for best
         public override List<Card> SuggestPass(SuggestPassState<EuchreOptions> state)
         {
@@ -284,67 +388,6 @@ namespace Trickster.Bots
             return (EuchreBid)(bidValue - bidValue % 10);
         }
 
-        private BidBase BidSuggester(Hand hand, Card upCard, Suit upCardSuit, bool isDealer)
-        {
-            var highSuit = Suit.Unknown;
-            var highEstimate = 0.0;
-
-            if (upCard != null)
-            {
-                var effectiveHand = new Hand();
-                effectiveHand.AddRange(hand);
-
-                if (isDealer)
-                    effectiveHand.Add(upCard);
-
-                highEstimate = EstimatedTricks(effectiveHand, EffectiveUpCardSuit(upCard), options.withJoker);
-                highSuit = EffectiveUpCardSuit(upCard);
-            }
-            else
-            {
-                foreach (var suit in SuitRank.stdSuits.Where(s => s != upCardSuit))
-                {
-                    var est = EstimatedTricks(hand, suit, options.withJoker);
-                    if (est > highEstimate)
-                    {
-                        highEstimate = est;
-                        highSuit = suit;
-                    }
-                }
-
-                if (options.allowNotrump)
-                {
-                    var est = EstimatedNotrumpTricks(hand);
-                    if (est > highEstimate)
-                    {
-                        highEstimate = est;
-                        highSuit = Suit.Unknown;
-                    }
-                }
-            }
-
-            //  bid alone if we think we'll take more than 4-tricks, so long as we hold the appropriate high cards
-            if (highEstimate >= 4.25)
-            {
-                //  when aloneTake5 is true, we need to hold the Joker (if present) or the high Jack to bid alone
-                if (options.aloneTake5 && hand.Any(c => options.withJoker ? c.rank == Rank.High : c.suit == highSuit && c.rank == Rank.Jack))
-                    return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
-
-                //  when aloneTake5 is false, we need to hold one of the top cards (Joker or either Jack) to bid alone
-                if (!options.aloneTake5 && hand.Any(c => EffectiveSuit(c, highSuit) == highSuit && (c.rank == Rank.Jack || c.rank == Rank.High)))
-                    return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
-            }
-
-            if (highEstimate >= 2.25)
-                return new BidBase((int)EuchreBid.Make + (int)highSuit);
-
-            //  if we're the dealer and this is the second round with stick-the-dealer enabled, we must bid
-            if (isDealer && options.stickTheDealer && upCard == null)
-                return new BidBase((int)EuchreBid.Make + (int)highSuit);
-
-            return new BidBase(BidBase.Pass);
-        }
-
         private static Suit EffectiveUpCardSuit(SuitRank upCard)
         {
             return upCard.suit == Suit.Joker ? Suit.Spades : upCard.suit;
@@ -369,46 +412,9 @@ namespace Trickster.Bots
             return est;
         }
 
-        private double EstimatedTricks(Hand hand, Suit maybeTrump, bool withJoker)
+        private static bool IsMakeAlone(PlayerBase player)
         {
-            //  ensure all suits have at least some value so we never pick Suit.Unknown
-            var est = 0.1;
-
-            var trumpCards = hand.Where(c => EffectiveSuit(c, maybeTrump) == maybeTrump).ToList();
-            foreach (var card in trumpCards)
-            {
-                var nCardsAbove = trumpCards.Count(c => RankSort(c, maybeTrump) > RankSort(card, maybeTrump));
-                var nCardsBelow = trumpCards.Count(c => RankSort(c, maybeTrump) < RankSort(card, maybeTrump));
-                var nRanksAbove = RankSort(withJoker ? new Card(Suit.Joker, Rank.High) : new Card(maybeTrump, Rank.Jack), maybeTrump) -
-                                  RankSort(card, maybeTrump);
-                var nGapsAbove = nRanksAbove - nCardsAbove;
-
-                if (card.rank < Rank.Jack)
-                    //  adjust for the "artificial" gap left by promoting the Jack in the trump suit
-                    nGapsAbove--;
-
-                if (nCardsBelow >= nGapsAbove)
-                    est += 1;
-                else if (nCardsBelow == nGapsAbove - 1)
-                    est += 0.75;
-                else if (nCardsBelow == nGapsAbove - 2)
-                    est += 0.5;
-            }
-
-            var offSuitCards = hand.Where(c => EffectiveSuit(c, maybeTrump) != maybeTrump).ToList();
-            var offSuitAces = offSuitCards.Where(c => c.rank == Rank.Ace);
-            foreach (var nCardsOfAceSuit in offSuitAces.Select(ace => offSuitCards.Count(c => EffectiveSuit(c, maybeTrump) == ace.suit)))
-                if (nCardsOfAceSuit == 1 && trumpCards.Count > 1)
-                    est += 0.5;
-                else if (nCardsOfAceSuit <= 2)
-                    est += 0.25;
-
-            if (trumpCards.Count == 3 &&
-                offSuitCards.Any(c1 => offSuitCards.Any(c2 => c1 != c2 && EffectiveSuit(c2, maybeTrump) == EffectiveSuit(c1, maybeTrump))))
-                //  if we're two-suited with three trump, add most of a trick
-                est += 0.75;
-
-            return est;
+            return BidBid(player.Bid) == EuchreBid.MakeAlone;
         }
 
         private bool IsAskingDefendAlone(PlayersCollectionBase players)
