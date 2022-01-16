@@ -2,7 +2,7 @@ using Trickster.cloud;
 
 namespace Trickster.Bots
 {
-    internal class DeclareBid
+    public class DeclareBid
     {
         internal enum DoubleOrRe
         {

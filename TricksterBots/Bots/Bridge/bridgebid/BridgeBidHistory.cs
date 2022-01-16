@@ -4,7 +4,7 @@ using Trickster.cloud;
 
 namespace Trickster.Bots
 {
-    internal class BridgeBidHistory
+    public class BridgeBidHistory
     {
         private List<int> bids = new List<int>();
 
@@ -12,7 +12,7 @@ namespace Trickster.Bots
         {
         }
 
-        public BridgeBidHistory(PlayersCollectionBase players, int dealerSeat)
+        public BridgeBidHistory(IReadOnlyCollection<PlayerBase> players, int dealerSeat)
         {
             //  in our implementation, the first bidder is the dealer
             var seat = dealerSeat;
@@ -67,7 +67,7 @@ namespace Trickster.Bots
             return new BridgeBidHistory { bids = bids.Take(bidIndex < 0 ? bids.Count + bidIndex : bidIndex).ToList() };
         }
 
-        public static int FirstBidIndex(PlayersCollectionBase players, PlayerBase player, int dealerSeat)
+        public static int FirstBidIndex(IReadOnlyCollection<PlayerBase> players, PlayerBase player, int dealerSeat)
         {
             var nPlayers = players.Count;
             return (nPlayers - dealerSeat + player.Seat) % nPlayers;

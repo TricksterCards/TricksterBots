@@ -7,7 +7,7 @@ namespace Trickster.Bots
     /// <summary>
     ///     Based on ACBL Bridge Series "Bidding in the 21st Century" updated 2010 edition
     /// </summary>
-    internal class BasicBidding
+    public class BasicBidding
     {
         private static readonly Suit[] BasicSuits = { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades };
 

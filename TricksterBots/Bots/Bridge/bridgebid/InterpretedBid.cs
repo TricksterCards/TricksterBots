@@ -8,7 +8,7 @@ namespace Trickster.Bots
 {
     public delegate bool HandValidator(Hand hand);
 
-    internal class InterpretedBid : BidExplanation
+    public class InterpretedBid : BidExplanation
     {
         public const int GrandSlamPoints = 37;
         public const int InvitationalPoints = 23;
