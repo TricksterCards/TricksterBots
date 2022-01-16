@@ -429,7 +429,7 @@ namespace Trickster.Bots
             }
         }
 
-        internal class Range
+        public class Range
         {
             public int Max;
             public int Min;

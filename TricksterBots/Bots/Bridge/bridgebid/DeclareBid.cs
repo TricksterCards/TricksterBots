@@ -4,7 +4,7 @@ namespace Trickster.Bots
 {
     public class DeclareBid
     {
-        internal enum DoubleOrRe
+        public enum DoubleOrRe
         {
             None,
             Double,
