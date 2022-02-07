@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Web;
 using Newtonsoft.Json;
 using Trickster.cloud;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -146,88 +144,32 @@ namespace Trickster.Bots.Controllers
 #if DEBUG
         private static void CompareBidResults<OT>(SuggestBidState<OT> state, BidBase bid, BaseBot<OT> baseBot) where OT : GameOptions
         {
-            var cloudBid = state.cloudBid;
-            if (bid.value == cloudBid.value)
-                return;
-
-            Debug.WriteLine(
-                $"\nSeat {state.player.Seat}: Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {cloudBid.value} ({state.options.gameCode}).");
-            Debug.Indent();
-            Debug.WriteLineIf(state.legalBids.All(lb => lb.value != bid.value), "Suggested bid is not in the legal bids.");
-
-            var cloudState = LoadState<SuggestBidState<OT>>(state.player.Seat);
-            if (cloudState == null)
+            CompareResults<SuggestBidState<OT>, OT>(state, () =>
             {
-                Debug.Unindent();
-                return;
-            }
+                var same = bid.value == state.cloudBid.value;
 
-            //  the saved state doesn't have cloudBid. save it, set it to null, and restore it so we don't create unnecessary differences.
-            state.cloudBid = null;
-            var stateJson = JsonConvert.SerializeObject(state);
-            state.cloudBid = cloudBid;
+                Debug.WriteLineIf(!same,
+                    $"\nSeat {state.player.Seat}: Bot-suggested bid of {bid.value} mismatches the cloud-suggested bid of {state.cloudBid.value} ({state.options.gameCode}).");
 
-            var cloudStateJson = JsonConvert.SerializeObject(cloudState);
-
-            if (stateJson != cloudStateJson)
-            {
-                Debug.WriteLine($"client-sent and cloud-saved states differ.\n\tclient: {stateJson}\n\t cloud: {cloudStateJson}");
-
-                CompareOptions(state.options, cloudState.options);
-            }
-            else
-            {
-                Debug.WriteLine("client-sent and cloud-saved states are identical!");
-            }
-
-            Debug.Unindent();
+                state.cloudBid = null;
+                return same;
+            });
         }
 
         private static void CompareCardResults<OT>(SuggestCardState<OT> state, Card botCard, BaseBot<OT> bot, Func<SuggestCardState<OT>, BaseBot<OT>> getBot)
             where OT : GameOptions
         {
-            var cloudCard = state.cloudCard;
-            if (botCard.suit == cloudCard.suit && botCard.rank == cloudCard.rank)
-                return;
-
-            Debug.WriteLine(
-                $"\nSeat {state.player.Seat}: Bot-suggested card of {botCard.rank} of {botCard.suit} mismatches the cloud-suggested card of {cloudCard.rank} of {cloudCard.suit} ({state.options.gameCode}).");
-            Debug.Indent();
-            Debug.WriteLineIf(!state.legalCards.Any(lc => lc.SameAs(botCard)), "Suggested card is not in the legal cards.");
-
-            var cloudState = LoadState<SuggestCardState<OT>>(state.player.Seat);
-            if (cloudState == null)
+            CompareResults<SuggestCardState<OT>, OT>(state, () =>
             {
-                Debug.Unindent();
-                return;
-            }
+                var cloudCard = state.cloudCard;
+                var same = botCard.suit == cloudCard.suit && botCard.rank == cloudCard.rank;
 
-            var stateJson = JsonConvert.SerializeObject(state);
-            var cloudStateJson = JsonConvert.SerializeObject(cloudState);
-            if (stateJson != cloudStateJson)
-            {
-                Debug.WriteLine($"client-sent and cloud-saved states differ.\n\tclient: {stateJson}\n\t cloud: {cloudStateJson}");
+                Debug.WriteLineIf(!same,
+                    $"\nSeat {state.player.Seat}: Bot-suggested card of {botCard.rank} of {botCard.suit} mismatches the cloud-suggested card of {cloudCard.rank} of {cloudCard.suit} ({state.options.gameCode}).");
+                Debug.WriteLineIf(!state.legalCards.Any(lc => lc.SameAs(botCard)), "Suggested card is not in the legal cards.");
 
-                var bot2 = getBot(cloudState);
-                var card2 = bot2.SuggestNextCard(cloudState);
-                if (card2.suit == cloudCard.suit && card2.rank == cloudCard.rank)
-                    Debug.WriteLine($"Using cloud-saved state, bot returns expected card of {card2.rank} of {card2.suit}.");
-                else
-                    Debug.WriteLine($"Even using cloud-saved state, bot returns wrong card of {card2.rank} of {card2.suit}!");
-
-                CompareCardsPlayed(state, cloudState);
-                CompareOptions(state.options, cloudState.options);
-                ComparePlayer(state.player, cloudState.player);
-
-                foreach (var playerSeat in state.players.Select(p => p.Seat).Where(seat => seat != state.player.Seat))
-                    ComparePlayer(state.players.Single(p => p.Seat == playerSeat), cloudState.players.Single(p => p.Seat == playerSeat));
-            }
-            else
-            {
-                Debug.WriteLine("client-sent and cloud-saved states are identical!");
-            }
-
-            Debug.Unindent();
+                return same;
+            });
         }
 
         private static void CompareCardsPlayed<OT>(SuggestCardState<OT> state, SuggestCardState<OT> cloudState) where OT : GameOptions
@@ -262,113 +204,74 @@ namespace Trickster.Bots.Controllers
                 $"Player in seat {statePlayer.Seat}: PlayedCards differs ({JsonConvert.SerializeObject(statePlayer.PlayedCards)} != {JsonConvert.SerializeObject(savedStatePlayer.PlayedCards)})");
         }
 
-        private static T LoadState<T>(int seat)
-        {
-            var savePath = string.Empty;
-
-            try
-            {
-                var cc = HttpContext.Current;
-                var apiPath = cc.Request.MapPath(".");
-                //  will be path like GitHub/TricksterBot/WebApi/suggest/pinochle/card
-
-                savePath = Path.GetFullPath($@"{apiPath}\..\..\..\..\state_seat{seat}.json");
-                var savedJson = File.ReadAllText(savePath);
-                var loadedState = JsonConvert.DeserializeObject<T>(savedJson);
-                Debug.WriteLineIf(loadedState == null, $"Loaded null state from {savePath}!");
-                return loadedState;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"{ex.Message} attempting to load {savePath}");
-                return default;
-            }
-        }
-
         private static void CompareDiscardResults<OT>(SuggestDiscardState<OT> state, List<Card> discard, object baseBot) where OT : GameOptions
         {
-            var cloudDiscard = state.cloudDiscard;
-            var discardJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(discard));
-            var cloudDiscardJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(cloudDiscard));
-            if (discardJson == cloudDiscardJson)
-                return;
-
-            Debug.WriteLine(
-                $"\nSeat {state.player.Seat}: Bot-suggested discard of {discardJson} mismatches the cloud-suggested discard of {cloudDiscardJson} ({state.options.gameCode}).");
-            Debug.Indent();
-
-            var hand = new Hand(state.hand);
-            Debug.WriteLineIf(!discard.All(c => hand.ContainsCard(c)), "Not all suggested discard cards are in the hand.");
-
-            var cloudState = LoadState<SuggestDiscardState<OT>>(state.player.Seat);
-            if (cloudState == null)
+            CompareResults<SuggestDiscardState<OT>, OT>(state, () =>
             {
-                Debug.Unindent();
+                var discardJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(discard));
+                var cloudDiscardJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(state.cloudDiscard));
+                state.cloudDiscard = null;
+
+                var same = discardJson == cloudDiscardJson;
+                Debug.WriteLineIf(!same,
+                    $"\nSeat {state.player.Seat}: Bot-suggested discard of {discardJson} mismatches the cloud-suggested discard of {cloudDiscardJson} ({state.options.gameCode}).");
+                return same;
+            });
+        }
+
+        private static void CompareResults<ST, OT>(ST state, Func<bool> checkResult)
+            where ST : SuggestStateBase<OT>
+            where OT : GameOptions
+        {
+            var same = checkResult();
+
+#if NO_COMPARE_STATE
+            if (same)
                 return;
-            }
+#endif
 
-            //  the saved state doesn't have cloudDiscard. save it, set it to null, and restore it so we don't create unnecessary differences.
-            state.cloudDiscard = null;
+            var cloudStateJson = state.cloudState != null ? JsonConvert.SerializeObject(state.cloudState) : null;
+            var cloudState = cloudStateJson != null ? JsonConvert.DeserializeObject<ST>(cloudStateJson) : null;
+
+            if (cloudState == null)
+                return;
+
+            state.cloudState = null;
             var stateJson = JsonConvert.SerializeObject(state);
-            state.cloudDiscard = cloudDiscard;
-
-            var cloudStateJson = JsonConvert.SerializeObject(cloudState);
 
             if (stateJson != cloudStateJson)
             {
                 Debug.WriteLine($"client-sent and cloud-saved states differ.\n\tclient: {stateJson}\n\t cloud: {cloudStateJson}");
-
                 CompareOptions(state.options, cloudState.options);
+
+                if (state is SuggestCardState<OT> cardState && cloudState is SuggestCardState<OT> cloudCardState)
+                {
+                    CompareCardsPlayed(cardState, cloudCardState);
+                    ComparePlayer(state.player, cloudState.player);
+
+                    foreach (var playerSeat in cardState.players.Select(p => p.Seat).Where(seat => seat != state.player.Seat))
+                        ComparePlayer(cardState.players.Single(p => p.Seat == playerSeat), cloudCardState.players.Single(p => p.Seat == playerSeat));
+                }
             }
-            else
+            else if (same)
             {
                 Debug.WriteLine("client-sent and cloud-saved states are identical!");
             }
-
-            Debug.Unindent();
         }
 
         private static void ComparePassResults<OT>(SuggestPassState<OT> state, List<Card> pass, object baseBot) where OT : GameOptions
         {
-            var cloudPass = state.cloudPass;
-            var passJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(pass));
-            var cloudPassJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(cloudPass));
-            if (passJson == cloudPassJson)
-                return;
-
-            Debug.WriteLine(
-                $"\nSeat {state.player.Seat}: Bot-suggested pass of {passJson} mismatches the cloud-suggested pass of {cloudPassJson} ({state.options.gameCode}).");
-            Debug.Indent();
-
-            var hand = new Hand(state.hand);
-            Debug.WriteLineIf(pass.Count != state.passCount || !pass.All(c => hand.ContainsCard(c)), "Not all suggested pass cards are in the hand.");
-
-            var cloudState = LoadState<SuggestPassState<OT>>(state.player.Seat);
-            if (cloudState == null)
+            CompareResults<SuggestPassState<OT>, OT>(state, () =>
             {
-                Debug.Unindent();
-                return;
-            }
+                var passJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(pass));
+                var cloudPassJson = JsonConvert.SerializeObject(SuggestSorter.SortCardList(state.cloudPass));
+                state.cloudPass = null;
 
-            //  the saved state doesn't have cloudPass. save it, set it to null, and restore it so we don't create unnecessary differences.
-            state.cloudPass = null;
-            var stateJson = JsonConvert.SerializeObject(state);
-            state.cloudPass = cloudPass;
-
-            var cloudStateJson = JsonConvert.SerializeObject(cloudState);
-
-            if (stateJson != cloudStateJson)
-            {
-                Debug.WriteLine($"client-sent and cloud-saved states differ.\n\tclient: {stateJson}\n\t cloud: {cloudStateJson}");
-
-                CompareOptions(state.options, cloudState.options);
-            }
-            else
-            {
-                Debug.WriteLine("client-sent and cloud-saved states are identical!");
-            }
-
-            Debug.Unindent();
+                var same = passJson == cloudPassJson;
+                Debug.WriteLineIf(!same,
+                    $"\nSeat {state.player.Seat}: Bot-suggested pass of {passJson} mismatches the cloud-suggested pass of {cloudPassJson} ({state.options.gameCode}).");
+                return same;
+            });
         }
 
         private static void CompareOptions<OT>(OT options, OT savedOptions) where OT : GameOptions
