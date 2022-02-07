@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.Json;
 using Trickster.cloud;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-
 #if DEBUG
 using System.Text;
 using Newtonsoft.Json;
@@ -276,13 +275,16 @@ namespace Trickster.Bots.Controllers
                 return;
 #endif
 
-            var cloudStateJson = state.cloudState != null ? JsonConvert.SerializeObject(state.cloudState) : null;
-            var cloudState = cloudStateJson != null ? JsonConvert.DeserializeObject<ST>(cloudStateJson) : null;
-
-            if (cloudState == null)
+            if (string.IsNullOrEmpty(state.cloudStateJson))
+            {
+                Debug.WriteLine("state.cloudState is missing");
                 return;
+            }
 
-            state.cloudState = null;
+            var cloudStateJson = state.cloudStateJson;
+            var cloudState = JsonConvert.DeserializeObject<ST>(cloudStateJson);
+
+            state.cloudStateJson = null;
             var stateJson = JsonConvert.SerializeObject(state);
 
             if (stateJson != cloudStateJson)
@@ -295,7 +297,7 @@ namespace Trickster.Bots.Controllers
                 if (state is SuggestCardState<OT> cardState && cloudState is SuggestCardState<OT> cloudCardState)
                 {
                     CompareCardsPlayed(cardState, cloudCardState);
-                    ComparePlayer(state.player, cloudState.player);
+                    ComparePlayer(state.player, cloudCardState.player);
 
                     foreach (var playerSeat in cardState.players.Select(p => p.Seat).Where(seat => seat != state.player.Seat))
                         ComparePlayer(cardState.players.Single(p => p.Seat == playerSeat), cloudCardState.players.Single(p => p.Seat == playerSeat));
