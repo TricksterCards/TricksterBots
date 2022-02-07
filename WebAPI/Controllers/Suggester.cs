@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
-using Newtonsoft.Json;
 using Trickster.cloud;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+
+#if DEBUG
+using System.Text;
+using Newtonsoft.Json;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
+#endif
 
 namespace Trickster.Bots.Controllers
 {
@@ -219,6 +225,46 @@ namespace Trickster.Bots.Controllers
             });
         }
 
+        private static void CompareStateByLine(object clientState, object cloudState)
+        {
+            var cloudFormatted = JsonConvert.SerializeObject(cloudState, Formatting.Indented);
+            var clientFormatted = JsonConvert.SerializeObject(clientState, Formatting.Indented);
+
+            var diff = InlineDiffBuilder.Diff(cloudFormatted, clientFormatted);
+
+            if (diff.Lines.Count > 0)
+            {
+                var sb = new StringBuilder();
+
+                foreach (var line in diff.Lines)
+                    switch (line.Type)
+                    {
+                        case ChangeType.Unchanged:
+                            break;
+                        case ChangeType.Deleted:
+                            sb.AppendLine($"<<\t{line.Text}");
+                            break;
+                        case ChangeType.Inserted:
+                            sb.AppendLine($">>\t\t\t\t\t\t\t\t{line.Text}");
+                            break;
+                        case ChangeType.Imaginary:
+                            sb.AppendLine($"??  {line.Text}");
+                            break;
+                        case ChangeType.Modified:
+                            sb.AppendLine($"!=  {line.Text}");
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                Debug.WriteLine(sb.Length > 0 ? sb.ToString() : "\tNo different lines found");
+            }
+            else
+            {
+                Debug.WriteLine("\tdiff.Lines.Count == 0");
+            }
+        }
+
         private static void CompareResults<ST, OT>(ST state, Func<bool> checkResult)
             where ST : SuggestStateBase<OT>
             where OT : GameOptions
@@ -242,6 +288,8 @@ namespace Trickster.Bots.Controllers
             if (stateJson != cloudStateJson)
             {
                 Debug.WriteLine($"client-sent and cloud-saved states differ.\n\tclient: {stateJson}\n\t cloud: {cloudStateJson}");
+                CompareStateByLine(state, cloudState);
+
                 CompareOptions(state.options, cloudState.options);
 
                 if (state is SuggestCardState<OT> cardState && cloudState is SuggestCardState<OT> cloudCardState)
