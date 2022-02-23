@@ -201,7 +201,7 @@ namespace Trickster.Bots
             var partnerIsMaker = players.PartnersOf(player).Any(p => BidBid(p) == EuchreBid.Make);
             var weAreMaker = playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone || partnerIsMaker;
 
-            var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).ThenBy(SuitSort).First();
+            var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).First();
 
             if (trick.Count == 0)
             {
@@ -232,8 +232,8 @@ namespace Trickster.Bots
                     //  get the number of cards in each non-trump suit
                     var countsBySuit = nonTrump.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
 
-                    //  play the lowest card in non-trump suit with fewest cards (sort by Suit to break ties in countsBySuit)
-                    return nonTrump.OrderBy(c => countsBySuit[EffectiveSuit(c)]).ThenBy(SuitSort).ThenBy(RankSort).First();
+                    //  play the lowest card in non-trump suit with fewest cards
+                    return nonTrump.OrderBy(c => countsBySuit[EffectiveSuit(c)]).ThenBy(RankSort).First();
                 }
 
                 //  We want to lead a high (best in suit) card with conditions:
