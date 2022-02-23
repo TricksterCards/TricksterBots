@@ -898,13 +898,6 @@ namespace Trickster.Bots
             return suitOrder[s];
         }
 
-/*
-        private int SuitSort(Card c)
-        {
-            return suitOrder[EffectiveSuit(c)];
-        }
-*/
-
         protected override int RankSort(Card c, Suit trumpSuit)
         {
             switch (options.variation)
