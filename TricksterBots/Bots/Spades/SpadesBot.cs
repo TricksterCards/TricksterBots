@@ -836,11 +836,14 @@ namespace Trickster.Bots
             if (playerBid.IsNil)
             {
                 var nTrump = hand.Count(IsTrump);
+
+                //  if we're the nil bidder and have more than 3 trump, pass our highest trump (keeping 3)
                 if (nTrump > 3)
                 {
                     cards.AddRange(hand.Where(IsTrump).OrderByDescending(RankSort).Take(Math.Min(nTrump - 3, nCards)));
                 }
 
+                //  if we still need cards to pass, pass trump cards of the top 3 ranks
                 if (cards.Count < nCards)
                 {
                     var highTrump = hand.RemoveCards(cards).Where(c => IsTrump(c) && RankSort(c) > highRankBySuit[trump] - 3).ToList();
@@ -851,22 +854,22 @@ namespace Trickster.Bots
                     }
                 }
 
+                //  if we still need cards to pass, choose the highest ranks favoring the shortest suits
                 if (cards.Count < nCards)
                 {
                     hand = hand.RemoveCards(cards);
                     var countsBySuit = hand.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
-
-                    //  if we still need cards to throw, choose the highest ranks from the shortest suits
-                    cards.AddRange(hand.OrderBy(SuitSort).ThenByDescending(RankSort).ThenBy(c => countsBySuit[EffectiveSuit(c)]).Take(nCards - cards.Count));
+                    cards.AddRange(hand.OrderByDescending(RankSort).ThenBy(c => countsBySuit[EffectiveSuit(c)]).Take(nCards - cards.Count));
                 }
             }
             else
             {
                 var countsBySuit = hand.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
 
-                //  if we still need cards to throw, choose the highest ranks from the shortest suits
-                cards.AddRange(hand.Where(c => !IsTrump(c)).OrderBy(SuitSort).ThenBy(RankSort).ThenByDescending(c => countsBySuit[EffectiveSuit(c)]).Take(nCards));
+                //  if we're not the nil bidder, pass the lowest ranks, avoiding trump and favoring our longest suits
+                cards.AddRange(hand.Where(c => !IsTrump(c)).OrderBy(RankSort).ThenByDescending(c => countsBySuit[EffectiveSuit(c)]).Take(nCards));
 
+                //  if we still need cards, pass the lowest ranks of trump
                 if (cards.Count < nCards)
                     cards.AddRange(hand.Where(IsTrump).OrderBy(RankSort).Take(nCards - cards.Count));
             }
