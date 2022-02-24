@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31911.196
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TricksterBots", "TricksterBots\TricksterBots.csproj", "{6679F4FE-DFDD-4099-8E43-6D45EA361723}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPI", "WebAPI\WebAPI.csproj", "{2F9AD010-92B6-4B52-AF2C-9D12DEE9065F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBots", "TestBots\TestBots.csproj", "{DFE54BCF-63D4-40D4-934D-6DC98DB2626E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{2F9AD010-92B6-4B52-AF2C-9D12DEE9065F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F9AD010-92B6-4B52-AF2C-9D12DEE9065F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F9AD010-92B6-4B52-AF2C-9D12DEE9065F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFE54BCF-63D4-40D4-934D-6DC98DB2626E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFE54BCF-63D4-40D4-934D-6DC98DB2626E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFE54BCF-63D4-40D4-934D-6DC98DB2626E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFE54BCF-63D4-40D4-934D-6DC98DB2626E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
