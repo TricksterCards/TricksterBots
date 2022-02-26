@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="SpadesBots.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestEuchreBot.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
