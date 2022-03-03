@@ -5,7 +5,7 @@ using Trickster.cloud;
 namespace TestBots
 {
     [TestClass]
-    public class SpadesBots
+    public class TestSpadesBot
     {
         private const string passingPlayerHand = "ASKSQSJSAD9D8D3DAH2HAC3C2C";
 
