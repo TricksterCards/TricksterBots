@@ -94,23 +94,6 @@ namespace TestBots
         }
 
         [TestMethod]
-        public void LeadHighestSpadeToProtectNil()
-        {
-            var players = new[]
-            {
-                new TestPlayer(0, 4, "TH9HKC8C7C6C5C4C3CKDKS2S") { HandScore = 1, CardsTaken = "AHKHQHJH" },
-                new TestPlayer(1, 4),
-                new TestPlayer(2, 0),
-                new TestPlayer(3, 4)
-            };
-
-            var cardState = new TestCardState<SpadesOptions>(players) { options = new SpadesOptions { leadSpades = LeadSpadesWhen.Anytime } };
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
-            var suggestion = bot.SuggestNextCard(cardState);
-            Assert.AreEqual("KS", suggestion.ToString(), $"Led {suggestion.StdNotation} to protect Nil");
-        }
-
-        [TestMethod]
         public void LeadHighestLegalCardToProtectNil()
         {
             var players = new[]
@@ -128,17 +111,51 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void LeadHighestSpadeToProtectNil()
+        {
+            var players = new[]
+            {
+                new TestPlayer(0, 4, "TH9HKC8C7C6C5C4C3CKDKS2S") { HandScore = 1, CardsTaken = "AHKHQHJH" },
+                new TestPlayer(1, 4),
+                new TestPlayer(2, 0),
+                new TestPlayer(3, 4)
+            };
+
+            var cardState = new TestCardState<SpadesOptions>(players) { options = new SpadesOptions { leadSpades = LeadSpadesWhen.Anytime } };
+            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("KS", suggestion.ToString(), $"Led {suggestion.StdNotation} to protect Nil");
+        }
+
+        [TestMethod]
+        public void LeadJustAbovePartnersHighestCardInSuit()
+        {
+            var players = new[]
+            {
+                new TestPlayer(0, 4, "6H4HKC7C6C5C4C3C2CKDKS") { HandScore = 2, CardsTaken = "AHKHQHJHTH8H3H7H" },
+                new TestPlayer(1, 4),
+                new TestPlayer(2, 0) { PlayedCards = new List<PlayedCard> { new PlayedCard(new Card("TH"), new Card("3H")) } },
+                new TestPlayer(3, 4)
+            };
+
+            var cardState = new TestCardState<SpadesOptions>(players, legalCards: "6H4HKC7C6C5C4C3C2CKD");
+            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("4H", suggestion.ToString(), $"Led {suggestion.StdNotation} only as high as needed");
+        }
+
+        [TestMethod]
         public void LeadLowInPartnersVoidSuitToProtectNil()
         {
             var players = new[]
             {
                 new TestPlayer(0, 4, "4H2HKC7C6C5C4C3C2CKDKS") { HandScore = 2, CardsTaken = "AHKHQHJHTH5HQC3H" },
                 new TestPlayer(1, 4),
-                new TestPlayer(2, 0) { VoidSuits = new List<Suit> { Suit.Hearts }},
+                new TestPlayer(2, 0) { VoidSuits = new List<Suit> { Suit.Hearts } },
                 new TestPlayer(3, 4)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players) { legalCards = new Hand("4H2HKC7C6C5C4C3C2CKD")};
+            var cardState = new TestCardState<SpadesOptions>(players) { legalCards = new Hand("4H2HKC7C6C5C4C3C2CKD") };
             var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("2H", suggestion.ToString(), $"Led {suggestion.StdNotation} to protect Nil");
@@ -155,10 +172,27 @@ namespace TestBots
                 new TestPlayer(3, 0)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players, trickString: "2H4H5H", legalCards: "AH3H") { cardTakingTrick = new Card("5H"), trickTaker = players[3] };
+            var cardState = new TestCardState<SpadesOptions>(players, "2H4H5H", "AH3H") { cardTakingTrick = new Card("5H"), trickTaker = players[3] };
             var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("3H", suggestion.ToString(), $"Played {suggestion.StdNotation} to get under nil bidder in 4th seat");
+        }
+
+        [TestMethod]
+        public void SaveHighCardToProtectNilIfNoGaps()
+        {
+            var players = new[]
+            {
+                new TestPlayer(0, 5, "2D3D4D3C4CACQH5S7S8SJSKS"),
+                new TestPlayer(1, 2),
+                new TestPlayer(2, 0),
+                new TestPlayer(3, 4) { HandScore = 1, CardsTaken = "AH9HKH4H" }
+            };
+
+            var cardState = new TestCardState<SpadesOptions>(players, "KC", "3C4CAC");
+            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("3C", suggestion.ToString(), $"Led {suggestion.StdNotation} to follow low if no gaps");
         }
 
         [TestMethod]
