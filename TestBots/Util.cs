@@ -81,7 +81,7 @@ namespace TestBots
 
                 var highCardIndex = bot.TrickHighCardIndex(this.trick);
                 cardTakingTrick = this.trick[highCardIndex];
-                var seatTakingTrick = playersCollection.Count - this.trick.Count + highCardIndex; // we assume it's seat 0's turn to play
+                var seatTakingTrick = playersCollection.Count(p => p.Bid != BidBase.NotPlaying) - this.trick.Count + highCardIndex; // we assume it's seat 0's turn to play
                 isPartnerTakingTrick = playersCollection.PartnersOf(playersCollection[0]).Any(p => p.Seat == seatTakingTrick);
                 trickTaker = playersCollection.Single(p => p.Seat == seatTakingTrick);
 
