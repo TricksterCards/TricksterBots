@@ -95,13 +95,13 @@ namespace TestBots
                 cardTakingTrick = null;
                 isPartnerTakingTrick = false;
                 trickTaker = null;
-
-                if (!string.IsNullOrEmpty(notLegal))
-                    legalCards = new Hand(legalCards).RemoveCards(new Hand(notLegal));
-
-                if (notLegalSuit != Suit.Unknown)
-                    legalCards = legalCards.Where(c => bot.EffectiveSuit(c) != notLegalSuit).ToList();
             }
+
+            if (!string.IsNullOrEmpty(notLegal))
+                legalCards = new Hand(legalCards).RemoveCards(new Hand(notLegal));
+
+            if (notLegalSuit != Suit.Unknown)
+                legalCards = legalCards.Where(c => bot.EffectiveSuit(c) != notLegalSuit).ToList();
         }
     }
 }
