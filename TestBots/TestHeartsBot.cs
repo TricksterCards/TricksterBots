@@ -69,7 +69,7 @@ namespace TestBots
 
         private static HeartsBot GetBot(HeartsOptions options)
         {
-            return new HeartsBot(options, Suit.Spades);
+            return new HeartsBot(options, Suit.Unknown);
         }
     }
 }
