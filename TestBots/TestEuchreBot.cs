@@ -9,6 +9,54 @@ namespace TestBots
     public class TestEuchreBot
     {
         [TestMethod]
+        public void CallForBest()
+        {
+            var bot = GetBot(Suit.Diamonds, new EuchreOptions { callForBest = true });
+
+            //  first suggestion is maker passing to non-playing partner
+            var passState = new SuggestPassState<EuchreOptions>
+            {
+                player = new TestPlayer(112, "9D9SQSKSAS"),
+                hand = new Hand("9D9SQSKSAS"),
+                passCount = 1
+            };
+            var suggestion = bot.SuggestPass(passState);
+            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.AreEqual("9S", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected 9S");
+
+            //  second suggestion is non-playing partner passing to maker
+            passState.player = new TestPlayer(-3, "9HTHQHKHAHJD");
+            passState.hand = new Hand("9HTHQHKHAHJD");
+            suggestion = bot.SuggestPass(passState);
+            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.AreEqual("JD", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected JD");
+        }
+
+        [TestMethod]
+        public void CallForBestWithoutTrump()
+        {
+            var bot = GetBot(Suit.Hearts, new EuchreOptions { callForBest = true });
+
+            //  first suggestion is maker passing to non-playing partner
+            var passState = new SuggestPassState<EuchreOptions>
+            {
+                player = new TestPlayer(114, "JHAHKHQHTH"),
+                hand = new Hand("JHAHKHQHTH"),
+                passCount = 1
+            };
+            var suggestion = bot.SuggestPass(passState);
+            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.AreEqual("TH", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected TH");
+
+            //  second suggestion is non-playing partner passing to maker
+            passState.player = new TestPlayer(-3, "9D9STSQSAS");
+            passState.hand = new Hand("9D9STSQSAS");
+            suggestion = bot.SuggestPass(passState);
+            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.AreEqual("AS", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected AS");
+        }
+
+        [TestMethod]
         public void DontTrumpWinningPartnerInLastSeat()
         {
             var players = new[]
