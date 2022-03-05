@@ -55,6 +55,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestHeartsBot.cs" />
     <Compile Include="TestSpadesBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestEuchreBot.cs" />
