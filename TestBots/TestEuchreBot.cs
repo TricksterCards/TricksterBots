@@ -8,6 +8,63 @@ namespace TestBots
     public class TestEuchreBot
     {
         [TestMethod]
+        public void DontTrumpWinningPartnerInLastSeat()
+        {
+            var players = new[]
+            {
+                new TestPlayer(102, "ACKCTC9CQD"),
+                new TestPlayer(140),
+                new TestPlayer(140),
+                new TestPlayer(140)
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9SQSTS");
+            Assert.AreEqual(cardState.legalCards.Count, 5, "All cards are legal");
+            Assert.IsTrue(cardState.isPartnerTakingTrick, "Partner is taking trick");
+
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("9C", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected 9C");
+        }
+
+        [TestMethod]
+        public void DontTrumpWinningPartnerWhenOpppontsGoAlone()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "ACAHKH9HQD"),
+                new TestPlayer(112),
+                new TestPlayer(140),
+                new TestPlayer(-3)
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "AS");
+            Assert.AreEqual(cardState.legalCards.Count, 5, "All cards are legal");
+            Assert.IsTrue(cardState.isPartnerTakingTrick, "Partner is taking trick");
+
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("9H", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected 9H");
+        }
+
+        [TestMethod]
+        public void PlayOnlyAsHighAsNeededInLastSeat()
+        {
+            var players = new[]
+            {
+                new TestPlayer(102, "ASKSACAHQD"),
+                new TestPlayer(140),
+                new TestPlayer(140),
+                new TestPlayer(140)
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9STSQS");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("KS", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected KS");
+        }
+
+        [TestMethod]
         public void TestAvoidBid()
         {
             Assert.AreEqual("Pass", GetSuggestedBid(" 9C 9S 9HAHJD", "QH"), "Should pass if three-suited and weak, even with three trump");
@@ -63,15 +120,51 @@ namespace TestBots
             Assert.AreEqual("♠ alone", GetSuggestedBid("AC QSKSASJS", "9S"), "Should bid alone with strength even if missing off-Jack");
         }
 
+        [TestMethod]
+        public void TrumpAceWhenGoingAlone()
+        {
+            var players = new[]
+            {
+                new TestPlayer(112, "ACKCAHKHQD"),
+                new TestPlayer(140),
+                new TestPlayer(-3),
+                new TestPlayer(140)
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "AS9S");
+            Assert.AreEqual(GetBidText(cardState.player.Bid), "♦ alone", "Diamonds alone bid is correct");
+            Assert.AreEqual(cardState.legalCards.Count, 5, "All cards are legal");
+            Assert.IsFalse(cardState.isPartnerTakingTrick, "Partner is not taking trick");
+
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QD", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected QD");
+        }
+
         private static string GetBidText(BidBase bid)
         {
-            if (bid.value == BidBase.Pass)
+            return GetBidText(bid.value);
+        }
+
+        private static string GetBidText(int bidValue)
+        {
+            if (bidValue == BidBase.Pass)
                 return "Pass";
 
-            if (bid.value > (int)EuchreBid.MakeAlone)
-                return Card.SuitSymbol(bid.value - (int)EuchreBid.MakeAlone) + " alone";
+            if (bidValue > (int)EuchreBid.MakeAlone)
+                return Card.SuitSymbol(bidValue - (int)EuchreBid.MakeAlone) + " alone";
 
-            return Card.SuitSymbol(bid.value - (int)EuchreBid.Make);
+            return Card.SuitSymbol(bidValue - (int)EuchreBid.Make);
+        }
+
+        private static EuchreBot GetBot(Suit trumpSuit)
+        {
+            return GetBot(trumpSuit, new EuchreOptions());
+        }
+
+        private static EuchreBot GetBot(Suit trumpSuit, EuchreOptions options)
+        {
+            return new EuchreBot(options, trumpSuit);
         }
 
         /// <summary>
