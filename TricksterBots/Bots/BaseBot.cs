@@ -12,7 +12,6 @@ namespace Trickster.Bots
         bool IsPartnership { get; }
         bool IsTwoTeams { get; }
         GameOptions Options { get; }
-        bool returnLog { get; set; }
         Suit TrumpSuit { get; }
         bool CanSeeHand(PlayersCollectionBase players, PlayerBase player, PlayerBase target);
         Suit EffectiveSuit(Card c);
