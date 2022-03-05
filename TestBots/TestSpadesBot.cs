@@ -13,14 +13,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 3, "3H6H") { HandScore = 3 },
-                new TestPlayer(1, 2) { HandScore = 2 },
-                new TestPlayer(2, 3) { HandScore = 3 },
-                new TestPlayer(3, 2) { HandScore = 2 }
+                new TestPlayer(3, "3H6H", 3),
+                new TestPlayer(2, handScore: 2),
+                new TestPlayer(3, handScore: 3),
+                new TestPlayer(2, handScore: 2)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players, "2H4H5H");
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "2H4H5H");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("3H", suggestion.ToString(), "Don't take a bag when we can't set opponents");
         }
@@ -30,14 +30,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 3, "3H6H") { HandScore = 3, GameScore = 490 },
-                new TestPlayer(1, 3) { HandScore = 2 },
-                new TestPlayer(2, 3) { HandScore = 3, GameScore = 490 },
-                new TestPlayer(3, 3) { HandScore = 2 }
+                new TestPlayer(3, "3H6H", 3, 490),
+                new TestPlayer(3, handScore: 2),
+                new TestPlayer(3, handScore: 3, gameScore: 490),
+                new TestPlayer(3, handScore: 2)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players, "2H4H5H");
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "2H4H5H");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("3H", suggestion.ToString(), "Don't take a bag if we'll win anyway");
         }
@@ -47,14 +47,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 3, "3H6H") { HandScore = 3, GameScore = 9 },
-                new TestPlayer(1, 3) { HandScore = 2 },
-                new TestPlayer(2, 3) { HandScore = 3, GameScore = 9 },
-                new TestPlayer(3, 3) { HandScore = 2 }
+                new TestPlayer(3, "3H6H", 3, 9),
+                new TestPlayer(3, handScore: 2),
+                new TestPlayer(3, handScore: 3, gameScore: 9),
+                new TestPlayer(3, handScore: 2)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players, "2H4H5H");
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "2H4H5H");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("3H", suggestion.ToString(), "Don't take a bag if we're too close to penalty");
         }
@@ -64,14 +64,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 5, "AH5H4H3H2H9S8S7S6S5S4S3S2S"),
-                new TestPlayer(1, 3),
-                new TestPlayer(2, 5),
-                new TestPlayer(3, 0)
+                new TestPlayer(5, "AH5H4H3H2H9S8S7S6S5S4S3S2S"),
+                new TestPlayer(3),
+                new TestPlayer(5),
+                new TestPlayer(0)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players);
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, notLegalSuit: Suit.Spades);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("AH", suggestion.ToString(), $"Led {suggestion.StdNotation} when ignoring nil");
         }
@@ -81,14 +81,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 4, "TH9HKC8C7C6C5C4C3C2CKDKS") { HandScore = 1, CardsTaken = "AHKHQHJH" },
-                new TestPlayer(1, 4),
-                new TestPlayer(2, 0),
-                new TestPlayer(3, 4)
+                new TestPlayer(4, "TH9HKC8C7C6C5C4C3C2CKDKS", 1, cardsTaken: "AHKHQHJH"),
+                new TestPlayer(4),
+                new TestPlayer(0),
+                new TestPlayer(4)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players) { legalCards = new Hand("TH9HKC8C7C6C5C4C3C2CKD") };
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, notLegalSuit: Suit.Spades);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("TH", suggestion.ToString(), $"Led {suggestion.StdNotation} to protect Nil");
         }
@@ -98,14 +98,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 4, "9H4H2HKC7C6C5C4C3C2CQDQS") { HandScore = 1, CardsTaken = "AHKHQHJH" },
-                new TestPlayer(1, 4),
-                new TestPlayer(2, 0),
-                new TestPlayer(3, 4)
+                new TestPlayer(4, "9H4H2HKC7C6C5C4C3C2CQDQS", 1, cardsTaken: "AHKHQHJH"),
+                new TestPlayer(4),
+                new TestPlayer(0),
+                new TestPlayer(4)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players) { legalCards = new Hand("9H4H2HKC7C6C5C4C3C2CQD") };
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, notLegalSuit: Suit.Spades);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("KC", suggestion.ToString(), $"Led {suggestion.StdNotation} to protect Nil");
         }
@@ -115,14 +115,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 4, "TH9HKC8C7C6C5C4C3CKDKS2S") { HandScore = 1, CardsTaken = "AHKHQHJH" },
-                new TestPlayer(1, 4),
-                new TestPlayer(2, 0),
-                new TestPlayer(3, 4)
+                new TestPlayer(4, "TH9HKC8C7C6C5C4C3CKDKS2S", 1, cardsTaken: "AHKHQHJH"),
+                new TestPlayer(4),
+                new TestPlayer(0),
+                new TestPlayer(4)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players) { options = new SpadesOptions { leadSpades = LeadSpadesWhen.Anytime } };
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot(new SpadesOptions { leadSpades = LeadSpadesWhen.Anytime });
+            var cardState = new TestCardState<SpadesOptions>(bot, players);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("KS", suggestion.ToString(), $"Led {suggestion.StdNotation} to protect Nil");
         }
@@ -132,14 +132,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 4, "6H4HKC7C6C5C4C3C2CKDKS") { HandScore = 2, CardsTaken = "AHKHQHJHTH8H3H7H" },
-                new TestPlayer(1, 4),
-                new TestPlayer(2, 0) { PlayedCards = new List<PlayedCard> { new PlayedCard(new Card("TH"), new Card("3H")) } },
-                new TestPlayer(3, 4)
+                new TestPlayer(4, "6H4HKC7C6C5C4C3C2CKDKS", 2, cardsTaken: "AHKHQHJHTH8H3H7H"),
+                new TestPlayer(4),
+                new TestPlayer(0) { PlayedCards = new List<PlayedCard> { new PlayedCard(new Card("TH"), new Card("3H")) } },
+                new TestPlayer(4)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players, legalCards: "6H4HKC7C6C5C4C3C2CKD");
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, notLegalSuit: Suit.Spades);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("4H", suggestion.ToString(), $"Led {suggestion.StdNotation} only as high as needed");
         }
@@ -149,14 +149,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 4, "4H2HKC7C6C5C4C3C2CKDKS") { HandScore = 2, CardsTaken = "AHKHQHJHTH5HQC3H" },
-                new TestPlayer(1, 4),
-                new TestPlayer(2, 0) { VoidSuits = new List<Suit> { Suit.Hearts } },
-                new TestPlayer(3, 4)
+                new TestPlayer(4, "4H2HKC7C6C5C4C3C2CKDKS", 2, cardsTaken: "AHKHQHJHTH5HQC3H"),
+                new TestPlayer(4),
+                new TestPlayer(0) { VoidSuits = new List<Suit> { Suit.Hearts } },
+                new TestPlayer(4)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players) { legalCards = new Hand("4H2HKC7C6C5C4C3C2CKD") };
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, notLegalSuit: Suit.Spades);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("2H", suggestion.ToString(), $"Led {suggestion.StdNotation} to protect Nil");
         }
@@ -166,14 +166,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 5, "AH3HTS9S8S7S6S5S4S3S2S2C2D"),
-                new TestPlayer(1, 3),
-                new TestPlayer(2, 5),
-                new TestPlayer(3, 0)
+                new TestPlayer(5, "AH3HTS9S8S7S6S5S4S3S2S2C2D"),
+                new TestPlayer(3),
+                new TestPlayer(5),
+                new TestPlayer(0)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players, "2H4H5H", "AH3H") { cardTakingTrick = new Card("5H"), trickTaker = players[3] };
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "2H4H5H");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("3H", suggestion.ToString(), $"Played {suggestion.StdNotation} to get under nil bidder in 4th seat");
         }
@@ -183,14 +183,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 5, "2D3D4D3C4CACQH5S7S8SJSKS"),
-                new TestPlayer(1, 2),
-                new TestPlayer(2, 0),
-                new TestPlayer(3, 4) { HandScore = 1, CardsTaken = "AH9HKH4H" }
+                new TestPlayer(5, "2D3D4D3C4CACQH5S7S8SJSKS"),
+                new TestPlayer(2),
+                new TestPlayer(0),
+                new TestPlayer(4, handScore: 1, cardsTaken: "AH9HKH4H")
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players, "KC", "3C4CAC");
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "KC");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("3C", suggestion.ToString(), $"Led {suggestion.StdNotation} to follow low if no gaps");
         }
@@ -200,14 +200,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 4, "3H6H") { HandScore = 4, GameScore = 490 },
-                new TestPlayer(1, 4) { HandScore = 3 },
-                new TestPlayer(2, 0) { HandScore = 1, GameScore = 490 },
-                new TestPlayer(3, 4) { HandScore = 3 }
+                new TestPlayer(4, "3H6H", 4, 490),
+                new TestPlayer(4, handScore: 3),
+                new TestPlayer(0, handScore: 1, gameScore: 490),
+                new TestPlayer(4, handScore: 3)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players, "2H4H5H") { cardTakingTrick = new Card("5H"), trickTaker = players[3] };
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "2H4H5H");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("6H", suggestion.ToString(), "Take a bag to set opponents when we can't win this hand");
         }
@@ -217,14 +217,14 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(0, 3, "3H6H") { HandScore = 3 },
-                new TestPlayer(1, 3) { HandScore = 2 },
-                new TestPlayer(2, 3) { HandScore = 3 },
-                new TestPlayer(3, 3) { HandScore = 2 }
+                new TestPlayer(3, "3H6H", 3),
+                new TestPlayer(3, handScore: 2),
+                new TestPlayer(3, handScore: 3),
+                new TestPlayer(3, handScore: 2)
             };
 
-            var cardState = new TestCardState<SpadesOptions>(players, "2H4H5H") { cardTakingTrick = new Card("5H"), trickTaker = players[3] };
-            var bot = new SpadesBot(cardState.options, cardState.trumpSuit);
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "2H4H5H");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("6H", suggestion.ToString(), "Take a bag to set opponents");
         }
@@ -255,14 +255,24 @@ namespace TestBots
             Assert.AreEqual("2C2H3D3C", GetSuggestedPass(3), "Pass low cards for non-Nil bid");
         }
 
+        private static SpadesBot GetBot()
+        {
+            return GetBot(new SpadesOptions());
+        }
+
+        private static SpadesBot GetBot(SpadesOptions options)
+        {
+            return new SpadesBot(options, Suit.Spades);
+        }
+
         private static int GetSuggestedBid(string handString, out Hand hand, int partnerBid = BidBase.NoBid)
         {
             var players = new[]
             {
-                new TestPlayer(0, BidBase.NoBid, handString.Replace(" ", string.Empty)),
-                new TestPlayer(1),
-                new TestPlayer(2, partnerBid),
-                new TestPlayer(3)
+                new TestPlayer(seat: 0, hand: handString.Replace(" ", string.Empty)),
+                new TestPlayer(seat: 1),
+                new TestPlayer(seat: 2, bid: partnerBid),
+                new TestPlayer(seat: 3)
             };
 
             var legalBids = new List<BidBase>();
@@ -272,17 +282,13 @@ namespace TestBots
             hand = new Hand(players[0].Hand);
             var bidState = new SuggestBidState<SpadesOptions>
             {
-                options = new SpadesOptions(),
                 player = players[0],
-                trumpSuit = Suit.Spades,
-
                 players = players,
                 legalBids = legalBids,
                 hand = hand
             };
 
-            var bot = new SpadesBot(bidState.options, bidState.trumpSuit);
-            return bot.SuggestBid(bidState).value;
+            return GetBot().SuggestBid(bidState).value;
         }
 
         private static string GetSuggestedPass(int bid)
@@ -291,14 +297,12 @@ namespace TestBots
 
             var passState = new SuggestPassState<SpadesOptions>
             {
-                options = new SpadesOptions { nilPass = 4 },
-                player = new TestPlayer(0, bid, handString),
-                trumpSuit = Suit.Spades,
+                player = new TestPlayer(bid, handString),
                 hand = new Hand(handString),
                 passCount = 4
             };
 
-            var bot = new SpadesBot(passState.options, passState.trumpSuit);
+            var bot = GetBot(new SpadesOptions { nilPass = 4 });
             var cards = bot.SuggestPass(passState);
             return new Hand(cards).ToString();
         }
