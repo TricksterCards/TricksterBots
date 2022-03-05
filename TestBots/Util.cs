@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -76,9 +77,11 @@ namespace TestBots
             //  if we have cards in the trick, set stuff about the trick and adjust legal cards 
             if (this.trick.Count > 0)
             {
+                Assert.IsTrue(this.trick.Count < playersCollection.Count, $"{this.trick.Count} cards in trick is too many");
+
                 var highCardIndex = bot.TrickHighCardIndex(this.trick);
                 cardTakingTrick = this.trick[highCardIndex];
-                var seatTakingTrick = highCardIndex + 1; // we always assume seat 1 led the trick and it's seat 0's turn to play
+                var seatTakingTrick = playersCollection.Count - this.trick.Count + highCardIndex; // we assume it's seat 0's turn to play
                 isPartnerTakingTrick = playersCollection.PartnersOf(playersCollection[0]).Any(p => p.Seat == seatTakingTrick);
                 trickTaker = playersCollection.Single(p => p.Seat == seatTakingTrick);
 
