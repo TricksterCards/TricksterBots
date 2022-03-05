@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -170,14 +171,45 @@ namespace TestBots
         /// <summary>
         ///     Generate a suggested bid assuming default rules and first to bid to left of dealer.
         /// </summary>
-        /// <param name="hand">First bidder's hand</param>
+        /// <param name="handString">First bidder's hand</param>
         /// <param name="upCardString">The card turned up by the dealer</param>
         /// <returns>The suggested bid for the first bidder</returns>
-        private static string GetSuggestedBid(string hand, string upCardString)
+        private static string GetSuggestedBid(string handString, string upCardString)
         {
+            handString = handString.Replace(" ", "");
+
             var upCard = new Card(upCardString);
-            var bot = new EuchreBot(new EuchreOptions(), Suit.Unknown);
-            var bid = bot.SuggestBid(new Hand(hand.Replace(" ", "")), upCard, upCard.suit, false);
+            var bot = GetBot(Suit.Unknown);
+
+            //  get bid using the internal suggest bid method
+            var bid = bot.SuggestBid(new Hand(handString), upCard, upCard.suit, false);
+
+            //  get the bid using the state-based suggest bid method
+            var bidState = new SuggestBidState<EuchreOptions>
+            {
+                players = new[]
+                {
+                    new TestPlayer(hand: handString),
+                    new TestPlayer(),
+                    new TestPlayer(),
+                    new TestPlayer()
+                },
+                dealerSeat = 3,
+                hand = new Hand(handString),
+                legalBids = new[]
+                {
+                    new BidBase((int)EuchreBid.Make + (int)upCard.suit),
+                    new BidBase((int)EuchreBid.MakeAlone + (int)upCard.suit),
+                    new BidBase(BidBase.Pass)
+                },
+                upCard = upCard,
+                upCardSuit = upCard.suit
+            };
+            bidState.player = bidState.players[0];
+            var suggestion = bot.SuggestBid(bidState);
+            Assert.AreEqual(suggestion.value, bid.value, "Both suggest bid entry points agree");
+            Assert.IsTrue(bidState.legalBids.Any(b => b.value == suggestion.value), "Bid is in legal bids");
+
             return GetBidText(bid);
         }
     }
