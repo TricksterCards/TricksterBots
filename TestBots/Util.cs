@@ -9,6 +9,16 @@ namespace TestBots
 {
     internal static class Util
     {
+        public static string PrettyCards(IEnumerable<Card> cards)
+        {
+            return PrettyHand(new Hand(cards));
+        }
+
+        public static string PrettyHand(string handString)
+        {
+            return PrettyHand(new Hand(handString));
+        }
+
         public static string PrettyHand(Hand hand)
         {
             return string.Join(" ", hand.Select(c => c.StdNotation));
@@ -81,7 +91,8 @@ namespace TestBots
 
                 var highCardIndex = bot.TrickHighCardIndex(this.trick);
                 cardTakingTrick = this.trick[highCardIndex];
-                var seatTakingTrick = playersCollection.Count(p => p.Bid != BidBase.NotPlaying) - this.trick.Count + highCardIndex; // we assume it's seat 0's turn to play
+                var seatTakingTrick =
+                    playersCollection.Count(p => p.Bid != BidBase.NotPlaying) - this.trick.Count + highCardIndex; // we assume it's seat 0's turn to play
                 isPartnerTakingTrick = playersCollection.PartnersOf(playersCollection[0]).Any(p => p.Seat == seatTakingTrick);
                 trickTaker = playersCollection.Single(p => p.Seat == seatTakingTrick);
 
