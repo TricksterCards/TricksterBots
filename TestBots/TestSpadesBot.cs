@@ -9,6 +9,23 @@ namespace TestBots
     public class TestSpadesBot
     {
         [TestMethod]
+        public void CountSureTricks()
+        {
+            var players = new[]
+            {
+                new TestPlayer(4, "QSTCTSJS", 3, cardsTaken: "7DQD5SJDAS2S6S3S3H8H7H7C"),
+                new TestPlayer(2, handScore: 2, cardsTaken: "4DAD3D2DAC2C5C3C"),
+                new TestPlayer(4, handScore: 3, cardsTaken: "8DKD5D2HKC9C4C6C8CJC7SQC"),
+                new TestPlayer(1, handScore: 1, cardsTaken: "6H4HTHAH")
+            };
+
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "KS4S");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QS", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected QS");
+        }
+
+        [TestMethod]
         public void DontTakeBagsIfWeCantSetOpponents()
         {
             var players = new[]
@@ -176,6 +193,23 @@ namespace TestBots
             var cardState = new TestCardState<SpadesOptions>(bot, players, "2H4H5H");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("3H", suggestion.ToString(), $"Played {suggestion.StdNotation} to get under nil bidder in 4th seat");
+        }
+
+        [TestMethod]
+        public void PlayOverHighCardToProtectNilIfNeeded()
+        {
+            var players = new[]
+            {
+                new TestPlayer(5, "2D3D4D3C4CKCQH5S7S8SJSKS"),
+                new TestPlayer(0),
+                new TestPlayer(0),
+                new TestPlayer(4)
+            };
+
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "JC");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("KC", suggestion.ToString(), $"Played {suggestion.StdNotation} to follow high to cover gaps");
         }
 
         [TestMethod]
