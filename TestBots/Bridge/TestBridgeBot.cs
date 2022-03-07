@@ -10,7 +10,19 @@ namespace TestBots
     public class TestBridgeBot
     {
         [TestMethod]
-        public void RunSaycTests()
+        public void BidTests()
+        {
+            var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
+
+            foreach (var test in JsonTests.Tests.Select(ti => new SaycTest(ti)))
+            {
+                var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
+                Assert.AreEqual(test.expectedBid, suggestion, test.type);
+            }
+        }
+
+        [TestMethod]
+        public void SaycTestSuite()
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
             var totalTests = 0;
@@ -31,8 +43,8 @@ namespace TestBots
 
             Logger.LogMessage($"{hasVulnerable} tests have vulnerablility set");
 
-            Assert.IsTrue((double)totalPasses / totalTests > 0.5, "More than half the tests passed");
-            Assert.AreEqual(455, totalPasses, "The expected number of tests passed");
+            Assert.IsTrue((double)totalPasses / totalTests > 0.55, "More than 55% of the tests passed");
+            Assert.AreEqual(500, totalPasses, "The expected number of tests passed");
             //Assert.AreEqual(totalTests, totalPasses, "All the tests passed");
         }
     }
