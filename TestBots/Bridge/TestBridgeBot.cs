@@ -26,18 +26,13 @@ namespace TestBots
         }
 
         [TestMethod]
-        public void TestEnvironment()
-        {
-            Assert.AreEqual(Environment.GetEnvironmentVariable("TF_BUILD"), "True");
-        }
-
-        [TestMethod]
         public void SaycTestSuite()
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
             var totalTests = 0;
             var totalPasses = 0;
             var hasVulnerable = 0;
+            var changesFromPrevious = 0;
 
             var results = new Dictionary<string, List<SaycResult>>();
 
@@ -57,12 +52,17 @@ namespace TestBots
                     var passed = suggestion == test.expectedBid;
                     results[testItem.Key].Add(new SaycResult(passed, suggestion));
 
-                    if (pr.suggested != suggestion)
-                        Logger.LogMessage(
-                            $"!!! Previously, {testItem.Key}[{i}] suggested {BidString(pr.suggested)} ({pr.suggested}) but now it returned {BidString(suggestion)} ({suggestion})");
+                    if (pr.passed != passed || pr.suggested != suggestion)
+                    {
+                        changesFromPrevious++;
 
-                    if (pr.passed != passed)
-                        Logger.LogMessage($"!! Previously, {testItem.Key}[{i}] {PassFail(pr.passed)} but now it {PassFail(passed)}");
+                        if (pr.passed != passed)
+                            Logger.LogMessage($"!! Previously, {testItem.Key}[{i}] {PassFail(pr.passed)} but now it {PassFail(passed)}");
+
+                        if (pr.suggested != suggestion)
+                            Logger.LogMessage(
+                                $"!!! Previously, {testItem.Key}[{i}] suggested {BidString(pr.suggested)} ({pr.suggested}) but now it returned {BidString(suggestion)} ({suggestion})");
+                    }
 
                     if (passed) passes++;
                 }
@@ -76,11 +76,14 @@ namespace TestBots
 
             Logger.LogMessage($"{Environment.NewLine}Overall, {(double)totalPasses / totalTests:P2} ({totalPasses} / {totalTests}) of tests passed");
             Logger.LogMessage($"{hasVulnerable} tests have vulnerablility set");
-            UpdateSaycResults(results);
+
+            if (changesFromPrevious > 0)
+                UpdateSaycResults(results);
 
             Assert.IsTrue((double)totalPasses / totalTests > 0.55, "More than 55% of the tests passed");
             Assert.AreEqual(500, totalPasses, "The expected number of tests passed");
             //Assert.AreEqual(totalTests, totalPasses, "All the tests passed");
+            Assert.AreEqual(0, changesFromPrevious, $"{changesFromPrevious} test(s) changed results from previous");
         }
 
         private static string BidString(int bidValue)
