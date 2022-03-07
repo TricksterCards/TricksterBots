@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using Trickster.Bots;
@@ -30,10 +33,33 @@ namespace TestBots
             var totalPasses = 0;
             var hasVulnerable = 0;
 
+            var results = new Dictionary<string, List<SaycResult>>();
+
             foreach (var testItem in Test_Sayc.Tests)
             {
                 var tests = testItem.Value.Select(ti => new BidTest(ti)).ToList();
-                var passes = tests.Count(test => bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value == test.expectedBid);
+
+                results.Add(testItem.Key, new List<SaycResult>(tests.Count));
+                var previousResults = Test_Sayc_Results.Results[testItem.Key];
+
+                var passes = 0;
+                for (var i = 0; i < tests.Count; i++)
+                {
+                    var test = tests[i];
+                    var pr = previousResults[i];
+                    var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
+                    var passed = suggestion == test.expectedBid;
+                    results[testItem.Key].Add(new SaycResult(passed, suggestion));
+
+                    if (pr.suggested != suggestion)
+                        Logger.LogMessage(
+                            $"!!! Previously, {testItem.Key}[{i}] suggested {BidString(pr.suggested)} ({pr.suggested}) but now it returned {BidString(suggestion)} ({suggestion})");
+
+                    if (pr.passed != passed)
+                        Logger.LogMessage($"!! Previously, {testItem.Key}[{i}] {PassFail(pr.passed)} but now it {PassFail(passed)}");
+
+                    if (passed) passes++;
+                }
 
                 Logger.LogMessage($"{(double)passes / tests.Count:P0} ({passes} / {tests.Count}) of tests in \"{testItem.Key}\" passed");
 
@@ -44,10 +70,80 @@ namespace TestBots
 
             Logger.LogMessage($"{Environment.NewLine}Overall, {(double)totalPasses / totalTests:P2} ({totalPasses} / {totalTests}) of tests passed");
             Logger.LogMessage($"{hasVulnerable} tests have vulnerablility set");
+            UpdateSaycResults(results);
 
             Assert.IsTrue((double)totalPasses / totalTests > 0.55, "More than 55% of the tests passed");
             Assert.AreEqual(500, totalPasses, "The expected number of tests passed");
             //Assert.AreEqual(totalTests, totalPasses, "All the tests passed");
+        }
+
+        private static string BidString(int bidValue)
+        {
+            switch (bidValue)
+            {
+                case BidBase.Pass:
+                    return "Pass";
+                case BridgeBid.Double:
+                    return "X";
+                case BridgeBid.Redouble:
+                    return "XX";
+                default:
+                    var db = new DeclareBid(bidValue);
+                    return $"{db.level}{(db.suit == Suit.Unknown ? "NT" : Card.SuitSymbol(db.suit))}";
+            }
+        }
+
+        private static string PassFail(bool passed)
+        {
+            return passed ? "passed" : "failed";
+        }
+
+        private static void UpdateSaycResults(Dictionary<string, List<SaycResult>> results)
+        {
+            //  skip this if being run by DevOps Service
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")))
+                return;
+
+            var path = Path.GetFullPath(@"..\..\Bridge\Test_Sayc_Results.cs");
+            if (!File.Exists(path) || (File.GetAttributes(path) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                return;
+
+            var sb = new StringBuilder();
+            sb.AppendLine(@"using System.Collections.Generic;
+
+namespace TestBots
+{
+    public static class Test_Sayc_Results
+    {
+        public static readonly Dictionary<string, SaycResult[]> Results = new Dictionary<string, SaycResult[]>
+        {");
+
+            foreach (var result in results)
+            {
+                var s = result.Value.Select(r => $"new SaycResult({r.passed.ToString().ToLowerInvariant()}, {r.suggested})");
+
+                sb.AppendLine($@"             {{
+                ""{result.Key}"", new[]
+                {{
+                    {string.Join($",{Environment.NewLine}                    ", s)}
+                }}
+             }},");
+            }
+
+            sb.AppendLine(@"        };
+    }
+}");
+
+            var existing = File.ReadAllText(path);
+            var endLine1 = existing.IndexOf(Environment.NewLine, StringComparison.Ordinal);
+            existing = existing.Substring(endLine1 + Environment.NewLine.Length);
+
+            if (sb.ToString() != existing)
+            {
+                sb.Insert(0, $"// last updated {DateTime.Now:M/d/yyyy h:mm tt (K)}{Environment.NewLine}");
+                Logger.LogMessage($"{Environment.NewLine}Updating {path}...");
+                File.WriteAllText(path, sb.ToString());
+            }
         }
     }
 }
