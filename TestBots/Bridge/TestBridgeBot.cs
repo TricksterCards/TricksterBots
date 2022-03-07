@@ -26,6 +26,12 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void TestEnvironment()
+        {
+            Assert.AreEqual(Environment.GetEnvironmentVariable("TF_BUILD"), "True");
+        }
+
+        [TestMethod]
         public void SaycTestSuite()
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
