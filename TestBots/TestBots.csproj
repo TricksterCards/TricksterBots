@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bridge\JsonTests.cs" />
-    <Compile Include="Bridge\SaycTest.cs" />
+    <Compile Include="Bridge\BidTest.cs" />
     <Compile Include="Bridge\TestBridgeBot.cs" />
     <Compile Include="Bridge\Test_Sayc.cs" />
     <Compile Include="TestHeartsBot.cs" />
