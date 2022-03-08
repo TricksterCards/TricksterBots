@@ -77,9 +77,9 @@ namespace TestBots
                 case "P":
                     return BidBase.Pass;
                 case "X":
-                    return BridgeBid.Double; // new DeclareBid(lastBid.level, lastBid.suit, DeclareBid.DoubleOrRe.Double);
+                    return BridgeBid.Double;
                 case "XX":
-                    return BridgeBid.Redouble; // new DeclareBid(lastBid.level, lastBid.suit, DeclareBid.DoubleOrRe.Redouble);
+                    return BridgeBid.Redouble;
             }
 
             //  this is a bit of a hack but works because rank of 1 returns 1 (not Rank.Ace) and N will return Suit.Unknown
