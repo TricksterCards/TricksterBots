@@ -14,14 +14,16 @@ namespace TestBots
     public class TestBridgeBot
     {
         [TestMethod]
-        public void BidTests()
+        public void BasicTests()
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
 
-            foreach (var test in JsonTests.Tests.Select(ti => new BidTest(ti)))
+            foreach (var test in TestBots.BasicTests.Tests.Select(ti => new BidTest(ti)))
             {
                 var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
-                Assert.AreEqual(test.expectedBid, suggestion, test.type);
+                Assert.AreEqual(test.expectedBid, suggestion,
+                    $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})"
+                );
             }
         }
 
@@ -57,7 +59,7 @@ namespace TestBots
                         changesFromPrevious++;
 
                         if (pr.passed != passed)
-                            Logger.LogMessage($"!! Previously, {testItem.Key}[{i}] {PassFail(pr.passed)} but now it {PassFail(passed)}");
+                            Logger.LogMessage($"!!! Previously, {testItem.Key}[{i}] {PassFail(pr.passed)} but now it {PassFail(passed)}");
 
                         if (pr.suggested != suggestion)
                             Logger.LogMessage(
@@ -80,9 +82,7 @@ namespace TestBots
             if (changesFromPrevious > 0)
                 UpdateSaycResults(results);
 
-            Assert.IsTrue((double)totalPasses / totalTests > 0.55, "More than 55% of the tests passed");
-            Assert.AreEqual(500, totalPasses, "The expected number of tests passed");
-            //Assert.AreEqual(totalTests, totalPasses, "All the tests passed");
+            Assert.IsTrue(totalPasses >= 500, "At least expected number of tests passed");
             Assert.AreEqual(0, changesFromPrevious, $"{changesFromPrevious} test(s) changed results from previous");
         }
 

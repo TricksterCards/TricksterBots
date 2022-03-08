@@ -32,11 +32,11 @@ namespace TestBots
         }
 
         //  use to contruct a test from JsonTests
-        public BidTest(JsonTests.JsonTest test)
+        public BidTest(BasicTests.BasicTest test)
         {
             hand = new Hand(test.hand.Replace(" ", string.Empty));
-            bidHistory = ParseJsonTestBidHistory(test.history);
-            expectedBid = ParseJsonTestBid(test.bid);
+            bidHistory = ParseBasicTestBidHistory(test.history);
+            expectedBid = ParseBasicTestBid(test.bid);
             type = test.type;
         }
 
@@ -46,7 +46,7 @@ namespace TestBots
         public string type { get; set; } // used only when parsing from JsonTest
         public Vulnerable vulnerable { get; set; } // used only when parsing a Test_Sayc test
 
-        private static int ParseJsonTestBid(string bidString)
+        private static int ParseBasicTestBid(string bidString)
         {
             if (bidString == "Pass")
                 return BidBase.Pass;
@@ -60,12 +60,12 @@ namespace TestBots
             return ParseSaycTestBid(bidString);
         }
 
-        private static IReadOnlyList<int> ParseJsonTestBidHistory(string[] bidStrings)
+        private static IReadOnlyList<int> ParseBasicTestBidHistory(string[] bidStrings)
         {
             var bids = new List<int>();
 
             if (bidStrings?.Length > 0)
-                bids.AddRange(bidStrings.Select(ParseJsonTestBid));
+                bids.AddRange(bidStrings.Select(ParseBasicTestBid));
 
             return bids;
         }
