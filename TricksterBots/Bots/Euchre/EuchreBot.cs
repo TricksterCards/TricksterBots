@@ -161,7 +161,7 @@ namespace Trickster.Bots
                     return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
             }
 
-            if (highEstimate >= 2.25)
+            if (highEstimate >= (options.take4for1 ? 3.25 : 2.25))
                 return new BidBase((int)EuchreBid.Make + (int)highSuit);
 
             //  if we're the dealer and this is the second round with stick-the-dealer enabled, we must bid

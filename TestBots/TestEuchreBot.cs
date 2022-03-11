@@ -161,6 +161,27 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void TestTake4Bid()
+        {
+            Assert.AreEqual("♠", GetSuggestedBid("  9HTH KSASJC", "9S", true), "Should bid when two-suited with three trump of reasonable strength");
+            Assert.AreEqual("♣", GetSuggestedBid(" AD AH QCKCAC", "9C", true), "Should bid three-suited missing both Jacks with strong off-suit");
+            Assert.AreEqual("Pass", GetSuggestedBid(" AD AH TCQCKC", "9C", true), "Should pass three-suited missing both Jacks with strong off-suit");
+            Assert.AreEqual("Pass", GetSuggestedBid(" 9C 9S ADJHJD", "9D", true), "Should pass with only three sure tricks, regardless of other cards");
+            Assert.AreEqual("Pass", GetSuggestedBid("  9DTD QHKHAH", "9H", true), "Should pass missing both Jacks with remaining high trump and two-suited");
+            Assert.AreEqual("Pass", GetSuggestedBid(" ACKC AH JCJS", "9S", true), "Should pass with only Jacks with strong off-suit support");
+            Assert.AreEqual("Pass", GetSuggestedBid(" ASKS 9C JHJD", "9D", true), "Should pass with only Jacks with mostly strong off-suit support");
+            Assert.AreEqual("Pass", GetSuggestedBid(" 9D 9H KCACJS", "TC", true), "Should pass with weak off-suit and no high Jack if only three strong trump");
+            Assert.AreEqual("Pass", GetSuggestedBid(" 9C 9S QDADJH", "TD", true), "Should pass with weak off-suit and no high Jack if only three strong trump");
+            Assert.AreEqual("Pass", GetSuggestedBid("AC AD 9S JDJH", "TH", true), "Should pass four-suited having both Jacks and two off-suit Aces");
+            Assert.AreEqual("♥", GetSuggestedBid("AC AH 9S JDJH", "TH", true), "Should take four-suited having both Jacks, an Ace and one off-suit Ace");
+            Assert.AreEqual("Pass", GetSuggestedBid("  9DKD 9SKSJC", "TS", true), "Should pass with three trump if two-suited");
+            Assert.AreEqual("Pass", GetSuggestedBid("  9HQH 9CQCJC", "AC", true), "Should pass with three trump if two-suited");
+            Assert.AreEqual("Pass", GetSuggestedBid("  ASKS TDQDKD", "AD", true), "Should pass with three weak trump if two-suited with high off-suit");
+            Assert.AreEqual("Pass", GetSuggestedBid("  TC 9HTHQHJH", "AH", true), "Should pass with four trump, regardless of off-suit");
+            Assert.AreEqual("Pass", GetSuggestedBid("  9D 9STSQSKS", "AS", true), "Should pass with four trump, regardless of off-suit");
+        }
+
+        [TestMethod]
         public void TestTakeBidAlone()
         {
             //  risk of both same suit as Ace being led on first trick AND getting trumped is small
@@ -222,15 +243,12 @@ namespace TestBots
         /// <param name="handString">First bidder's hand</param>
         /// <param name="upCardString">The card turned up by the dealer</param>
         /// <returns>The suggested bid for the first bidder</returns>
-        private static string GetSuggestedBid(string handString, string upCardString)
+        private static string GetSuggestedBid(string handString, string upCardString, bool take4for1 = false)
         {
             handString = handString.Replace(" ", "");
 
             var upCard = new Card(upCardString);
-            var bot = GetBot(Suit.Unknown);
-
-            //  get bid using the internal suggest bid method
-            var bid = bot.SuggestBid(new Hand(handString), upCard, upCard.suit, false);
+            var bot = GetBot(Suit.Unknown, new EuchreOptions() { take4for1 = take4for1 });
 
             //  get the bid using the state-based suggest bid method
             var bidState = new SuggestBidState<EuchreOptions>
@@ -255,10 +273,9 @@ namespace TestBots
             };
             bidState.player = bidState.players[0];
             var suggestion = bot.SuggestBid(bidState);
-            Assert.AreEqual(suggestion.value, bid.value, "Both suggest bid entry points agree");
             Assert.IsTrue(bidState.legalBids.Any(b => b.value == suggestion.value), "Bid is in legal bids");
 
-            return GetBidText(bid);
+            return GetBidText(suggestion);
         }
     }
 }
