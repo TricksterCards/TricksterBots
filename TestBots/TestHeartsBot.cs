@@ -46,6 +46,24 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void SamplePassTest()
+        {
+            var player = new TestPlayer(hand: "AHKHQHJHTD9D8D7S6S5C4C3C2C");
+            var passState = new SuggestPassState<HeartsOptions>
+            {
+                player = player,
+                hand = new Hand(player.Hand),
+                passCount = 3
+            };
+
+            var bot = GetBot();
+            var suggestion = bot.SuggestPass(passState);
+            Assert.AreEqual(3, suggestion.Count, $"{suggestion.Count} cards were passed; expected 3");
+            var suggestionAsHand = new Hand(suggestion.OrderBy(bot.SuitSort).ThenBy(bot.RankSort));
+            Assert.AreEqual("JHQHKH", suggestionAsHand.ToString(), $"Suggested {suggestionAsHand}; expected JHQHKH");
+        }
+
+        [TestMethod]
         public void TryToDrawOutQS()
         {
             var players = new[]
