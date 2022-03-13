@@ -178,17 +178,17 @@ namespace Trickster.Bots
             if (player.Bid == (int)EuchreBid.GoUnder)
                 return hand.OrderBy(IsTrump).ThenBy(RankSort).Take(3).ToList();
 
-            //  discard the lowest card of the offsuit with the fewest cards (or the lowest card of trump)
-            var offSuits = hand.Select(EffectiveSuit).Where(s => s != trump).Distinct().ToList();
-            var lowSuitCount =
-                offSuits.Select(s => new
-                        { suit = s, count = hand.Count(c => EffectiveSuit(c) == s), lowRank = hand.Where(c => EffectiveSuit(c) == s).Min(RankSort) })
-                    .OrderBy(sc => sc.count)
-                    .ThenBy(sc => sc.lowRank)
-                    .FirstOrDefault();
-            var lowSuit = lowSuitCount?.suit ?? trump;
-            var lowCard = hand.Where(c => EffectiveSuit(c) == lowSuit).OrderBy(RankSort).First();
-            return new List<Card> { lowCard };
+            //  organize the cards of the non-trump suits by suit
+            var cardsBySuit = hand.Where(c => !IsTrump(c)).GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.ToList());
+
+            //  if we have any, discard the lowest card from the suit with the fewest cards
+            if (cardsBySuit.Count > 0)
+            {
+                var suitCardsWithFewest = cardsBySuit.Values.OrderBy(l => l.Count).First();
+                return suitCardsWithFewest.OrderBy(RankSort).Take(1).ToList();
+            }
+
+            return hand.OrderBy(RankSort).Take(1).ToList();
         }
 
         public override Card SuggestNextCard(SuggestCardState<EuchreOptions> state)
