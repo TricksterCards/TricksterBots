@@ -21,14 +21,14 @@ namespace TestBots
                 passCount = 1
             };
             var suggestion = bot.SuggestPass(passState);
-            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.AreEqual(1, suggestion.Count, $"{suggestion.Count} cards were passed; expected 1");
             Assert.AreEqual("9S", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected 9S");
 
             //  second suggestion is non-playing partner passing to maker
             passState.player = new TestPlayer(-3, "9HTHQHKHAHJD");
             passState.hand = new Hand("9HTHQHKHAHJD");
             suggestion = bot.SuggestPass(passState);
-            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.AreEqual(1, suggestion.Count, $"{suggestion.Count} cards were passed; expected 1");
             Assert.AreEqual("JD", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected JD");
         }
 
@@ -45,15 +45,32 @@ namespace TestBots
                 passCount = 1
             };
             var suggestion = bot.SuggestPass(passState);
-            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.AreEqual(1, suggestion.Count, "One card was passed");
             Assert.AreEqual("TH", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected TH");
 
             //  second suggestion is non-playing partner passing to maker
             passState.player = new TestPlayer(-3, "9D9STSQSAS");
             passState.hand = new Hand("9D9STSQSAS");
             suggestion = bot.SuggestPass(passState);
-            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.AreEqual(1, suggestion.Count, "One card was passed");
             Assert.AreEqual("AS", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected AS");
+        }
+
+        [TestMethod]
+        public void DealerDiscardTest()
+        {
+            var player = new TestPlayer(hand: "ADJD9STCJH9C");
+            var discardState = new SuggestDiscardState<EuchreOptions>
+            {
+                player = player,
+                hand = new Hand(player.Hand)
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var suggestion = bot.SuggestDiscard(discardState);
+            Assert.AreEqual(1, suggestion.Count, $"{suggestion.Count} cards were discarded; expected 1");
+            var suggestionAsHand = new Hand(suggestion.OrderBy(bot.SuitSort).ThenBy(bot.RankSort));
+            Assert.AreEqual("9S", suggestionAsHand.ToString(), $"Suggestion was {suggestionAsHand}; expected 9S");
         }
 
         [TestMethod]
@@ -69,7 +86,7 @@ namespace TestBots
 
             var bot = GetBot(Suit.Diamonds);
             var cardState = new TestCardState<EuchreOptions>(bot, players, "9SQSTS");
-            Assert.AreEqual(cardState.legalCards.Count, 5, "All cards are legal");
+            Assert.AreEqual(5, cardState.legalCards.Count, "All cards are legal");
             Assert.IsTrue(cardState.isPartnerTakingTrick, "Partner is taking trick");
 
             var suggestion = bot.SuggestNextCard(cardState);
@@ -89,11 +106,28 @@ namespace TestBots
 
             var bot = GetBot(Suit.Diamonds);
             var cardState = new TestCardState<EuchreOptions>(bot, players, "AS");
-            Assert.AreEqual(cardState.legalCards.Count, 5, "All cards are legal");
+            Assert.AreEqual(5, cardState.legalCards.Count, "All cards are legal");
             Assert.IsTrue(cardState.isPartnerTakingTrick, "Partner is taking trick");
 
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("9H", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected 9H");
+        }
+
+        [TestMethod]
+        public void GoUnderDiscardTest()
+        {
+            var player = new TestPlayer((int)EuchreBid.GoUnder, "JD9DTSJH9CADJS9S");
+            var discardState = new SuggestDiscardState<EuchreOptions>
+            {
+                player = player,
+                hand = new Hand(player.Hand)
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var suggestion = bot.SuggestDiscard(discardState);
+            Assert.AreEqual(3, suggestion.Count, $"{suggestion.Count} cards were discarded; expected 3");
+            var suggestionAsHand = new Hand(suggestion.OrderBy(bot.SuitSort).ThenBy(bot.RankSort));
+            Assert.AreEqual("9C9STS", suggestionAsHand.ToString(), $"Suggestion was {suggestionAsHand}; expected 9C9STS");
         }
 
         [TestMethod]
@@ -182,8 +216,8 @@ namespace TestBots
 
             var bot = GetBot(Suit.Diamonds);
             var cardState = new TestCardState<EuchreOptions>(bot, players, "AS9S");
-            Assert.AreEqual(GetBidText(cardState.player.Bid), "♦ alone", "Diamonds alone bid is correct");
-            Assert.AreEqual(cardState.legalCards.Count, 5, "All cards are legal");
+            Assert.AreEqual("♦ alone", GetBidText(cardState.player.Bid), "Diamonds alone bid is correct");
+            Assert.AreEqual(5, cardState.legalCards.Count, "All cards are legal");
             Assert.IsFalse(cardState.isPartnerTakingTrick, "Partner is not taking trick");
 
             var suggestion = bot.SuggestNextCard(cardState);
