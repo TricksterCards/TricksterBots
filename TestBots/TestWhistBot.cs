@@ -11,23 +11,15 @@ namespace TestBots
         [TestMethod]
         public void DiscardJokersInNT()
         {
-            var players = new[]
+            var player = new TestPlayer(1561, "6DKDJDJH8S7H5DLJTDQSHJKS5SAHQHJCJSQC");
+            var discardState = new SuggestDiscardState<WhistOptions>
             {
-                new TestPlayer(1561, "6DKDJDJH8S7H5DLJTDQSHJKS5SAHQHJCJSQC"),
-                new TestPlayer(1400),
-                new TestPlayer(1401),
-                new TestPlayer(1400)
+                player = player,
+                hand = new Hand(player.Hand)
             };
 
             var bot = GetBot(new WhistOptions
                 { variation = WhistVariation.BidWhist, bidderGetsKitty = true, bidderLeads = true });
-
-            var discardState = new SuggestDiscardState<WhistOptions>
-            {
-                player = players[0],
-                hand = new Hand(players[0].Hand)
-            };
-
             var suggestion = bot.SuggestDiscard(discardState);
             Assert.AreEqual(6, suggestion.Count, "Discarded 6 cards");
             Assert.AreEqual(2, suggestion.Count(c => c.suit == Suit.Joker), $"Suggestion {Util.PrettyCards(suggestion)} contains both jokers");
