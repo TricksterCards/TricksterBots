@@ -728,7 +728,7 @@ namespace Trickster.Bots
 
             //  look only at non-nil opponents (unless nil tricks help team bid)
             var bid = lhoBid.Tricks + rhoBid.Tricks;
-            var taken = (lhoBid.IsNotNil || !options.nilBags ? lho.HandScore : 0) + (rhoBid.IsNotNil || !options.nilBags ? rho.HandScore : 0);
+            var taken = (lhoBid.IsNotNil || options.failedNilBags == FailedNilBags.HelpsTeamBid ? lho.HandScore : 0) + (rhoBid.IsNotNil || options.failedNilBags == FailedNilBags.HelpsTeamBid ? rho.HandScore : 0);
             var need = bid - taken;
 
             //  keep in mind how many bags we'll take
