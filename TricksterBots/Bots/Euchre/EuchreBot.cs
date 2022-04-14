@@ -92,7 +92,11 @@ namespace Trickster.Bots
 
             var isDealer = player.Seat == dealerSeat;
 
-            if (options.goUnder && legalBids.Any(b => b.value == (int)EuchreBid.GoUnder))
+            //  always call a misdeal if offered
+            if (legalBids.Any(b => b.value == (int)EuchreBid.CallMisdeal))
+                return legalBids.Single(b => b.value == (int)EuchreBid.CallMisdeal);
+
+            if (legalBids.Any(b => b.value == (int)EuchreBid.GoUnder))
             {
                 //  go under if we can and don't have any suit we think we want to bid
                 var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer);

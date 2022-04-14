@@ -9,6 +9,41 @@ namespace TestBots
     public class TestEuchreBot
     {
         [TestMethod]
+        public void AlwaysCallMisdeal()
+        {
+            const string handString = "TD9S9C9H9D";
+
+            var upCard = new Card("JD");
+            var bot = GetBot(Suit.Unknown, new EuchreOptions { allowMisdeal = EuchreMisdeal.NoAceNoFace });
+
+            //  get the bid using the state-based suggest bid method
+            var bidState = new SuggestBidState<EuchreOptions>
+            {
+                players = new[]
+                {
+                    new TestPlayer(hand: handString),
+                    new TestPlayer(),
+                    new TestPlayer(),
+                    new TestPlayer()
+                },
+                dealerSeat = 3,
+                hand = new Hand(handString),
+                legalBids = new[]
+                {
+                    new BidBase((int)EuchreBid.CallMisdeal),
+                    new BidBase((int)EuchreBid.NoMisdeal)
+                },
+                upCard = upCard,
+                upCardSuit = upCard.suit
+            };
+            bidState.player = bidState.players[0];
+            var suggestion = bot.SuggestBid(bidState);
+            Assert.IsTrue(bidState.legalBids.Any(b => b.value == suggestion.value), "Bid is in legal bids");
+
+            Assert.AreEqual((int)EuchreBid.CallMisdeal, suggestion.value, $"Suggested {suggestion.value}; expected ${(int)EuchreBid.CallMisdeal}");
+        }
+
+        [TestMethod]
         public void CallForBest()
         {
             var bot = GetBot(Suit.Diamonds, new EuchreOptions { callForBest = true });
@@ -141,26 +176,6 @@ namespace TestBots
         }
 
         [TestMethod]
-        public void TestTakeBid()
-        {
-            Assert.AreEqual("♠", GetSuggestedBid("  9HTH KSASJC", "9S"), "Should bid when two-suited with three trump of reasonable strength");
-            Assert.AreEqual("♣", GetSuggestedBid(" AD AH QCKCAC", "9C"), "Should bid three-suited missing both Jacks with strong off-suit");
-            Assert.AreEqual("♣", GetSuggestedBid(" AD AH TCQCKC", "9C"), "Should bid three-suited missing both Jacks with strong off-suit");
-            Assert.AreEqual("♦", GetSuggestedBid(" 9C 9S ADJHJD", "9D"), "Should bid with three sure tricks, regardless of other cards");
-            Assert.AreEqual("♥", GetSuggestedBid("  9DTD QHKHAH", "9H"), "Should bid missing both Jacks with remaining high trump and two-suited");
-            Assert.AreEqual("♠", GetSuggestedBid(" ACKC AH JCJS", "9S"), "Should bid with only Jacks with strong off-suit support");
-            Assert.AreEqual("♦", GetSuggestedBid(" ASKS 9C JHJD", "9D"), "Should bid with only Jacks with mostly strong off-suit support");
-            Assert.AreEqual("♣", GetSuggestedBid(" 9D 9H KCACJS", "TC"), "Should bid with weak off-suit and no high Jack if three strong trump");
-            Assert.AreEqual("♦", GetSuggestedBid(" 9C 9S QDADJH", "TD"), "Should bid with weak off-suit and no high Jack if three strong trump");
-            Assert.AreEqual("♥", GetSuggestedBid("AC 9D 9S JDJH", "TH"), "Should bid four-suited having both Jacks and an off-suit Ace");
-            Assert.AreEqual("♠", GetSuggestedBid("  9DKD 9SKSJC", "TS"), "Should bid with three trump if two-suited");
-            Assert.AreEqual("♣", GetSuggestedBid("  9HQH 9CQCJC", "AC"), "Should bid with three trump if two-suited");
-            Assert.AreEqual("♦", GetSuggestedBid("  ASKS TDQDKD", "AD"), "Should bid with three weak trump if two-suited with high off-suit");
-            Assert.AreEqual("♥", GetSuggestedBid("  TC 9HTHQHJH", "AH"), "Should bid with four trump, regardless of off-suit");
-            Assert.AreEqual("♠", GetSuggestedBid("  9D 9STSQSKS", "AS"), "Should bid with four trump, regardless of off-suit");
-        }
-
-        [TestMethod]
         public void TestTake4Bid()
         {
             Assert.AreEqual("♠", GetSuggestedBid("  9HTH KSASJC", "9S", true), "Should bid when two-suited with three trump of reasonable strength");
@@ -179,6 +194,26 @@ namespace TestBots
             Assert.AreEqual("Pass", GetSuggestedBid("  ASKS TDQDKD", "AD", true), "Should pass with three weak trump if two-suited with high off-suit");
             Assert.AreEqual("Pass", GetSuggestedBid("  TC 9HTHQHJH", "AH", true), "Should pass with four trump, regardless of off-suit");
             Assert.AreEqual("Pass", GetSuggestedBid("  9D 9STSQSKS", "AS", true), "Should pass with four trump, regardless of off-suit");
+        }
+
+        [TestMethod]
+        public void TestTakeBid()
+        {
+            Assert.AreEqual("♠", GetSuggestedBid("  9HTH KSASJC", "9S"), "Should bid when two-suited with three trump of reasonable strength");
+            Assert.AreEqual("♣", GetSuggestedBid(" AD AH QCKCAC", "9C"), "Should bid three-suited missing both Jacks with strong off-suit");
+            Assert.AreEqual("♣", GetSuggestedBid(" AD AH TCQCKC", "9C"), "Should bid three-suited missing both Jacks with strong off-suit");
+            Assert.AreEqual("♦", GetSuggestedBid(" 9C 9S ADJHJD", "9D"), "Should bid with three sure tricks, regardless of other cards");
+            Assert.AreEqual("♥", GetSuggestedBid("  9DTD QHKHAH", "9H"), "Should bid missing both Jacks with remaining high trump and two-suited");
+            Assert.AreEqual("♠", GetSuggestedBid(" ACKC AH JCJS", "9S"), "Should bid with only Jacks with strong off-suit support");
+            Assert.AreEqual("♦", GetSuggestedBid(" ASKS 9C JHJD", "9D"), "Should bid with only Jacks with mostly strong off-suit support");
+            Assert.AreEqual("♣", GetSuggestedBid(" 9D 9H KCACJS", "TC"), "Should bid with weak off-suit and no high Jack if three strong trump");
+            Assert.AreEqual("♦", GetSuggestedBid(" 9C 9S QDADJH", "TD"), "Should bid with weak off-suit and no high Jack if three strong trump");
+            Assert.AreEqual("♥", GetSuggestedBid("AC 9D 9S JDJH", "TH"), "Should bid four-suited having both Jacks and an off-suit Ace");
+            Assert.AreEqual("♠", GetSuggestedBid("  9DKD 9SKSJC", "TS"), "Should bid with three trump if two-suited");
+            Assert.AreEqual("♣", GetSuggestedBid("  9HQH 9CQCJC", "AC"), "Should bid with three trump if two-suited");
+            Assert.AreEqual("♦", GetSuggestedBid("  ASKS TDQDKD", "AD"), "Should bid with three weak trump if two-suited with high off-suit");
+            Assert.AreEqual("♥", GetSuggestedBid("  TC 9HTHQHJH", "AH"), "Should bid with four trump, regardless of off-suit");
+            Assert.AreEqual("♠", GetSuggestedBid("  9D 9STSQSKS", "AS"), "Should bid with four trump, regardless of off-suit");
         }
 
         [TestMethod]
@@ -242,13 +277,14 @@ namespace TestBots
         /// </summary>
         /// <param name="handString">First bidder's hand</param>
         /// <param name="upCardString">The card turned up by the dealer</param>
+        /// <param name="take4for1">The value to use for EuchreOptions.take4for1</param>
         /// <returns>The suggested bid for the first bidder</returns>
         private static string GetSuggestedBid(string handString, string upCardString, bool take4for1 = false)
         {
             handString = handString.Replace(" ", "");
 
             var upCard = new Card(upCardString);
-            var bot = GetBot(Suit.Unknown, new EuchreOptions() { take4for1 = take4for1 });
+            var bot = GetBot(Suit.Unknown, new EuchreOptions { take4for1 = take4for1 });
 
             //  get the bid using the state-based suggest bid method
             var bidState = new SuggestBidState<EuchreOptions>
