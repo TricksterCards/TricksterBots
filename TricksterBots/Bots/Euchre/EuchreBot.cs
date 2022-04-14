@@ -92,6 +92,7 @@ namespace Trickster.Bots
 
             var isDealer = player.Seat == dealerSeat;
 
+            //  always call a misdeal if offered
             if (legalBids.Any(b => b.value == (int)EuchreBid.CallMisdeal))
                 return legalBids.Single(b => b.value == (int)EuchreBid.CallMisdeal);
 
