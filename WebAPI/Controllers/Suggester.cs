@@ -405,27 +405,6 @@ namespace Trickster.Bots.Controllers
                         $"options._cardsPassedBySeat {symbol} savedOptions._cardsPassedBySeat"
                         + $" ({JsonConvert.SerializeObject((options as PinochleOptions)._cardsPassedBySeat)} {symbol} {JsonConvert.SerializeObject((savedOptions as PinochleOptions)._cardsPassedBySeat)})");
 
-                    var cardsDiscardedByPlayerId = (options as PinochleOptions)._cardsDiscarded;
-                    var cardsDiscardedByPlayerSeat = (options as PinochleOptions)._cardsDiscardedBySeat;
-                    if (cardsDiscardedByPlayerId != null && cardsDiscardedByPlayerSeat != null)
-                        foreach (var kvp in cardsDiscardedByPlayerId)
-                        {
-                            var discardedById = JsonConvert.SerializeObject(kvp.Value);
-                            var discardedBySeat = JsonConvert.SerializeObject(cardsDiscardedByPlayerSeat[(int)kvp.Key - 1]);
-                            Debug.WriteLineIf(discardedById != discardedBySeat,
-                                $"_cardsDiscarded by player id {kvp.Key} mismatch those discarded by seat {kvp.Key - 1}!");
-                        }
-
-                    var cardsPassedByPlayerId = (options as PinochleOptions)._cardsPassed;
-                    var cardsPassedByPlayerSeat = (options as PinochleOptions)._cardsPassedBySeat;
-                    if (cardsPassedByPlayerId != null && cardsPassedByPlayerSeat != null)
-                        foreach (var kvp in cardsPassedByPlayerId)
-                        {
-                            var passedById = JsonConvert.SerializeObject(kvp.Value);
-                            var passedBySeat = JsonConvert.SerializeObject(cardsPassedByPlayerSeat[(int)kvp.Key - 1]);
-                            Debug.WriteLineIf(passedById != passedBySeat, $"_cardsPassed by player id {kvp.Key} mismatch those passed by seat {kvp.Key - 1}!");
-                        }
-
                     break;
                 }
 
