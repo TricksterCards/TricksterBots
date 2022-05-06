@@ -10,7 +10,7 @@ namespace Trickster.Bots
         private const int _ShowHandBid = 19;
         private const int _ZeroBid = 40;
         private const int _SpadesBidBase = (int)BidSpace.Spades;
-        private readonly int theBid;
+        public readonly int theBid;
 
         public SpadesBid(int nTricks, bool blind, bool zeroMeansZero)
         {
@@ -91,7 +91,7 @@ namespace Trickster.Bots
 
         public override string ToString()
         {
-            return theBid == _ShowHandBid ? "Show" : $"{(IsBlindBid ? "Blind " : string.Empty)}{(IsNil ? "Nil" : Tricks.ToString())}";
+            return theBid == _ShowHandBid ? "Show" : IsNil ? $"{(IsBlindBid ? "Blind " : string.Empty)}Nil" : $"{(IsBlindBid ? "Blind " : string.Empty)}{Tricks}";
         }
     }
 }
