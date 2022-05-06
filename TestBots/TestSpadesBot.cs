@@ -311,7 +311,6 @@ namespace TestBots
 
             var legalBids = new List<BidBase>();
             for (var v = 0; v <= 13; ++v) legalBids.Add(new BidBase(v));
-            legalBids.Add(new BidBase(BidBase.Pass));
 
             hand = new Hand(players[0].Hand);
             var bidState = new SuggestBidState<SpadesOptions>

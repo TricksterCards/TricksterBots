@@ -178,8 +178,13 @@ namespace Trickster.Bots
             if (biddableBids.Count == 1)
                 return biddableBids.First();
 
+            //  if we're offered a show bid, take it (never bid blind nil)
             if (biddableBids.Any(b => new SpadesBid(b).IsShowHand))
                 return biddableBids.First(b => new SpadesBid(b).IsShowHand);
+
+            //  if we're offered a pass bid, take it (never bid blind anything)
+            if (biddableBids.Any(b => b.value == BidBase.Pass))
+                return biddableBids.First(b => b.value == BidBase.Pass);
 
             var est = EstimatedTricks(hand);
 
