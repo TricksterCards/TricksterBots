@@ -5,7 +5,7 @@ using Trickster.cloud;
 
 namespace Trickster.Bots
 {
-    internal enum PitchBid
+    public enum PitchBid
     {
         ShootMoonValue = 15,
         NotPitching = BidSpace.Pitch,
@@ -593,6 +593,11 @@ namespace Trickster.Bots
             {
                 //  account for capturable points potentially not being in play
                 capturablePoints /= 3; //  roughly approximate the 18/52 or 18/53 odds the card is in play
+            }
+            else if (!HasPostBidDiscard && options.drawOption != PitchDrawOption.None && trumpCount < 4)
+            {
+                //  account for defense having enough trump to withold capturable points
+                capturablePoints /= 2;
             }
 
             //  attempt to shoot if we have the AKQJ2 of trump (in 4-point only)
