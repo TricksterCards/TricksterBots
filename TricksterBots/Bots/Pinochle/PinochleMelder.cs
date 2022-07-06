@@ -146,6 +146,11 @@ namespace Trickster.Bots
 
             var myMelds = CollapseMelds(options._meldsBySeat[mySeat]);
             var partnerMelds = options.isPartnership ? CollapseMelds(options._meldsBySeat[partnerSeat]) : null;
+            var discardedPoints = discardedCounters.Sum(c => CardPoints(options, c));
+            var meldPoints = myMelds.Sum(m => m.Points(options)) + (partnerMelds?.Sum(m => m.Points(options)) ?? 0);
+            var trickPoints = takenPointCards.Sum(tpc => tpc.points) + (lastTrickTaken ? options.TrickScoreForLastTrick : 0) + discardedPoints;
+            var anyTrickPoints = trickPoints > 0;
+            var total = meldPoints + trickPoints;
 
             if (myMelds.Count > 0)
             {
@@ -159,11 +164,10 @@ namespace Trickster.Bots
                 AppendMeldRows(sb, partnerMelds, options);
             }
 
-            if (myMelds.Count == 0 && (partnerMelds?.Count ?? 0) == 0)
+            if (meldPoints > 0)
+                sb.Append($"<tr class='pts-subtotal'><td>Total meld points</td><td>{meldPoints:N0}<td/></tr>");
+            else
                 sb.Append("<tr><th colspan='2'>No meld</th></tr>");
-
-            var discardedPoints = discardedCounters.Sum(c => CardPoints(options, c));
-            var anyTrickPoints = takenPointCards.Count > 0 || lastTrickTaken || discardedCounters.Count > 0;
 
             if (anyTrickPoints)
             {
@@ -177,21 +181,27 @@ namespace Trickster.Bots
 
                 if (lastTrickTaken)
                     sb.Append($"<tr><td>Last trick</td><td>{options.TrickScoreForLastTrick}</td></tr>");
+
+                sb.Append($"<tr class='pts-subtotal'><td>Total trick points</td><td>{trickPoints:N0}<td/></tr>");
             }
             else
                 sb.Append("<tr><th colspan='2'>No points taken</th></tr>");
 
-            var total = myMelds.Sum(m => m.Points(options)) + (partnerMelds?.Sum(m => m.Points(options)) ?? 0)
-                                                            + takenPointCards.Sum(tpc => tpc.points) + (lastTrickTaken ? options.TrickScoreForLastTrick : 0) + discardedPoints;
             var pointsDescriptor = anyTrickPoints ? "melded &amp; taken" : "melded";
             sb.Append($"<tr class='total'><td>Points {pointsDescriptor}</td><td>{total:N0}</td></tr>");
 
+            //  bidPoints is null for defenders
             if (bidPoints != null)
             {
                 if (bidPoints < 0)
                 {
                     sb.Append($"<tr><td>Failed to save meld</td><td>{bidPoints:N0}</td></tr>");
                     sb.Append($"<tr class='total'><td>Points scored</td><td>{total + bidPoints:N0}</td></tr>");
+                }
+                else if (options.min20InTricks && trickPoints < 200 / options.TrickScoreDivisor)
+                {
+                    sb.Append($"<tr><td colspan='2'>Failed to score {200 / options.TrickScoreDivisor} in tricks</td></tr>");
+                    sb.Append($"<tr class='total'><td>Points scored</td><td>{-bidPoints:N0}</td></tr>");
                 }
                 else
                 {
