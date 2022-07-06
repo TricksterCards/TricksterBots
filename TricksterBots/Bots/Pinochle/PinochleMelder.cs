@@ -165,7 +165,7 @@ namespace Trickster.Bots
             }
 
             if (meldPoints > 0)
-                sb.Append($"<tr class='pts-subtotal'><td>Total meld points</td><td>{meldPoints:N0}<td/></tr>");
+                sb.Append($"<tr class='pts-subtotal'><td>Total meld points</td><td>{meldPoints:N0}</td></tr>");
             else
                 sb.Append("<tr><th colspan='2'>No meld</th></tr>");
 
@@ -182,7 +182,7 @@ namespace Trickster.Bots
                 if (lastTrickTaken)
                     sb.Append($"<tr><td>Last trick</td><td>{options.TrickScoreForLastTrick}</td></tr>");
 
-                sb.Append($"<tr class='pts-subtotal'><td>Total trick points</td><td>{trickPoints:N0}<td/></tr>");
+                sb.Append($"<tr class='pts-subtotal'><td>Total trick points</td><td>{trickPoints:N0}</td></tr>");
             }
             else
                 sb.Append("<tr><th colspan='2'>No points taken</th></tr>");
@@ -190,7 +190,7 @@ namespace Trickster.Bots
             var pointsDescriptor = anyTrickPoints ? "melded &amp; taken" : "melded";
             sb.Append($"<tr class='total'><td>Points {pointsDescriptor}</td><td>{total:N0}</td></tr>");
 
-            //  bidPoints is null for defenders
+            //  bidPoints is null or negative for defenders
             if (bidPoints != null)
             {
                 if (bidPoints < 0)
@@ -200,7 +200,8 @@ namespace Trickster.Bots
                 }
                 else if (options.min20InTricks && trickPoints < 200 / options.TrickScoreDivisor)
                 {
-                    sb.Append($"<tr><td colspan='2'>Failed to score {200 / options.TrickScoreDivisor} in tricks</td></tr>");
+                    sb.Append($"<tr><td>Failed to score {200 / options.TrickScoreDivisor} in tricks</td><td>{-total:N0}</td></tr>");
+                    sb.Append($"<tr><td>Bid</td><td>{bidPoints:N0}</td></tr>");
                     sb.Append($"<tr class='total'><td>Points scored</td><td>{-bidPoints:N0}</td></tr>");
                 }
                 else
