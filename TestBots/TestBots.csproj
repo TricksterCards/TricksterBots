@@ -62,6 +62,7 @@
     <Compile Include="Bridge\Test_Sayc.cs" />
     <Compile Include="Bridge\Test_Sayc_Results.cs" />
     <Compile Include="TestHeartsBot.cs" />
+    <Compile Include="TestOhHellBot.cs" />
     <Compile Include="TestPitchBot.cs" />
     <Compile Include="TestSpadesBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
