@@ -22,6 +22,9 @@ namespace Trickster.Bots
             var nCards = hand.Count;
             var cardsOfTrump = hand.Where(IsTrump).OrderByDescending(RankSort).ToList();
             var offSuitCards = hand.Where(c => !IsTrump(c)).ToList();
+            var knownTrump = cardsOfTrump.Concat(new List<Card> { state.upCard });
+            var bossTrump = cardsOfTrump.Select(c => IsCardHigh(c, knownTrump));
+            var minBid = bossTrump.Count();
 
             //  process voids, singletons, and doubletons
             double nTrump = cardsOfTrump.Count;
@@ -80,9 +83,16 @@ namespace Trickster.Bots
                 }
             }
 
-            var target = (int)Math.Floor(est);
+            var target = Math.Max(minBid, (int)Math.Floor(est));
             var legalBids = state.legalBids.Where(b => b.value != BidBase.NoBid).Select(b => new OhHellBid(b)).ToList();
-            return legalBids.FirstOrDefault(b => b.Tricks == target) ?? legalBids.FirstOrDefault(b => b.Tricks == target - 1) ?? legalBids.First();
+
+            var targetBid = legalBids.FirstOrDefault(b => b.Tricks == target);            
+            if (targetBid == null)
+            {
+                target = target > minBid ? target - 1 : target + 1;
+            }
+            
+            return legalBids.FirstOrDefault(b => b.Tricks == target) ?? legalBids.First();
         }
 
         public override List<Card> SuggestDiscard(SuggestDiscardState<OhHellOptions> state)
