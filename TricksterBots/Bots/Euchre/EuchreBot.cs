@@ -88,7 +88,7 @@ namespace Trickster.Bots
                 (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand, state.legalBids, state.player, state.upCard, state.upCardSuit);
 
             if (hand.All(c => c.suit == Suit.Unknown))
-                return legalBids.First();
+                return legalBids.FirstOrDefault(b => b.value == BidBase.Pass) ?? legalBids.First();
 
             if (IsAskingDefendAlone(players))
                 return new BidBase(BidBase.Pass);
