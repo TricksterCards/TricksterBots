@@ -99,33 +99,34 @@ namespace Trickster.Bots
             if (legalBids.Any(b => b.value == (int)EuchreBid.CallMisdeal))
                 return legalBids.Single(b => b.value == (int)EuchreBid.CallMisdeal);
 
+            var canPass = legalBids.Any(b => b.value == BidBase.Pass);
+
             if (legalBids.Any(b => b.value == (int)EuchreBid.GoUnder))
             {
                 //  go under if we can and don't have any suit we think we want to bid
-                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer);
+                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer, canPass);
 
                 if (bestBid.value == BidBase.Pass && upCard != null)
-                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer);
+                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer, canPass);
 
                 return legalBids.Single(b => b.value == (bestBid.value == BidBase.Pass ? (int)EuchreBid.GoUnder : (int)EuchreBid.AfterGoUnder));
             }
 
-            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer);
+            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, canPass);
             var canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
 
-            return canBidSuggestion ? suggestion : new BidBase(BidBase.Pass);
+            return canBidSuggestion ? suggestion : legalBids.FirstOrDefault(b => b.value == BidBase.Pass) ?? legalBids.First();
         }
 
         //  overload called above and for unit tests
-        public BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer)
+        public BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool canPass)
         {
             var highSuit = Suit.Unknown;
             var highEstimate = 0.0;
 
             if (upCard != null)
             {
-                var effectiveHand = new Hand();
-                effectiveHand.AddRange(hand);
+                var effectiveHand = new Hand(hand);
 
                 if (isDealer)
                     effectiveHand.Add(upCard);
@@ -171,11 +172,8 @@ namespace Trickster.Bots
             if (highEstimate >= (options.take4for1 ? 3.25 : 2.25))
                 return new BidBase((int)EuchreBid.Make + (int)highSuit);
 
-            //  if we're the dealer and this is the second round with stick-the-dealer enabled, we must bid
-            if (isDealer && options.stickTheDealer && upCard == null)
-                return new BidBase((int)EuchreBid.Make + (int)highSuit);
-
-            return new BidBase(BidBase.Pass);
+            //  we don't have anything we like, so pass if we can or bid the best we've got
+            return canPass ? new BidBase(BidBase.Pass) : new BidBase((int)EuchreBid.Make + (int)highSuit);
         }
 
         public override List<Card> SuggestDiscard(SuggestDiscardState<EuchreOptions> state)
