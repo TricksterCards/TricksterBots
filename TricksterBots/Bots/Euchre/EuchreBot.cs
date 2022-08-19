@@ -99,27 +99,25 @@ namespace Trickster.Bots
             if (legalBids.Any(b => b.value == (int)EuchreBid.CallMisdeal))
                 return legalBids.Single(b => b.value == (int)EuchreBid.CallMisdeal);
 
-            var canPass = legalBids.Any(b => b.value == BidBase.Pass);
-
             if (legalBids.Any(b => b.value == (int)EuchreBid.GoUnder))
             {
                 //  go under if we can and don't have any suit we think we want to bid
-                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer, canPass);
+                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer);
 
                 if (bestBid.value == BidBase.Pass && upCard != null)
-                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer, canPass);
+                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer);
 
                 return legalBids.Single(b => b.value == (bestBid.value == BidBase.Pass ? (int)EuchreBid.GoUnder : (int)EuchreBid.AfterGoUnder));
             }
 
-            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, canPass);
+            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, legalBids.Any(b => b.value == BidBase.Pass));
             var canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
 
             return canBidSuggestion ? suggestion : legalBids.FirstOrDefault(b => b.value == BidBase.Pass) ?? legalBids.First();
         }
 
         //  overload called above and for unit tests
-        public BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool canPass)
+        public BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool canPass = true)
         {
             var highSuit = Suit.Unknown;
             var highEstimate = 0.0;
