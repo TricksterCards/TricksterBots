@@ -492,7 +492,7 @@ namespace Trickster.Bots
             var estimatedPoints = 0.1;
 
             //  take inventory of the relevant cards in our hand
-            var trumpCount = Math.Min(6, hand.Count(c => EffectiveSuit(c, t) == t));
+            var trumpInHand = Math.Min(6, hand.Count(c => EffectiveSuit(c, t) == t));
             var ace = hand.Any(c => c.rank == Rank.Ace && c.suit == t);
             var offace = hand.Any(c => c.rank == Rank.Jack && c.suit != t && EffectiveSuit(c, t) == t);
             var king = hand.Any(c => c.rank == Rank.King && c.suit == t);
@@ -512,11 +512,12 @@ namespace Trickster.Bots
             var capturablePoints = maxPoints - 1;
 
             //  estimate getting some extra trump from the draw option
+            var estTrumpCount = trumpInHand;
             if (options.drawOption != PitchDrawOption.None)
-                trumpCount += (6 - trumpCount) / 3;
+                estTrumpCount += (6 - estTrumpCount) / 3;
 
             //  give some credit based on how many trump we have
-            estimatedPoints += trumpCount * 0.1;
+            estimatedPoints += estTrumpCount * 0.1;
 
             if (offace)
             {
@@ -594,7 +595,7 @@ namespace Trickster.Bots
                 //  account for capturable points potentially not being in play
                 capturablePoints /= 3; //  roughly approximate the 18/52 or 18/53 odds the card is in play
             }
-            else if (!HasPostBidDiscard && options.drawOption != PitchDrawOption.None && trumpCount < 4)
+            else if (!HasPostBidDiscard && options.drawOption != PitchDrawOption.None && trumpInHand < 4)
             {
                 //  account for defense having enough trump to withold capturable points
                 capturablePoints /= 2;
@@ -651,51 +652,51 @@ namespace Trickster.Bots
                 if (jack)
                 {
                     //  estimate the liklihood of taking the jack if it's in our hand
-                    estimatedPoints += trumpCount >= 4 ? 1 : trumpCount >= 2 ? 0.5 : 0;
+                    estimatedPoints += estTrumpCount >= 4 ? 1 : estTrumpCount >= 2 ? 0.5 : 0;
                 }
 
                 if (offjack)
                 {
                     //  estimate the liklihood of taking the off-jack if it's in our hand
-                    estimatedPoints += trumpCount >= 4 ? 1 : trumpCount >= 2 ? 0.5 : 0;
+                    estimatedPoints += estTrumpCount >= 4 ? 1 : estTrumpCount >= 2 ? 0.5 : 0;
                 }
 
                 if (highjoker)
                 {
                     //  estimate the liklihood of taking the high joker if it's in our hand
-                    estimatedPoints += trumpCount >= 4 ? 1 : trumpCount >= 2 ? 0.5 : 0;
+                    estimatedPoints += estTrumpCount >= 4 ? 1 : estTrumpCount >= 2 ? 0.5 : 0;
                 }
 
                 if (lowjoker)
                 {
                     //  estimate the liklihood of taking the low joker if it's in our hand
-                    estimatedPoints += trumpCount >= 4 ? 1 : trumpCount >= 2 ? 0.5 : 0;
+                    estimatedPoints += estTrumpCount >= 4 ? 1 : estTrumpCount >= 2 ? 0.5 : 0;
                 }
 
                 if (ten && options.tenOfTrumpReplacesGamePoint)
                 {
                     //  estimate the liklihood of taking the ten if it's in our hand
-                    estimatedPoints += trumpCount >= 4 ? 1 : trumpCount >= 2 ? 0.5 : 0;
+                    estimatedPoints += estTrumpCount >= 4 ? 1 : estTrumpCount >= 2 ? 0.5 : 0;
                 }
 
                 if (five)
                 {
                     //  estimate the liklihood of taking the five if it's in our hand
                     //  Note: we already deducted this from capturable points above
-                    estimatedPoints += trumpCount >= 5 ? 5 : trumpCount >= 3 ? 2.5 : 0;
+                    estimatedPoints += estTrumpCount >= 5 ? 5 : estTrumpCount >= 3 ? 2.5 : 0;
                 }
 
                 if (three && maxPoints >= 10)
                 {
                     //  estimate the liklihood of taking the three if it's in our hand
                     //  Note: we already deducted this from capturable points above
-                    estimatedPoints += trumpCount >= 5 ? 3 : trumpCount >= 3 ? 1.5 : 0;
+                    estimatedPoints += estTrumpCount >= 5 ? 3 : estTrumpCount >= 3 ? 1.5 : 0;
                 }
 
                 if (offthree)
                 {
                     //  estimate the liklihood of taking the off-three if it's in our hand
-                    estimatedPoints += trumpCount >= 5 ? 3 : trumpCount >= 3 ? 1.5 : 0;
+                    estimatedPoints += estTrumpCount >= 5 ? 3 : estTrumpCount >= 3 ? 1.5 : 0;
                 }
 
                 if (!options.lowGoesToTaker)
@@ -715,7 +716,7 @@ namespace Trickster.Bots
                 if (!options.tenOfTrumpReplacesGamePoint)
                 {
                     //  a very coarse estimate of capturing the game point
-                    var est = (double)trumpCount / hand.Count;
+                    var est = (double)estTrumpCount / hand.Count;
 
                     if (!HasPostBidDiscard)
                     {
