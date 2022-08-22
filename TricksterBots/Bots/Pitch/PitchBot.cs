@@ -492,7 +492,7 @@ namespace Trickster.Bots
             var estimatedPoints = 0.1;
 
             //  take inventory of the relevant cards in our hand
-            var trumpCount = Math.Min(6, hand.Count(c => EffectiveSuit(c, t) == t));
+            var trumpInHand = Math.Min(6, hand.Count(c => EffectiveSuit(c, t) == t));
             var ace = hand.Any(c => c.rank == Rank.Ace && c.suit == t);
             var offace = hand.Any(c => c.rank == Rank.Jack && c.suit != t && EffectiveSuit(c, t) == t);
             var king = hand.Any(c => c.rank == Rank.King && c.suit == t);
@@ -512,6 +512,7 @@ namespace Trickster.Bots
             var capturablePoints = maxPoints - 1;
 
             //  estimate getting some extra trump from the draw option
+            var trumpCount = trumpInHand;
             if (options.drawOption != PitchDrawOption.None)
                 trumpCount += (6 - trumpCount) / 3;
 
@@ -594,7 +595,7 @@ namespace Trickster.Bots
                 //  account for capturable points potentially not being in play
                 capturablePoints /= 3; //  roughly approximate the 18/52 or 18/53 odds the card is in play
             }
-            else if (!HasPostBidDiscard && options.drawOption != PitchDrawOption.None && trumpCount < 4)
+            else if (!HasPostBidDiscard && options.drawOption != PitchDrawOption.None && trumpInHand < 4)
             {
                 //  account for defense having enough trump to withold capturable points
                 capturablePoints /= 2;

@@ -33,6 +33,27 @@ namespace TestBots
             Assert.AreEqual((int)PitchBid.ShootMoonBid, GetSuggestedBid("ACKCQCJC2CAH", out hand, options), $"Expect bid of Shoot for hand {Util.PrettyHand(hand)}");
         }
 
+        [TestMethod]
+        public void TestHighBids()
+        {
+            var options = new PitchOptions()
+            {
+                variation = PitchVariation.FourPoint,
+                drawOption = PitchDrawOption.NonTrump,
+                gameOverScore = 15,
+                isPartnership = true,
+                kitty = 3,
+                lowGoesToTaker = true,
+                minBid = 2,
+                offerShootBid = false,
+                pitcherLeadsTrump = true,
+                playTrump = PitchPlayTrump.Anytime,
+                stickTheDealer = true,
+            };
+
+            Assert.AreEqual((int)PitchBid.Base + 3, GetSuggestedBid("AHQH6H5DJC5C", out var hand, options), $"Expect bid of 3 for hand {Util.PrettyHand(hand)}");
+        }
+
         private static PitchBot GetBot(PitchVariation variation)
         {
             return GetBot(new PitchOptions() { variation = variation });
