@@ -73,7 +73,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="TricksterBotClasses, Version=1.0.10.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\Trickster\Hearts\packages\TricksterBotClasses.1.0.10\lib\net48\TricksterBotClasses.dll</HintPath>
+      <HintPath>..\packages\TricksterBotClasses.1.0.10\lib\net48\TricksterBotClasses.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
