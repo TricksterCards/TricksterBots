@@ -37,7 +37,7 @@ namespace Trickster.Bots
             var opponentsBids = players.Opponents(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
             var partnersBids = players.PartnersOf(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
-            var defaultPartnerTricks = players.Count == 3 ? 0 : 2;
+            var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
 
             //  calculate the raw number of tricks we can take with a given trump suit
             var tricksBySuit = FiveHundredBid.suitRank.Keys.ToDictionary(s => s, s => CountTricks(hand, s));
