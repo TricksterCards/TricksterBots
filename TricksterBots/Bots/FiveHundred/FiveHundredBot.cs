@@ -18,7 +18,7 @@ namespace Trickster.Bots
                 switch (options.deckSize)
                 {
                     case 43:
-                        return options.players == 6 ? DeckType.FiveHundred63Card : options.players == 3 ? DeckType.FiveHundred33Card : DeckType.FiveHundred43Card;
+                        return options.players == 6 ? DeckType.FiveHundred63Card : DeckType.FiveHundred43Card;
                     case 45:
                         return options.players == 6 ? DeckType.FiveHundred65Card : DeckType.FiveHundred45Card;
                     case 46:
@@ -37,7 +37,7 @@ namespace Trickster.Bots
             var opponentsBids = players.Opponents(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
             var partnersBids = players.PartnersOf(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
-            var defaultPartnerTricks = players.Count == 3 ? 0 : 2;
+            const int defaultPartnerTricks = 2;
 
             //  calculate the raw number of tricks we can take with a given trump suit
             var tricksBySuit = FiveHundredBid.suitRank.Keys.ToDictionary(s => s, s => CountTricks(hand, s));
