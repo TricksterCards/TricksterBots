@@ -20,6 +20,7 @@ namespace Trickster.Bots
         {
             gameBot = bot;
         }
+        protected virtual bool IsPartnership => gameBot.IsPartnership;
 
         public PlayerBase Lho(PlayerBase player)
         {
@@ -45,24 +46,24 @@ namespace Trickster.Bots
 
         public bool PartnerIsVoidInSuit(PlayerBase player, Card card, IReadOnlyList<Card> cardsPlayed)
         {
-            return gameBot.IsPartnership && PartnersOf(player).All(target => TargetIsVoidInSuit(player, target, card, cardsPlayed));
+            return IsPartnership && PartnersOf(player).All(target => TargetIsVoidInSuit(player, target, card, cardsPlayed));
         }
 
         public PlayerBase PartnerOf(PlayerBase player)
         {
-            return gameBot.IsPartnership ? OppositeOf(player) : null;
+            return IsPartnership ? OppositeOf(player) : null;
         }
 
         /// <summary>
         ///     Gets the partners of a player.
         /// </summary>
         /// <returns>Returns an array of 0, 1 or 2 OtherPlayer﻿s depending on the game options.</returns>
-        public PlayerBase[] PartnersOf(PlayerBase player)
+        public virtual PlayerBase[] PartnersOf(PlayerBase player)
         {
             if (gameBot.IsTwoTeams && Count == 6)
                 return new[] { this.First(p => p.Seat == (player.Seat + 2) % Count), this.First(p => p.Seat == (player.Seat + 4) % Count) };
 
-            return gameBot.IsPartnership ? new[] { OppositeOf(player) } : Array.Empty<PlayerBase>();
+            return IsPartnership ? new[] { OppositeOf(player) } : Array.Empty<PlayerBase>();
         }
 
         public int[] PartnersSeatsOf(PlayerBase player)

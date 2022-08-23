@@ -137,8 +137,8 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<FiveHundredOptions> state)
         {
-            var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
-                state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
+            var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick, trickTaker) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
+                state.player, state.isPartnerTakingTrick, state.cardTakingTrick, state.trickTaker);
 
             //  if we're leading in a no-trump contract and we have a joker (but not all jokers), remove the joker(s) from our legal cards so we don't suggest a lead of joker unless we have to
             if (trump == Suit.Unknown && trick.Count == 0 && legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))
@@ -151,7 +151,21 @@ namespace Trickster.Bots
             if (players.Opponents(player).Any(p => new FiveHundredBid(p.Bid).IsLikeNullo && p.HandScore == 0))
                 return TryBustNullo(player, trick, legalCards, cardsPlayed, players, cardTakingTrick);
 
-            return TryTakeEm(player, trick, legalCards, cardsPlayed, players, isPartnerTakingTrick, cardTakingTrick, !bid.IsContractor && !bid.IsContractorPartner);
+            // 3-player only: team up with the other opponent if declarer is in the lead (unless we're the declarer)
+            var effectivePlayers = players;
+            var isEffectivePartnerTakingTrick = isPartnerTakingTrick;
+            if (players.Count == 3 && trickTaker != null)
+            {
+                var declarer = players.Single(p => p.Bid != FiveHundredBid.NotContractorBid);
+                if (player.Seat != declarer.Seat && trickTaker.Seat != declarer.Seat && declarer.GameScore == players.Max(p => p.GameScore))
+                {
+                    var effectivePartners = players.Where(p => p.Seat != declarer.Seat && p.Seat != player.Seat);
+                    effectivePlayers = new EffectivePartnerPlayersCollection(this, players, effectivePartners);
+                    isEffectivePartnerTakingTrick = true;
+                }
+            }
+
+            return TryTakeEm(player, trick, legalCards, cardsPlayed, effectivePlayers, isEffectivePartnerTakingTrick, cardTakingTrick, !bid.IsContractor && !bid.IsContractorPartner);
         }
 
         public override List<Card> SuggestPass(SuggestPassState<FiveHundredOptions> state)
@@ -425,6 +439,23 @@ namespace Trickster.Bots
 
             //  nullo bidder has not played: try to end up under them
             return TryDumpEm(trick, legalCards, players.Count);
+        }
+
+        private class EffectivePartnerPlayersCollection : PlayersCollectionBase
+        {
+            private readonly PlayerBase[] effectivePartners;
+
+            public EffectivePartnerPlayersCollection(IBaseBot bot, IEnumerable<PlayerBase> players, IEnumerable<PlayerBase> effectivePartners) : base(bot, players)
+            {
+                this.effectivePartners = effectivePartners.ToArray();
+            }
+
+            protected override bool IsPartnership => true;
+
+            public override PlayerBase[] PartnersOf(PlayerBase player)
+            {
+                return this.effectivePartners;
+            }
         }
     }
 }
