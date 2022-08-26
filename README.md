@@ -4,7 +4,7 @@ This repository contains the source for for the _suggest_ methods of the Trickst
 
 ## Requirements
 
-- Visual Studio 2019 or 2022
+- Visual Studio 2022
 - .NET Framework 4.8
 - GitHub Desktop (optional, but recommended)
 
