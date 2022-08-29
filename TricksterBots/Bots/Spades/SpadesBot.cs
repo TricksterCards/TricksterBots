@@ -219,12 +219,9 @@ namespace Trickster.Bots
 
             var bidValue = Math.Max(1, Math.Min(maxBid, (int)Math.Floor(est)));
 
-            //  find the legal bid object matching our bid value
-            var theBid = biddableBids.SingleOrDefault(b => new SpadesBid(b).Tricks == bidValue);
-
-            //  if our bid was not available and this is suicide, pick the first non-Nil bid (if we wanted Nil, we would have bid it above)
-            if (theBid == null && options.variation == SpadesVariation.Suicide)
-                theBid = biddableBids.FirstOrDefault(b => new SpadesBid(b).IsNotNil);
+            //  find the legal bid object matching our bid value (or one less than our bid value)
+            var theBid = biddableBids.SingleOrDefault(b => new SpadesBid(b).Tricks == bidValue)
+                         ?? biddableBids.SingleOrDefault(b => new SpadesBid(b).Tricks == (bidValue == 1 ? bidValue + 1 : bidValue - 1));
 
             //  ensure we return a legal bid
             return theBid ?? biddableBids.FirstOrDefault(b => new SpadesBid(b).IsNotNil) ?? biddableBids.First();
