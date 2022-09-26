@@ -137,8 +137,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="TricksterBotClasses, Version=1.0.10.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TricksterBotClasses.1.0.10\lib\net48\TricksterBotClasses.dll</HintPath>
+    <Reference Include="TricksterBotClasses, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TricksterBotClasses.1.1.0\lib\net48\TricksterBotClasses.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

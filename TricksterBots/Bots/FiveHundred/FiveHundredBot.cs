@@ -175,64 +175,12 @@ namespace Trickster.Bots
 
         protected override Suit EffectiveSuit(Card c, Suit trumpSuit)
         {
-            //  in notrump, the suit of the Joker can be nominated by a player when led
-            if (c.suit == Suit.Joker && trumpSuit == Suit.Unknown && options._jokerSuit != Suit.Joker)
-                return options._jokerSuit;
-
-            //  in trump, the joker is included plus the jack in the other suit of the same color as the trump suit
-            if (c.suit == Suit.Joker || c.rank == Rank.Jack && c.Color == Card.ColorOfSuit(trumpSuit))
-                return trumpSuit;
-
-            //  everything else is natural
-            return c.suit;
+            return options.EffectiveSuit(c, trumpSuit);
         }
 
         protected override int RankSort(Card c, Suit trumpSuit)
         {
-            // the black joker is the higher joker in 500
-            var aceRank = options.players == 6 ? 17 : (int)Rank.Ace;
-
-            if (c.suit == Suit.Joker && c.rank == Rank.Low)
-                return aceRank + 4;
-
-            // the red joker is the lower joker in 500
-            if (c.suit == Suit.Joker && c.rank == Rank.High)
-                return aceRank + 3;
-
-            if (c.rank == Rank.Jack && c.suit == trumpSuit)
-                return aceRank + 2;
-
-            if (c.rank == Rank.Jack && c.Color == Card.ColorOfSuit(trumpSuit))
-                return aceRank + 1;
-
-            if (options.players == 6 && c.rank >= Rank.Jack)
-            {
-                var colorOfTrumpAdjust = c.Color == Card.ColorOfSuit(trumpSuit) ? 1 : 0;
-
-                switch (c.rank)
-                {
-                    case Rank.Ace:
-                        return (int)Rank.Ace + 3;
-                    case Rank.King:
-                        return (int)Rank.King + 3;
-                    case Rank.Queen:
-                        return (int)Rank.Queen + 3;
-                    case Rank.Jack:
-                        return (int)Rank.Jack + 3;
-                    case Rank.Thirteen:
-                        return 13 + colorOfTrumpAdjust;
-                    case Rank.Twelve:
-                        return 12 + colorOfTrumpAdjust;
-                    case Rank.Eleven:
-                        return 11 + colorOfTrumpAdjust;
-                }
-            }
-
-            //  raise rank of all cards below the jacks in the color of trump to avoid a gap
-            if (c.rank < Rank.Jack && c.Color == Card.ColorOfSuit(trumpSuit))
-                return (int)c.rank + 1;
-
-            return (int)c.rank;
+            return options.RankSort(c, trumpSuit);
         }
 
         public override int SuitOrder(Suit s)
