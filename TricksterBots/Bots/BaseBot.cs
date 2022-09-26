@@ -122,9 +122,9 @@ namespace Trickster.Bots
 
         public abstract List<Card> SuggestPass(SuggestPassState<T> state);
 
-        protected virtual Suit EffectiveSuit(Card c, Suit trumpSuit)
+        protected Suit EffectiveSuit(Card c, Suit trumpSuit)
         {
-            return c.suit == Suit.Joker && trumpSuit != Suit.Unknown ? trumpSuit : c.suit;
+            return options.EffectiveSuit(c, trumpSuit);
         }
 
         protected int HighRankInSuit(Card card)
@@ -154,9 +154,9 @@ namespace Trickster.Bots
                 Debug.WriteLine($"{caller} line {lineNumber} returning {message}.");
         }
 
-        protected virtual int RankSort(Card c, Suit trumpSuit)
+        protected int RankSort(Card c, Suit trumpSuit)
         {
-            return (int)c.rank;
+            return options.RankSort(c, trumpSuit);
         }
 
         //  NOTE: If you're going to edit this in a game-specific way, copy the method to your bot and edit it there

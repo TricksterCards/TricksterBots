@@ -7,10 +7,6 @@ namespace Trickster.Bots
 {
     public class PinochleBot : BaseBot<PinochleOptions>
     {
-        //  use a dictionary for RankSort. Tens take the place of King and King, Queen, and Jack go down one rank
-        private static readonly Dictionary<Rank, int> SortByRank = SuitRank.stdRanks.Where(r => r >= Rank.Nine)
-            .ToDictionary(r => r, r => r == Rank.Ten ? (int)Rank.King : r == Rank.King || r == Rank.Queen || r == Rank.Jack ? (int)r - 1 : (int)r);
-
         public PinochleBot(PinochleOptions options, Suit trumpSuit) : base(options, trumpSuit)
         {
         }
@@ -147,11 +143,6 @@ namespace Trickster.Bots
             return PinochleBid.BidIsPoints(state.player.Bid)
                 ? new PinochleMelder(this, state.hand, trump).SuggestDeclarerPass(options.passCount)
                 : new PinochleMelder(this, state.hand, trump).SuggestDeclarerPartnerPass(options.passCount);
-        }
-
-        protected override int RankSort(Card c, Suit trumpSuit)
-        {
-            return SortByRank.TryGetValue(c.rank, out var sort) ? sort : base.RankSort(c, trumpSuit);
         }
 
         private int CardsDealtPerPlayer(int nPlayers)
