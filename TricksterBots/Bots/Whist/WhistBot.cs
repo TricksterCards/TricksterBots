@@ -127,22 +127,6 @@ namespace Trickster.Bots
             throw new NotImplementedException();
         }
 
-        protected override int RankSort(Card c, Suit trumpSuit)
-        {
-            //  high/uptown ranking is fairly straightforward
-            if (!options.IsLowHigh)
-                return (int)c.rank;
-
-            //  otherwise we have low/downtown ranking
-
-            //  here Jokers are still the most powerful cards followed by the Ace
-            if (c.rank >= Rank.Ace)
-                return (int)c.rank;
-
-            //  but then the 2 is the next most powerful and King the weakest
-            return (int)Rank.Ace - (int)c.rank + 1;
-        }
-
         private int CountTricks(IEnumerable<Card> hand, Suit trumpSuit)
         {
             var deckBySuit = DeckBuilder.BuildDeck(DeckType).GroupBy(c => EffectiveSuit(c, trumpSuit)).ToDictionary(g => g.Key, g => g.OrderBy(c => RankSort(c, trumpSuit)).ToList());

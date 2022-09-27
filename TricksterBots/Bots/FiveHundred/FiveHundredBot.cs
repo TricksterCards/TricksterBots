@@ -173,16 +173,6 @@ namespace Trickster.Bots
             throw new NotImplementedException();
         }
 
-        protected override Suit EffectiveSuit(Card c, Suit trumpSuit)
-        {
-            return options.EffectiveSuit(c, trumpSuit);
-        }
-
-        protected override int RankSort(Card c, Suit trumpSuit)
-        {
-            return options.RankSort(c, trumpSuit);
-        }
-
         public override int SuitOrder(Suit s)
         {
             return FiveHundredBid.suitOrder[s];

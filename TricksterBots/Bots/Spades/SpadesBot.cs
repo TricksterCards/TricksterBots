@@ -879,48 +879,9 @@ namespace Trickster.Bots
             return cards;
         }
 
-        protected override Suit EffectiveSuit(Card c, Suit trumpSuit)
-        {
-#if DEBUG
-            if (trumpSuit != Suit.Spades)
-                throw new ArgumentException("Spades is not trump");
-#endif
-
-            if (c.suit == Suit.Joker)
-                return trumpSuit;
-
-            if (options.variation == SpadesVariation.JokerJokerDeuceDeuce && c.suit == Suit.Diamonds && c.rank == Rank.Two)
-                return trumpSuit;
-
-            return c.suit;
-        }
-
         public override int SuitOrder(Suit s)
         {
             return suitOrder[s];
-        }
-
-        protected override int RankSort(Card c, Suit trumpSuit)
-        {
-            switch (options.variation)
-            {
-                case SpadesVariation.JokerJokerDeuceAce:
-                    if (c.suit == Suit.Joker)
-                        return (int)c.rank + 1;
-                    if (c.suit == Suit.Spades && c.rank == Rank.Two)
-                        return (int)Rank.Ace + 1;
-                    break;
-                case SpadesVariation.JokerJokerDeuceDeuce:
-                    if (c.suit == Suit.Joker)
-                        return (int)c.rank + 2;
-                    if (c.suit == Suit.Spades && c.rank == Rank.Two)
-                        return (int)Rank.Ace + 1;
-                    if (c.suit == Suit.Diamonds && c.rank == Rank.Two)
-                        return (int)Rank.Ace + 2;
-                    break;
-            }
-
-            return (int)c.rank;
         }
     }
 }

@@ -362,25 +362,6 @@ namespace Trickster.Bots
             return suitSort > trumpSort ? suitSort - 4 : suitSort;
         }
 
-        protected override Suit EffectiveSuit(Card c, Suit trumpSuit)
-        {
-            return c.suit == Suit.Joker || c.rank == Rank.Jack && c.Color == Card.ColorOfSuit(trumpSuit) ? trumpSuit : c.suit;
-        }
-
-        protected override int RankSort(Card c, Suit trumpSuit)
-        {
-            if (c.suit == Suit.Joker)
-                return (int)Rank.Ace + 3;
-
-            if (c.rank == Rank.Jack && c.suit == trumpSuit)
-                return (int)Rank.Ace + 2;
-
-            if (c.rank == Rank.Jack && c.Color == Card.ColorOfSuit(trumpSuit))
-                return (int)Rank.Ace + 1;
-
-            return (int)c.rank;
-        }
-
         private static EuchreBid BidBid(PlayerBase player)
         {
             return player == null ? (EuchreBid)BidBase.NotPlaying : BidBid(player.Bid);
