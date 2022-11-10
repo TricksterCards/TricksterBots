@@ -48,6 +48,10 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<BridgeOptions> state)
         {
+            // TODO: Calculate ideal contract based on player and partner's hands
+            if (state.options.variation == BridgeVariation.MiniBridge)
+                return state.legalBids.First();
+
             var (players, dealerSeat, hand) = (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand);
             var history = new BridgeBidHistory(players, dealerSeat);
             return SuggestBid(history, hand);
