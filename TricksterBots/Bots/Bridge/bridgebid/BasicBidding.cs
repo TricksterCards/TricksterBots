@@ -40,13 +40,7 @@ namespace Trickster.Bots
 
         public static int ComputeHighCardPoints(Hand hand)
         {
-            var highCardPoints = 0;
-
-            //  basic points for high cards
-            highCardPoints += hand.Count(c => c.rank == Rank.Ace) * 4;
-            highCardPoints += hand.Count(c => c.rank == Rank.King) * 3;
-            highCardPoints += hand.Count(c => c.rank == Rank.Queen) * 2;
-            highCardPoints += hand.Count(c => c.rank == Rank.Jack);
+            var highCardPoints = ComputeRawHighCardPoints(hand);
 
             if (IsFlat(hand))
                 //  deduct 1 point for a 4-3-3-3 (flat) distribution
@@ -57,6 +51,19 @@ namespace Trickster.Bots
                 //  TODO: deduct 1 point for a singleton K, Q, or J
                 //highCardPoints -= 1;
             }
+
+            return highCardPoints;
+        }
+
+        public static int ComputeRawHighCardPoints(Hand hand)
+        {
+            var highCardPoints = 0;
+
+            //  basic points for high cards
+            highCardPoints += hand.Count(c => c.rank == Rank.Ace) * 4;
+            highCardPoints += hand.Count(c => c.rank == Rank.King) * 3;
+            highCardPoints += hand.Count(c => c.rank == Rank.Queen) * 2;
+            highCardPoints += hand.Count(c => c.rank == Rank.Jack);
 
             return highCardPoints;
         }
