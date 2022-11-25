@@ -200,8 +200,15 @@
                 hand = "ASQS AHJH9H KDJDTD9D ACKCJC6C5C", // 19 HCP
                 bid = "Pass", // There may be a better bid here but we used to bid 4S "asking for more information" which seems wrong since partner already indicated a suit (and probably shouldn't be bid this high)
                 type = "Advancer Rebid"
+            },
+          
+            new BasicTest
+            {
+                history = new[] { "1NT", "Pass", "2♣", "Pass", "2♦", "Pass", },
+                hand = "ASKSTS2S KH3H4H5H 5D6D7D 8C9C", // 10 HCP
+                bid = "3NT",
+                type = "Stayman Responder rebid"
             }
-
             //  Blackwood
 
             //  Gerber
