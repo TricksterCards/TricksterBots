@@ -25,13 +25,15 @@ namespace TestBots.Bridge
                 }
                 else if (tag.Name == "Auction")
                 {
+                    var sides = "NESW";
+                    var dealerSide = sides.IndexOf(tag.Description);
                     var bids = ImportBids(tag.Data);
                     var history = new List<string>();
                     for (var i = 0; i < bids.Count; i++)
                     {
                         var bid = bids[i];
                         var seat = i % 4;
-                        var seatName = "NESW"[seat];
+                        var seatName = sides[(4 - dealerSide + seat) % 4];
                         var bidNumber = 1 + (i / 4);
                         tests.Add(
                             new BasicTests.BasicTest
