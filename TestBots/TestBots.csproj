@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="Bridge\BasicTests.cs" />
     <Compile Include="Bridge\BidTest.cs" />
+    <Compile Include="Bridge\PBN.cs" />
     <Compile Include="Bridge\SaycResult.cs" />
     <Compile Include="Bridge\TestBridgeBot.cs" />
     <Compile Include="Bridge\Test_Sayc.cs" />
@@ -73,6 +74,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <Content Include="Bridge\SAYC\1NT Openings.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

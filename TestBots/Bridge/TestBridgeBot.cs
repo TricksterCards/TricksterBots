@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+using TestBots.Bridge;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -24,6 +26,30 @@ namespace TestBots
                 Assert.AreEqual(test.expectedBid, suggestion,
                     $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})"
                 );
+            }
+        }
+
+        [TestMethod]
+        public void SaycTestFiles()
+        {
+            var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
+            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "SAYC"));
+            foreach (var file in files)
+            {
+                if (!file.EndsWith(".pbn"))
+                    continue;
+
+                var text = File.ReadAllText(file);
+                var tests = PBN.ImportTests(text);
+                
+                foreach (var test in tests.Select(ti => new BidTest(ti)))
+                {
+                    var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
+                    Assert.AreEqual(test.expectedBid, suggestion,
+                        $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})"
+                    );
+                }
             }
         }
 
