@@ -34,12 +34,9 @@ namespace TestBots
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
             var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "SAYC"));
+            var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "SAYC"), "*.pbn");
             foreach (var file in files)
             {
-                if (!file.EndsWith(".pbn"))
-                    continue;
-
                 var text = File.ReadAllText(file);
                 var tests = PBN.ImportTests(text);
                 
