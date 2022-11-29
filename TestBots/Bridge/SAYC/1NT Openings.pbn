@@ -1,12 +1,7 @@
-[Event "1NT Opening - All Pass (modified)"]
-[Deal "N:K43.KJ3.AK32.Q85 QJT9.Q98.JT9.AJ4 765.752.654.T932 A82.AT64.Q87.K76"]
+[Event "1NT Opening - All Pass"]
+[Deal "N:K43.QJ3.AK32.Q85 QJT9.K98.JT9.AJ4 765.752.654.T932 A82.AT64.Q87.K76"]
 [Auction "N"]
 1NT Pass Pass Pass
-
-%[Event "1NT Opening - All Pass"]
-%[Deal "N:K43.QJ3.AK32.Q85 QJT9.K98.JT9.AJ4 765.752.654.T932 A82.AT64.Q87.K76"]
-%[Auction "N"]
-%1NT Pass Pass Pass
 
 %[Event "1NT Opening - Invite to game - Invitation refused"]
 %[Deal "N:K43.QJ3.AK32.Q85 Q96.T942.QJ.K763 JT7.A85.T754.A92 A852.K76.986.JT4"]
