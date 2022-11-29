@@ -34,6 +34,7 @@ namespace TestBots
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
             var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            // ReSharper disable once AssignNullToNotNullAttribute
             var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "SAYC"), "*.pbn");
             foreach (var file in files)
             {
