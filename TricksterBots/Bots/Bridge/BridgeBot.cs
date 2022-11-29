@@ -67,14 +67,16 @@ namespace Trickster.Bots
                 //  when opening, prefer suggestions with higher minimum points first, then higher minimum cards
             {
                 suggestions = suggestions
-                    .OrderByDescending(s => s.why.Points.Min)
+                    .OrderByDescending(s => s.why.Priority)
+                    .ThenByDescending(s => s.why.Points.Min)
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min));
             }
             else
                 //  in other phases, prefer finding the best fit first (prioritizing majors), then higher minimum points
             {
                 suggestions = suggestions
-                    .OrderBy(s => s.why.HandShape.Any(hs => IsMajor(hs.Key) && hs.Value.Min > 3) ? 0 : 1)
+                    .OrderByDescending(s => s.why.Priority)
+                    .ThenBy(s => s.why.HandShape.Any(hs => IsMajor(hs.Key) && hs.Value.Min > 3) ? 0 : 1)
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min))
                     .ThenByDescending(s => s.why.Points.Min);
             }
