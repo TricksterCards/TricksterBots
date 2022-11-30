@@ -48,16 +48,6 @@ namespace Trickster.Bots
             highCardPoints += hand.Count(c => c.rank == Rank.Queen) * 2;
             highCardPoints += hand.Count(c => c.rank == Rank.Jack);
 
-            if (IsFlat(hand))
-                //  deduct 1 point for a 4-3-3-3 (flat) distribution
-                highCardPoints -= 1;
-
-            if (HasSingletonHonor(hand))
-            {
-                //  TODO: deduct 1 point for a singleton K, Q, or J
-                //highCardPoints -= 1;
-            }
-
             return highCardPoints;
         }
 
