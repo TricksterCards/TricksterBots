@@ -29,9 +29,19 @@ namespace Trickster.Bots
 
         private static void RebidNTOpening(InterpretedBid opening, InterpretedBid response, InterpretedBid rebid)
         {
-            //  TODO: lower-level cases
+            // If responder invites with 2NT then bid 3NT with 16-17 HCP
+            if (response.bidIsDeclare && response.declareBid.level == 2 && response.declareBid.suit == Suit.Unknown 
+                && rebid.declareBid.level == 3 && rebid.declareBid.suit == Suit.Unknown)
+            {
+                rebid.Points.Min = 16;
+                rebid.Points.Max = 17;
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Description = "Accept invitation and sign-off in game";
+                return;
+            }
+            
 
-            if (response.bidIsDeclare && response.declareBid.level == 4 && response.declareBid.suit == Suit.Unknown)
+                if (response.bidIsDeclare && response.declareBid.level == 4 && response.declareBid.suit == Suit.Unknown)
                 //  rebid after a 4NT response
                 if (rebid.declareBid.suit == Suit.Unknown)
                     switch (rebid.declareBid.level)

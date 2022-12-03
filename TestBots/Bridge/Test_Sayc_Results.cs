@@ -1,4 +1,4 @@
-// last updated 11/29/2022 5:24 PM (-06:00)
+// last updated 12/3/2022 10:06 AM (-08:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -28,7 +28,7 @@ namespace TestBots
              {
                 "test_weak_game_jump_over_one_nt", new[]
                 {
-                    new SaycResult(true, 439),
+                    new SaycResult(false, 431),
                     new SaycResult(false, 420)
                 }
              },
@@ -84,19 +84,19 @@ namespace TestBots
              {
                 "test_jacoby_transfers", new[]
                 {
-                    new SaycResult(false, 432),
+                    new SaycResult(true, -2),
                     new SaycResult(true, -2),
                     new SaycResult(true, -2),
                     new SaycResult(true, 420),
                     new SaycResult(false, -2),
-                    new SaycResult(true, 432),
+                    new SaycResult(false, -2),
                     new SaycResult(true, 428),
+                    new SaycResult(false, 428),
+                    new SaycResult(false, 428),
                     new SaycResult(false, 432),
-                    new SaycResult(true, 432),
-                    new SaycResult(true, 440),
-                    new SaycResult(true, 440),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(false, 432),
+                    new SaycResult(false, 428),
+                    new SaycResult(false, 428),
                     new SaycResult(true, 432),
                     new SaycResult(true, -2),
                     new SaycResult(true, 430),
@@ -965,7 +965,7 @@ namespace TestBots
                     new SaycResult(true, 440),
                     new SaycResult(true, 431),
                     new SaycResult(false, 422),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 440),
                     new SaycResult(true, 428),
                     new SaycResult(false, -2),
                     new SaycResult(false, -2),
@@ -1066,7 +1066,7 @@ namespace TestBots
                     new SaycResult(true, 422),
                     new SaycResult(false, -2),
                     new SaycResult(false, 428),
-                    new SaycResult(true, -2),
+                    new SaycResult(false, 428),
                     new SaycResult(false, -2),
                     new SaycResult(true, 440),
                     new SaycResult(false, -2),
@@ -1076,7 +1076,7 @@ namespace TestBots
                     new SaycResult(false, 428),
                     new SaycResult(false, -2),
                     new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 420),
                     new SaycResult(true, -2),
                     new SaycResult(false, -2),
                     new SaycResult(true, 412),
@@ -1113,7 +1113,7 @@ namespace TestBots
                     new SaycResult(true, 428),
                     new SaycResult(false, -2),
                     new SaycResult(true, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 439),
                     new SaycResult(true, 415),
                     new SaycResult(true, -2),
                     new SaycResult(true, -2),

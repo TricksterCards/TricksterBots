@@ -1,0 +1,186 @@
+% PBN 2.1
+% EXPORT
+%Content-type: text/x-pbn; charset=ISO-8859-1
+%Creator: BridgeComposer Version 5.101.1
+%Created: Fri Dec  2 15:04:24 2022 -0800
+%BCOptions Center STBorder STShade
+%BidAndCardSpacing Thin
+%BoardsPerPage 1
+%CardTableColors #008000,#ffffff,#aaaaaa
+%DDAFormat 0
+%DefaultPagination 0
+%EventSpacing 0
+%Font:CardTable "Arial",11,400,0
+%Font:Commentary "Times New Roman",12,400,0
+%Font:Diagram "Times New Roman",12,400,0
+%Font:Event "Times New Roman",12,400,0
+%Font:FixedPitch "Courier New",10,400,0
+%Font:HandRecord "Arial",11,400,0
+%GutterSize 500,500
+%HRTitleDate 0
+%HRTitleEvent "Transfer to spades minimum hand"
+%HRTitleSetID ""
+%HRTitleSetIDPrefix ""
+%HRTitleSite ""
+%HtmlClubs entity,"https://bridgecomposer.com/suitimg/c.gif"
+%HtmlDiamonds entity,"https://bridgecomposer.com/suitimg/d.gif"
+%HtmlHearts entity,"https://bridgecomposer.com/suitimg/h.gif"
+%HtmlNavBar 0.75,#cfe2f3
+%HtmlSpades entity,"https://bridgecomposer.com/suitimg/s.gif"
+%Margins 1000,1000,1000,1000
+%PaperSize 1,0,0,2
+%ParaIndent 0
+%PipColors #000000,#ff0000,#ff0000,#000000
+%PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
+%ScoreTableColors #e6e6e6,#000000
+%SelectedBoard 6
+%ShowBoardLabels 2
+%ShowCardTable 2
+%TSTCustomSortOrder Default
+%TSTReport List
+%TSTReportOrder ByNumber
+%TSTReportShade Yes
+[Event "Transfer to spades minimum hand"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer ""]
+[Vulnerable ""]
+[Deal "N:KT97.KQJ.KQ5.J97 A6.9652.AT6.QT52 J5432.A4.J98.863 Q8.T873.7432.AK4"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass Pass Pass
+
+[Event "Transfer to Spades - Invitational, Refused"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KT9.KQJ7.KQ5.J97 5.T983.AJT4.A643 AQ432.654.32.K85 J876.A2.9876.QT2"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass 2NT Pass
+3S Pass Pass Pass
+
+[Event "Spade Transfer, Invitation accepted"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:AK3.QJ98.AJ5.Q74 542.764.K763.A32 JT986.AT3.82.KJ5 Q7.K52.QT94.T986"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass 2NT Pass
+4S Pass Pass Pass
+
+[Event "Super Accept Heart Transfer, Accepted"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KJ6.JT76.AJ83.AK Q932.K8.Q76.J962 75.AQ432.952.T84 AT84.95.KT4.Q753"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2D Pass
+3H Pass 4H Pass
+Pass Pass
+
+[Event "Super Accept, Declined"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KJ6.JT76.AJ83.AK A985.92.Q54.Q652 32.K8543.T97.984 QT74.AQ.K62.JT73"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2D Pass
+3H Pass Pass Pass
+
+[Event "Transfer, Game Force, Play 3NT"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KQ.AJ43.K84.K742 652.T92.Q52.A963 AT984.K85.A973.T J73.Q76.JT6.QJ85"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "3NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass 3NT Pass
+Pass Pass
+
+[Event "Transfer, Game Force, Play 4S"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KQ5.AJ43.Q4.K874 J76.Q92.JT2.QJ53 AT984.K85.A973.T 32.T76.K865.A962"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "4S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass 3NT Pass
+4S Pass Pass Pass
