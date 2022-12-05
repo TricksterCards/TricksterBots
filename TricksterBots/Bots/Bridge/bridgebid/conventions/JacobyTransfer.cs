@@ -137,7 +137,6 @@ namespace Trickster.Bots
                 if (rebid.declareBid.level == 4)
                 {
                     // If opener has super-accepted the transfer then game can be bid with weaker hand
-                    // bec
                     if (accept.declareBid.level == 3)
                     {
                         rebid.Points.Min = 6;
