@@ -231,7 +231,7 @@ namespace Trickster.Bots
                 rebid.BidPointType = BidPointType.Hcp;
                 rebid.HandShape[transferSuit].Max = 2;
                 rebid.HandShape[transferSuit].Min = 2;
-                rebid.Description = $"Sign-off in game; 2 {transferSuit}";
+                rebid.Description = $"Sign-off at game; 2 {transferSuit}";
                 return;
             }
 
