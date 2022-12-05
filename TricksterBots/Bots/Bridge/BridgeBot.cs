@@ -66,7 +66,7 @@ namespace Trickster.Bots
             if (legalBids[0].why.BidPhase == BidPhase.Opening)
                 //  when opening, prefer suggestions with higher minimum points first, then higher minimum cards
             {
-                suggestions = suggestions   
+                suggestions = suggestions
                     .OrderByDescending(s => s.why.Priority)
                     .ThenByDescending(s => s.why.Points.Min)
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min));
