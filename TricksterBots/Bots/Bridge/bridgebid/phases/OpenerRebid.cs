@@ -41,7 +41,7 @@ namespace Trickster.Bots
             }
             
 
-                if (response.bidIsDeclare && response.declareBid.level == 4 && response.declareBid.suit == Suit.Unknown)
+            if (response.bidIsDeclare && response.declareBid.level == 4 && response.declareBid.suit == Suit.Unknown)
                 //  rebid after a 4NT response
                 if (rebid.declareBid.suit == Suit.Unknown)
                     switch (rebid.declareBid.level)
