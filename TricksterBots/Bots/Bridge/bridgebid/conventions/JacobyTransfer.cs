@@ -166,7 +166,7 @@ namespace Trickster.Bots
                     rebid.BidPointType = BidPointType.Hcp;
                     rebid.HandShape[transferSuit].Max = 5;
                     rebid.HandShape[transferSuit].Min = 5;
-                    rebid.Description = $"Invite in game; 5 {transferSuit}";
+                    rebid.Description = $"Inviting game; 5 {transferSuit}";
                     return;
                 }
                 if (rebid.declareBid.level == 3)
