@@ -1,4 +1,7 @@
-﻿using Trickster.cloud;
+﻿using System.Net.Http.Headers;
+using System.Security.Policy;
+using Trickster.cloud;
+using static Trickster.Bots.InterpretedBid;
 
 namespace Trickster.Bots
 {
@@ -238,4 +241,347 @@ namespace Trickster.Bots
 
         }
     }
+    public abstract class BidInterpreter
+    {
+        public abstract void Interpret(BridgeBidHistory history, InterpretedBid bid);
+        public virtual void InterpretRhoX(BridgeBidHistory history, InterpretedBid bid)
+        {
+            this.Interpret(history, bid);
+        }
+        public virtual void InterpertRhoXX(BridgeBidHistory history, InterpretedBid bid)
+        {
+            this.Interpret(history, bid);
+        }
+        public virtual void InterpretRhoBid(BridgeBidHistory history, InterpretedBid rhoBid, InterpretedBid bid)
+        {
+            // TODO: CompetitiveBidInterpreter().Interpret(history, bid)
+        }
+    }
+
+    public abstract class NtConventionInterpreter: BidInterpreter
+    {
+
+        public readonly NtType ntType;
+        
+        public enum NtType
+        {
+            Open1NT,
+            Open2NT,
+            Open3NT,
+            Open2C,
+            Overcall1NT,
+            Overcall2NTOverWeak,
+            Overcall2NT,
+            Balancing1NT
+        }
+        public NtConventionInterpreter(NtType ntType)
+        {
+            this.ntType = ntType;
+            this.NtRange = new Range(15, 17);  // Set up for 1NT
+            switch (ntType)
+            {
+                case NtType.Balancing1NT:
+                    this.NtRange.Min = 12;
+                    this.NtRange.Max = 14;
+                    break;
+
+                case NtType.Overcall1NT:
+                case NtType.Overcall2NTOverWeak:
+                    this.NtRange.Min = 15;
+                    this.NtRange.Max = 18;
+                    break;
+
+                case NtType.Open2NT:
+                case NtType.Overcall2NT:    // TODO: Is this right?
+                    this.NtRange.Min = 20;
+                    this.NtRange.Max = 21;
+                    break;
+
+                case NtType.Open2C:
+                    this.NtRange.Min = 22;
+                    this.NtRange.Max = 37;
+                    break;
+
+                case NtType.Open3NT:
+                    this.NtRange.Min = 25;
+                    this.NtRange.Max = 28;     // TODO: What is the max?  This is stupid...
+                    break;
+            }
+
+        }
+
+        public Range AcceptInviteRange
+        {
+            get
+            {
+                return new Range(this.NtRange.Min + 1, this.NtRange.Max);
+            }
+        }
+        public Range InvitationalRange
+        {
+            get
+            {
+                int min = 23 - NtRange.Min;
+                if (min > 0) { return new Range(min, min+1) }
+                return new Range(0, 0);
+            }
+        }
+        public Range GameRange
+        {
+            get
+            {
+                int min = System.Math.Max(0, 25 - NtRange.Min);
+                int max = 32 - NtRange.Min; // TODO: Is this right?
+                return new Range(min, max);
+            }
+        }
+        // TODO: Slam ranges...
+        public int ConventionBidLevel
+        {
+            get
+            {
+                switch (ntType)
+                {
+                    case NtType.Open1NT:
+                    case NtType.Overcall1NT:
+                    case NtType.Balancing1NT:
+                        return 2;
+                    case NtType.Open2NT:
+                    case NtType.Overcall2NT:
+                    case NtType.Open2C:
+                        return 3;
+                    case NtType.Open3NT:
+                        return 4;
+                    default:
+                        return 0;   // TODO: THROW!
+                }
+            }
+        }
+        public Range NtRange { get; }
+    }
+    public class TransferInterpreter: NtConventionInterpreter
+    {
+        public TransferInterpreter(NtType ntType) : base(ntType)
+        {
+        }
+
+        public override void Interpret(BridgeBidHistory history, InterpretedBid bid)
+        {
+            if (bid.declareBid == null)
+                return;
+
+            if (bid.declareBid.level == ConventionBidLevel)
+            { 
+                if (bid.declareBid.suit == Suit.Diamonds || bid.declareBid.suit == Suit.Hearts))
+                {
+                    var transferSuit = bid.declareBid.suit == Suit.Diamonds ? Suit.Hearts : Suit.Spades;
+                    bid.HandShape[transferSuit].Min = 5;
+                    bid.Description = $"Transfer to {Card.SuitSymbol(transferSuit)}; 5+ {transferSuit}";
+                    // bid.NextState = AcceptMajorTransferInterpreter(ntType, transferSuit);
+                }
+                if (bid.declareBid.suit == Suit.Spades)
+                {
+                    // TODO: Minor transfers here...
+                }
+            }
+        }
+    }
+
+    public class AcceptMajorTransferInterpreter : NtConventionInterpreter
+    {
+        private Suit transferSuit;
+        public AcceptMajorTransferInterpreter(NtType ntType, Suit transferSuit) : base(ntType)
+        {
+            this.transferSuit = transferSuit;
+        }
+        public override void InterpretRhoX(BridgeBidHistory history, InterpretedBid bid)
+        {
+            if (bid.declareBid == null)
+            {   // TODO: I assume null == PASS!  Is that right?
+                bid.HandShape[transferSuit].Min = 2;
+                bid.HandShape[transferSuit].Max = 2;
+                bid.Description = $"pass transfer to {transferSuit} indicating no fit after opponent X";
+                // bid.NextState = DescribeTransferInterpreter(ntType, transferSuit, false);
+            }
+            else if (bid.declareBid.level == ConventionBidLevel && bid.declareBid.suit == transferSuit)
+            {
+                bid.HandShape[transferSuit].Min = 3;
+                bid.Description = $"Accept transfer to {transferSuit} after opponent X; 3+ {transferSuit}";
+                // bid.NextState = DescribeTransferInterpreter(ntType, transferSuit, true);
+            }
+        }
+
+        public override void Interpret(BridgeBidHistory history, InterpretedBid bid)
+        {
+            if (bid.declareBid != null && bid.declareBid.level == ConventionBidLevel && bid.declareBid.suit == transferSuit)
+            {
+                bid.Points = this.NtRange;      // Is this right?  Just do this to force the bid to happen?
+                bid.Description = $"Accept transfer to {transferSuit}";
+                // bid.NextState = DescribeTransferInterpreter(ntType, transferSuit, false);
+            }
+        }
+    }
+
+    public class DescribeTransferInterpreter : NtConventionInterpreter
+    {
+        private Suit transferSuit;
+        private bool knownFit;
+
+        public DescribeTransferInterpreter(NtType ntType, Suit transferSuit, bool knownFit) : base(ntType)
+        {
+            this.transferSuit = transferSuit;
+            this.knownFit = knownFit;
+        }
+
+        public override void Interpret(BridgeBidHistory history, InterpretedBid bid)
+        {
+            if (bid.declareBid == null)
+                return;
+
+            // This is only possible if 1NT bidder has passed when opps have doubled.  If
+            // we have a minimal hand then we need to complete the transfer ourselves...
+            if (bid.declareBid.level == 2 && bid.declareBid.suit == transferSuit)
+            {
+                bid.Points.Min = 0;
+                bid.Points.Max = InvitationalRange.Min - 1;
+                bid.HandShape[transferSuit].Min = 5;
+                // bid.nextState = null; (or something that passes all the time)...
+            }
+
+            // TODO: Maybe if suit is stopped and 5-cards we would want to bid this even if knownFit...
+            if (bid.declareBid.level == 2 && bid.declareBid.suit == Suit.Unknown && !knownFit)
+            {
+                bid.Points = InvitationalRange;
+                bid.HandShape[transferSuit].Min = 5;
+                bid.HandShape[transferSuit].Max = 5;
+                bid.Description = $"Invite to game; 5 {transferSuit}";
+                // bid.NextState = FinishTransferInviteInterpreter(ntType, transferSuit);
+            }
+            else if (bid.declareBid.level == 3 && bid.declareBid.suit == transferSuit)
+            {
+                bid.Points = InvitationalRange;
+                bid.HandShape[transferSuit].Min = knownFit ? 5 : 6;
+                // NEED TO SET MAX?  TODO
+               // bid.NextState = FinishTransferInviteInterpreter(ntType, transferSuit);
+            }
+            else if (bid.declareBid.level == 3 && bid.declareBid.suit == Suit.Unknown && !knownFit)
+            {
+                bid.Points = GameRange;
+                bid.HandShape[transferSuit].Min = 5;
+                bid.HandShape[transferSuit].Max = 5;
+                bid.Description = $"Game in NT or {transferSuit}; 5 {transferSuit}";
+                // bid.NextState = PickGameTransferInterpreter(ntType, transferSuit);
+            }
+            else if (bid.declareBid.level == 4 && bid.declareBid.suit == transferSuit)
+            {
+                bid.Points = GameRange;
+                bid.HandShape[transferSuit].Min = knownFit ? 5 : 6;
+                // TODO: Need Max too?
+                bid.Description = $"Game in {transferSuit}; 6+ {transferSuit} or known fit";
+                // bid.NextState = null
+            }
+            // TODO: Slam bids here at 4NT...
+        }
+    }
+
+    public class FinishTransferInviteInterpreter : NtConventionInterpreter
+    {
+        private Suit transferSuit;
+
+        public FinishTransferInviteInterpreter(NtType ntType, Suit transferSuit) : base(ntType)
+        {
+            this.transferSuit = transferSuit;
+        }
+
+
+
+        public override void Interpret(BridgeBidHistory history, InterpretedBid bid)
+        {
+            if (bid.Is(3, Suit.Unknown))
+            {
+                bid.Points = AcceptInviteRange;
+                bid.HandShape[transferSuit].Min = 2;
+                bid.HandShape[transferSuit].Max = 2;
+                bid.Description = $"Accept invitation to play in 3NT; 2 {transferSuit}";
+                // bid.nextstate = null 
+            }
+            var otherMajor = transferSuit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
+            if (bid.Is(4, otherMajor))
+            {
+                bid.Points = AcceptInviteRange;
+                bid.HandShape[transferSuit].Min = 2;
+                bid.HandShape[transferSuit].Max = 2;
+                bid.HandShape[otherMajor].Min = 5;
+                bid.HandShape[otherMajor].Max = 5;
+                bid.Description = $"No fit in {transferSuit}.  Show 5 {otherMajor} and accept invitation to game";
+                // bid.nextState = TrySecondMajorTransferInterpreter(ntType, otherMajor);
+            }
+            if (bid.declareBid != null && bid.declareBid.level == 4 && bid.declareBid.suit == transferSuit)
+            {
+                bid.Points = AcceptInviteRange;
+                bid.HandShape[transferSuit].Min = 3;
+                bid.HandShape[transferSuit].Max = 5;
+                bid.Description = $"Accept invitation to game in {transferSuit}; 3+ {transferSuit}";
+                // bid.NextState = null
+            }
+
+        }
+
+    }
+
+
+
+    public class PickGameTransferInterpreter : NtConventionInterpreter
+    {
+        private Suit transferSuit;
+
+        public PickGameTransferInterpreter(NtType ntType, Suit transferSuit) : base(ntType)
+        {
+            this.transferSuit = transferSuit;
+        }
+
+        public override void Interpret(BridgeBidHistory history, InterpretedBid bid)
+        {
+            if (bid.Is(4, transferSuit))
+            {        
+                bid.Points = NtRange;
+                bid.HandShape[transferSuit].Min = 3;
+                bid.HandShape[transferSuit].Max = 5;
+                bid.Description = $"Accept transfer; 3+ {transferSuit}";
+                // bid.NextState = null
+            }
+        }
+    }
+
+    public class TrySecondMajorTransferInterpreter : NtConventionInterpreter
+    {
+        private Suit otherMajor;
+
+        public TrySecondMajorTransferInterpreter(NtType ntType, Suit otherMajor) : base(ntType)
+        {
+            this.otherMajor = otherMajor;
+        }
+
+        public override void Interpret(BridgeBidHistory history, InterpretedBid bid)
+        {
+            if (bid.Is(3, Suit.Unknown))
+            {
+                bid.Points = InvitationalRange;
+                bid.HandShape[otherMajor].Max = 2;
+                bid.HandShape[otherMajor].Min = 2;
+                bid.Description = $"No fit in {otherMajor};  Play game at 3NT";
+                // bid.nextState = null;
+            }
+            if (bid.Is(4, otherMajor))
+            {
+                bid.Points = InvitationalRange;
+                bid.HandShape[otherMajor].Min = 3;
+                bid.HandShape[otherMajor].Max = 10;  // TODO: Need Max?
+                bid.Description = $"Play game in {otherMajor}";
+                // bid.NextState = null
+            }
+        }
+    }
+
+
 }

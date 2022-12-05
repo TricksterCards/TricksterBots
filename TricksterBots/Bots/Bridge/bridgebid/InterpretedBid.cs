@@ -83,6 +83,11 @@ namespace Trickster.Bots
             Description = FinalDescriptionString;
         }
 
+        public bool Is(int level, Suit suit)
+        {
+            return (declareBid != null && declareBid.level == level && declareBid.suit == suit);
+        }
+
         public HandValidator AlternateMatches { get; set; }
 
         public int GameLevel => declareBid.suit == Suit.Unknown ? 3 : BridgeBot.IsMajor(declareBid.suit) ? 4 : 5;
@@ -103,7 +108,7 @@ namespace Trickster.Bots
             }
         }
 
-        public Range Points { get; }
+        public Range Points { get; set;  }
 
         public List<Suit> SuitsBid
         {
