@@ -36,7 +36,7 @@ namespace Trickster.Bots
                 rebid.Points.Min = 16;
                 rebid.Points.Max = 17;
                 rebid.BidPointType = BidPointType.Hcp;
-                rebid.Description = "Accept invitation and sign-off in game";
+                rebid.Description = "Accept invitation and sign-off at game";
                 return;
             }
             
