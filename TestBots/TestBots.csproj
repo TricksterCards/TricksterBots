@@ -74,7 +74,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <Content Include="Bridge\SAYC\1NT Openings.pbn">
+    <Content Include="Bridge\SAYC\1NT Basic.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Bridge\SAYC\1NT Transfers.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Bridge\SAYC\1NT Stayman.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
