@@ -1,54 +1,23 @@
 [Event "1NT Opening - All Pass"]
-[Dealer "N"]
-[Vulnerable "None"]
 [Deal "N:K43.QJ3.AK32.Q85 QJT9.K98.JT9.AJ4 765.752.654.T932 A82.AT64.Q87.K76"]
-[Scoring ""]
-[Declarer "N"]
-[Contract "1NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass Pass Pass
 
 [Event "1NT Opening, Invite to game, Invitation refused"]
-[Dealer "N"]
-[Vulnerable "None"]
 [Deal "N:K43.QJ3.AK32.Q85 Q96.T942.QJ.K763 JT7.A85.T754.A92 A852.K76.986.JT4"]
-[Declarer "N"]
-[Contract "2NT"]
 [Auction "N"]
 1NT Pass 2NT Pass
 Pass Pass
 
 [Event "1NT, Invite, Invitation Accepted"]
-[Dealer "S"]
-[Vulnerable "None"]
 [Deal "S:A87.KQ4.T984.972 K53.952.Q53.QT43 QT964.A76.AK2.A6 J2.JT83.J76.KJ85"]
-[Declarer "N"]
-[Contract "3NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "S"]
 Pass Pass 1NT Pass
 2NT Pass 3NT Pass
 Pass Pass
 
 [Event "1NT, Sign-off at Game"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
-[Dealer "W"]
-[Vulnerable "None"]
 [Deal "W:Q654.842.Q9.QJT7 AK.J9763.KJ8.K82 J832.KT.AT5.9653 T97.AQ5.76432.A4"]
-[Scoring ""]
-[Declarer "N"]
-[Contract "3NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "W"]
 Pass 1NT Pass 3NT
 Pass Pass Pass
