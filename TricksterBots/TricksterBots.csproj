@@ -82,6 +82,9 @@
     <Compile Include="Bots\Bridge\bridgebid\BidWhy.cs" />
     <Compile Include="Bots\Bridge\bridgebid\BridgeBid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\BridgeBidHistory.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\CallInterpreter.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\NTFundamentals.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\PairDisclosures.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\ArtificialInquiry.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\Blackwood.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\Cappelletti.cs" />
@@ -99,6 +102,7 @@
     <Compile Include="Bots\Bridge\bridgebid\DeclareBid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\InterpretedBid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\phases\Advance.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\phases\CompetitiveAuction.cs" />
     <Compile Include="Bots\Bridge\bridgebid\phases\OpenerRebid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\phases\Opening.cs" />
     <Compile Include="Bots\Bridge\bridgebid\phases\Overcall.cs" />

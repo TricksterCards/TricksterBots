@@ -7,7 +7,7 @@ namespace Trickster.Bots
     {
         public static void Interpret(InterpretedBid opening)
         {
-            if (opening.bid == BidBase.Pass)
+            if (opening.IsPass)
             {
                 opening.Points.Max = 12;
                 opening.Description = "Weak hand & no good, long suits";

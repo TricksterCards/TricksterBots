@@ -7,12 +7,13 @@ namespace Trickster.Bots
     {
         public static void Interpret(InterpretedBid overcall)
         {
-            if (overcall.bid == BidBase.Pass)
+            if (overcall.IsPass)
             {
                 overcall.Description = "Unsuitable hand for an overcall";
                 return;
             }
 
+            // TODO: if (overcall.IsDouble) then do takeout doubles.  Both strong and weak...   Requirements are different...
             if (!overcall.bidIsDeclare)
                 return;
 
@@ -113,10 +114,14 @@ namespace Trickster.Bots
                         //  (1H)-1N
                         //  (1S)-1N
                         case Suit.Unknown:
+                            // TODO: Opponent's suit must be stopped...
                             overcall.BidPointType = BidPointType.Hcp;
                             overcall.Points.Min = 15;
                             overcall.Points.Max = 18;
                             overcall.IsBalanced = true;
+                            // TODO: See comment below about suit quality:
+                            // overcall.SuitQuality[cueSuit / oppsBidSuit] = SuitQuality.StoppedOnce;
+                            // This may not be a requirement if "cueSuit" is a club...
                             overcall.Description = string.Empty;
                             return;
                     }
@@ -156,6 +161,21 @@ namespace Trickster.Bots
                                 overcall.Points.Min = 5;
                                 overcall.Points.Max = 11;
                                 overcall.HandShape[db.suit].Min = 6;
+                                // TODO: What is this IsGood?  An overcall should be with a good suit,
+                                // but is something looking at this to make sure db.suit is actually good?
+                                // Seems like we need something like call.SuitQuality[suit] = (any, minpreempt, good, excellent, solid, stoppedOnce, stoppedTwice)
+                                // or something like that with default set to any and IsGood is only set in
+                                // cases where this is a requirement.  Then whe need to figure out loser trick count
+                                // for each case... 
+                                // Possible examples:
+                                //    all = just the number of cards
+                                //    minpreempt = some solid sequence headed by at least J
+                                //    good = 2 of top 3, 3 of top 5
+                                //    excellent = 3 of top 4
+                                //    solid = AKQxxx
+                                //    stoppedOnce = A, Kx, Qxx, Jxxx, xxxxx
+                                //    stoppedTwice = AK, AQ (if LHO bid), etc...
+      
                                 overcall.IsGood = true;
                                 overcall.IsPreemptive = true;
                                 overcall.Description = $"6+ {db.suit}";

@@ -1,12 +1,15 @@
+using Newtonsoft.Json.Bson;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Trickster.cloud;
+using TricksterBots.Bots;
 
 namespace Trickster.Bots
 {
     public delegate bool HandValidator(Hand hand);
+    public delegate void CallInterpreter(InterpretedBid call);
 
     public class InterpretedBid : BidExplanation
     {
@@ -35,6 +38,8 @@ namespace Trickster.Bots
         public string AlternatePoints = string.Empty;
 
         public int Priority = 0;
+
+        public CallInterpreter PartnersCall = null;
 
         public InterpretedBid()
         {
@@ -69,6 +74,14 @@ namespace Trickster.Bots
                 Description = "Penalty redouble";
 
             //  first answer question-asking conventions (e.g. Blackwood)
+
+            // TODO:  Here we want to look at the bid and if it has a NextState then
+            // just call that interpreter.  Perhaps allow the "Interference" method to return
+            // a bool for now and we just fall-through to this InterpretPhase() logic...
+            if (index >= 2 && history[index - 2].PartnersCall != null)
+            {
+                history[index - 2].PartnersCall(this);
+            }
             if (!InterpretConventions())
                 //  otherwise interpret the bid based on phase
                 InterpretPhase();
@@ -86,6 +99,76 @@ namespace Trickster.Bots
         public bool Is(int level, Suit suit)
         {
             return (declareBid != null && declareBid.level == level && declareBid.suit == suit);
+        }
+        public bool IsBid
+        {
+            get { return declareBid != null;  }
+        }
+        public bool IsPass
+        {
+            get { return bid == BidBase.Pass; }
+        }
+        public bool IsDouble
+        {
+            get { return declareBid != null && declareBid.doubled; }
+        }
+
+        public bool IsReDouble
+        {
+            get { return declareBid != null && declareBid.redoubled; }
+        }
+
+        public void SetPoints(Range points)
+        {
+            SetPoints(points.Min, points.Max);
+        }
+
+        public void SetPoints(int min, int max)
+        {
+            Points.Min = min;
+            Points.Max = max;
+        }
+
+        public bool RhoInterfered
+        {
+            get
+            {
+                return (Index > 0 && (!History[Index - 1].IsPass));
+            }
+        }
+
+        public bool RhoInterferedAbove(int level, Suit suit)
+        {
+            if (RhoBid)
+            {
+                DeclareBid rhoDb = History[Index - 1].declareBid;
+                return (rhoDb.level > level || (rhoDb.level == level && rhoDb.suit > suit));
+            }
+            return false;
+        }
+
+        public bool RhoBid
+        {
+            get
+            {
+                return (Index > 0 && History[Index - 1].IsBid);
+            }
+        }
+
+        public bool RhoDoubled
+        {
+            get
+            {
+                return (Index > 0 && History[Index - 1].IsDouble);
+            }
+        }
+
+        public bool RhoReDoubled
+        {
+            get
+            {
+                return (Index > 0 && History[Index - 1].IsReDouble);
+            }
         }
 
         public HandValidator AlternateMatches { get; set; }
@@ -108,7 +191,7 @@ namespace Trickster.Bots
             }
         }
 
-        public Range Points { get; set;  }
+        public Range Points { get; }
 
         public List<Suit> SuitsBid
         {

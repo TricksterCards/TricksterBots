@@ -21,6 +21,8 @@ namespace Trickster.Bots
             return distributionPoints;
         }
 
+        // TODO: This makes no sense unless you know the trump suit.  If you are void in the
+        // trump suit then adding 5 points for the void is 100% incorrect.  
         public static int ComputeDummyPoints(Hand hand)
         {
             //  used instead of distribution points when responding to a major suit opening
