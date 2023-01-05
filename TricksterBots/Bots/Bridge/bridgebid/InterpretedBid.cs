@@ -75,17 +75,16 @@ namespace Trickster.Bots
 
             //  first answer question-asking conventions (e.g. Blackwood)
 
-            // TODO:  Here we want to look at the bid and if it has a NextState then
-            // just call that interpreter.  Perhaps allow the "Interference" method to return
-            // a bool for now and we just fall-through to this InterpretPhase() logic...
             if (index >= 2 && history[index - 2].PartnersCall != null)
             {
                 history[index - 2].PartnersCall(this);
             }
-            if (!InterpretConventions())
-                //  otherwise interpret the bid based on phase
-                InterpretPhase();
-
+            else
+            {
+                if (!InterpretConventions())
+                    //  otherwise interpret the bid based on phase
+                    InterpretPhase();
+            }
             if (IsBalanced)
                 //  set hand shape limits if we're balanced
                 SetBalancedHandShape();
@@ -102,7 +101,7 @@ namespace Trickster.Bots
         }
         public bool IsBid
         {
-            get { return declareBid != null;  }
+            get { return declareBid != null; }
         }
         public bool IsPass
         {
@@ -118,13 +117,14 @@ namespace Trickster.Bots
             get { return declareBid != null && declareBid.redoubled; }
         }
 
-        public void SetPoints(Range points)
+        public void SetHighCardPoints(Range points)
         {
-            SetPoints(points.Min, points.Max);
+            SetHighCardPoints(points.Min, points.Max);
         }
 
-        public void SetPoints(int min, int max)
+        public void SetHighCardPoints(int min, int max)
         {
+            BidPointType = BidPointType.Hcp;
             Points.Min = min;
             Points.Max = max;
         }
@@ -364,16 +364,16 @@ namespace Trickster.Bots
             if (Jacoby2NT.Interpret(this))
                 return true;
 
-            if (JacobyTransfer.Interpret(this))
-                return true;
+         // TODO: This is gone!   if (JacobyTransfer.Interpret(this))
+         //       return true;
 
             if (NegativeDouble.Interpret(this))
                 return true;
 
-            if (Relay.Interpret(this))
-                return true;
+         // TODO: Part of transfers   if (Relay.Interpret(this))
+         //       return true;
 
-            if (Stayman.Interpret(this))
+        if (Stayman.Interpret(this))
                 return true;
 
             if (StrongOpening.Interpret(this))

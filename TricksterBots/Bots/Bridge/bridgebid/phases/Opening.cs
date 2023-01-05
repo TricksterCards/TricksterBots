@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Trickster.cloud;
+using TricksterBots.Bots;
 
 namespace Trickster.Bots
 {
@@ -103,11 +104,7 @@ namespace Trickster.Bots
 
                         //  1N
                         case Suit.Unknown:
-                            opening.Points.Min = 15;
-                            opening.Points.Max = 17;
-                            opening.BidPointType = BidPointType.Hcp;
-                            opening.IsBalanced = true;
-                            opening.Description = string.Empty;
+                            NTFundamentals.Open(opening, NTFundamentals.NtType.Open1NT);
                             break;
                     }
 
@@ -149,12 +146,7 @@ namespace Trickster.Bots
 
                         //  2N
                         case Suit.Unknown:
-                            opening.Points.Min = 20;
-                            opening.Points.Max = 21;
-                            opening.BidPointType = BidPointType.Hcp;
-                            opening.IsBalanced = true;
-
-                            opening.Description = string.Empty;
+                            NTFundamentals.Open(opening, NTFundamentals.NtType.Open2NT);
                             break;
                     }
 
@@ -186,11 +178,7 @@ namespace Trickster.Bots
 
                         //  3N
                         case Suit.Unknown:
-                            opening.Points.Min = 25;
-                            opening.Points.Max = 27;
-                            opening.BidPointType = BidPointType.Hcp;
-                            opening.IsBalanced = true;
-                            opening.Description = string.Empty;
+                            NTFundamentals.Open(opening, NTFundamentals.NtType.Open3NT);
                             break;
                     }
 

@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Headers;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
 using Trickster.cloud;
@@ -10,251 +11,13 @@ namespace Trickster.Bots
 {
     internal class JacobyTransfer
     {
-        public static bool CanUseTransfers(InterpretedBid bid)
+        public static void InitiateTransfer(InterpretedBid call, NTFundamentals ntInfo, bool fourWayTransfers)
         {
-            return Stayman.CanUseStayman(bid);
-        }
-
-        public static bool Interpret(InterpretedBid bid)
-        {
-            if (CanUseTransfers(bid)) return InterpretTransfers(bid);
-
-            if (bid.bidIsDeclare && bid.Index >= 4 && bid.History[bid.Index - 2].BidConvention == BidConvention.JacobyTransfer)
+            if (call.RhoInterferedAbove(ntInfo.BidLevel + 1, Suit.Clubs))   // TODO: Is this correct for SAYC?  Systems still on?  Need to review.
             {
-                AcceptTransfer(bid.History[bid.Index - 2], bid.History[bid.Index - 1], bid);
-                return true;
+                CompetitiveAuction.HandleInterference(call);
             }
-
-            if (bid.bidIsDeclare && bid.Index >= 6 && bid.History[bid.Index - 4].BidConvention == BidConvention.JacobyTransfer)
-            {
-                InterpretResponderRebid(bid.History[bid.Index - 4], bid.History[bid.Index - 2], bid);
-                return true;
-            }
-
-            // Now check for opener's re-rebid to place contract TODO: Need to go to slam in some cases?
-            if (bid.bidIsDeclare && bid.Index >= 8 && bid.History[bid.Index - 4].BidConvention == BidConvention.AcceptJacobyTransfer)
-            {
-                PlaceContract(bid.History[bid.Index - 4], bid.History[bid.Index - 2], bid);
-                return true;
-            }
-
-            return false;
-        }
-
-        public static bool InterpretTransfers(InterpretedBid response)
-        {
-            if (!response.bidIsDeclare)
-                return false;
-
-            if (response.declareBid.suit != Suit.Diamonds && response.declareBid.suit != Suit.Hearts)
-                return false;
-
-            if (response.declareBid.level != response.LowestAvailableLevel(response.declareBid.suit))
-                return false;
-
-            //  1N-2D
-            //  1N-2H
-            //  2N-3D
-            //  2N-3H
-            //  3N-4D
-            //  3N-4H
-            //  2C-2D-2N-3D
-            //  2C-2D-2N-3H
-            //  2C-2D-3N-4D
-            //  2C-2D-3N-4H
-            response.BidConvention = BidConvention.JacobyTransfer;
-            response.BidMessage = BidMessage.Forcing;
-            var transferSuit = response.declareBid.suit == Suit.Diamonds ? Suit.Hearts : Suit.Spades;
-            response.HandShape[transferSuit].Min = 5;
-            response.Description = $" to {response.declareBid.level}{Card.SuitSymbol(transferSuit)}; 5+ {transferSuit}";
-
-            return true;
-        }
-
-        private static void AcceptTransfer(InterpretedBid transfer, InterpretedBid interference, InterpretedBid accept)
-        {
-            if (!accept.bidIsDeclare || accept.declareBid.level > transfer.declareBid.level + 1)
-                return;
-
-            if (transfer.declareBid.suit == Suit.Diamonds && accept.declareBid.suit != Suit.Hearts)
-                return;
-
-            if (transfer.declareBid.suit == Suit.Hearts && accept.declareBid.suit != Suit.Spades)
-                return;
-
-            //  1N-2D-2H
-            //  1N-2H-2S
-            //  ...
-            accept.BidConvention = BidConvention.AcceptJacobyTransfer;
-            accept.Description = string.Empty;
-
-            if (interference.bid == BridgeBid.Double)
-                //  if transfer is doubled, opener only completes the transfer with 3+ trumps
-                accept.HandShape[accept.declareBid.suit].Min = 3;
-            else
-                //  otherwise we always accept the transfer if opponent hasn't bid (in which case this won't be an option anyway)
-                accept.AlternateMatches = hand => true;
-
-            if (accept.declareBid.level == transfer.declareBid.level + 1)
-            {
-                //  1N-2D-3H
-                //  1N-2D-3S
-                //  ...
-                accept.Points.Min = 17;
-                accept.BidPointType = BidPointType.Dummy;
-                accept.HandShape[accept.declareBid.suit].Min = 4;
-                accept.Description = $"super-accept; 4+ {accept.declareBid.suit}";
-                accept.AlternateMatches = null;
-            }
-        }
-
-        private static void InterpretResponderRebid(InterpretedBid transfer, InterpretedBid accept, InterpretedBid rebid)
-        {
-            if (accept.declareBid == null || transfer.declareBid == null)
-                return; // TODO: Handle X, etc...
-
-            // Validate that transfer happened
-            var transferSuit = transfer.declareBid.suit == Suit.Diamonds ? Suit.Hearts : Suit.Spades;
-            if (accept.declareBid.suit != transferSuit)
-                return;
-
-            if (rebid.bid == BidBase.Pass)
-            {
-                rebid.Points.Max = 7;
-                rebid.BidPointType = BidPointType.Hcp;
-                return;
-            }
-
-            if (rebid.declareBid == null)
-                return;     // TODO: Handle these cases X, etc.
-
-            if (transferSuit == rebid.declareBid.suit)
-            {
-                if (rebid.declareBid.level == 3)
-                {
-                    rebid.Points.Min = 8;
-                    rebid.Points.Max = 9;
-                    rebid.BidPointType = BidPointType.Hcp;
-                    rebid.HandShape[transferSuit].Min = 6;
-                    rebid.Description = $"Inviting game; 6+ {transferSuit}";
-                    return;
-                }
-                // TODO: Slam stuff not implemented
-                if (rebid.declareBid.level == 4)
-                {
-                    // If opener has super-accepted the transfer then game can be bid with weaker hand
-                    // bec
-                    if (accept.declareBid.level == 3)
-                    {
-                        rebid.Points.Min = 6;
-                        rebid.BidPointType = BidPointType.Hcp;
-                        rebid.HandShape[transferSuit].Min = 5;
-                        rebid.Description = $"Sign-off at game; 5+ {transferSuit}";
-                        // TODO: Weaker game with more trump cards - alternate matches
-                    }
-                    else
-                    {
-                        rebid.Points.Min = 10;
-                        rebid.BidPointType = BidPointType.Hcp;
-                        rebid.HandShape[transferSuit].Min = 6;
-                        rebid.Description = $"Sign-off at game; 6+ {transferSuit}";
-                    }
-                }
-                return;
-            }
-
-            if (rebid.declareBid.suit == Suit.Unknown)
-            {
-                if (rebid.declareBid.level == 2)
-                {
-                    rebid.Points.Min = 8;
-                    rebid.Points.Max = 9;
-                    rebid.BidPointType = BidPointType.Hcp;
-                    rebid.HandShape[transferSuit].Max = 5;
-                    rebid.HandShape[transferSuit].Min = 5;
-                    rebid.Description = $"Invite in game; 5 {transferSuit}";
-                    return;
-                }
-                if (rebid.declareBid.level == 3)
-                {
-                    rebid.Points.Min = 10;
-                    rebid.BidPointType = BidPointType.Hcp;
-                    rebid.HandShape[transferSuit].Max = 5;
-                    rebid.HandShape[transferSuit].Min = 5;
-                    rebid.Description = $"Sign-off at game; 5 {transferSuit}";
-                    return;
-                }
-            }
-
-
-        }
-
-        private static void PlaceContract(InterpretedBid accept, InterpretedBid responderRebid, InterpretedBid rebid)
-        {
-            if (accept.declareBid == null || responderRebid.declareBid == null)
-                return; // TODO: Handle X, etc...
-
-            if (rebid.declareBid == null)
-                return;     // TODO: Handle these cases X, etc.
-
-            // Validate that transfer happened -- TODO: Check earlier bids were successful transfers?
-            var transferSuit = accept.declareBid.suit;
-
-            if (rebid.bid == BidBase.Pass)
-            {
-                rebid.Points.Max = 15;
-                rebid.HandShape[transferSuit].Min = 2;
-                rebid.HandShape[transferSuit].Max = 2;
-                rebid.BidPointType = BidPointType.Hcp;
-                return;
-            }
-
-            if (rebid.declareBid.suit == transferSuit)
-            {
-                if (rebid.declareBid.level == 3)
-                {
-                    rebid.Points.Min = 15;
-                    rebid.Points.Max = 15;
-                    rebid.BidPointType = BidPointType.Hcp;
-                    rebid.HandShape[transferSuit].Min = 3;
-                    rebid.Description = $"Sign-off at partscore; 3+ {transferSuit}";
-                    return;
-                }
-                if (rebid.declareBid.level == 4)
-                {
-                    rebid.Points.Min = (responderRebid.declareBid.level == 3 && responderRebid.declareBid.suit == Suit.Unknown) ? 15 : 16;
-                    rebid.Points.Max = 17;
-                    rebid.BidPointType = BidPointType.Hcp;
-                    rebid.HandShape[transferSuit].Min = 3;
-                    rebid.Description = $"Sign-off at game; 3+ {transferSuit}";
-                    return;
-                }
-            }
-
-            if (rebid.declareBid.suit == Suit.Unknown && rebid.declareBid.level == 3)
-            {
-                rebid.Points.Min = 16;
-                rebid.Points.Max = 17;
-                rebid.BidPointType = BidPointType.Hcp;
-                rebid.HandShape[transferSuit].Max = 2;
-                rebid.HandShape[transferSuit].Min = 2;
-                rebid.Description = $"Sign-off in game; 2 {transferSuit}";
-                return;
-            }
-
-        }
-
-        // NEW STUFF BELOW...
-        // NOTE: Because this method is called as one of many conventinons, it returns true if it 
-        // handled the call.  Because 
-        public static bool InitiateTransfer(InterpretedBid call, NTFundamentals ntInfo, bool fourWayTransfers)
-        {
-            if (call.RhoInterfered)
-            {
-                return false;
-            }
-
-            if (call.declareBid.level == ntInfo.BidLevel + 1)
+            else if (call.declareBid != null && call.declareBid.level == ntInfo.BidLevel + 1)
             {
                 if (call.declareBid.suit == Suit.Diamonds || call.declareBid.suit == Suit.Hearts)
                 {
@@ -265,22 +28,29 @@ namespace Trickster.Bots
                 }
                 if (call.declareBid.suit == Suit.Spades)
                 {
-                    // TODO: Minor transfers here...
+                   // TODO: This is not used - maybe it should be  BidConvention?  Relay is NOT a convention anyway call.BidConvention = BidConvention.Relay;
+                    call.BidMessage = BidMessage.Forcing;
+                    call.HandShape[Suit.Hearts].Max = 4;
+                    call.HandShape[Suit.Spades].Max = 4;
+                    call.SetHighCardPoints(0, ntInfo.ResponderInvitationalPoints.Min - 1);   // Must have < invitational points
+                    // TODO: With 4-way transfers we DO want to transfer with slam invitational points...
+                    call.Description = " to 3♣; 6+ Clubs or Diamonds";
+                    call.Validate = hand =>
+                    {
+                        //  validate matched hands have 6+ cards in a minor
+                        var counts = BasicBidding.CountsBySuit(hand);
+                        return counts[Suit.Clubs] >= 6 || counts[Suit.Diamonds] >= 6;
+                    };
+                    call.PartnersCall = c => AcceptMinorTransfer(c, ntInfo);
                 }
-                return true;
+                // TODO: Where does this go?  If 4-way transfers then we need to control this bid within the Transfer logic.  
+                if (call.Is(2, Suit.Unknown))
+                {
+                    call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
+                    call.IsBalanced = true;
+                    call.Description = "Invite to game";
+                }
             }
-            // Because we in the future we will support 4-way transfers, this code it responsible for
-            // defining 2NT.  If thats what we're being asked about then define it as a balanced invitation
-            if (call.Is(2, Suit.Unknown))
-            {
-                call.BidPointType = BidPointType.Hcp;
-                call.SetPoints(ntInfo.ResponderInvitationalPoints);
-                call.IsBalanced = true;
-                call.Description = string.Empty;
-                return true;
-            }
-            // If we don't handle the call then return false to let some other code have a wack at it...
-            return false;
         }
 
         private static void AcceptMajorTransfer(InterpretedBid call, NTFundamentals ntInfo, Suit transferSuit)
@@ -300,7 +70,7 @@ namespace Trickster.Bots
             {
                 if (call.IsPass)
                 {
-                    call.SetPoints(ntInfo.OpenerPoints);
+                    call.SetHighCardPoints(ntInfo.OpenerPoints);
                     call.HandShape[transferSuit].Min = 2;
                     call.HandShape[transferSuit].Max = 2;
                     call.Description = $"pass transfer to {transferSuit} indicating no fit after opponent X";
@@ -312,18 +82,61 @@ namespace Trickster.Bots
 
             if (call.Is(ntInfo.BidLevel + 1, transferSuit))
             {
-                call.HandShape[transferSuit].Min = minKnown;
-                call.HandShape[transferSuit].Max = 5;
-                call.SetPoints(ntInfo.OpenerPoints);
+                // call.HandShape[transferSuit].Min = minKnown;
+                // call.HandShape[transferSuit].Max = 5;
+                // TODO: Always match?  Or use these points?  call.SetPoints(ntInfo.OpenerPoints);
+                call.AlternateMatches = hand => true;
                 call.Description = $"Accept transfer to {transferSuit}";
                 call.PartnersCall = c => DescribeTransfer(c, ntInfo, transferSuit, minKnown);
             }
             if (ntInfo.BidLevel == 1 && call.Is(3, transferSuit))
             {
-                call.SetPoints(ntInfo.OpenerPoints.Max, ntInfo.OpenerPoints.Max);
+                call.SetHighCardPoints(ntInfo.OpenerPoints.Max, ntInfo.OpenerPoints.Max);
                 call.HandShape[transferSuit].Min = 4;
                 call.HandShape[transferSuit].Max = 5;
-                call.PartnersCall = c => DescribeTransfer(c, ntInfo, transferSuit, minKnown);
+                call.PartnersCall = c => DescribeTransfer(c, ntInfo, transferSuit, 4);
+            }
+        }
+
+        private static void AcceptMinorTransfer(InterpretedBid call, NTFundamentals ntInfo)
+        {
+            // TODO: Think about all interference here...  Do we actually accept the transfer?  Or just pass.....
+            // If RHO doubled then conditionally accept the transfer.  Pass if only two cards in the suit
+            // 
+            
+            // If there is any other interference then punt
+            if (call.RhoInterfered && !call.RhoDoubled)
+            {
+                CompetitiveAuction.HandleInterference(call);
+                return;
+            }
+
+            
+            if (call.Is(ntInfo.BidLevel + 2, Suit.Clubs))
+            {
+                call.BidConvention = BidConvention.AcceptRelay;
+                call.Description = string.Empty;
+                call.AlternateMatches = hand => true;
+                call.PartnersCall = c => CompleteMinorTransfer(c, ntInfo);
+            }
+        }
+
+        private static void CompleteMinorTransfer(InterpretedBid call, NTFundamentals ntInfo)
+        {
+            // TODO: Interference...
+            if (call.IsPass)
+            {
+                call.BidMessage = BidMessage.Signoff;
+                call.HandShape[Suit.Clubs].Min = 6;
+                call.Description = $"6+ {Suit.Clubs}";
+                call.PartnersCall = CompetitiveAuction.PassOrCompete;
+            }
+            if (call.Is(ntInfo.BidLevel + 2, Suit.Diamonds)) 
+            {
+                call.BidMessage = BidMessage.Signoff;
+                call.HandShape[Suit.Diamonds].Min = 6;
+                call.Description = $"6+ {Suit.Diamonds}";
+                call.PartnersCall = CompetitiveAuction.PassOrCompete;
             }
         }
 
@@ -341,7 +154,7 @@ namespace Trickster.Bots
             // we have a minimal hand then we need to complete the transfer ourselves...
             if (call.Is(2, transferSuit))
             {
-                call.SetPoints(0, ntInfo.ResponderInvitationalPoints.Min - 1);
+                call.SetHighCardPoints(0, ntInfo.ResponderInvitationalPoints.Min - 1);
                 call.HandShape[transferSuit].Min = 5;
                 call.PartnersCall = CompetitiveAuction.PassOrCompete;
             }
@@ -349,7 +162,7 @@ namespace Trickster.Bots
             // TODO: Maybe if suit is stopped and 5-cards we would want to bid this even if knownFit...
             if (call.Is(2, Suit.Unknown) && minFit == 2)
             {
-                call.SetPoints(ntInfo.ResponderInvitationalPoints);
+                call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
                 call.HandShape[transferSuit].Min = 5;
                 call.HandShape[transferSuit].Max = 5;
                 call.Description = $"Invite to game; 5 {transferSuit}";
@@ -357,25 +170,29 @@ namespace Trickster.Bots
             }
             else if (call.Is(3, transferSuit))
             {
-                call.SetPoints(ntInfo.ResponderInvitationalPoints);
+                call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
                 call.HandShape[transferSuit].Min = minFit > 2 ? 5 : 6;
+                call.HandShape[transferSuit].Max = 10;  // TODO: This seems a bit silly.  
                 call.Description = $"Invite to game; 6+ {transferSuit} or known fit";
                 call.PartnersCall = c => RebidAfterInvitation(c, ntInfo, transferSuit);
             }
             else if (call.Is(3, Suit.Unknown) && minFit == 2)
             {
-                call.SetPoints(ntInfo.ResponderGamePoints);
+                call.SetHighCardPoints(ntInfo.ResponderGamePoints);
                 call.HandShape[transferSuit].Min = 5;
                 call.HandShape[transferSuit].Max = 5;
                 call.Description = $"Game in NT or {transferSuit}; 5 {transferSuit}";
                 call.PartnersCall = c => PickGameAfterTransfer(c, ntInfo, transferSuit);
             }
             else if (call.Is(4, transferSuit))
-            {
-                // TODO: Super-accept should shave some points off of this...
-                call.SetPoints(ntInfo.ResponderGamePoints);
-                call.HandShape[transferSuit].Min = minFit == 2 ? 5 : 6;
-                // TODO: Need Max too?
+            { 
+                call.SetHighCardPoints(ntInfo.ResponderGamePoints);
+                if (minFit == 4)    // TODO: Kind of side-effect working here...  This means super-accepted
+                {
+                    call.Points.Min -= 4;
+                }
+                call.HandShape[transferSuit].Min = minFit > 2 ? 5 : 6;
+                call.HandShape[transferSuit].Max = 10;  // TODO: Seems silly too
                 call.Description = $"Game in {transferSuit}; 6+ {transferSuit} or known fit";
                 call.PartnersCall = CompetitiveAuction.PassOrCompete;
             }
@@ -394,9 +211,18 @@ namespace Trickster.Bots
             // Assume this is the last bid in the auction.  Override if not 
             call.PartnersCall = CompetitiveAuction.PassOrCompete;
 
+            if (call.Is(3, transferSuit))
+            {
+                call.SetHighCardPoints(ntInfo.OpenerPoints.Min, ntInfo.OpenerPoints.Min);
+                call.HandShape[transferSuit].Min = 3;
+                call.HandShape[transferSuit].Max = 5;
+                call.Description = $"Reject invitation to game, play at 3{transferSuit}; 3+ {transferSuit}";
+                return;
+            }
+
             if (call.Is(3, Suit.Unknown))
             {
-                call.SetPoints(ntInfo.OpenerAcceptInvitePoints);
+                call.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints);
                 call.HandShape[transferSuit].Min = 2;
                 call.HandShape[transferSuit].Max = 2;
                 call.Description = $"Accept invitation to play in 3NT; 2 {transferSuit}";
@@ -405,7 +231,7 @@ namespace Trickster.Bots
             var otherMajor = transferSuit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
             if (call.Is(3, otherMajor))
             {
-                call.SetPoints(ntInfo.OpenerAcceptInvitePoints); 
+                call.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints); 
                 call.HandShape[transferSuit].Min = 2;
                 call.HandShape[transferSuit].Max = 2;
                 call.HandShape[otherMajor].Min = 5;
@@ -415,7 +241,7 @@ namespace Trickster.Bots
             } 
             if (call.Is(4, transferSuit))
             {
-                call.SetPoints(ntInfo.OpenerAcceptInvitePoints);
+                call.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints);
                 call.HandShape[transferSuit].Min = 3;
                 call.HandShape[transferSuit].Max = 5;
                 call.Description = $"Accept invitation to game in {transferSuit}; 3+ {transferSuit}";
@@ -432,10 +258,18 @@ namespace Trickster.Bots
                 CompetitiveAuction.HandleInterference(call);
                 return;
             }
-            // TODO: Interference handle it here?  Maybe ignore it
+            if (call.IsPass)
+            {
+                // TODO: Describe meaning here...
+                call.SetHighCardPoints(ntInfo.OpenerPoints);
+                call.HandShape[transferSuit].Max = 2;
+                call.HandShape[transferSuit].Min = 2;
+                call.Description = $"2 {transferSuit};  Play in 3NT";
+                call.BidMessage = BidMessage.Signoff;
+            }
             if (call.Is(4, transferSuit))
             {        
-                call.SetPoints(ntInfo.OpenerPoints);
+                call.SetHighCardPoints(ntInfo.OpenerPoints);
                 call.HandShape[transferSuit].Min = 3;
                 call.HandShape[transferSuit].Max = 5;
                 call.Description = $"Accept transfer; 3+ {transferSuit}";
@@ -458,14 +292,14 @@ namespace Trickster.Bots
 
             if (call.Is(3, Suit.Unknown))
             {
-                call.SetPoints(ntInfo.ResponderInvitationalPoints);
+                call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
                 call.HandShape[otherMajor].Max = 2;
                 call.HandShape[otherMajor].Min = 2;
                 call.Description = $"No fit in {otherMajor};  Play game at 3NT";
             }
             if (call.Is(4, otherMajor))
             {
-                call.SetPoints(ntInfo.ResponderInvitationalPoints);
+                call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
                 call.HandShape[otherMajor].Min = 3;
                 call.HandShape[otherMajor].Max = 10;  // TODO: Need Max?
                 call.Description = $"Play game in {otherMajor}";

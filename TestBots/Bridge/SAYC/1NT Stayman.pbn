@@ -1,8 +1,8 @@
 % PBN 2.1
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
-%Creator: BridgeComposer Version 5.101.1
-%Created: Fri Dec  2 19:04:13 2022 -0800
+%Creator: BridgeComposer Version 5.101.2
+%Created: Tue Jan  3 20:29:19 2023 -0800
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -33,7 +33,7 @@
 %PipColors #000000,#ff0000,#ff0000,#000000
 %PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
 %ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 0
+%SelectedBoard 5
 %ShowBoardLabels 2
 %ShowCardTable 2
 %TSTCustomSortOrder Default
@@ -122,4 +122,48 @@ Pass Pass
 [Auction "N"]
 1NT Pass 2C Pass
 2S Pass 4S Pass
+Pass Pass
+
+[Event "Stayman, Fit Hearts, Invite, Accept"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "None"]
+[Deal "W:Q92.K94.Q87.Q876 A843.A763.A9.A42 765.T8.K652.KT53 KJT.QJ52.JT43.J9"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+Pass 1NT Pass 2C
+Pass 2H Pass 3H
+Pass 4H Pass Pass
+Pass
+
+[Event "Bid of Spades upgrades responder to game"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:AK64.KQ65.QJ.984 Q8.J983.A762.Q62 T732..T843.AKJT7 J95.AT742.K95.53"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "4S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2C Pass
+2H Pass 2NT Pass
+3S Pass 4S Pass
 Pass Pass

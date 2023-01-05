@@ -1,8 +1,8 @@
 % PBN 2.1
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
-%Creator: BridgeComposer Version 5.101.1
-%Created: Fri Dec  2 15:04:24 2022 -0800
+%Creator: BridgeComposer Version 5.101.2
+%Created: Sun Jan  1 21:33:14 2023 -0800
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -33,7 +33,7 @@
 %PipColors #000000,#ff0000,#ff0000,#000000
 %PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
 %ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 6
+%SelectedBoard 10
 %ShowBoardLabels 2
 %ShowCardTable 2
 %TSTCustomSortOrder Default
@@ -184,3 +184,89 @@ Pass Pass
 1NT Pass 2H Pass
 2S Pass 3NT Pass
 4S Pass Pass Pass
+
+[Event "Transfer to Clubs"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "None"]
+[Deal "W:8643.A652.Q832.A AKQ.T98.KJ5.KJ65 T952.KQJ3.974.Q4 J7.74.AT6.T98732"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "3C"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+Pass 1NT Pass 2S
+Pass 3C Pass Pass
+Pass
+
+[Event "Transfer to Diamonds"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "None"]
+[Deal "W:8532.AQ52.Q6.984 AKQ.T98.KJ5.KJ65 T964.KJ63.A4.Q73 J7.74.T98732.AT2"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "3D"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+Pass 1NT Pass 2S
+Pass 3C Pass 3D
+Pass Pass Pass
+
+[Event "Opener Suggest 2nd Major after Transfer - Accepted by responder"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KJ.Q9654.KQJ.AJT Q96.T3.AT94.8754 A8543.KJ2.753.96 T72.A87.862.KQ32"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass 2NT Pass
+3H Pass 4H Pass
+Pass Pass
+
+[Event "Opener suggest 2nd Major after transfer - Rejected.  Play 3NT"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:A8543.KJ.753.T62 QT9.T8.AT64.8753 KJ.Q9654.KQJ.A94 762.A732.982.KQJ"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "3NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+Pass Pass 1NT Pass
+2H Pass 2S Pass
+2NT Pass 3H Pass
+3NT Pass Pass Pass

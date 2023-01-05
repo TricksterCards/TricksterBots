@@ -82,7 +82,6 @@
     <Compile Include="Bots\Bridge\bridgebid\BidWhy.cs" />
     <Compile Include="Bots\Bridge\bridgebid\BridgeBid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\BridgeBidHistory.cs" />
-    <Compile Include="Bots\Bridge\bridgebid\CallInterpreter.cs" />
     <Compile Include="Bots\Bridge\bridgebid\NTFundamentals.cs" />
     <Compile Include="Bots\Bridge\bridgebid\PairDisclosures.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\ArtificialInquiry.cs" />
@@ -95,7 +94,6 @@
     <Compile Include="Bots\Bridge\bridgebid\conventions\JacobyTransfer.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\MichaelsCuebid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\NegativeDouble.cs" />
-    <Compile Include="Bots\Bridge\bridgebid\conventions\Relay.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\Stayman.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\StrongOpening.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\TakeoutDouble.cs" />

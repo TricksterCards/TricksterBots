@@ -11,6 +11,43 @@ namespace TricksterBots.Bots {
 
     public class NTFundamentals
     {
+        public static void Open(InterpretedBid opening, NtType ntType)
+        {
+            var ntInfo = new NTFundamentals(ntType);
+            opening.SetHighCardPoints(ntInfo.OpenerPoints);
+            opening.IsBalanced = true;
+            opening.Description = string.Empty;
+            opening.PartnersCall = c => ConventionalResponses(c, ntInfo);
+        }
+
+        public static void ConventionalResponses(InterpretedBid response, NTFundamentals ntInfo)
+        {
+            // Game is always a signoff.  3NT never has any other meaning than signoff in game
+            if (response.Is(3, Suit.Unknown))
+            { 
+                response.BidMessage = BidMessage.Signoff;
+                response.SetHighCardPoints(ntInfo.ResponderGamePoints);
+                response.IsBalanced = true;
+                response.Description = string.Empty;
+                return;
+            }
+
+            // TODO: Do stayman needs to be full state-machine with PartnersCall 
+            if (!Stayman.Interpret(response))
+            {
+                if (response.declareBid != null && response.declareBid.level == ntInfo.BidLevel + 1)
+                {
+                    // We send ALL bids at the next level through, including 2NT.  
+                    // TODO: Make sure this only happens for 2NT.  Other levels don't make sense.  Minor transfers over 2NT and 3NT?  Seem odd..  Probably wrong...
+                    JacobyTransfer.InitiateTransfer(response, ntInfo, false);   // TODO: In the furture we want 4-way transfers.
+                    return;
+                }
+            }
+
+        }
+    
+
+
         public NtType ntType;
         public enum NtType
         {

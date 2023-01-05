@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System.Threading;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -217,8 +218,9 @@ namespace Trickster.Bots
             response.Validate = hand =>
             {
                 //  we should have 4H or 4S (any more and we'll use a transfer instead)
+                // TODO: Need to take Smolen convention into account
                 var counts = BasicBidding.CountsBySuit(hand);
-                return counts[Suit.Hearts] == 4 || counts[Suit.Spades] == 4;
+                return (counts[Suit.Hearts] == 4 || counts[Suit.Spades] == 4);
             };
 
             return true;
