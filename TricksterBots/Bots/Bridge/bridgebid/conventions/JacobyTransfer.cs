@@ -49,9 +49,38 @@ namespace Trickster.Bots
                     call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
                     call.IsBalanced = true;
                     call.Description = "Invite to game";
+                    call.PartnersCall = c => OpenerRebidAfterGameInvitation(c, ntInfo);
                 }
             }
         }
+
+
+        // Responder has bid 2NT inviatation to game.  
+        private static void OpenerRebidAfterGameInvitation(InterpretedBid rebid, NTFundamentals ntInfo)
+        {
+            ShowMajorBid(rebid, ntInfo, Suit.Hearts);
+            ShowMajorBid(rebid, ntInfo, Suit.Spades);
+			if (rebid.Is(3, Suit.Unknown))
+			{
+				rebid.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints);
+                rebid.HandShape[Suit.Hearts].Max = 4;
+                rebid.HandShape[Suit.Spades].Max = 4;
+				rebid.Description = $"Accept invitation to play in 3NT; No 5 card major";
+                rebid.PartnersCall = CompetitiveAuction.PassOrCompete;
+			}
+		}
+
+        private static void ShowMajorBid(InterpretedBid call, NTFundamentals ntInfo, Suit major)
+        {
+            if (call.Is(3, major))
+            {
+				call.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints);
+				call.HandShape[major].Min = 5;
+				call.HandShape[major].Max = 5;
+				call.Description = $"Show 5 {major} and accept invitation to game";
+				call.PartnersCall = c => TryOpenersMajorAfterInvitation(c, ntInfo, major);
+			}
+		}
 
         private static void AcceptMajorTransfer(InterpretedBid call, NTFundamentals ntInfo, Suit transferSuit)
         {
@@ -237,7 +266,7 @@ namespace Trickster.Bots
                 call.HandShape[otherMajor].Min = 5;
                 call.HandShape[otherMajor].Max = 5;
                 call.Description = $"No fit in {transferSuit}.  Show 5 {otherMajor} and accept invitation to game";
-                call.PartnersCall = c => TrySecondMajorAfterTransfer(c, ntInfo, otherMajor);
+                call.PartnersCall = c => TryOpenersMajorAfterInvitation(c, ntInfo, otherMajor);
             } 
             if (call.Is(4, transferSuit))
             {
@@ -279,7 +308,10 @@ namespace Trickster.Bots
         }
   
 
-        public static void TrySecondMajorAfterTransfer(InterpretedBid call, NTFundamentals ntInfo, Suit otherMajor)
+        // There are two ways to get to this function:
+        //    Responder invites with 2NT and opener has game-going values and a 5-card major
+        //    Responder transfers to major X and then invites with 2NT.  Opener has other major and game values
+        public static void TryOpenersMajorAfterInvitation(InterpretedBid call, NTFundamentals ntInfo, Suit openersMajor)
         {
             // TODO: need to deal with some interference...  For now ignore X and punt on anything else.
             if (call.RhoBid)
@@ -293,16 +325,16 @@ namespace Trickster.Bots
             if (call.Is(3, Suit.Unknown))
             {
                 call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
-                call.HandShape[otherMajor].Max = 2;
-                call.HandShape[otherMajor].Min = 2;
-                call.Description = $"No fit in {otherMajor};  Play game at 3NT";
+                call.HandShape[openersMajor].Max = 2;
+                call.HandShape[openersMajor].Min = 2;
+                call.Description = $"No fit in {openersMajor};  Play game at 3NT";
             }
-            if (call.Is(4, otherMajor))
+            if (call.Is(4, openersMajor))
             {
                 call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
-                call.HandShape[otherMajor].Min = 3;
-                call.HandShape[otherMajor].Max = 10;  // TODO: Need Max?
-                call.Description = $"Play game in {otherMajor}";
+                call.HandShape[openersMajor].Min = 3;
+                call.HandShape[openersMajor].Max = 10;  // TODO: Need Max?
+                call.Description = $"Play game in {openersMajor}";
             }
         }
     }

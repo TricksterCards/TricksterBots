@@ -1,8 +1,8 @@
 % PBN 2.1
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
-%Creator: BridgeComposer Version 5.101.2
-%Created: Tue Jan  3 20:29:19 2023 -0800
+%Creator: BridgeComposer Version 5.101.1
+%Created: Tue Jan 10 00:07:31 2023 -0800
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -33,13 +33,34 @@
 %PipColors #000000,#ff0000,#ff0000,#000000
 %PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
 %ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 5
+%SelectedBoard 8
 %ShowBoardLabels 2
 %ShowCardTable 2
 %TSTCustomSortOrder Default
 %TSTReport List
 %TSTReportOrder ByNumber
 %TSTReportShade Yes
+%[Event "Bid of Spades upgrades responder to game"]
+%[Site ""]
+%[Date ""]
+%[Board ""]
+%[West ""]
+%[North ""]
+%[East ""]
+%[South ""]
+%[Dealer "N"]
+%[Vulnerable "None"]
+%[Deal "N:AK64.KQ65.QJ.984 Q8.J983.A762.Q62 T732..T843.AKJT7 J95.AT742.K95.53"]
+%[Scoring ""]
+%[Declarer "N"]
+%[Contract "4S"]
+%[Result ""]
+%[BCFlags "1f"]
+%[Auction "N"]
+%1NT Pass 2C Pass
+%2H Pass 2NT Pass
+%3S Pass 4S Pass
+%Pass Pass
 [Event "1NT Opening - Stayman - No Major - Invite - Refused"]
 [Site ""]
 [Date ""]
@@ -134,7 +155,7 @@ Pass Pass
 [South ""]
 [Dealer "W"]
 [Vulnerable "None"]
-[Deal "W:Q92.K94.Q87.Q876 A843.A763.A9.A42 765.T8.K652.KT53 KJT.QJ52.JT43.J9"]
+[Deal "W:Q92.K94.Q87.Q876 A843.A763.A9.A94 765.T8.K652.KJ53 KJT.QJ52.JT43.T2"]
 [Scoring ""]
 [Declarer "N"]
 [Contract "4H"]
@@ -146,7 +167,30 @@ Pass 2H Pass 3H
 Pass 4H Pass Pass
 Pass
 
-[Event "Bid of Spades upgrades responder to game"]
+[Event "Stayman, Hearts, Invite 2NT, Spades, Dummy points make game in Spades"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:QJ84..T7653.KQT5 532.Q8432.A2.A74 K976.AKJ6.QJ.J83 AT.T975.K984.962"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "4S"]
+[Result ""]
+[Auction "S"]
+Pass Pass 1NT Pass
+2C Pass 2H Pass
+2NT Pass 3S Pass
+4S Pass Pass Pass
+[BCFlags "1f"]
+4
+
+[Event "Stayman not used with 4333 - Invite"]
 [Site ""]
 [Date ""]
 [Board ""]
@@ -156,14 +200,52 @@ Pass
 [South ""]
 [Dealer "N"]
 [Vulnerable "None"]
-[Deal "N:AK64.KQ65.QJ.984 Q8.J983.A762.Q62 T732..T843.AKJT7 J95.AT742.K95.53"]
+[Deal "N:K32.JT4.AQJ.AT96 T975.A96.943.K75 QJ6.K873.765.QJ8 A84.Q52.KT82.432"]
 [Scoring ""]
 [Declarer "N"]
-[Contract "4S"]
+[Contract "2NT"]
 [Result ""]
 [BCFlags "1f"]
 [Auction "N"]
-1NT Pass 2C Pass
-2H Pass 2NT Pass
-3S Pass 4S Pass
+1NT Pass 2NT Pass
 Pass Pass
+
+[Event "Stayman not used 4333 - Invite accepted"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:A98.A73.AJT.A642 QT4.KJ95.984.T97 J652.842.KQ3.QJ3 K73.QT6.7652.K85"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "3NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2NT Pass
+3NT Pass Pass Pass
+
+[Event "Stayman not used - Game"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "None"]
+[Deal "W:QT72.742.A84.T75 KJ6.AJ5.QT65.KJ6 93.9863.K92.A832 A854.KQT.J73.Q94"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "3NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+Pass 1NT Pass 3NT
+Pass Pass Pass

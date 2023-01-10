@@ -19,6 +19,11 @@ namespace Trickster.Bots
                 return;
 
             var db = opening.declareBid;
+            if (db.suit == Suit.Unknown)
+            {
+                NTFundamentals.Open(opening);
+                return;
+            }
 
             switch (db.level)
             {
@@ -102,10 +107,6 @@ namespace Trickster.Bots
 
                             break;
 
-                        //  1N
-                        case Suit.Unknown:
-                            NTFundamentals.Open(opening, NTFundamentals.NtType.Open1NT);
-                            break;
                     }
 
                     break;
@@ -143,11 +144,6 @@ namespace Trickster.Bots
                             }
 
                             break;
-
-                        //  2N
-                        case Suit.Unknown:
-                            NTFundamentals.Open(opening, NTFundamentals.NtType.Open2NT);
-                            break;
                     }
 
                     break;
@@ -174,11 +170,6 @@ namespace Trickster.Bots
                                 opening.HandShape[db.suit].Max = 7;
                             }
 
-                            break;
-
-                        //  3N
-                        case Suit.Unknown:
-                            NTFundamentals.Open(opening, NTFundamentals.NtType.Open3NT);
                             break;
                     }
 
@@ -207,7 +198,9 @@ namespace Trickster.Bots
 
                             break;
 
+
                         //  4N
+                        /* - TODO: This is too strange.  Can't see why not 2C opener....
                         case Suit.Unknown:
                             opening.Points.Min = 25;
                             opening.BidPointType = BidPointType.Hcp;
@@ -217,6 +210,7 @@ namespace Trickster.Bots
                             //  TODO: validate knowing count of Aces will help decision to bid slam
                             opening.Validate = hand => false;
                             break;
+                        */
                     }
 
                     break;

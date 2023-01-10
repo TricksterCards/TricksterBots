@@ -373,8 +373,8 @@ namespace Trickster.Bots
          // TODO: Part of transfers   if (Relay.Interpret(this))
          //       return true;
 
-        if (Stayman.Interpret(this))
-                return true;
+   //     if (Stayman.Interpret(this))
+   //             return true;
 
             if (StrongOpening.Interpret(this))
                 return true;

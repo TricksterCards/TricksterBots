@@ -64,6 +64,26 @@ namespace Trickster.Bots
             return counts;
         }
 
+        public static bool Is4333(Hand hand)
+        {
+            return Is4333(CountsBySuit(hand));
+        }
+
+        public static bool Is4333(Dictionary<Suit, int> counts)
+        {
+            bool found4 = false;
+			foreach (var suit in SuitRank.allSuits)
+            {
+                if (counts[suit] > 4) return false;
+                if (counts[suit] == 4)
+                {
+                    if (found4) return false;
+                    found4 = true;
+                }
+            }
+            return true;
+		}
+
         public static bool HasStopper(Hand hand, Suit suit)
         {
             //  A, Kx, Qxx, or Jxxx

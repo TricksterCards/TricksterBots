@@ -1,4 +1,53 @@
+% PBN 2.1
+% EXPORT
+%Content-type: text/x-pbn; charset=ISO-8859-1
+%Creator: BridgeComposer Version 5.101.1
+%Created: Tue Jan 10 00:39:30 2023 -0800
+%BCOptions Center STBorder STShade
+%BidAndCardSpacing Thin
+%BoardsPerPage 1
+%CardTableColors #008000,#ffffff,#aaaaaa
+%DDAFormat 0
+%DefaultPagination 0
+%EventSpacing 0
+%Font:CardTable "Arial",11,400,0
+%Font:Commentary "Times New Roman",12,400,0
+%Font:Diagram "Times New Roman",12,400,0
+%Font:Event "Times New Roman",12,400,0
+%Font:FixedPitch "Courier New",10,400,0
+%Font:HandRecord "Arial",11,400,0
+%GutterSize 500,500
+%HRTitleDate 0
+%HRTitleEvent "1NT Opening - All Pass"
+%HRTitleSetID ""
+%HRTitleSetIDPrefix ""
+%HRTitleSite ""
+%HtmlClubs entity,"https://bridgecomposer.com/suitimg/c.gif"
+%HtmlDiamonds entity,"https://bridgecomposer.com/suitimg/d.gif"
+%HtmlHearts entity,"https://bridgecomposer.com/suitimg/h.gif"
+%HtmlNavBar 0.75,#cfe2f3
+%HtmlSpades entity,"https://bridgecomposer.com/suitimg/s.gif"
+%Margins 1000,1000,1000,1000
+%PaperSize 1,0,0,2
+%ParaIndent 0
+%PipColors #000000,#ff0000,#ff0000,#000000
+%PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
+%ScoreTableColors #e6e6e6,#000000
+%SelectedBoard 5
+%ShowBoardLabels 2
+%ShowCardTable 2
+%TSTCustomSortOrder Default
+%TSTReport List
+%TSTReportOrder ByNumber
+%TSTReportShade Yes
 [Event "1NT Opening - All Pass"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:K43.QJ3.AK32.Q85 QJT9.K98.JT9.AJ4 765.752.654.T932 A82.AT64.Q87.K76"]
@@ -11,27 +60,45 @@
 1NT Pass Pass Pass
 
 [Event "1NT Opening, Invite to game, Invitation refused"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:K43.QJ3.AK32.Q85 Q96.T942.QJ.K763 JT7.A85.T754.A92 A852.K76.986.JT4"]
+[Scoring ""]
 [Declarer "N"]
 [Contract "2NT"]
+[Result ""]
+[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2NT Pass
 Pass Pass
 
-[Event "1NT, Invite, Invitation Accepted"]
+[Event "1NT, Invite, Show Major, Play in 4S"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
 [Dealer "S"]
 [Vulnerable "None"]
 [Deal "S:A87.KQ4.T984.972 K53.952.Q53.QT43 QT964.A76.AK2.A6 J2.JT83.J76.KJ85"]
+[Scoring ""]
 [Declarer "N"]
-[Contract "3NT"]
+[Contract "4S"]
 [Result ""]
 [BCFlags "1f"]
 [Auction "S"]
 Pass Pass 1NT Pass
-2NT Pass 3NT Pass
-Pass Pass
+2NT Pass 3S Pass
+4S Pass Pass Pass
 
 [Event "1NT, Sign-off at Game"]
 [Site ""]
@@ -52,3 +119,45 @@ Pass Pass
 [Auction "W"]
 Pass 1NT Pass 3NT
 Pass Pass Pass
+
+[Event "1NT, Invite Game, Accept"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:J98.A53.J874.Q82 T742.Q76.T63.AJ9 AQ6.KJT4.A92.KT6 K53.982.KQ5.7543"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+Pass Pass 1NT Pass
+2NT Pass 3NT Pass
+Pass Pass
+
+[Event "1NT, Invite, Show Hearts, Play in 3N"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:AK.J7643.KQ8.KT8 J975.K98.652.AJ5 832.AQ.JT93.Q764 QT64.T52.A74.932"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "3NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2NT Pass
+3H Pass 3NT Pass
+Pass Pass

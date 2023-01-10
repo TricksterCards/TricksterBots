@@ -27,9 +27,11 @@ namespace Trickster.Bots
             }
         }
 
+        // TODO: GET RID OF ALL THIS AND PUT IT IN NT STUFF -- PERHAPS IN JACOBY TRANSFERS
         private static void RebidNTOpening(InterpretedBid opening, InterpretedBid response, InterpretedBid rebid)
         {
             // If responder invites with 2NT then bid 3NT with 16-17 HCP
+            /*
             if (response.bidIsDeclare && response.declareBid.level == 2 && response.declareBid.suit == Suit.Unknown 
                 && rebid.declareBid.level == 3 && rebid.declareBid.suit == Suit.Unknown)
             {
@@ -39,7 +41,7 @@ namespace Trickster.Bots
                 rebid.Description = "Accept invitation and sign-off in game";
                 return;
             }
-            
+            */
 
                 if (response.bidIsDeclare && response.declareBid.level == 4 && response.declareBid.suit == Suit.Unknown)
                 //  rebid after a 4NT response
