@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Trickster.cloud;
+using TricksterBots.Bots;
 
 namespace Trickster.Bots
 {
@@ -114,7 +115,7 @@ namespace Trickster.Bots
                         //  (1H)-1N
                         //  (1S)-1N
                         case Suit.Unknown:
-
+                            NoTrump.Overcall(overcall);
                             return;
                     }
 

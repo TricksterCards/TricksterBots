@@ -1,4 +1,4 @@
-// last updated 1/12/2023 7:15 PM (-08:00)
+// last updated 1/12/2023 7:51 PM (-08:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -637,14 +637,14 @@ namespace TestBots
                     new SaycResult(true, 424),
                     new SaycResult(false, 421),
                     new SaycResult(false, 402),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 412),
+                    new SaycResult(true, 412),
+                    new SaycResult(true, 412),
                     new SaycResult(true, 424),
+                    new SaycResult(true, 412),
                     new SaycResult(false, -2),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 412),
+                    new SaycResult(true, 412),
                     new SaycResult(true, 402),
                     new SaycResult(true, 432),
                     new SaycResult(true, 424),
@@ -913,8 +913,8 @@ namespace TestBots
                     new SaycResult(true, 415),
                     new SaycResult(true, -2),
                     new SaycResult(false, -2),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 421),
+                    new SaycResult(false, 428),
                     new SaycResult(false, -2),
                     new SaycResult(true, -2),
                     new SaycResult(false, -2),
@@ -923,7 +923,7 @@ namespace TestBots
                     new SaycResult(false, -2),
                     new SaycResult(false, 415),
                     new SaycResult(true, 415),
-                    new SaycResult(false, -2),
+                    new SaycResult(false, 412),
                     new SaycResult(false, -2),
                     new SaycResult(true, 423),
                     new SaycResult(true, 422),
@@ -935,8 +935,8 @@ namespace TestBots
                     new SaycResult(true, 423),
                     new SaycResult(false, 423),
                     new SaycResult(false, 428),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2)
+                    new SaycResult(false, 428),
+                    new SaycResult(false, 428)
                 }
              },
              {
@@ -1028,7 +1028,7 @@ namespace TestBots
                     new SaycResult(false, -2),
                     new SaycResult(true, 412),
                     new SaycResult(false, 423),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 412),
                     new SaycResult(false, -2),
                     new SaycResult(true, -2),
                     new SaycResult(true, -2),
@@ -1061,8 +1061,8 @@ namespace TestBots
                     new SaycResult(true, 430),
                     new SaycResult(true, -2),
                     new SaycResult(true, -2),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 420),
+                    new SaycResult(true, 412),
                     new SaycResult(true, 422),
                     new SaycResult(false, -2),
                     new SaycResult(false, 428),
@@ -1124,7 +1124,7 @@ namespace TestBots
                     new SaycResult(true, 420),
                     new SaycResult(true, 428),
                     new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 412),
                     new SaycResult(false, 430)
                 }
              },
