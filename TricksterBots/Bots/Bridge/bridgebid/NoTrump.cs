@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using static Trickster.Bots.InterpretedBid;
 using Trickster.Bots;
 using Trickster.cloud;
+using System.Net.Http.Headers;
+
 
 namespace TricksterBots.Bots {
 
-    public class NTFundamentals
+    public class NoTrump
     {
         public static void Open(InterpretedBid opening)
         {
@@ -32,13 +34,31 @@ namespace TricksterBots.Bots {
                 // TODO: Assert something here?  Throw?  Seems like perhpas shouldnt happen...
                 return;
             }
-            var ntInfo = new NTFundamentals(ntType);
-            opening.SetHighCardPoints(ntInfo.OpenerPoints);
+            var nt = new NoTrump(ntType);
+            opening.SetPoints(nt.OpenerPoints);
             opening.IsBalanced = true;
             opening.Description = string.Empty;
-            opening.PartnersCall = ntInfo.ConventionalResponses;
+            opening.PartnersCall = nt.ConventionalResponses;
         }
         
+
+        public static void Overcall(InterpretedBid overcall)
+        {
+            if (overcall.Is(1, Suit.Unknown))
+            {
+                var nt = new NoTrump(NtType.Overcall1NT);
+				// TODO: Opponent's suit must be stopped...
+				overcall.SetPoints(nt.OpenerPoints);
+				overcall.IsBalanced = true;
+				// TODO: See comment below about suit quality:
+				// overcall.SuitQuality[cueSuit / oppsBidSuit] = SuitQuality.StoppedOnce;
+				// This may not be a requirement if "cueSuit" is a club...
+				overcall.Description = string.Empty;
+                overcall.PartnersCall = nt.ConventionalResponses;
+			}
+            // TODO: More cases here - 2NT after weak open, etc.  But for now, just 1NT overcall...
+        }
+
         public void ConventionalResponses(InterpretedBid response)
         {
 
@@ -46,18 +66,15 @@ namespace TricksterBots.Bots {
             if (response.Is(3, Suit.Unknown))
             { 
                 response.BidMessage = BidMessage.Signoff;
-                response.SetHighCardPoints(ResponderGamePoints);
+                response.SetPoints(ResponderGamePoints);
                 response.IsBalanced = true;
                 response.Description = string.Empty;
                 return;
             }
 
 
-            var db = response.declareBid;
-            if (db == null) return;
-
-            if (db.level == BidLevel + 1) {
-                if (db.suit == Suit.Clubs)
+            if (response.Level == BidLevel + 1) {
+                if (response.declareBid.suit == Suit.Clubs)
                 {
                     Stayman.InitiateStayman(response, this);
                 }
@@ -82,7 +99,7 @@ namespace TricksterBots.Bots {
             Overcall2NT,
             Balancing1NT
         }
-        public NTFundamentals(NtType ntType)
+        public NoTrump(NtType ntType)
         {
             this.ntType = ntType;
             this.OpenerPoints = new Range(15, 17);  // Set up for 1NT
@@ -125,6 +142,21 @@ namespace TricksterBots.Bots {
             }
         }
 
+        public Range OpenerRejectInvitePoints
+        {
+            get
+            {
+                return new Range(this.OpenerPoints.Min, this.OpenerPoints.Min); // Only reject at the lowest level.
+            }
+        }
+
+        public Range ResponderNoGamePoints
+        {
+            get
+            {
+                return new Range(0, System.Math.Max(0, ResponderInvitationalPoints.Min - 1));
+            }
+        }
         public Range ResponderInvitationalPoints
         {
             get
@@ -141,6 +173,20 @@ namespace TricksterBots.Bots {
                 int min = System.Math.Max(0, 25 - OpenerPoints.Min);
                 int max = 32 - OpenerPoints.Min; // TODO: Is this right?
                 return new Range(min, max);
+            }
+        }
+        public Range ResponderGameOrBetterPoints
+        {
+            get
+            {
+                return new Range(System.Math.Max(0, 25 - OpenerPoints.Min), 40);;
+            }
+        }
+        public Range ResponderInvitationalOrBetterPoints
+        {
+            get
+            {
+                return new Range(ResponderInvitationalPoints.Min, 40);  
             }
         }
         // TODO: Slam ranges...

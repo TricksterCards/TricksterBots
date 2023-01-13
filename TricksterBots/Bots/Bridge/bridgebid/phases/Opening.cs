@@ -21,7 +21,7 @@ namespace Trickster.Bots
             var db = opening.declareBid;
             if (db.suit == Suit.Unknown)
             {
-                NTFundamentals.Open(opening);
+                NoTrump.Open(opening);
                 return;
             }
 
@@ -31,7 +31,7 @@ namespace Trickster.Bots
                     opening.Points.Min = 13;
                     opening.Points.Max = 21;
 
-                    if (db.suit != Suit.Unknown && opening.Index < 2)
+                    if (db.suit != Suit.Unknown && opening.Seat <= Seat.Second)
                     {
                         //  use the Rule of 20 in 1st or 2nd seat
                         opening.AlternateMatches = hand =>
@@ -78,7 +78,7 @@ namespace Trickster.Bots
                         //  1S
                         case Suit.Hearts:
                         case Suit.Spades:
-                            var otherMajor = db.suit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
+                            var otherMajor = BasicBidding.OtherMajor(db.suit);
                             opening.HandShape[db.suit].Min = 5;
                             opening.HandShape[otherMajor].Max = 6;
                             opening.HandShape[Suit.Clubs].Max = 8;
@@ -90,8 +90,8 @@ namespace Trickster.Bots
                                 return counts[db.suit] > counts[otherMajor] ||
                                        counts[db.suit] == counts[otherMajor] && db.suit == Suit.Spades;
                             };
-                            if (db.suit == Suit.Spades && opening.Index == 3)
-                            {
+                            if (db.suit == Suit.Spades && opening.Seat == Seat.Fourth)
+                            { 
                                 //  use the Rule of 15 in 4th seat
                                 opening.AlternateMatches = hand =>
                                 {
@@ -122,26 +122,31 @@ namespace Trickster.Bots
                         case Suit.Diamonds:
                         case Suit.Hearts:
                         case Suit.Spades:
-                            if (opening.Index < 3)
+                            // Point ranges for 4th seat show a semi-strong hand.
+                            if (opening.Seat == Seat.Fourth)
                             {
-                                //  consider a weak 2 if we're not in 4th seat
-                                opening.Points.Min = 5;
-                                opening.Points.Max = 11;
-                                opening.BidPointType = BidPointType.Hcp;
-                                opening.IsGood = true;
-                                opening.IsPreemptive = true;
-                                opening.Description = $"6-card {db.suit} suit";
-                                opening.HandShape[db.suit].Min = 6;
-                                opening.HandShape[db.suit].Max = 6;
-
-                                //  ensure we don't have any voids
-                                foreach (var s in SuitRank.stdSuits.Where(s => s != db.suit)) opening.HandShape[s].Min = 1;
-
-                                //  also ensure we don't have a side 4-card major
-                                //  a weak two could cause us to miss a 4-4 fit with partner in this case
-                                if (db.suit != Suit.Hearts) opening.HandShape[Suit.Hearts].Max = 3;
-                                if (db.suit != Suit.Spades) opening.HandShape[Suit.Spades].Max = 3;
+                                opening.SetPoints(10, 14);
+                            } else
+                            {
+                                opening.SetPoints(5, 11);
                             }
+                            opening.IsGood = true;
+                            opening.IsPreemptive = true;
+                            opening.Description = $"6-card {db.suit} suit";
+                            opening.HandShape[db.suit].Min = 6;
+                            opening.HandShape[db.suit].Max = 6;
+
+                            //  ensure we don't have any voids
+                            // TODO: Ralph reomved this logic because it does not make sense to me.  Voids seem to make
+                            // opening weak more important, so don't understand why void would be a reason not to open weak.
+                            // foreach (var s in SuitRank.stdSuits.Where(s => s != db.suit)) opening.HandShape[s].Min = 1;
+
+                            //  also ensure we don't have a side 4-card major
+                            //  a weak two could cause us to miss a 4-4 fit with partner in this case
+                            // TODO: Think this through more.  What about 6 spades and 4 hearts?  Maybe still open weak...
+                            if (db.suit != Suit.Hearts) opening.HandShape[Suit.Hearts].Max = 3;
+                            if (db.suit != Suit.Spades) opening.HandShape[Suit.Spades].Max = 3;
+                        
 
                             break;
                     }
@@ -159,14 +164,15 @@ namespace Trickster.Bots
                         case Suit.Diamonds:
                         case Suit.Hearts:
                         case Suit.Spades:
-                            if (opening.Index < 3)
+                            // TODO: Are there cases for 4th seat 3-level opening?  Maybe in minors...
+                            if (opening.Seat != Seat.Fourth)
                             {
                                 //  preempt only if we're not in 4th seat
                                 opening.Points.Max = 12;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
                                 opening.Description = $"7-card {db.suit} suit";
-                                opening.HandShape[db.suit].Min = 7;
+                                opening.HandShape[db.suit].Min = db.suit == Suit.Clubs ? 6 : 7;
                                 opening.HandShape[db.suit].Max = 7;
                             }
 

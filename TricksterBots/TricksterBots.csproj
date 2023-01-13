@@ -82,7 +82,7 @@
     <Compile Include="Bots\Bridge\bridgebid\BidWhy.cs" />
     <Compile Include="Bots\Bridge\bridgebid\BridgeBid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\BridgeBidHistory.cs" />
-    <Compile Include="Bots\Bridge\bridgebid\NTFundamentals.cs" />
+    <Compile Include="Bots\Bridge\bridgebid\NoTrump.cs" />
     <Compile Include="Bots\Bridge\bridgebid\PairDisclosures.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\ArtificialInquiry.cs" />
     <Compile Include="Bots\Bridge\bridgebid\conventions\Blackwood.cs" />

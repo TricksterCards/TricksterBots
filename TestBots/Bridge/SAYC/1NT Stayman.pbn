@@ -2,7 +2,7 @@
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
 %Creator: BridgeComposer Version 5.101.1
-%Created: Tue Jan 10 00:07:31 2023 -0800
+%Created: Tue Jan 10 12:14:29 2023 -0800
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -33,7 +33,7 @@
 %PipColors #000000,#ff0000,#ff0000,#000000
 %PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
 %ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 8
+%SelectedBoard 11
 %ShowBoardLabels 2
 %ShowCardTable 2
 %TSTCustomSortOrder Default
@@ -249,3 +249,66 @@ Pass Pass
 [Auction "W"]
 Pass 1NT Pass 3NT
 Pass Pass Pass
+
+[Event "5/4 Majors.  Stayman.  Game in 5-card major"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:A75.KQ4.JT862.AQ J98.62.AQ53.9842 KQ42.AJT87.4.JT6 T63.953.K97.K753"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass 3H Pass
+4H Pass Pass Pass
+
+[Event "5/4 Majors.  Stayman.  Game in 4 card major."]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:QJ2.QJ76.AQ6.K95 987.92.T952.AQT3 K6543.AKT4.J7.J8 AT.853.K843.7642"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2C Pass
+2H Pass 4H Pass
+Pass Pass
+
+[Event "5/4 Majors.  Stayman.  No fit found.  Play 3NT"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KT7.KJ.AJ76.KQ64 Q82.T86.QT2.JT32 A943.A9742.94.A8 J65.Q53.K853.975"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass 3H Pass
+3NT Pass Pass Pass

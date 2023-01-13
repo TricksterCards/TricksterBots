@@ -5,13 +5,13 @@ using System.Security.Policy;
 using Trickster.cloud;
 using TricksterBots.Bots;
 using static Trickster.Bots.InterpretedBid;
-using static TricksterBots.Bots.NTFundamentals;
+using static TricksterBots.Bots.NoTrump;
 
 namespace Trickster.Bots
 {
     internal class JacobyTransfer
     {
-        public static void InitiateTransfer(InterpretedBid call, NTFundamentals ntInfo, bool fourWayTransfers)
+        public static void InitiateTransfer(InterpretedBid call, NoTrump ntInfo, bool fourWayTransfers)
         {
             if (call.RhoInterferedAbove(ntInfo.BidLevel + 1, Suit.Clubs))   // TODO: Is this correct for SAYC?  Systems still on?  Need to review.
             {
@@ -32,7 +32,7 @@ namespace Trickster.Bots
                     call.BidMessage = BidMessage.Forcing;
                     call.HandShape[Suit.Hearts].Max = 4;
                     call.HandShape[Suit.Spades].Max = 4;
-                    call.SetHighCardPoints(0, ntInfo.ResponderInvitationalPoints.Min - 1);   // Must have < invitational points
+                    call.SetPoints(ntInfo.ResponderNoGamePoints);   // Must have < invitational points
                     // TODO: With 4-way transfers we DO want to transfer with slam invitational points...
                     call.Description = " to 3♣; 6+ Clubs or Diamonds";
                     call.Validate = hand =>
@@ -46,7 +46,7 @@ namespace Trickster.Bots
                 // TODO: Where does this go?  If 4-way transfers then we need to control this bid within the Transfer logic.  
                 if (call.Is(2, Suit.Unknown))
                 {
-                    call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
+                    call.SetPoints(ntInfo.ResponderInvitationalPoints);
                     call.IsBalanced = true;
                     call.Description = "Invite to game";
                     call.PartnersCall = c => OpenerRebidAfterGameInvitation(c, ntInfo);
@@ -56,13 +56,13 @@ namespace Trickster.Bots
 
 
         // Responder has bid 2NT inviatation to game.  
-        private static void OpenerRebidAfterGameInvitation(InterpretedBid rebid, NTFundamentals ntInfo)
+        private static void OpenerRebidAfterGameInvitation(InterpretedBid rebid, NoTrump ntInfo)
         {
             ShowMajorBid(rebid, ntInfo, Suit.Hearts);
             ShowMajorBid(rebid, ntInfo, Suit.Spades);
 			if (rebid.Is(3, Suit.Unknown))
 			{
-				rebid.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints);
+				rebid.SetPoints(ntInfo.OpenerAcceptInvitePoints);
                 rebid.HandShape[Suit.Hearts].Max = 4;
                 rebid.HandShape[Suit.Spades].Max = 4;
 				rebid.Description = $"Accept invitation to play in 3NT; No 5 card major";
@@ -70,11 +70,11 @@ namespace Trickster.Bots
 			}
 		}
 
-        private static void ShowMajorBid(InterpretedBid call, NTFundamentals ntInfo, Suit major)
+        private static void ShowMajorBid(InterpretedBid call, NoTrump ntInfo, Suit major)
         {
             if (call.Is(3, major))
             {
-				call.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints);
+				call.SetPoints(ntInfo.OpenerAcceptInvitePoints);
 				call.HandShape[major].Min = 5;
 				call.HandShape[major].Max = 5;
 				call.Description = $"Show 5 {major} and accept invitation to game";
@@ -82,7 +82,7 @@ namespace Trickster.Bots
 			}
 		}
 
-        private static void AcceptMajorTransfer(InterpretedBid call, NTFundamentals ntInfo, Suit transferSuit)
+        private static void AcceptMajorTransfer(InterpretedBid call, NoTrump ntInfo, Suit transferSuit)
         {
 
             // If there is any other interference then punt
@@ -99,7 +99,7 @@ namespace Trickster.Bots
             {
                 if (call.IsPass)
                 {
-                    call.SetHighCardPoints(ntInfo.OpenerPoints);
+                    call.SetPoints(ntInfo.OpenerPoints);
                     call.HandShape[transferSuit].Min = 2;
                     call.HandShape[transferSuit].Max = 2;
                     call.Description = $"pass transfer to {transferSuit} indicating no fit after opponent X";
@@ -120,14 +120,14 @@ namespace Trickster.Bots
             }
             if (ntInfo.BidLevel == 1 && call.Is(3, transferSuit))
             {
-                call.SetHighCardPoints(ntInfo.OpenerPoints.Max, ntInfo.OpenerPoints.Max);
+                call.SetPoints(ntInfo.OpenerPoints.Max, ntInfo.OpenerPoints.Max);
                 call.HandShape[transferSuit].Min = 4;
                 call.HandShape[transferSuit].Max = 5;
                 call.PartnersCall = c => DescribeTransfer(c, ntInfo, transferSuit, 4);
             }
         }
 
-        private static void AcceptMinorTransfer(InterpretedBid call, NTFundamentals ntInfo)
+        private static void AcceptMinorTransfer(InterpretedBid call, NoTrump ntInfo)
         {
             // TODO: Think about all interference here...  Do we actually accept the transfer?  Or just pass.....
             // If RHO doubled then conditionally accept the transfer.  Pass if only two cards in the suit
@@ -150,7 +150,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static void CompleteMinorTransfer(InterpretedBid call, NTFundamentals ntInfo)
+        private static void CompleteMinorTransfer(InterpretedBid call, NoTrump ntInfo)
         {
             // TODO: Interference...
             if (call.IsPass)
@@ -170,7 +170,7 @@ namespace Trickster.Bots
         }
 
 
-        public static void DescribeTransfer(InterpretedBid call, NTFundamentals ntInfo, Suit transferSuit, int minFit)
+        public static void DescribeTransfer(InterpretedBid call, NoTrump ntInfo, Suit transferSuit, int minFit)
         {
             if (call.RhoBid)    // Ignore doubles but punt on any RHO bid
             {
@@ -183,7 +183,7 @@ namespace Trickster.Bots
             // we have a minimal hand then we need to complete the transfer ourselves...
             if (call.Is(2, transferSuit))
             {
-                call.SetHighCardPoints(0, ntInfo.ResponderInvitationalPoints.Min - 1);
+                call.SetPoints(0, ntInfo.ResponderInvitationalPoints.Min - 1);
                 call.HandShape[transferSuit].Min = 5;
                 call.PartnersCall = CompetitiveAuction.PassOrCompete;
             }
@@ -191,7 +191,7 @@ namespace Trickster.Bots
             // TODO: Maybe if suit is stopped and 5-cards we would want to bid this even if knownFit...
             if (call.Is(2, Suit.Unknown) && minFit == 2)
             {
-                call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
+                call.SetPoints(ntInfo.ResponderInvitationalPoints);
                 call.HandShape[transferSuit].Min = 5;
                 call.HandShape[transferSuit].Max = 5;
                 call.Description = $"Invite to game; 5 {transferSuit}";
@@ -199,7 +199,7 @@ namespace Trickster.Bots
             }
             else if (call.Is(3, transferSuit))
             {
-                call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
+                call.SetPoints(ntInfo.ResponderInvitationalPoints);
                 call.HandShape[transferSuit].Min = minFit > 2 ? 5 : 6;
                 call.HandShape[transferSuit].Max = 10;  // TODO: This seems a bit silly.  
                 call.Description = $"Invite to game; 6+ {transferSuit} or known fit";
@@ -207,7 +207,7 @@ namespace Trickster.Bots
             }
             else if (call.Is(3, Suit.Unknown) && minFit == 2)
             {
-                call.SetHighCardPoints(ntInfo.ResponderGamePoints);
+                call.SetPoints(ntInfo.ResponderGamePoints);
                 call.HandShape[transferSuit].Min = 5;
                 call.HandShape[transferSuit].Max = 5;
                 call.Description = $"Game in NT or {transferSuit}; 5 {transferSuit}";
@@ -215,7 +215,7 @@ namespace Trickster.Bots
             }
             else if (call.Is(4, transferSuit))
             { 
-                call.SetHighCardPoints(ntInfo.ResponderGamePoints);
+                call.SetPoints(ntInfo.ResponderGamePoints);
                 if (minFit == 4)    // TODO: Kind of side-effect working here...  This means super-accepted
                 {
                     call.Points.Min -= 4;
@@ -229,7 +229,7 @@ namespace Trickster.Bots
         }
     
 
-        public static void RebidAfterInvitation(InterpretedBid call, NTFundamentals ntInfo, Suit transferSuit)
+        public static void RebidAfterInvitation(InterpretedBid call, NoTrump ntInfo, Suit transferSuit)
         {
             // TODO: need to deal with some interference...  For now ignore X and punt on anything else.
             if (call.RhoBid)
@@ -242,7 +242,7 @@ namespace Trickster.Bots
 
             if (call.Is(3, transferSuit))
             {
-                call.SetHighCardPoints(ntInfo.OpenerPoints.Min, ntInfo.OpenerPoints.Min);
+                call.SetPoints(ntInfo.OpenerPoints.Min, ntInfo.OpenerPoints.Min);
                 call.HandShape[transferSuit].Min = 3;
                 call.HandShape[transferSuit].Max = 5;
                 call.Description = $"Reject invitation to game, play at 3{transferSuit}; 3+ {transferSuit}";
@@ -251,7 +251,7 @@ namespace Trickster.Bots
 
             if (call.Is(3, Suit.Unknown))
             {
-                call.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints);
+                call.SetPoints(ntInfo.OpenerAcceptInvitePoints);
                 call.HandShape[transferSuit].Min = 2;
                 call.HandShape[transferSuit].Max = 2;
                 call.Description = $"Accept invitation to play in 3NT; 2 {transferSuit}";
@@ -260,7 +260,7 @@ namespace Trickster.Bots
             var otherMajor = transferSuit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
             if (call.Is(3, otherMajor))
             {
-                call.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints); 
+                call.SetPoints(ntInfo.OpenerAcceptInvitePoints); 
                 call.HandShape[transferSuit].Min = 2;
                 call.HandShape[transferSuit].Max = 2;
                 call.HandShape[otherMajor].Min = 5;
@@ -270,7 +270,7 @@ namespace Trickster.Bots
             } 
             if (call.Is(4, transferSuit))
             {
-                call.SetHighCardPoints(ntInfo.OpenerAcceptInvitePoints);
+                call.SetPoints(ntInfo.OpenerAcceptInvitePoints);
                 call.HandShape[transferSuit].Min = 3;
                 call.HandShape[transferSuit].Max = 5;
                 call.Description = $"Accept invitation to game in {transferSuit}; 3+ {transferSuit}";
@@ -279,7 +279,7 @@ namespace Trickster.Bots
 
    
 
-        public static void PickGameAfterTransfer(InterpretedBid call, NTFundamentals ntInfo, Suit transferSuit)
+        public static void PickGameAfterTransfer(InterpretedBid call, NoTrump ntInfo, Suit transferSuit)
         {
             // TODO: need to deal with some interference...  For now ignore X and punt on anything else.
             if (call.RhoBid)
@@ -290,7 +290,7 @@ namespace Trickster.Bots
             if (call.IsPass)
             {
                 // TODO: Describe meaning here...
-                call.SetHighCardPoints(ntInfo.OpenerPoints);
+                call.SetPoints(ntInfo.OpenerPoints);
                 call.HandShape[transferSuit].Max = 2;
                 call.HandShape[transferSuit].Min = 2;
                 call.Description = $"2 {transferSuit};  Play in 3NT";
@@ -298,7 +298,7 @@ namespace Trickster.Bots
             }
             if (call.Is(4, transferSuit))
             {        
-                call.SetHighCardPoints(ntInfo.OpenerPoints);
+                call.SetPoints(ntInfo.OpenerPoints);
                 call.HandShape[transferSuit].Min = 3;
                 call.HandShape[transferSuit].Max = 5;
                 call.Description = $"Accept transfer; 3+ {transferSuit}";
@@ -311,7 +311,7 @@ namespace Trickster.Bots
         // There are two ways to get to this function:
         //    Responder invites with 2NT and opener has game-going values and a 5-card major
         //    Responder transfers to major X and then invites with 2NT.  Opener has other major and game values
-        public static void TryOpenersMajorAfterInvitation(InterpretedBid call, NTFundamentals ntInfo, Suit openersMajor)
+        public static void TryOpenersMajorAfterInvitation(InterpretedBid call, NoTrump ntInfo, Suit openersMajor)
         {
             // TODO: need to deal with some interference...  For now ignore X and punt on anything else.
             if (call.RhoBid)
@@ -324,14 +324,14 @@ namespace Trickster.Bots
 
             if (call.Is(3, Suit.Unknown))
             {
-                call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
+                call.SetPoints(ntInfo.ResponderInvitationalPoints);
                 call.HandShape[openersMajor].Max = 2;
                 call.HandShape[openersMajor].Min = 2;
                 call.Description = $"No fit in {openersMajor};  Play game at 3NT";
             }
             if (call.Is(4, openersMajor))
             {
-                call.SetHighCardPoints(ntInfo.ResponderInvitationalPoints);
+                call.SetPoints(ntInfo.ResponderInvitationalPoints);
                 call.HandShape[openersMajor].Min = 3;
                 call.HandShape[openersMajor].Max = 10;  // TODO: Need Max?
                 call.Description = $"Play game in {openersMajor}";

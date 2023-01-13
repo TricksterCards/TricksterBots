@@ -84,6 +84,12 @@ namespace Trickster.Bots
             return true;
 		}
 
+        public static Suit OtherMajor(Suit major) 
+        {
+            // TODO: Assert or throw that major is either Hearts or Spades.  Don't know pattern we are supposed to use
+            return major == Suit.Hearts ? Suit.Spades : Suit.Hearts;
+        }
+
         public static bool HasStopper(Hand hand, Suit suit)
         {
             //  A, Kx, Qxx, or Jxxx

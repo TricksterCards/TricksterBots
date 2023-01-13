@@ -114,15 +114,7 @@ namespace Trickster.Bots
                         //  (1H)-1N
                         //  (1S)-1N
                         case Suit.Unknown:
-                            // TODO: Opponent's suit must be stopped...
-                            overcall.BidPointType = BidPointType.Hcp;
-                            overcall.Points.Min = 15;
-                            overcall.Points.Max = 18;
-                            overcall.IsBalanced = true;
-                            // TODO: See comment below about suit quality:
-                            // overcall.SuitQuality[cueSuit / oppsBidSuit] = SuitQuality.StoppedOnce;
-                            // This may not be a requirement if "cueSuit" is a club...
-                            overcall.Description = string.Empty;
+
                             return;
                     }
 
@@ -191,6 +183,8 @@ namespace Trickster.Bots
             //  (1D)-2N
             //  (1H)-2N
             //  (1S)-2N
+            // TODO: This is used for both weak (but not 0-count) and strong hands but not opening hands.  Range of 12-17ish
+            // should just bid suits.
             if (db.suit == Suit.Unknown && db.level == 2 && lowestLevel == 1)
             {
                 //  a jump overcall of 2NT shows at least 5–5 in the lowest two unbid suits.
@@ -210,6 +204,8 @@ namespace Trickster.Bots
 
             //  jump overcalls are preemptive, showing the same value as an opening bid at the same level
             //  versus an opening preempt, an overcall in a suit or notrump is natural; a cuebid is Michaels (handled above)
+            // TODO: This seems completely wrong since clubs or diamonds at the 2-level require 5 of them for an overcall
+            // but not for opener...
             Opening.Interpret(overcall);
         }
     }

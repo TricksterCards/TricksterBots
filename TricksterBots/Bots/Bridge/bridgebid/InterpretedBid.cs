@@ -2,6 +2,7 @@ using Newtonsoft.Json.Bson;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using Trickster.cloud;
 using TricksterBots.Bots;
@@ -10,6 +11,7 @@ namespace Trickster.Bots
 {
     public delegate bool HandValidator(Hand hand);
     public delegate void CallInterpreter(InterpretedBid call);
+    public enum Seat { First, Second, Third, Fourth }
 
     public class InterpretedBid : BidExplanation
     {
@@ -40,6 +42,19 @@ namespace Trickster.Bots
         public int Priority = 0;
 
         public CallInterpreter PartnersCall = null;
+
+        public Seat Seat {
+            get
+            {
+                switch (Index % 4)
+                {
+                    case 0: return Seat.First;
+                    case 1: return Seat.Second;
+                    case 2: return Seat.Third;
+                    default: return Seat.Fourth;
+                }
+            }
+        }
 
         public InterpretedBid()
         {
@@ -103,6 +118,12 @@ namespace Trickster.Bots
         {
             get { return declareBid != null; }
         }
+
+        public int Level
+        {
+            get { return declareBid == null ? 0 : declareBid.level; }
+        }
+
         public bool IsPass
         {
             get { return bid == BidBase.Pass; }
@@ -117,14 +138,14 @@ namespace Trickster.Bots
             get { return declareBid != null && declareBid.redoubled; }
         }
 
-        public void SetHighCardPoints(Range points)
+        public void SetPoints(Range points, BidPointType type = BidPointType.Hcp)
         {
-            SetHighCardPoints(points.Min, points.Max);
+            SetPoints(points.Min, points.Max, type);
         }
 
-        public void SetHighCardPoints(int min, int max)
+        public void SetPoints(int min, int max, BidPointType type = BidPointType.Hcp)
         {
-            BidPointType = BidPointType.Hcp;
+            BidPointType = type;
             Points.Min = min;
             Points.Max = max;
         }
