@@ -124,6 +124,11 @@ namespace Trickster.Bots
             get { return declareBid == null ? 0 : declareBid.level; }
         }
 
+        public Suit Suit
+        {
+            get { return declareBid == null ? Suit.Joker : declareBid.suit; }
+        }
+
         public bool IsPass
         {
             get { return bid == BidBase.Pass; }
@@ -148,6 +153,17 @@ namespace Trickster.Bots
             BidPointType = type;
             Points.Min = min;
             Points.Max = max;
+        }
+
+        public void SetHandShape(Suit suit, int count)
+        {
+            SetHandShape(suit, count, count);
+        }
+
+        public void SetHandShape(Suit suit, int min, int max)
+        {
+            HandShape[suit].Min = min;
+            HandShape[suit].Max = max;
         }
 
         public bool RhoInterfered

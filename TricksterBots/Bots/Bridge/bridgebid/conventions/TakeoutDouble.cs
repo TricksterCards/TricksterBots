@@ -120,6 +120,7 @@ namespace Trickster.Bots
                 }
                 else if (advance.declareBid.level == gameLevel - 1)
                 {
+                    // TODO: What? Jump shows strength with takeout.  This preempts partner.  
                     //  4-8 points: make a preemptive bid below game with 6+ cards
                     advance.Points.Min = 4;
                     advance.Points.Max = 8;

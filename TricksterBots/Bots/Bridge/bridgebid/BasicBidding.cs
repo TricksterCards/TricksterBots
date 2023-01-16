@@ -10,6 +10,7 @@ namespace Trickster.Bots
     public class BasicBidding
     {
         private static readonly Suit[] BasicSuits = { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades };
+        public static readonly Suit[] MajorSuits = { Suit.Hearts, Suit.Spades };
 
         public static int ComputeDistributionPoints(Hand hand)
         {
@@ -72,7 +73,7 @@ namespace Trickster.Bots
         public static bool Is4333(Dictionary<Suit, int> counts)
         {
             bool found4 = false;
-			foreach (var suit in SuitRank.allSuits)
+			foreach (var suit in SuitRank.stdSuits)
             {
                 if (counts[suit] > 4) return false;
                 if (counts[suit] == 4)
@@ -84,6 +85,16 @@ namespace Trickster.Bots
             return true;
 		}
 
+
+        public static bool IsMajor(Suit suit)
+        {
+            return (suit == Suit.Hearts || suit == Suit.Spades);
+        }
+
+        public static bool IsMinor(Suit suit)
+        {
+            return (suit == Suit.Clubs || suit == Suit.Diamonds);
+        }
         public static Suit OtherMajor(Suit major) 
         {
             // TODO: Assert or throw that major is either Hearts or Spades.  Don't know pattern we are supposed to use

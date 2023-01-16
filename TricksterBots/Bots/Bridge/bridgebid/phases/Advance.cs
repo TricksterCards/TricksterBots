@@ -11,27 +11,28 @@ namespace Trickster.Bots
             var overcall = advance.History[advance.Index - 2];
             //  TODO: var interference = advance.History[advance.Index - 1];
 
-            if (advance.bid == BidBase.Pass)
+            if (advance.IsPass)
             {
                 advance.Description = "No fit";
             }
-            else if (advance.bid == BridgeBid.Double)
+            else if (advance.IsDouble)
             {
                 //  TODO: InterpretDouble(overcall, interference, advance);
             }
-            else if (advance.bid == BridgeBid.Redouble)
+            else if (advance.IsReDouble)
             {
                 //  TODO: InterpretRedouble(overcall, interference, advance);
             }
-            else if (overcall.bid == BridgeBid.Double)
+            else if (overcall.IsDouble)
             {
-                //  TODO: advance a double overcall
+                // TODO: This is takeout double stuff here.  Should be handled by takeout double logic.
             }
-            else if (overcall.declareBid.suit == Suit.Unknown)
+            else if (overcall.Suit == Suit.Unknown)
             {
-                //  TODO: advance a notrump overcall
+                // TODO: REMOVE this section since NT is now handled by state machine....
+                // TODO: Make Unusual NT state-machine before removing this logic...
             }
-            else
+            else if (advance.IsBid && overcall.IsBid)
             {
                 AdvanceSuitedOvercall(opening, overcall, advance);
             }
