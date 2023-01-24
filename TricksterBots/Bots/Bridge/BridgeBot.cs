@@ -253,11 +253,9 @@ namespace Trickster.Bots
                 if (prevSuit == Suit.Unknown || prevSuit != EffectiveSuit(card) || prevRank > RankSort(card) + 1 + gap)
                 {
                     remainingGaps = gap;
+                    prevSuit = EffectiveSuit(card);
+                    prevRank = RankSort(card);
                     sequences.Add(new List<Card> { card });
-                }
-                else if (RankSort(card) < minTopRank)
-                {
-                    continue;
                 }
                 else
                 {
@@ -267,7 +265,7 @@ namespace Trickster.Bots
                     sequences.Last().Add(card);
                 }
             }
-            return sequences.Where(seq => seq.Count >= minLength).ToList();
+            return sequences.Where(seq => seq.Count >= minLength && RankSort(seq.First()) >= minTopRank).ToList();
         }
 
         private Card LeadPartnersBidSuit(SuggestCardState<BridgeOptions> state, Suit partnersSuit)
