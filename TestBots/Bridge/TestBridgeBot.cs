@@ -110,6 +110,100 @@ namespace TestBots
             Assert.AreEqual(0, changesFromPrevious, $"{changesFromPrevious} test(s) changed results from previous");
         }
 
+        [TestMethod]
+        public void DontLeadHighAgainstNT()
+        {
+            var contract = new DeclareBid(3, Suit.Unknown);
+            var players = new[]
+            {
+                new TestPlayer(BridgeBid.Defend, "AS6S5SJHTH9H8H5HTC5CJD4D3D"),
+                new TestPlayer(BidBase.Dummy, UnknownCards(13)),
+                new TestPlayer(BridgeBid.Defend, UnknownCards(13)),
+                new TestPlayer(contract, UnknownCards(13)),
+            };
+
+            foreach (var player in players)
+                player.BidHistory.Add(DeclareBid.Is(player.Bid) ? (int)contract : BidBase.Pass);
+
+            var bot = GetBot(contract.suit);
+            var cardState = new TestCardState<BridgeOptions>(bot, players, "") { trumpSuit = contract.suit };
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("JH", suggestion.ToString());
+        }
+
+        [TestMethod]
+        public void OpenSuitLeadWithThreeCardSequenceWithAce()
+        {
+            var contract = new DeclareBid(3, Suit.Spades);
+            var players = new[]
+            {
+                new TestPlayer(BridgeBid.Defend, "6S5SAHKHQHTC5C3C2CJD4D3D2D"),
+                new TestPlayer(BidBase.Dummy, UnknownCards(13)),
+                new TestPlayer(BridgeBid.Defend, UnknownCards(13)),
+                new TestPlayer(contract, UnknownCards(13)),
+            };
+
+            foreach (var player in players)
+                player.BidHistory.Add(DeclareBid.Is(player.Bid) ? (int)contract : BidBase.Pass);
+
+            var bot = GetBot(contract.suit);
+            var cardState = new TestCardState<BridgeOptions>(bot, players, "") { trumpSuit = contract.suit };
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("AH", suggestion.ToString());
+        }
+
+        [TestMethod]
+        public void OpenSuitLeadWithNonTrumpSingleton()
+        {
+            var contract = new DeclareBid(3, Suit.Spades);
+            var players = new[]
+            {
+                new TestPlayer(BridgeBid.Defend, "5SKHQH7H6H5HTC7C6C5C3C2C4D"),
+                new TestPlayer(BidBase.Dummy, UnknownCards(13)),
+                new TestPlayer(BridgeBid.Defend, UnknownCards(13)),
+                new TestPlayer(contract, UnknownCards(13)),
+            };
+
+            foreach (var player in players)
+                player.BidHistory.Add(DeclareBid.Is(player.Bid) ? (int)contract : BidBase.Pass);
+
+            var bot = GetBot(contract.suit);
+            var cardState = new TestCardState<BridgeOptions>(bot, players, ""){ trumpSuit = contract.suit };
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("4D", suggestion.ToString());
+        }
+
+        [TestMethod]
+        public void OpenSuitLeadWithTopOfNonDoubletonSequence()
+        {
+            var contract = new DeclareBid(3, Suit.Spades);
+            var players = new[]
+            {
+                new TestPlayer(BridgeBid.Defend, "5SQHJH7H6H5HTC7C6C5C3CKDQD"),
+                new TestPlayer(BidBase.Dummy, UnknownCards(13)),
+                new TestPlayer(BridgeBid.Defend, UnknownCards(13)),
+                new TestPlayer(contract, UnknownCards(13)),
+            };
+
+            foreach (var player in players)
+                player.BidHistory.Add(DeclareBid.Is(player.Bid) ? (int)contract : BidBase.Pass);
+
+            var bot = GetBot(contract.suit);
+            var cardState = new TestCardState<BridgeOptions>(bot, players, "") { trumpSuit = contract.suit };
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QH", suggestion.ToString());
+        }
+
+        private static BridgeBot GetBot(Suit trump = Suit.Unknown)
+        {
+            return GetBot(new BridgeOptions(), trump);
+        }
+
+        private static BridgeBot GetBot(BridgeOptions options, Suit trump = Suit.Unknown)
+        {
+            return new BridgeBot(options, trump);
+        }
+
         private static string BidString(int bidValue)
         {
             switch (bidValue)
@@ -129,6 +223,11 @@ namespace TestBots
         private static string PassFail(bool passed)
         {
             return passed ? "passed" : "failed";
+        }
+
+        private static string UnknownCards(int length = 13)
+        {
+            return string.Concat(Enumerable.Repeat("0U", length));
         }
 
         private static void UpdateSaycResults(Dictionary<string, List<SaycResult>> results)
