@@ -1,0 +1,23 @@
+[Event "Opening Lead in NT with 3+ Card Sequence"]
+[Deal "N:A65.JT985.J43.T4 - - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ - - -
+
+[Event "Opening Lead in Suit with 3-Card Sequence with Ace"]
+[Deal "N:65.AKQ.J432.T532 - - -"]
+[Contract "3S"]
+[Play "N"]
+HA - - -
+
+[Event "Opening Lead in Suit with Non-Trump Singleton"]
+[Deal "N:5.KQ765.4.T76532 - - -"]
+[Contract "3S"]
+[Play "N"]
+D4 - - -
+
+[Event "Opening Lead in Suit with Top of Non-Doubleton Sequence"]
+[Deal "W:5.QJ765.KQ.T7653 - - -"]
+[Contract "3S"]
+[Play "W"]
+HQ - - -
