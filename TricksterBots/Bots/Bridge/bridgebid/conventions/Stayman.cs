@@ -3,6 +3,8 @@ using System.Security.Cryptography;
 using System.Threading;
 using Trickster.cloud;
 using TricksterBots.Bots;
+using static TricksterBots.Bots.NoTrump;
+
 
 namespace Trickster.Bots
 {
@@ -19,21 +21,20 @@ namespace Trickster.Bots
             if (response.Is(nt.Level + 1, Suit.Clubs))
             {
 			    response.BidConvention = BidConvention.Stayman;
-			    response.BidMessage = BidMessage.Forcing;
-                response.SetPoints(nt.ResponderInvitationalOrBetterPoints);
-			    response.Description = "asking for a major";
+                nt.Forcing(response, HandRange.ResponderGameInvitationalOrBetter, c => OpenerRebid(c, nt),
+                    "asking for a major");
 			    response.Priority = 100; // always prefer Stayman over other bids when valid
-                response.PartnersCall = c => OpenerRebid(c, nt);
 			    response.Validate = hand =>
 			    {
-				    //  we should have 4H or 4S (any more and we'll use a transfer instead)
-	                // TODO: Need to take 6/4 into account?  5/4 will happen after opener denies 4-card major
-                    // Never bid stayman with 4333 - NOTE: This is not true with 4-way transfers
-				    var counts = BasicBidding.CountsBySuit(hand);
-				    return ((!BasicBidding.Is4333(counts)) &&
+					//  we should have 4H or 4S (any more and we'll use a transfer instead)
+					// TODO: Need to take 6/4 into account?  5/4 will happen after opener denies 4-card major
+					// Never bid stayman with 4333 - NOTE: This is not true with 4-way transfers
+					// TODO: If using 4-way transfers we bid this no matter what with invitational points.  Spade
+					// assumptions are not valid if hearts bid by opener if responder invites with 2NT.
+   				    var counts = BasicBidding.CountsBySuit(hand);
+					return ((!BasicBidding.Is4333(counts)) &&
                             (counts[Suit.Hearts] == 4 || counts[Suit.Spades] == 4));
-                    // TODO: If using 4-way transfers we bid this no matter what with invitational points.  Spade
-                    // assumptions are not valid if hearts bid by opener if responder invites with 2NT.
+
 			    };
 		    }
         }
@@ -45,21 +46,18 @@ namespace Trickster.Bots
             {
                 rebid.HandShape[Suit.Hearts].Max = 3;
                 rebid.HandShape[Suit.Spades].Max = 3;
-                rebid.Description = "No 4+ card major";
-                rebid.PartnersCall = c => Responder2ndBid(c, nt, Suit.Diamonds);
+                nt.Forcing(rebid, HandRange.OpenerAll, c => Responder2ndBid(c, nt, Suit.Diamonds), "No 4+ card major");
             }
             else if (rebid.Is(nt.Level + 1, Suit.Hearts))
             {
                 rebid.HandShape[Suit.Hearts].Min = 4;
-                rebid.Description = "4+ hearts";
-                rebid.PartnersCall = c => Responder2ndBid(c, nt, Suit.Hearts);
-            }
+				nt.Forcing(rebid, HandRange.OpenerAll, c => Responder2ndBid(c, nt, Suit.Hearts), "4+hearts");
+			}
             else if (rebid.Is(nt.Level + 1, Suit.Spades))
             {
                 rebid.HandShape[Suit.Hearts].Max = 3;
                 rebid.HandShape[Suit.Spades].Min = 4;
-                rebid.Description = "4+ spades, less than 4 hearts";
-                rebid.PartnersCall = c => Responder2ndBid(c, nt, Suit.Spades);
+				nt.Forcing(rebid, HandRange.OpenerAll, c => Responder2ndBid(c, nt, Suit.Spades), "4+spades, less than 4 hearts");
 			}
 		}
 
@@ -71,23 +69,23 @@ namespace Trickster.Bots
                 {
                     if (rebid.Is(3, nt.UseSmolen ? BasicBidding.OtherMajor(major) : major))
                     {
-                        rebid.SetPoints(nt.ResponderGameOrBetterPoints);
                         rebid.SetHandShape(major, 5);
-                        rebid.Description = $"Show 5 {major} and force to game";
-                        rebid.PartnersCall = c => OpenerRespondTo5CardMajor(c, nt, major);
+                        nt.Forcing(rebid, HandRange.ResponderGameOrBetter, c => OpenerRespondTo5CardMajor(c, nt, major),
+                           $"Show 5 {major} and force to game");
                     }
                 }
                 if (rebid.Is(2, Suit.Unknown))
                 {
-                    rebid.SetPoints(nt.ResponderInvitationalPoints);
-                    rebid.PartnersCall = c => PlaceContract(c, nt, Suit.Unknown, false);
+                    nt.Invitational(rebid, HandRange.ResponderGameInvitational, c => PlaceContract(c, nt, Suit.Unknown, false));
                 }
-                if (rebid.Is(3, Suit.Unknown))
+                else if (rebid.Is(3, Suit.Unknown))
                 {
-                    rebid.SetPoints(nt.ResponderGamePoints);
-                    rebid.PartnersCall = CompetitiveAuction.PassOrCompete;
+                    nt.Signoff(rebid, HandRange.ResponderGame);
                 }
-                // TODO: Slam bids here
+                else
+                {
+                    nt.InterpretSlamBids(rebid);
+                }
             }
             else    // In all cases below opener has bid a major
             {
@@ -95,29 +93,29 @@ namespace Trickster.Bots
                 {
                     // If we don't have 4+ in opener's major then NT invitation
                     rebid.HandShape[openerBidSuit].Max = 3;
-                    rebid.SetPoints(nt.ResponderInvitationalPoints);
-                    rebid.PartnersCall = c => PlaceContract(c, nt, Suit.Unknown, false);
+                    nt.Invitational(rebid, HandRange.ResponderGameInvitational,
+                        c => PlaceContract(c, nt, Suit.Unknown, false));
                 }
                 else if (rebid.Is(3, openerBidSuit))
                 {
                     rebid.HandShape[openerBidSuit].Min = 4;
-                    // TODO: Need to fix "dummy" point analysis.  This works most of the time in this situation but
-                    // it really needs to know the trump suit or can't evaluate correctly
-                    rebid.SetPoints(nt.ResponderInvitationalPoints, BidPointType.Dummy);
-                    rebid.PartnersCall = c => PlaceContract(c, nt, openerBidSuit, false);
-                }
+                    nt.Invitational(rebid, HandRange.ResponderGameInvitational,
+                            c => PlaceContract(c, nt, openerBidSuit, false));
+					// TODO: Need to fix "dummy" point analysis.  This works most of the time in this situation but
+					// it really needs to know the trump suit or can't evaluate correctly
+					rebid.BidPointType = BidPointType.Dummy;
+				}
                 else if (rebid.Is(3, Suit.Unknown))
                 {
-                    rebid.SetPoints(nt.ResponderGamePoints);
                     rebid.HandShape[openerBidSuit].Max = 3;
-                    rebid.PartnersCall = c => PlaceContract(c, nt, Suit.Unknown, true);
+                    nt.NonForcing(rebid, HandRange.ResponderGame, c => PlaceContract(c, nt, Suit.Unknown, true));
                 }
                 else if (rebid.Is(4, openerBidSuit))
                 {
                     rebid.HandShape[openerBidSuit].Min = 4;
-                    rebid.SetPoints(nt.ResponderGamePoints, BidPointType.Dummy);
-                    rebid.PartnersCall = CompetitiveAuction.PassOrCompete;
-                }
+                    nt.Signoff(rebid, HandRange.ResponderGame);
+                    rebid.BidPointType = BidPointType.Dummy;        // TODO: Better dummy analysis...
+				}
                 // TODO: Slam bids.....  
             }
 		}
@@ -128,18 +126,15 @@ namespace Trickster.Bots
         public static void OpenerRespondTo5CardMajor(InterpretedBid rebid, NoTrump nt, Suit major)
         {
             // TODO: Interference.  We want to get to game here.  
-            // We do not reject 4-card major if 4333 in this case since responder is 4/5.
 			if (rebid.Is(3, Suit.Unknown))
 			{
 				rebid.HandShape[major].Max = 2;
-				rebid.SetPoints(nt.OpenerPoints);   // TODO: Again what makes this match?
-				rebid.PartnersCall = CompetitiveAuction.PassOrCompete;
+                nt.Signoff(rebid, HandRange.OpenerAll);
 			}
 			else if (rebid.Is(4, major))
 			{
 				rebid.HandShape[major].Min = 3;
-				rebid.SetPoints(nt.OpenerPoints);   // TODO: Again what makes this match?
-				rebid.PartnersCall = CompetitiveAuction.PassOrCompete;
+				nt.Signoff(rebid, HandRange.OpenerAll);
 			}
 		}
 
@@ -150,15 +145,13 @@ namespace Trickster.Bots
             {
                 if (rebid.Is(3, Suit.Unknown))
                 {
-                    rebid.SetPoints(nt.OpenerAcceptInvitePoints);
-                    rebid.PartnersCall = CompetitiveAuction.PassOrCompete;
+                    nt.Signoff(rebid, HandRange.OpenerAcceptInvitation);
                 }
                 else if (rebid.Is(3, Suit.Spades))
                 {
                     rebid.HandShape[Suit.Hearts].Min = 4;
                     rebid.HandShape[Suit.Spades].Min = 4;
-                    rebid.SetPoints(nt.OpenerRejectInvitePoints);
-                    rebid.PartnersCall = c => ReEvaluateAsSpadeDummy(c, nt);
+                    nt.NonForcing(rebid, HandRange.OpenerMinimum, c => ReEvaluateAsSpadeDummy(c, nt));
 				}  
                 else if (rebid.Is(4, Suit.Spades))
 				{
@@ -172,8 +165,7 @@ namespace Trickster.Bots
             }
             else if (rebid.Is(4, trumpSuit))
             {
-                rebid.SetPoints(nt.OpenerAcceptInvitePoints);
-                rebid.PartnersCall = CompetitiveAuction.PassOrCompete;
+                nt.Signoff(rebid, HandRange.OpenerAcceptInvitation);
             }
         }
 
@@ -181,8 +173,8 @@ namespace Trickster.Bots
         {
             if (rebid.Is(4, Suit.Spades))
             {
-                rebid.SetPoints(nt.ResponderGamePoints, BidPointType.Dummy);
-                rebid.PartnersCall = CompetitiveAuction.PassOrCompete;
+                nt.Signoff(rebid, HandRange.ResponderGame);
+                rebid.BidPointType = BidPointType.Dummy;    // TODO: This is ugly.  Need to do better...
             }
             // TODO: Could upgrade to slam points here so need to go to slam.  Blackwood is valid at this point
             // since spades agreed on.  

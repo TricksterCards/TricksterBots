@@ -177,7 +177,7 @@
             new BasicTest
             {
                 history = new[] { "1NT", "Pass", "2♣", "Pass" },
-                hand = "TC9C ADKDTD9D TH9H8H7H ASKSTS", // 14 HCP, 14 total
+                hand = "TC9C ADKDTD9D TH9H8H7H ASKSJS", // 15 HCP, 15 total
                 bid = "2♥",
                 type = "Opener Rebid (Answer Stayman)"
             },

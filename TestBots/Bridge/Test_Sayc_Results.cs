@@ -1,4 +1,4 @@
-// last updated 1/15/2023 6:04 PM (-08:00)
+// last updated 1/22/2023 5:59 PM (-08:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -35,7 +35,7 @@ namespace TestBots
              {
                 "test_minimum_stayman", new[]
                 {
-                    new SaycResult(false, 428),
+                    new SaycResult(false, -2),
                     new SaycResult(true, 428),
                     new SaycResult(true, 428),
                     new SaycResult(true, 439),
@@ -70,15 +70,15 @@ namespace TestBots
              {
                 "test_escape_route_stayman", new[]
                 {
-                    new SaycResult(true, -2),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, -2)
+                    new SaycResult(false, 423),
+                    new SaycResult(false, 432),
+                    new SaycResult(false, 431),
+                    new SaycResult(false, 423),
+                    new SaycResult(false, 432),
+                    new SaycResult(false, 431),
+                    new SaycResult(false, 423),
+                    new SaycResult(false, 432),
+                    new SaycResult(false, 431)
                 }
              },
              {
@@ -133,15 +133,15 @@ namespace TestBots
                     new SaycResult(false, 422),
                     new SaycResult(false, 428),
                     new SaycResult(false, 428),
+                    new SaycResult(false, 431),
                     new SaycResult(false, -2),
                     new SaycResult(false, -2),
                     new SaycResult(false, -2),
                     new SaycResult(false, -2),
                     new SaycResult(false, -2),
-                    new SaycResult(false, -2),
-                    new SaycResult(true, -2),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2)
+                    new SaycResult(false, 444),
+                    new SaycResult(false, 452),
+                    new SaycResult(true, 452)
                 }
              },
              {
@@ -942,10 +942,10 @@ namespace TestBots
              {
                 "test_slam_biding", new[]
                 {
-                    new SaycResult(false, 428),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, 428),
-                    new SaycResult(true, -2),
+                    new SaycResult(true, 436),
+                    new SaycResult(true, 452),
+                    new SaycResult(true, 436),
+                    new SaycResult(false, 444),
                     new SaycResult(false, 440),
                     new SaycResult(true, -2),
                     new SaycResult(false, -2),
@@ -967,7 +967,7 @@ namespace TestBots
                     new SaycResult(false, 422),
                     new SaycResult(true, 440),
                     new SaycResult(true, 428),
-                    new SaycResult(false, -2),
+                    new SaycResult(false, 428),
                     new SaycResult(false, -2),
                     new SaycResult(false, 422),
                     new SaycResult(false, 421),
@@ -993,7 +993,7 @@ namespace TestBots
                     new SaycResult(false, -2),
                     new SaycResult(true, 423),
                     new SaycResult(true, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 428),
                     new SaycResult(true, -2),
                     new SaycResult(false, 429),
                     new SaycResult(false, -2),
@@ -1033,7 +1033,7 @@ namespace TestBots
                     new SaycResult(true, -2),
                     new SaycResult(true, -2),
                     new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 452),
                     new SaycResult(false, -2),
                     new SaycResult(true, -2),
                     new SaycResult(true, 421),
