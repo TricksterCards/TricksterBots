@@ -2,7 +2,7 @@
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
 %Creator: BridgeComposer Version 5.101.1
-%Created: Sun Jan 15 18:13:34 2023 -0800
+%Created: Fri Jan 27 23:57:44 2023 -0800
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -33,7 +33,7 @@
 %PipColors #000000,#ff0000,#ff0000,#000000
 %PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
 %ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 12
+%SelectedBoard 16
 %ShowBoardLabels 2
 %ShowCardTable 2
 %TSTCustomSortOrder Default
@@ -333,3 +333,87 @@ Pass Pass
 1NT Pass 2C Pass
 2H Pass 3NT Pass
 4S Pass Pass Pass
+
+[Event "Non-Forcing Stayman, 5/4, Reject invitation"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KT5.AK8.KT965.Q5 A6.765.873.AT763 QJ732.JT43.A2.42 984.Q92.QJ4.KJ98"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "2S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass 2S Pass
+Pass Pass
+
+[Event "Invitatinal 5/4, Invite accepted in Hearts"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:JT2.A93.AJ.AQJ76 98.JT2.KT754.KT2 AQ73.Q8765.32.83 K654.K4.Q986.954"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass 2H Pass
+4H Pass Pass Pass
+
+[Event "Invitational 5/4, Rejected, Play in 2NT"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KQ.AKJ.T9764.Q92 A63.965.QJ5.J654 J8542.T832.A2.A7 T97.Q74.K83.KT83"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "2NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass 2S Pass
+2NT Pass Pass Pass
+
+[Event "Invitational 5/4, Accept invitation, play in 3NT"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:AQJ.A4.T732.KQT6 762.T72.K64.A832 T943.KQJ95.J8.J5 K85.863.AQ95.974"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "3NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass 2H Pass
+3NT Pass Pass Pass

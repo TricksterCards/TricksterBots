@@ -67,10 +67,18 @@ namespace Trickster.Bots
             {
                 foreach (Suit major in BasicBidding.MajorSuits)
                 {
+                    if (rebid.Is(2, major))
+                    {
+                        rebid.SetHandShape(major, 5);
+                        nt.Invitational(rebid, HandRange.ResponderGameInvitational,
+                            c => OpenerRespondTo5CardMajor(c, nt, major, HandRange.OpenerAcceptInvitation),
+                            $"Show 5 {major} game invitational");
+                    }
                     if (rebid.Is(3, nt.UseSmolen ? BasicBidding.OtherMajor(major) : major))
                     {
                         rebid.SetHandShape(major, 5);
-                        nt.Forcing(rebid, HandRange.ResponderGameOrBetter, c => OpenerRespondTo5CardMajor(c, nt, major),
+                        nt.Forcing(rebid, HandRange.ResponderGameOrBetter,
+                            c => OpenerRespondTo5CardMajor(c, nt, major, HandRange.OpenerAll),
                            $"Show 5 {major} and force to game");
                     }
                 }
@@ -123,18 +131,23 @@ namespace Trickster.Bots
 
         // Responder has shown 5/4 in the majors after opener denied a 4-card major.  Place the contract in game
         // in NT or responder's 5-card suit.
-        public static void OpenerRespondTo5CardMajor(InterpretedBid rebid, NoTrump nt, Suit major)
+        public static void OpenerRespondTo5CardMajor(InterpretedBid rebid, NoTrump nt, Suit major, NoTrump.HandRange acceptRange)
         {
-            // TODO: Interference.  We want to get to game here.  
-			if (rebid.Is(3, Suit.Unknown))
+			// TODO: Interference.  We want to get to game here.  
+			if (rebid.Is(2, Suit.Unknown))
 			{
 				rebid.HandShape[major].Max = 2;
-                nt.Signoff(rebid, HandRange.OpenerAll);
+				nt.Signoff(rebid, HandRange.OpenerMinimum);
+			}
+			else if (rebid.Is(3, Suit.Unknown))
+			{
+				rebid.HandShape[major].Max = 2;
+				nt.Signoff(rebid, acceptRange);
 			}
 			else if (rebid.Is(4, major))
 			{
 				rebid.HandShape[major].Min = 3;
-				nt.Signoff(rebid, HandRange.OpenerAll);
+				nt.Signoff(rebid, acceptRange);
 			}
 		}
 
