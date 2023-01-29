@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using Trickster.cloud;
 
+
+// TODO: If we want to use this convention in the furture, it needs to be updated...
 namespace Trickster.Bots
 {
     internal class Cappelletti

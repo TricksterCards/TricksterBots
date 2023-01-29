@@ -1,4 +1,4 @@
-// last updated 1/27/2023 8:58 PM (-08:00)
+// last updated 1/29/2023 1:30 PM (-08:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -722,42 +722,42 @@ namespace TestBots
              {
                 "test_overcalling_one_notrump", new[]
                 {
-                    new SaycResult(true, 423),
-                    new SaycResult(true, 422),
+                    new SaycResult(false, -2),
+                    new SaycResult(false, 424),
                     new SaycResult(true, 424),
                     new SaycResult(true, 423),
-                    new SaycResult(true, 420),
                     new SaycResult(false, 421),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, 422),
-                    new SaycResult(true, 424),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, 423),
-                    new SaycResult(true, 432),
+                    new SaycResult(false, 421),
+                    new SaycResult(false, 420),
                     new SaycResult(false, -2),
+                    new SaycResult(false, 429),
+                    new SaycResult(false, 446),
+                    new SaycResult(false, 438),
+                    new SaycResult(false, 420),
+                    new SaycResult(false, 446),
                     new SaycResult(true, 429),
                     new SaycResult(true, -2),
-                    new SaycResult(true, 420),
-                    new SaycResult(true, 432),
-                    new SaycResult(true, 423),
-                    new SaycResult(true, 432),
-                    new SaycResult(true, 432),
-                    new SaycResult(true, 429),
-                    new SaycResult(true, -2),
-                    new SaycResult(true, -2),
+                    new SaycResult(false, -2),
+                    new SaycResult(false, -2),
+                    new SaycResult(false, -2),
+                    new SaycResult(false, -2),
+                    new SaycResult(false, -2),
+                    new SaycResult(false, 432),
+                    new SaycResult(false, 424),
+                    new SaycResult(false, 423),
                     new SaycResult(true, 424),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(false, 422),
+                    new SaycResult(false, 423),
+                    new SaycResult(false, 422),
                     new SaycResult(false, -2)
                 }
              },
              {
                 "test_doubles", new[]
                 {
-                    new SaycResult(true, -2),
+                    new SaycResult(false, 423),
                     new SaycResult(true, 423),
-                    new SaycResult(true, 421),
+                    new SaycResult(false, 437),
                     new SaycResult(true, 424),
                     new SaycResult(true, 402),
                     new SaycResult(true, 402),
@@ -1030,7 +1030,7 @@ namespace TestBots
                     new SaycResult(false, 423),
                     new SaycResult(true, 412),
                     new SaycResult(false, -2),
-                    new SaycResult(true, -2),
+                    new SaycResult(false, 421),
                     new SaycResult(true, -2),
                     new SaycResult(false, -2),
                     new SaycResult(true, 452),
@@ -1119,7 +1119,7 @@ namespace TestBots
                     new SaycResult(true, -2),
                     new SaycResult(false, 420),
                     new SaycResult(false, 422),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 402),
                     new SaycResult(false, -2),
                     new SaycResult(true, 420),
                     new SaycResult(true, 428),

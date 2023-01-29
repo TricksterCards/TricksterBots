@@ -386,9 +386,6 @@ namespace Trickster.Bots
             if (Blackwood.Interpret(this))
                 return true;
 
-            if (Cappelletti.Interpret(this))
-                return true;
-
             if (ControlBid.Interpret(this))
                 return true;
 
@@ -401,17 +398,8 @@ namespace Trickster.Bots
             if (Jacoby2NT.Interpret(this))
                 return true;
 
-         // TODO: This is gone!   if (JacobyTransfer.Interpret(this))
-         //       return true;
-
             if (NegativeDouble.Interpret(this))
                 return true;
-
-         // TODO: Part of transfers   if (Relay.Interpret(this))
-         //       return true;
-
-   //     if (Stayman.Interpret(this))
-   //             return true;
 
             if (StrongOpening.Interpret(this))
                 return true;
