@@ -422,61 +422,6 @@ namespace TricksterBots.Bots {
             }
         }
 
-        public Range OpenerAcceptInvitePoints
-        {
-            get
-            {
-                return new Range(this.OpenerPoints.Min + 1, this.OpenerPoints.Max);
-            }
-        }
-
-        public Range OpenerRejectInvitePoints
-        {
-            get
-            {
-                return new Range(this.OpenerPoints.Min, this.OpenerPoints.Min); // Only reject at the lowest level.
-            }
-        }
-
- 
-        public Range ResponderInvitationalPoints
-        {
-            get
-            {
-                int min = 23 - openerMin;
-                if (min > 0) { return new Range(min, min + 1); }
-                return new Range(0, 0);
-            }
-        }
-
-
-        public Range ResponderGamePoints    
-        {
-            get
-            {
-                int min = System.Math.Max(0, 25 - OpenerPoints.Min);
-                int max = 32 - OpenerPoints.Min; // TODO: Is this right?
-                return new Range(min, max);
-            }
-        }
-        public Range ResponderGameOrBetterPoints
-        {
-            get
-            {
-                return new Range(System.Math.Max(0, 25 - OpenerPoints.Min), 40);;
-            }
-        }
-        public Range ResponderInvitationalOrBetterPoints
-        {
-            get
-            {
-                return new Range(ResponderInvitationalPoints.Min, 40);  
-            }
-        }
-
-
-
-
 
 		public int Level
         {

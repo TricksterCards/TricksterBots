@@ -168,12 +168,11 @@ namespace Trickster.Bots
 				}  
                 else if (rebid.Is(4, Suit.Spades))
 				{
-                    // TODO: Set priority here so this bid is selected ahead of 3NT?  
-                    rebid.Priority = 100;   // IS THIS A GOOD IDEA?  Tony?
+                    rebid.Priority = 100;   // Make sure this is bid instead of 3NT - TODO: Is this necessary?
 					rebid.HandShape[Suit.Hearts].Min = 4;
 					rebid.HandShape[Suit.Spades].Min = 4;
-					rebid.SetPoints(responderBidGame ? nt.OpenerPoints : nt.OpenerAcceptInvitePoints);
-					rebid.PartnersCall = c => ReEvaluateAsSpadeDummy(c, nt);
+                    nt.NonForcing(rebid, responderBidGame ? HandRange.OpenerAll : HandRange.OpenerAcceptInvitation,
+                        c => ReEvaluateAsSpadeDummy(c, nt));
 				}
             }
             else if (rebid.Is(4, trumpSuit))
