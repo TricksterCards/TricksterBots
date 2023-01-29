@@ -23,6 +23,13 @@ namespace TestBots
             { 'N', Suit.Unknown }
         };
 
+        private static Dictionary<char, char> SuitSymbolToLetter = new Dictionary<char, char> {
+            { '♠', 'S' },
+            { '♥', 'H' },
+            { '♦', 'D' },
+            { '♣', 'C' }
+        };
+
         [TestMethod]
         public void BasicTests()
         {
@@ -147,7 +154,8 @@ namespace TestBots
                 return BidBase.Pass;
 
             var level = int.Parse(bid.Substring(0, 1));
-            var suit = LetterToSuit[bid[1]];
+            var suitLetter = SuitSymbolToLetter.ContainsKey(bid[1]) ? SuitSymbolToLetter[bid[1]] : bid[1];
+            var suit = LetterToSuit[suitLetter];
             return new DeclareBid(level, suit);
         }
 
