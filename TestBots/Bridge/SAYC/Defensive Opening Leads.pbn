@@ -21,3 +21,13 @@ D4 - - -
 [Contract "3S"]
 [Play "W"]
 HQ - - -
+
+[Event "Opening Lead in Suit with 4th Best of Partner's Suit"]
+[Deal "W:5.765.7654.J7654 - - -"]
+[Contract "4S"]
+[Auction "W"]
+Pass 1H 2D 2S
+4D 4S Pass Pass
+Pass
+[Play "W"]
+D4 - - -
