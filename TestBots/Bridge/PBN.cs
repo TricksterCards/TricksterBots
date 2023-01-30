@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 // ReSharper disable StringIndexOfIsCultureSpecific.1
 
@@ -11,6 +12,7 @@ namespace TestBots.Bridge
         private const string Sides = "NESW";
         private const string SuitLetters = "SHDC";
         private const string CardRanks = " 23456789TJQKA";
+        private const string UnknownCard = "0U";
 
         public static int CardRank(string card)
         {
@@ -47,17 +49,21 @@ namespace TestBots.Bridge
                         {
                             var bid = bids[i];
                             var seat = (dealerSeat + i) % 4;
+                            var hand = hands[seat];
                             var seatName = Sides[seat];
                             var bidNumber = 1 + i / 4;
-                            tests.Add(
-                                new BasicTests.BasicTest
-                                {
-                                    history = history.ToArray(),
-                                    hand = hands[seat],
-                                    bid = bid,
-                                    type = $"{name} (Seat {seatName}, Bid {bidNumber})"
-                                }
-                            );
+                            if (!IsUnknownHand(hand))
+                            {
+                                tests.Add(
+                                    new BasicTests.BasicTest
+                                    {
+                                        history = history.ToArray(),
+                                        hand = hand,
+                                        bid = bid,
+                                        type = $"{name} (Seat {seatName}, Bid {bidNumber})"
+                                    }
+                                );
+                            }
                             history.Add(bid);
                         }
                         break;
@@ -76,24 +82,29 @@ namespace TestBots.Bridge
                         {
                             var play = plays[i];
                             var seat = (leadSeat + i) % 4;
+                            var hand = hands[seat];
                             var seatName = Sides[seat];
                             var playNumber = 1 + i / 4;
-                            tests.Add(
-                                new BasicTests.BasicTest
-                                {
-                                    contract = contract,
-                                    dealerSeat = dealerSeat,
-                                    declarerSeat = declarerSeat,
-                                    history = history.ToArray(),
-                                    dummy = i > 0 ? hands[dummySeat] : "",
-                                    hand = hands[seat],
-                                    play = play,
-                                    plays = plays.GetRange(0, i).ToArray(),
-                                    type = $"{name} (Seat {seatName}, Trick {playNumber})"
-                                }
-                            );
+                            if (!IsUnknownHand(hand))
+                            {
+                                tests.Add(
+                                    new BasicTests.BasicTest
+                                    {
+                                        contract = contract,
+                                        dealerSeat = dealerSeat,
+                                        declarerSeat = declarerSeat,
+                                        history = history.ToArray(),
+                                        dummy = i > 0 ? hands[dummySeat] : "",
+                                        hand = hand,
+                                        play = play,
+                                        plays = plays.GetRange(0, i).ToArray(),
+                                        type = $"{name} (Seat {seatName}, Trick {playNumber})"
+                                    }
+                                );
+                            }
                             // Remove played card from hand
-                            hands[seat] = hands[seat].Replace(play, "");
+                            var regex = new Regex(IsUnknownHand(hand) ? UnknownCard : play);
+                            hands[seat] = regex.Replace(hands[seat], "", 1);
                         }
                         break;
                     }
@@ -122,7 +133,7 @@ namespace TestBots.Bridge
                 var handString = handStrings[i];
                 if (handString == "-")
                 {
-                    hands[seat] = string.Join("", Enumerable.Repeat("0U", 13));
+                    hands[seat] = string.Join("", Enumerable.Repeat(UnknownCard, 13));
                     continue;
                 }
 
@@ -171,6 +182,11 @@ namespace TestBots.Bridge
             }
 
             return plays;
+        }
+
+        private static bool IsUnknownHand(string hand)
+        {
+            return hand.Substring(0, 2) == UnknownCard;
         }
 
         private static List<PBNTag> TokenizeTags(string text)
