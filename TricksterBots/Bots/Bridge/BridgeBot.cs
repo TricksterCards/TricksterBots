@@ -97,7 +97,7 @@ namespace Trickster.Bots
             var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
 
-            var isOpeningLead = players.All(p => p.Hand.Length == 13 * 2);
+            var isOpeningLead = trick.Count == 0 && player.Hand.Length == 13 * 2;
             if (isOpeningLead)
                 return SuggestOpeningLead(state);
 
