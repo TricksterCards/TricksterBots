@@ -225,10 +225,14 @@ namespace Trickster.Bots
         private Suit GetPartnersBidSuit(SuggestCardState<BridgeOptions> state)
         {
             var dealerSeat = FindDealerSeat(state);
+            var partnerSeat = (state.player.Seat + 2) % 4;
             var players = new PlayersCollectionBase(this, state.players);
             var history = new BridgeBidHistory(players, dealerSeat);
             var interpretedHistory = InterpretedBid.InterpretHistory(history);
-            var summary = new InterpretedBid.PlayerSummary(interpretedHistory, interpretedHistory.Count - 2);
+            var firstPartnerBidIndex = (4 + partnerSeat - dealerSeat) % 4;
+            var nPartnerExtraBids = (interpretedHistory.Count - firstPartnerBidIndex) / 4;
+            var lastPartnerBidIndex = firstPartnerBidIndex + 4 * nPartnerExtraBids;
+            var summary = new InterpretedBid.PlayerSummary(interpretedHistory, lastPartnerBidIndex);
             var bestBidSuitLength = summary.HandShape.Max(hs => hs.Value.Min);
 
             if (bestBidSuitLength == 0)
@@ -266,6 +270,24 @@ namespace Trickster.Bots
                 }
             }
             return sequences.Where(seq => seq.Count >= minLength && RankSort(seq.First()) >= minTopRank).ToList();
+        }
+
+        private List<Suit> GetUnbidSuits(SuggestCardState<BridgeOptions> state)
+        {
+            var dealerSeat = FindDealerSeat(state);
+            var players = new PlayersCollectionBase(this, state.players);
+            var history = new BridgeBidHistory(players, dealerSeat);
+            var interpretedHistory = InterpretedBid.InterpretHistory(history);
+            var unbidSuits = SuitRank.stdSuits.Where(suit => interpretedHistory.All(b => b.HandShape[suit].Min <= 2));
+            return unbidSuits.ToList();
+        }
+
+        private Card LeadAceOrLowOrFourthBest(List<Card> cards)
+        {
+            if (cards[0].rank == Rank.Ace)
+                return cards[0];
+
+            return cards.Count > 3 ? cards[3] : cards.Last();
         }
 
         private Card LeadPartnersBidSuit(SuggestCardState<BridgeOptions> state, Suit partnersSuit)
@@ -361,19 +383,26 @@ namespace Trickster.Bots
             var aceKingSequences = twoCardSequences.Where(seq => seq.First().rank == Rank.Ace);
             if (aceKingSequences.Any())
                 return aceKingSequences.First().First();
-            
-            // TODO: Do not lead suit with ace unless leading ace
 
-            // TODO: Preference to lead unbid suits. Low from K or Q better than low from J, generally
-            // TODO: Generally better to lead from three small than away from an honor
+            // Do not lead suit with ace unless leading ace
+            // Preference to lead unbid suits. Low from K or Q better than low from J, generally
+            // Generally better to lead from three small than away from an honor
+            // Lead low from three card suits, 4th from four or five card suits
+            var unbidSuits = GetUnbidSuits(state).Where(s => cardsBySuit.ContainsKey(s) && cardsBySuit[s].Count > 0);
+            var unbidSuitsWithoutAce = unbidSuits.Where(s => cardsBySuit[s][0].rank != Rank.Ace);
+            var unbidSuitsWithThreeSmall = unbidSuitsWithoutAce.Where(s => cardsBySuit[s].Count >= 3 && cardsBySuit[s][0].rank < Rank.Ten);
+            if (unbidSuitsWithThreeSmall.Any())
+                return LeadAceOrLowOrFourthBest(cardsBySuit[unbidSuitsWithThreeSmall.First()]);
+            if (unbidSuitsWithoutAce.Any())
+                return LeadAceOrLowOrFourthBest(cardsBySuit[unbidSuitsWithoutAce.First()]);
+            if (unbidSuits.Any())
+                return LeadAceOrLowOrFourthBest(cardsBySuit[unbidSuits.First()]);
 
-            // TODO: Lead low from three card suits, 4th from four or five card suits
-
-            // Advanced:
+            // TODO Advanced:
             // With a weak hand on your right(ie a preempt),
             // it’s ok to lead more aggressively(low from an honor, or even a random ace)
 
-            return state.legalCards[0];
+            return LeadAceOrLowOrFourthBest(cardsBySuit.First().Value);
         }
 
         //  we're trying to take a trick
