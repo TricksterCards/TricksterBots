@@ -109,9 +109,10 @@ namespace Trickster.Bots
                     rebid.HandShape[openerBidSuit].Min = 4;
                     nt.Invitational(rebid, HandRange.ResponderGameInvitational,
                             c => PlaceContract(c, nt, openerBidSuit, false));
+                    rebid.PointsAdjustment = hand => BasicBidding.DummyPoints(hand, openerBidSuit);
 					// TODO: Need to fix "dummy" point analysis.  This works most of the time in this situation but
 					// it really needs to know the trump suit or can't evaluate correctly
-					rebid.BidPointType = BidPointType.Dummy;
+					// TODO: Is this important?  Is this for UI? rebid.BidPointType = BidPointType.Dummy;
 				}
                 else if (rebid.Is(3, Suit.Unknown))
                 {
@@ -122,7 +123,8 @@ namespace Trickster.Bots
                 {
                     rebid.HandShape[openerBidSuit].Min = 4;
                     nt.Signoff(rebid, HandRange.ResponderGame);
-                    rebid.BidPointType = BidPointType.Dummy;        // TODO: Better dummy analysis...
+                    rebid.PointsAdjustment = hand => BasicBidding.DummyPoints(hand, openerBidSuit);
+                    /// rebid.BidPointType = BidPointType.Dummy;        // TODO: Better dummy analysis...
 				}
                 // TODO: Slam bids.....  
             }
@@ -186,7 +188,8 @@ namespace Trickster.Bots
             if (rebid.Is(4, Suit.Spades))
             {
                 nt.Signoff(rebid, HandRange.ResponderGame);
-                rebid.BidPointType = BidPointType.Dummy;    // TODO: This is ugly.  Need to do better...
+                rebid.PointsAdjustment = hand => BasicBidding.DummyPoints(hand, Suit.Spades);
+               // rebid.BidPointType = BidPointType.Dummy;    // TODO: This is ugly.  Need to do better...
             }
             // TODO: Could upgrade to slam points here so need to go to slam.  Blackwood is valid at this point
             // since spades agreed on.  

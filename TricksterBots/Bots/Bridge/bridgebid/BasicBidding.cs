@@ -54,6 +54,48 @@ namespace Trickster.Bots
             return highCardPoints;
         }
 
+		public static int ComputeHighCardPoints(Hand hand, Suit suit)
+		{
+			var highCardPoints = 0;
+
+			//  basic points for high cards
+			highCardPoints += hand.Count(c => (c.rank == Rank.Ace && c.suit == suit)) * 4;
+			highCardPoints += hand.Count(c => (c.rank == Rank.King && c.suit == suit)) * 3;
+			highCardPoints += hand.Count(c => (c.rank == Rank.Queen && c.suit == suit)) * 2;
+			highCardPoints += hand.Count(c => (c.rank == Rank.Jack && c.suit == suit));
+
+			return highCardPoints;
+		}
+
+
+		public static int DummyPoints(Hand hand, Suit trumpSuit)
+        {
+            var trumpCount = hand.Count(c => c.suit == trumpSuit);
+			int adjust = 0;
+            if (trumpCount >= 3)
+            {
+                int[] bonus = { 3, 2, 1 };
+                if (trumpCount > 3)
+                {
+                    bonus[0] = 5;
+                    bonus[1] = 3;
+                }
+                // Compute bonuses for shortness BUT don't count any HCPs in the suits.
+                // TODO: How about aces singletons? AK doubletons?  Seem valuable even as shortness.  For now
+                // just use the max of the shortness or the bonus...
+                foreach (Suit suit in BasicBidding.BasicSuits)
+                {
+                    var count = hand.Count(c => c.suit == suit);
+                    if (count < 3)
+                    {
+                        adjust += System.Math.Max(0, bonus[count] - ComputeHighCardPoints(hand, suit));
+                    }
+                }
+            }
+            return adjust;
+        }
+
+
         public static Dictionary<Suit, int> CountsBySuit(Hand hand)
         {
             var counts = hand.GroupBy(c => c.suit).ToDictionary(g => g.Key, g => g.Count());

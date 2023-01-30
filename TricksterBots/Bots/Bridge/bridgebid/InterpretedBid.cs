@@ -11,6 +11,7 @@ namespace Trickster.Bots
 {
     public delegate bool HandValidator(Hand hand);
     public delegate void CallInterpreter(InterpretedBid call);
+    public delegate int PointsAdjustment(Hand hand);
     public enum Seat { First, Second, Third, Fourth }
 
     public class InterpretedBid : BidExplanation
@@ -42,6 +43,8 @@ namespace Trickster.Bots
         public int Priority = 0;
 
         public CallInterpreter PartnersCall = null;
+
+        public PointsAdjustment PointsAdjustment = null;
 
         public Seat Seat {
             get
@@ -323,18 +326,25 @@ namespace Trickster.Bots
                 return false;
 
             var points = BasicBidding.ComputeHighCardPoints(hand);
-            switch (BidPointType)
+            if (PointsAdjustment != null)
             {
-                case BidPointType.Distribution:
-                    points += BasicBidding.ComputeDistributionPoints(hand);
-                    break;
-                case BidPointType.Dummy:
-                    points += BasicBidding.ComputeDummyPoints(hand);
-                    break;
-                case BidPointType.Hcp:
-                    break;
-                default:
-                    throw new Exception("Unknown point type");
+                points += PointsAdjustment(hand);
+            }
+            else
+            {
+                switch (BidPointType)
+                {
+                    case BidPointType.Distribution:
+                        points += BasicBidding.ComputeDistributionPoints(hand);
+                        break;
+                    case BidPointType.Dummy:
+                        points += BasicBidding.ComputeDummyPoints(hand);
+                        break;
+                    case BidPointType.Hcp:
+                        break;
+                    default:
+                        throw new Exception("Unknown point type");
+                }
             }
 
             if (Points.Min > points || points > Points.Max)
