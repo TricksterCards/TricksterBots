@@ -222,7 +222,7 @@ namespace Trickster.Bots
             return cards.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.OrderByDescending(RankSort).ToList());
         }
 
-        private Suit GetPartnersBidSuit(SuggestCardState<BridgeOptions> state)
+        private List<Card> GetCardsInPartnersBestBidSuit(SuggestCardState<BridgeOptions> state, Dictionary<Suit, List<Card>> legalCardsBySuit)
         {
             var dealerSeat = FindDealerSeat(state);
             var partnerSeat = (state.player.Seat + 2) % 4;
@@ -233,13 +233,13 @@ namespace Trickster.Bots
             var nPartnerExtraBids = (interpretedHistory.Count - firstPartnerBidIndex) / 4;
             var lastPartnerBidIndex = firstPartnerBidIndex + 4 * nPartnerExtraBids;
             var summary = new InterpretedBid.PlayerSummary(interpretedHistory, lastPartnerBidIndex);
-            var bestBidSuitLength = summary.HandShape.Max(hs => hs.Value.Min);
+            var bestBidSuitLength = summary.HandShape.Where(hs => legalCardsBySuit.ContainsKey(hs.Key)).Max(hs => hs.Value.Min);
 
             if (bestBidSuitLength == 0)
-                return Suit.Unknown;
+                return new List<Card>();
 
             var bestBidSuits = summary.HandShape.Where(hs => hs.Value.Min == bestBidSuitLength).Select(hs => hs.Key);
-            return bestBidSuits.First();
+            return legalCardsBySuit[bestBidSuits.First()];
         }
 
         private List<List<Card>> GetSequences(IReadOnlyList<Card> cards, int minLength = 0, int minTopRank = 0, int minRank = 0, int gap = 0)
@@ -333,8 +333,7 @@ namespace Trickster.Bots
             // lead the suit if you have three or more (same rules as for suit contracts)
             // If you have two and five or fewer points,
             // lead partner’s suit unless you have a 5 + card suit with 3 honor sequence, lead that
-            var partnersBidSuit = GetPartnersBidSuit(state);
-            var cardsInPartnersBidSuit = cardsBySuit.ContainsKey(partnersBidSuit) ? cardsBySuit[partnersBidSuit] : new List<Card>();
+            var cardsInPartnersBidSuit = GetCardsInPartnersBestBidSuit(state, cardsBySuit);
             if (cardsInPartnersBidSuit.Count >= 3)
                 return LeadPartnersBidSuit(cardsInPartnersBidSuit);
 
@@ -375,8 +374,7 @@ namespace Trickster.Bots
 
             // Lead partner’s bid suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
             // Lead highest of partner’s bid suit
-            var partnersBidSuit = GetPartnersBidSuit(state);
-            var cardsInPartnersBidSuit = cardsBySuit.ContainsKey(partnersBidSuit) ? cardsBySuit[partnersBidSuit] : new List<Card>();
+            var cardsInPartnersBidSuit = GetCardsInPartnersBestBidSuit(state, cardsBySuit);
             if (cardsInPartnersBidSuit.Any())
                 return LeadPartnersBidSuit(cardsInPartnersBidSuit);
 
