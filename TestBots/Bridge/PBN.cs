@@ -118,7 +118,7 @@ namespace TestBots.Bridge
         private static List<string> ImportBids(List<string> bidLines)
         {
             return string.Join(" ", bidLines)
-                .Split(' ')
+                .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(bid => bid.Replace('S', '♠').Replace('H', '♥').Replace('D', '♦').Replace('C', '♣'))
                 .ToList();
         }

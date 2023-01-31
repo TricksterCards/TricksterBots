@@ -26,8 +26,18 @@ HQ - - -
 [Deal "W:5.765.7654.J7654 - - -"]
 [Contract "4S"]
 [Auction "W"]
-Pass 1H 2D 2S
-4D 4S Pass Pass
+Pass 1H 2D   2S
+4D   4S Pass Pass
 Pass
 [Play "W"]
 D4 - - -
+
+[Event "Opening Lead in Suit without Partner's Suit"]
+[Deal "E:5432.7654..J7654 - - -"]
+[Contract "4S"]
+[Auction "E"]
+Pass 1H 2D   2S
+Pass 4S Pass Pass
+Pass
+[Play "E"]
+C5 - - -

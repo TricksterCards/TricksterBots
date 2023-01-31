@@ -290,11 +290,10 @@ namespace Trickster.Bots
             return cards.Count > 3 ? cards[3] : cards.Last();
         }
 
-        private Card LeadPartnersBidSuit(SuggestCardState<BridgeOptions> state, Suit partnersSuit)
+        private Card LeadPartnersBidSuit(List<Card> cardsInSuit)
         {
             // Lead partner’s bid suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
             // Lead highest of partner’s bid suit
-            var cardsInSuit = state.legalCards.Where(c => EffectiveSuit(c) == partnersSuit).OrderByDescending(RankSort).ToList();
             if (cardsInSuit.Count == 2)
                 return cardsInSuit.First();
             if (cardsInSuit.Count == 3)
@@ -335,8 +334,9 @@ namespace Trickster.Bots
             // If you have two and five or fewer points,
             // lead partner’s suit unless you have a 5 + card suit with 3 honor sequence, lead that
             var partnersBidSuit = GetPartnersBidSuit(state);
-            if (partnersBidSuit != Suit.Unknown && suitCounts[partnersBidSuit] >= 3)
-                return LeadPartnersBidSuit(state, partnersBidSuit);
+            var cardsInPartnersBidSuit = cardsBySuit.ContainsKey(partnersBidSuit) ? cardsBySuit[partnersBidSuit] : new List<Card>();
+            if (cardsInPartnersBidSuit.Count >= 3)
+                return LeadPartnersBidSuit(cardsInPartnersBidSuit);
 
             // If partner hasn’t bid,
             // lead fourth best card from longest / strongest suit.
@@ -376,8 +376,9 @@ namespace Trickster.Bots
             // Lead partner’s bid suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
             // Lead highest of partner’s bid suit
             var partnersBidSuit = GetPartnersBidSuit(state);
-            if (partnersBidSuit != Suit.Unknown)
-                return LeadPartnersBidSuit(state, partnersBidSuit);
+            var cardsInPartnersBidSuit = cardsBySuit.ContainsKey(partnersBidSuit) ? cardsBySuit[partnersBidSuit] : new List<Card>();
+            if (cardsInPartnersBidSuit.Any())
+                return LeadPartnersBidSuit(cardsInPartnersBidSuit);
 
             // Do not lead Ace, unless from AK (OR in partner’s suit, handled above)
             var aceKingSequences = twoCardSequences.Where(seq => seq.First().rank == Rank.Ace);
