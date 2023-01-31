@@ -45,6 +45,15 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void FuzzPlays()
+        {
+            foreach (var test in Fuzz.GeneratePlayTests(100000))
+            {
+                RunPlayTest(test);
+            }
+        }
+
+        [TestMethod]
         public void SaycTestFiles()
         {
             var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -253,7 +262,7 @@ namespace TestBots
             }
             else
             {
-                // if no history was provided, assume declarer bid first at the contract level and everone else passed
+                // if no history was provided, assume declarer bid first at the contract level and everyone else passed
                 foreach (var player in players)
                 {
                     if (player.Seat == test.declarerSeat)
@@ -272,9 +281,16 @@ namespace TestBots
                 var trick = string.Join("", test.plays.Skip(test.plays.Length - trickLength));
                 var cardState = new TestCardState<BridgeOptions>(bot, players, trick) { trumpSuit = contract.suit };
                 var suggestion = bot.SuggestNextCard(cardState);
-                Assert.AreEqual(test.play, suggestion.ToString(),
-                    $"Test '{test.type}' suggested {suggestion} but expected {test.play}"
-                );
+                if (!string.IsNullOrEmpty(test.play))
+                {
+                    Assert.AreEqual(test.play, suggestion.ToString(),
+                        $"Test '{test.type}' suggested {suggestion} but expected {test.play}"
+                    );
+                }
+                else
+                {
+                    Assert.IsNotNull(suggestion);
+                }
             }
         }
 

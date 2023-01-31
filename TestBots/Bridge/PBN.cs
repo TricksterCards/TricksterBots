@@ -9,10 +9,10 @@ namespace TestBots.Bridge
 {
     internal class PBN
     {
-        private const string Sides = "NESW";
-        private const string SuitLetters = "SHDC";
-        private const string CardRanks = " 23456789TJQKA";
-        private const string UnknownCard = "0U";
+        public const string Sides = "NESW";
+        public const string SuitLetters = "SHDC";
+        public const string CardRanks = " 23456789TJQKA";
+        public const string UnknownCard = "0U";
 
         public static int CardRank(string card)
         {

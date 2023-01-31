@@ -230,15 +230,16 @@ namespace Trickster.Bots
             var history = new BridgeBidHistory(players, dealerSeat);
             var interpretedHistory = InterpretedBid.InterpretHistory(history);
             var firstPartnerBidIndex = (4 + partnerSeat - dealerSeat) % 4;
-            var nPartnerExtraBids = (interpretedHistory.Count - firstPartnerBidIndex) / 4;
+            var nPartnerExtraBids = (interpretedHistory.Count - 1 - firstPartnerBidIndex) / 4;
             var lastPartnerBidIndex = firstPartnerBidIndex + 4 * nPartnerExtraBids;
             var summary = new InterpretedBid.PlayerSummary(interpretedHistory, lastPartnerBidIndex);
-            var bestBidSuitLength = summary.HandShape.Where(hs => legalCardsBySuit.ContainsKey(hs.Key)).Max(hs => hs.Value.Min);
+            var legalHandShapes = summary.HandShape.Where(hs => legalCardsBySuit.ContainsKey(hs.Key));
+            var bestBidSuitLength = legalHandShapes.Max(hs => hs.Value.Min);
 
             if (bestBidSuitLength == 0)
                 return new List<Card>();
 
-            var bestBidSuits = summary.HandShape.Where(hs => hs.Value.Min == bestBidSuitLength).Select(hs => hs.Key);
+            var bestBidSuits = legalHandShapes.Where(hs => hs.Value.Min == bestBidSuitLength).Select(hs => hs.Key);
             return legalCardsBySuit[bestBidSuits.First()];
         }
 
