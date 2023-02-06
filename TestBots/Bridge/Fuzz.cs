@@ -68,13 +68,15 @@ namespace TestBots.Bridge
             var firstBidSeat = random.Next(4);
             var bids = new List<string>();
             var legalContractBids = GetContractBids();
+            // Increase the weight for lower-level bids (7 for level 1 down to 1 for level 7)
+            var weightedLegalContractBids = legalContractBids.SelectMany(b => Enumerable.Repeat(b, 8 - int.Parse(b.Substring(0, 1)))).ToList();
             var passCount = 0;
             var contract = "";
 
             // We're done bidding once we get 3 passes after our first bid
             while (passCount < 3 || bids.Count <= firstBidSeat)
             {
-                var pass = bids.Count < firstBidSeat || legalContractBids.Count == 0 || random.Next(2) == 1;
+                var pass = bids.Count < firstBidSeat || legalContractBids.Count == 0 || random.Next(3) != 0;
                 if (pass && bids.Count != firstBidSeat)
                 {
                     bids.Add("Pass");
@@ -82,11 +84,13 @@ namespace TestBots.Bridge
                 }
                 else
                 {
-                    var index = random.Next(legalContractBids.Count);
-                    var bid = legalContractBids[index];
+                    var index = random.Next(weightedLegalContractBids.Count);
+                    var bid = weightedLegalContractBids[index];
+                    var legalIndex = legalContractBids.IndexOf(bid);
                     contract = bid;
                     bids.Add(bid);
-                    legalContractBids = legalContractBids.Skip(index + 1).ToList();
+                    legalContractBids = legalContractBids.Skip(legalIndex + 1).ToList();
+                    weightedLegalContractBids = weightedLegalContractBids.Where(b => legalContractBids.Contains(b)).ToList();
                     passCount = 0;
                 }
             }
