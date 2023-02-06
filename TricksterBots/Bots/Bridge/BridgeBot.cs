@@ -239,6 +239,7 @@ namespace Trickster.Bots
             if (bestBidSuitLength == 0)
                 return new List<Card>();
 
+            // TODO: May want to exclude if we're only going off partner opening with 1C or 1D (as those are weak)
             var bestBidSuits = legalHandShapes.Where(hs => hs.Value.Min == bestBidSuitLength).Select(hs => hs.Key);
             return legalCardsBySuit[bestBidSuits.First()];
         }
@@ -361,20 +362,24 @@ namespace Trickster.Bots
                 return threeCardSequences.First().First();
 
             // Lead singleton in suit that isn’t trump
+            // Except for singleton A, K, or Q (for now)
             var cardsBySuit = GetCardsBySuit(state.legalCards);
             var nonTrumpSingletons = cardsBySuit.Where(cs => cs.Key != state.trumpSuit && cs.Value.Count() == 1).Select(cs => cs.Value.First());
-            if (nonTrumpSingletons.Any())
-                return nonTrumpSingletons.First();
+            var belowQueenNonTrumpSingletons = nonTrumpSingletons.Where(c => c.rank < Rank.Queen);
+            if (belowQueenNonTrumpSingletons.Any())
+                return belowQueenNonTrumpSingletons.First();
 
             // If you have a sequence of two or more cards with the highest card the 10 or higher,
             // lead top of that sequence as long as not doubleton, eg KQ.
+            // ignore the suit if it has an Ace
             var twoCardSequences = GetSequences(state.legalCards, minLength: 2, minTopRank: (int)Rank.Ten);
             var nonDoubletonTwoCardSequences = twoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())].Count > 2);
-            if (nonDoubletonTwoCardSequences.Any())
-                return nonDoubletonTwoCardSequences.First().First();
+            var nonDoubletonTwoCardSequencesWithoutAce = nonDoubletonTwoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())][0].rank != Rank.Ace);
+            if (nonDoubletonTwoCardSequencesWithoutAce.Any())
+                return nonDoubletonTwoCardSequencesWithoutAce.First().First();
 
             // Lead partner’s bid suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
-            // Lead highest of partner’s bid suit
+            // Lead highest of partner’s bid suit, we're okay leading a suit with an Ace here
             var cardsInPartnersBidSuit = GetCardsInPartnersBestBidSuit(state, cardsBySuit);
             if (cardsInPartnersBidSuit.Any())
                 return LeadPartnersBidSuit(cardsInPartnersBidSuit);

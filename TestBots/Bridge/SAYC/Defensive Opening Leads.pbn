@@ -16,11 +16,23 @@ HA - - -
 [Play "N"]
 D4 - - -
 
+[Event "Opening Lead in Suit skip AKQ Non-Trump Singleton"]
+[Deal "N:5.Q765.K.Q765432 - - -"]
+[Contract "3S"]
+[Play "N"]
+C5 - - -
+
 [Event "Opening Lead in Suit with Top of Non-Doubleton Sequence"]
-[Deal "W:5.QJ765.KQ.T7653 - - -"]
+[Deal "W:5.JT765.KQ.T7653 - - -"]
 [Contract "3S"]
 [Play "W"]
-HQ - - -
+HJ - - -
+
+[Event "Opening Lead in Suit skip Non-Doubleton Sequence with Ace"]
+[Deal "W:5.AJT76.KQ.T7653 - - -"]
+[Contract "3S"]
+[Play "W"]
+C5 - - -
 
 [Event "Opening Lead in Suit with 4th Best of Partner's Suit"]
 [Deal "W:5.765.7654.J7654 - - -"]
