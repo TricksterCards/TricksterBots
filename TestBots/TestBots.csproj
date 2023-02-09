@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="Bridge\BasicTests.cs" />
     <Compile Include="Bridge\BidTest.cs" />
+    <Compile Include="Bridge\Fuzz.cs" />
     <Compile Include="Bridge\PBN.cs" />
     <Compile Include="Bridge\SaycResult.cs" />
     <Compile Include="Bridge\TestBridgeBot.cs" />
@@ -81,6 +82,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Bridge\SAYC\1NT Stayman.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Bridge\SAYC\Defensive Opening Leads.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />

@@ -97,6 +97,10 @@ namespace Trickster.Bots
             var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
 
+            var isOpeningLead = trick.Count == 0 && player.Hand.Length == 13 * 2;
+            if (isOpeningLead)
+                return SuggestOpeningLead(state);
+
             return TryTakeEm(player, players.PartnerOf(player), trick, legalCards, cardsPlayed, players, isPartnerTakingTrick, cardTakingTrick);
         }
 
@@ -185,6 +189,225 @@ namespace Trickster.Bots
 
             //  return the lowest card from the longest non-trump suit
             return nonTrumpCards.OrderByDescending(c => nonTrumpCards.Count(c1 => EffectiveSuit(c1) == c.suit)).ThenBy(RankSort).First();
+        }
+
+        private Card SuggestOpeningLead(SuggestCardState<BridgeOptions> state)
+        {
+            if (state.trumpSuit == Suit.Unknown)
+                return SuggestOpeningLeadInNoTrump(state);
+
+            return SuggestOpeningLeadInSuit(state);
+        }
+
+        private List<List<Card>> GetBrokenSequences(IReadOnlyList<Card> cards, int minLength = 0, int minTopRank = 0, int minRank = 0)
+        {
+            return GetSequences(cards, minLength, minTopRank, minRank, gap: 1);
+        }
+
+        private int FindDealerSeat(SuggestCardState<BridgeOptions> state)
+        {
+            // since dealer is first to bid
+            // if bid counts are equal, dealer is the player whose last bid wasn't pass
+            // otherwise dealer is offset by the number of players who bid one more than others
+            // e.g. if three players bid twice, and one bid three times, then dealer is to the right of the player whose last bid wasn't pass
+            var bids = state.players.Select(p => p.BidHistory.Count);
+            var maxBids = bids.Max();
+            var nMaxBids = bids.Count(b => b == maxBids);
+            var lastNonPassBidderSeat = state.players.Where(p => p.BidHistory.Last() != BidBase.Pass).Select(p => p.Seat).First();
+            return (4 + lastNonPassBidderSeat - nMaxBids) % 4;
+        }
+
+        private Dictionary<Suit, List<Card>> GetCardsBySuit(IReadOnlyList<Card> cards)
+        {
+            return cards.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.OrderByDescending(RankSort).ToList());
+        }
+
+        private List<Card> GetCardsInPartnersBestBidSuit(SuggestCardState<BridgeOptions> state, Dictionary<Suit, List<Card>> legalCardsBySuit)
+        {
+            var dealerSeat = FindDealerSeat(state);
+            var partnerSeat = (state.player.Seat + 2) % 4;
+            var players = new PlayersCollectionBase(this, state.players);
+            var history = new BridgeBidHistory(players, dealerSeat);
+            var interpretedHistory = InterpretedBid.InterpretHistory(history);
+            var firstPartnerBidIndex = (4 + partnerSeat - dealerSeat) % 4;
+            var nPartnerExtraBids = (interpretedHistory.Count - 1 - firstPartnerBidIndex) / 4;
+            var lastPartnerBidIndex = firstPartnerBidIndex + 4 * nPartnerExtraBids;
+            var summary = new InterpretedBid.PlayerSummary(interpretedHistory, lastPartnerBidIndex);
+            var legalHandShapes = summary.HandShape.Where(hs => legalCardsBySuit.ContainsKey(hs.Key));
+            var bestBidSuitLength = legalHandShapes.Max(hs => hs.Value.Min);
+
+            if (bestBidSuitLength == 0)
+                return new List<Card>();
+
+            // TODO: May want to exclude if we're only going off partner opening with 1C or 1D (as those are weak)
+            var bestBidSuits = legalHandShapes.Where(hs => hs.Value.Min == bestBidSuitLength).Select(hs => hs.Key);
+            return legalCardsBySuit[bestBidSuits.First()];
+        }
+
+        private List<List<Card>> GetSequences(IReadOnlyList<Card> cards, int minLength = 0, int minTopRank = 0, int minRank = 0, int gap = 0)
+        {
+            var prevSuit = Suit.Unknown;
+            var prevRank = -1;
+            var remainingGaps = gap;
+            List<List<Card>> sequences = new List<List<Card>>();
+            foreach (var card in cards.OrderBy(EffectiveSuit).ThenByDescending(RankSort))
+            {
+                if (RankSort(card) < minRank)
+                {
+                    continue;
+                }
+                if (prevSuit == Suit.Unknown || prevSuit != EffectiveSuit(card) || prevRank > RankSort(card) + 1 + gap)
+                {
+                    remainingGaps = gap;
+                    prevSuit = EffectiveSuit(card);
+                    prevRank = RankSort(card);
+                    sequences.Add(new List<Card> { card });
+                }
+                else
+                {
+                    remainingGaps -= prevRank - (RankSort(card) + 1);
+                    prevSuit = EffectiveSuit(card);
+                    prevRank = RankSort(card);
+                    sequences.Last().Add(card);
+                }
+            }
+            return sequences.Where(seq => seq.Count >= minLength && RankSort(seq.First()) >= minTopRank).ToList();
+        }
+
+        private List<Suit> GetUnbidSuits(SuggestCardState<BridgeOptions> state)
+        {
+            var dealerSeat = FindDealerSeat(state);
+            var players = new PlayersCollectionBase(this, state.players);
+            var history = new BridgeBidHistory(players, dealerSeat);
+            var interpretedHistory = InterpretedBid.InterpretHistory(history);
+            var unbidSuits = SuitRank.stdSuits.Where(suit => interpretedHistory.All(b => b.HandShape[suit].Min <= 2));
+            return unbidSuits.ToList();
+        }
+
+        private Card LeadAceOrLowOrFourthBest(List<Card> cards)
+        {
+            if (cards[0].rank == Rank.Ace)
+                return cards[0];
+
+            return cards.Count > 3 ? cards[3] : cards.Last();
+        }
+
+        private Card LeadPartnersBidSuit(List<Card> cardsInSuit)
+        {
+            // Lead partner’s bid suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
+            // Lead highest of partner’s bid suit
+            if (cardsInSuit.Count == 2)
+                return cardsInSuit.First();
+            if (cardsInSuit.Count == 3)
+                return cardsInSuit.Last();
+            if (cardsInSuit.Count == 4 || cardsInSuit.Count == 5)
+                return cardsInSuit[3];
+
+            return cardsInSuit[0];
+        }
+
+        private Card SuggestOpeningLeadInNoTrump(SuggestCardState<BridgeOptions> state)
+        {
+            // Opening Leads: Notrump
+
+            // If you have a sequence of three or more cards with the highest card the 10 or higher,
+            // lead top of that sequence if the suit is four cards or longer.
+            var sequences = GetSequences(state.legalCards, minLength: 3, minTopRank: (int)Rank.Ten);
+            var cardsBySuit = GetCardsBySuit(state.legalCards);
+            var suitCounts = state.legalCards.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
+            var matches = sequences.Where(seq => suitCounts[seq.First().suit] >= 4);
+            if (matches.Any())
+                return matches.First().First();
+
+            // If you have a broken sequence(KQ10),
+            // lead the top.
+            var brokenSequences = GetBrokenSequences(state.legalCards, minLength: 3, minRank: (int)Rank.Ten);
+            var nonKJT = brokenSequences.Where(seq => seq[0].rank != Rank.King || seq[1].rank != Rank.Jack || seq[2].rank != Rank.Ten);
+            if (nonKJT.Any())
+                return nonKJT.First().First();
+
+            // If you have KJT,
+            // lead the J
+            if (brokenSequences.Any())
+                return brokenSequences[0][1];
+
+            // If partner has bid
+            // lead the suit if you have three or more (same rules as for suit contracts)
+            // If you have two and five or fewer points,
+            // lead partner’s suit unless you have a 5 + card suit with 3 honor sequence, lead that
+            var cardsInPartnersBidSuit = GetCardsInPartnersBestBidSuit(state, cardsBySuit);
+            if (cardsInPartnersBidSuit.Count >= 3)
+                return LeadPartnersBidSuit(cardsInPartnersBidSuit);
+
+            // If partner hasn’t bid,
+            // lead fourth best card from longest / strongest suit.
+            // If longest strongest suit has no 10 or higher,
+            // lead 2nd highest from that suit
+            var maxSuitLength = cardsBySuit.Max(sc => sc.Value.Count());
+            var longestSuits = cardsBySuit.Where(sc => sc.Value.Count() == maxSuitLength).Select(sc => sc.Key);
+            var bestSuit = longestSuits.First(); // TODO: Tie-break by determining stronger suit
+            var cardsInBestSuit = cardsBySuit[bestSuit];
+            if (cardsInBestSuit.First().rank >= Rank.Ten)
+                return cardsBySuit[bestSuit].Count() < 4 ? cardsInBestSuit.Last() : cardsInBestSuit[3];
+            return cardsBySuit[bestSuit][1];
+        }
+
+        private Card SuggestOpeningLeadInSuit(SuggestCardState<BridgeOptions> state)
+        {
+            // Opening Leads: Suits
+
+            // If you have a 3-card sequence starting with ace, lead that
+            var threeCardSequences = GetSequences(state.legalCards, minLength: 3, minTopRank: (int)Rank.Ace);
+            if (threeCardSequences.Any())
+                return threeCardSequences.First().First();
+
+            // Lead singleton in suit that isn’t trump
+            // Except for singleton A, K, or Q (for now)
+            var cardsBySuit = GetCardsBySuit(state.legalCards);
+            var nonTrumpSingletons = cardsBySuit.Where(cs => cs.Key != state.trumpSuit && cs.Value.Count() == 1).Select(cs => cs.Value.First());
+            var belowQueenNonTrumpSingletons = nonTrumpSingletons.Where(c => c.rank < Rank.Queen);
+            if (belowQueenNonTrumpSingletons.Any())
+                return belowQueenNonTrumpSingletons.First();
+
+            // If you have a sequence of two or more cards with the highest card the 10 or higher,
+            // lead top of that sequence as long as not doubleton, eg KQ.
+            // ignore the suit if it has an Ace
+            var twoCardSequences = GetSequences(state.legalCards, minLength: 2, minTopRank: (int)Rank.Ten);
+            var nonDoubletonTwoCardSequences = twoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())].Count > 2);
+            var nonDoubletonTwoCardSequencesWithoutAce = nonDoubletonTwoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())][0].rank != Rank.Ace);
+            if (nonDoubletonTwoCardSequencesWithoutAce.Any())
+                return nonDoubletonTwoCardSequencesWithoutAce.First().First();
+
+            // Lead partner’s bid suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
+            // Lead highest of partner’s bid suit, we're okay leading a suit with an Ace here
+            var cardsInPartnersBidSuit = GetCardsInPartnersBestBidSuit(state, cardsBySuit);
+            if (cardsInPartnersBidSuit.Any())
+                return LeadPartnersBidSuit(cardsInPartnersBidSuit);
+
+            // Do not lead Ace, unless from AK (OR in partner’s suit, handled above)
+            var aceKingSequences = twoCardSequences.Where(seq => seq.First().rank == Rank.Ace);
+            if (aceKingSequences.Any())
+                return aceKingSequences.First().First();
+
+            // Do not lead suit with ace unless leading ace
+            // Preference to lead unbid suits. Low from K or Q better than low from J, generally
+            // Generally better to lead from three small than away from an honor
+            // Lead low from three card suits, 4th from four or five card suits
+            var unbidSuits = GetUnbidSuits(state).Where(s => cardsBySuit.ContainsKey(s) && cardsBySuit[s].Count > 0);
+            var unbidSuitsWithoutAce = unbidSuits.Where(s => cardsBySuit[s][0].rank != Rank.Ace);
+            var unbidSuitsWithThreeSmall = unbidSuitsWithoutAce.Where(s => cardsBySuit[s].Count >= 3 && cardsBySuit[s][0].rank < Rank.Ten);
+            if (unbidSuitsWithThreeSmall.Any())
+                return LeadAceOrLowOrFourthBest(cardsBySuit[unbidSuitsWithThreeSmall.First()]);
+            if (unbidSuitsWithoutAce.Any())
+                return LeadAceOrLowOrFourthBest(cardsBySuit[unbidSuitsWithoutAce.First()]);
+            if (unbidSuits.Any())
+                return LeadAceOrLowOrFourthBest(cardsBySuit[unbidSuits.First()]);
+
+            // TODO Advanced:
+            // With a weak hand on your right(ie a preempt),
+            // it’s ok to lead more aggressively(low from an honor, or even a random ace)
+
+            return LeadAceOrLowOrFourthBest(cardsBySuit.First().Value);
         }
 
         //  we're trying to take a trick
