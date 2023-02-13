@@ -136,8 +136,9 @@ namespace TestBots
 
             if (changesFromPrevious > 0)
                 UpdateSaycResults(results);
-
-            Assert.IsTrue(totalPasses >= 500, "At least expected number of tests passed");
+    
+            // We are tearing out conventions that are not part of SAYC.  We expect some of these tests to fail.
+            Assert.IsTrue(totalPasses >= 470, $"At least expected number of tests passed.  {totalPasses} passed.");
             Assert.AreEqual(0, changesFromPrevious, $"{changesFromPrevious} test(s) changed results from previous");
         }
 
