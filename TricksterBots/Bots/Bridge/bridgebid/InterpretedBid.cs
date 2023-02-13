@@ -177,6 +177,15 @@ namespace Trickster.Bots
             }
         }
 
+        public bool IsBalancingSeat
+        {
+            get
+            {
+                return (Index >= 3 && History[Index - 1].IsPass && History[Index - 2].IsPass && History[Index - 3].IsBid &&
+                    History[Index - 3].BidPhase == BidPhase.Opening);
+            }
+        }
+
         public bool RhoInterferedAbove(int level, Suit suit)
         {
             if (RhoBid)

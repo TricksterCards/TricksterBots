@@ -2,7 +2,7 @@
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
 %Creator: BridgeComposer Version 5.101.1
-%Created: Fri Jan 27 23:57:44 2023 -0800
+%Created: Thu Feb  2 11:26:35 2023 -0800
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -407,7 +407,7 @@ Pass Pass
 [South ""]
 [Dealer "N"]
 [Vulnerable "None"]
-[Deal "N:AQJ.A4.T732.KQT6 762.T72.K64.A832 T943.KQJ95.J8.J5 K85.863.AQ95.974"]
+[Deal "N:AQJ.A4.T732.KQT6 762.T72.K64.A832 T943.KQJ95.Q8.J5 K85.863.AJ95.974"]
 [Scoring ""]
 [Declarer "N"]
 [Contract "3NT"]

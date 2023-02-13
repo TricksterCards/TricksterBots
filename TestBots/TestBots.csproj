@@ -92,6 +92,9 @@
     <Content Include="Bridge\SAYC\2NT Stayman.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Bridge\SAYC\Balancing NT.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

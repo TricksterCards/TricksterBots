@@ -101,7 +101,7 @@ namespace Trickster.Bots
             var counts = hand.GroupBy(c => c.suit).ToDictionary(g => g.Key, g => g.Count());
 
             //  initialize the missing suits to zero
-            foreach (var suit in SuitRank.allSuits.Where(suit => !counts.ContainsKey(suit)))
+            foreach (var suit in BasicSuits.Where(suit => !counts.ContainsKey(suit)))
                 counts[suit] = 0;
 
             return counts;
@@ -115,7 +115,7 @@ namespace Trickster.Bots
         public static bool Is4333(Dictionary<Suit, int> counts)
         {
             bool found4 = false;
-			foreach (var suit in SuitRank.stdSuits)
+			foreach (var suit in BasicSuits)
             {
                 if (counts[suit] > 4) return false;
                 if (counts[suit] == 4)
@@ -127,8 +127,51 @@ namespace Trickster.Bots
             return true;
 		}
 
+        public static int LosingTrickCount(Hand hand)
+        {
+            var counts = CountsBySuit(hand);
+            var losers = 0;
+			foreach (var suit in BasicSuits)
+			{
+                // TODO: This seems inefficient.  Should probably hand.Contains... but need to figure out what's right.
+                var hasAce = hand.Count(c => (c.suit == suit && c.rank == Rank.Ace)) == 1;
+				var hasKing = hand.Count(c => (c.suit == suit && c.rank == Rank.King)) == 1;
+				var hasQueen = hand.Count(c => (c.suit == suit && c.rank == Rank.Queen)) == 1;
+				switch (counts[suit])
+                {
+                    case 0: break;
+                    case 1:
+                        if (!hasAce) { losers++; }
+                        break;
+                    case 2:
+						if (!hasAce) { losers++; }
+						if (!hasKing) { losers++; }
+						break;
+                    default:
+						if (!hasAce) { losers++; }
+						if (!hasKing) { losers++; }
+						if (!hasQueen) { losers++; }
+						break;
+                }
+			}
+            return losers;
+		}
 
-        public static bool IsMajor(Suit suit)
+
+
+        public int BergenPointAdjust(Hand hand)
+        {
+            var adjust = 0;
+            int countOvervalued = hand.Count(c => (c.rank == Rank.Queen || c.rank == Rank.Jack));
+            int countUndervalued = hand.Count(c => (c.rank == Rank.Ace || c.rank == Rank.Ten));
+            if (countUndervalued - countOvervalued >= 3) { adjust += 1; }
+            if (countOvervalued - countUndervalued >= 3) { adjust -= 1; }
+            // TODO: More stuff here...
+            if (adjust > 0 && BasicBidding.Is4333(hand)) { adjust -= 1; }
+            return adjust;
+        }
+
+		public static bool IsMajor(Suit suit)
         {
             return (suit == Suit.Hearts || suit == Suit.Spades);
         }

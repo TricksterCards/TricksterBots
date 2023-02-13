@@ -19,13 +19,7 @@ namespace Trickster.Bots
             {
                 if (call.Suit == Suit.Diamonds || call.Suit == Suit.Hearts)
                 { 
-					/*
-					call.BidMessage = BidMessage.Forcing;
-					var transferSuit = call.Suit == Suit.Diamonds ? Suit.Hearts : Suit.Spades;
-                    call.SetHandShape(transferSuit, 5, 13);
-                    call.Description = $"Transfer to {Card.SuitSymbol(transferSuit)}; 5+ {transferSuit}";
-                    call.PartnersCall = c => AcceptMajorTransfer(c, nt, transferSuit);
-                    */
+                    // TODO: 5/5 transfers.  Both game force and invitational.
 					var transferSuit = call.Suit == Suit.Diamonds ? Suit.Hearts : Suit.Spades;
 					call.SetHandShape(transferSuit, 5, 13);
 					nt.Forcing(call, HandRange.ResponderAll, c => AcceptMajorTransfer(c, nt, transferSuit),

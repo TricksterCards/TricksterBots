@@ -60,7 +60,7 @@ namespace TricksterBots.Bots {
 				// TODO: See comment below about suit quality:
 				// overcall.SuitQuality[cueSuit / oppsBidSuit] = SuitQuality.StoppedOnce;
 				// This may not be a requirement if "cueSuit" is a club...
-				var nt = new NoTrump(NtType.Overcall1NT);
+				var nt = new NoTrump(overcall.IsBalancingSeat ? NtType.Balancing1NT : NtType.Overcall1NT);
                 overcall.IsBalanced = true;     // TODO: Should this happen in SetPoints() implementation???
                 nt.Invitational(overcall, HandRange.OpenerAll, nt.ConventionalResponses);
             }
@@ -336,8 +336,6 @@ namespace TricksterBots.Bots {
 		{
 			call.SetPoints(System.Math.Max(0, min - openerMin), System.Math.Max(0, max - openerMin));
 		}
-
-
 
 		public void Signoff(InterpretedBid call, HandRange handRange, string description = null)
         {
