@@ -86,7 +86,9 @@ namespace TestBots.Bridge
                             var hand = hands[seat];
                             var seatName = Sides[seat];
                             var playNumber = 1 + i / 4;
-                            if (!IsUnknownHand(hand))
+                            // Don't validate plays for unknown hands
+                            // And don't validate dummy plays when declarer's hand is unknown
+                            if (!IsUnknownHand(hand) && !(seat == dummySeat && IsUnknownHand(hands[(dummySeat + 2) % 4])))
                             {
                                 tests.Add(
                                     new BasicTests.BasicTest
