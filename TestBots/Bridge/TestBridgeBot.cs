@@ -47,15 +47,21 @@ namespace TestBots
         [TestMethod]
         public void FuzzPlays()
         {
+            var failures = new List<string>();
             foreach (var test in Fuzz.GeneratePlayTests(100000))
             {
-                RunPlayTest(test);
+                var failure = RunPlayTest(test);
+                if (failure != null)
+                    failures.Add(failure);
             }
+            if (failures.Count > 0)
+                Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
         }
 
         [TestMethod]
         public void SaycTestFiles()
         {
+            var failures = new List<string>();
             var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             // ReSharper disable once AssignNullToNotNullAttribute
             var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "SAYC"), "*.pbn");
@@ -63,22 +69,29 @@ namespace TestBots
             {
                 var text = File.ReadAllText(file);
                 var tests = PBN.ImportTests(text);
+                var filename = Path.GetFileName(file);
 
                 foreach (var test in tests)
                 {
                     if (!string.IsNullOrEmpty(test.bid))
                     {
-                        RunBidTest(new BidTest(test));
+                        var failure = RunBidTest(new BidTest(test));
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
                     }
                     else if (!string.IsNullOrEmpty(test.play))
                     {
-                        RunPlayTest(test);
+                        var failure = RunPlayTest(test);
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
                     }
                     else
                     {
-                        throw new ArgumentException("Test must have either an expected bid or expected play.");
+                        failures.Add($"{filename}: '{test.type}' must have either an expected bid or expected play.");
                     }
                 }
+                if (failures.Count > 0)
+                    Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
             }
         }
 
@@ -199,16 +212,18 @@ namespace TestBots
             return passed ? "passed" : "failed";
         }
 
-        private static void RunBidTest(BidTest test)
+        private static string RunBidTest(BidTest test)
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
             var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
-            Assert.AreEqual(test.expectedBid, suggestion,
-                $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})"
-            );
+
+            if (test.expectedBid != suggestion)
+                return $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})";
+            else
+                return null;
         }
 
-        private static void RunPlayTest(BasicTests.BasicTest test)
+        private static string RunPlayTest(BasicTests.BasicTest test)
         {
             var contract = GetContract(test);
             var dummyHand = string.IsNullOrEmpty(test.dummy) && test.hand.Length == 13 * 2 ? UnknownCards(13) : test.dummy;
@@ -283,13 +298,17 @@ namespace TestBots
                 var suggestion = bot.SuggestNextCard(cardState);
                 if (!string.IsNullOrEmpty(test.play))
                 {
-                    Assert.AreEqual(test.play, suggestion.ToString(),
-                        $"Test '{test.type}' suggested {suggestion} but expected {test.play}"
-                    );
+                    if (test.play != suggestion.ToString())
+                        return $"Test '{test.type}' suggested {suggestion} but expected {test.play}";
+                    else
+                        return null;
                 }
                 else
                 {
-                    Assert.IsNotNull(suggestion);
+                    if (suggestion == null)
+                        return $"Test '{test.type}' failed to return a suggestion";
+                    else
+                        return null;
                 }
             }
         }
