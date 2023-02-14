@@ -76,6 +76,7 @@ namespace TestBots.Bridge
                         var leadSeat = Sides.IndexOf(tag.Description.ToUpper());
                         var declarerSeat = (4 + leadSeat - 1) % 4;
                         var dummySeat = (leadSeat + 1) % 4;
+                        var trick = new List<string>();
                         var trump = contract[1];
                         var plays = ImportPlays(trump, tag.Data);
                         for (var i = 0; i < plays.Count; i++)
@@ -102,9 +103,17 @@ namespace TestBots.Bridge
                                     }
                                 );
                             }
+                            trick.Add(play);
                             // Remove played card from hand
                             var regex = new Regex(IsUnknownHand(hand) ? UnknownCard : play);
                             hands[seat] = regex.Replace(hands[seat], "", 1);
+                            // Update lead seat if end of trick
+                            if (i % 4 == 3)
+                            {
+                                var card = GetTopCard(trick, trump);
+                                leadSeat = (leadSeat + trick.IndexOf(card)) % 4;
+                                trick.Clear();
+                            }
                         }
                         break;
                     }
