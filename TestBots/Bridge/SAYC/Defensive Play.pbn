@@ -21,7 +21,7 @@ HJ H2 H4 HQ
 SQ -  -  SJ
 
 % Exception: if dummy can be seen with the rest of the missing cards
-% (so don’t cover J if dummy has AK1098)
+% (so don't cover J if dummy has AK1098)
 
 [Event "2nd Hand Defense: Don't cover honor if Dummy has missing cards"]
 [Deal "N:Q65.JT985.J43.T4 AKT98.432.K65.98 - -"]
@@ -60,4 +60,4 @@ H4 HQ H5 H3
 -  SJ SQ -
 
 % TODO: An exception to the exception: if you have two honors higher than dummy, cover on the first.
-% So if J10x and you have KQ9, you’d cover the J with the Q and then the 10 with the 9)
+% So if J10x and you have KQ9, you'd cover the J with the Q and then the 10 with the 9)
