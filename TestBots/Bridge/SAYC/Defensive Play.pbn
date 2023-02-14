@@ -1,0 +1,63 @@
+%
+% Second hand rules
+%
+
+% Playing low is generally best.
+
+[Event "2nd Hand Defense: Play low"]
+[Deal "N:A65.JT985.J43.T4 QT9.432.KQ765.98 - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ H2 H4 HQ
+S5 -  -  S8
+
+% If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
+
+[Event "2nd Hand Defense: Cover led honor"]
+[Deal "N:Q65.JT985.J43.T4 AT9.432.KQ765.98 - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ H2 H4 HQ
+SQ -  -  SJ
+
+% Exception: if dummy can be seen with the rest of the missing cards
+% (so don’t cover J if dummy has AK1098)
+
+[Event "2nd Hand Defense: Don't cover honor if Dummy has missing cards"]
+[Deal "N:Q65.JT985.J43.T4 AKT98.432.K65.98 - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ H2 H4 HQ
+S5 -  -  SJ
+
+% But do cover if dummy has AK102
+
+[Event "2nd Hand Defense: Cover led honor if Dummy has only some missing cards"]
+[Deal "N:Q65.JT985.J43.T4 AKT2.432.K765.98 - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ H2 H4 HQ
+SQ -  -  SJ
+
+% Exception: if lead is from dummy and they play an honor,
+% do not cover unless dummy does not also have a touching honor.
+% In other words, from Qxx, do not cover J from dummy if dummy has J10x
+
+[Event "2nd Hand Defense: Don't cover dummy-led honor if dummy has touching honor"]
+[Deal "N:Q65.JT985.J43.T4 - - JT2.Q432.K765.98"]
+[Contract "3NT"]
+[Play "S"]
+H4 HQ H5 H3
+-  SJ S5 -
+
+% But do cover if J is played and dummy has J32.
+
+[Event "2nd Hand Defense: Cover dummy-led honor if dummy lacks touching honor"]
+[Deal "N:Q65.JT985.J43.T4 - - JT2.Q432.K765.98"]
+[Contract "3NT"]
+[Play "S"]
+H4 HQ H5 H3
+-  SJ SQ -
+
+% TODO: An exception to the exception: if you have two honors higher than dummy, cover on the first.
+% So if J10x and you have KQ9, you’d cover the J with the Q and then the 10 with the 9)
