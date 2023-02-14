@@ -16,7 +16,7 @@ namespace TestBots.Bridge
 
         public static int CardRank(string card)
         {
-            return CardRanks.IndexOf(card[1]);
+            return CardRanks.IndexOf(card[0]);
         }
 
         public static BasicTests.BasicTest[] ImportTests(string text)
