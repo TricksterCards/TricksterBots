@@ -226,6 +226,7 @@ namespace TestBots
         private static string RunPlayTest(BasicTests.BasicTest test)
         {
             var contract = GetContract(test);
+            var cardsPlayedInOrder = "";
             var dummyHand = string.IsNullOrEmpty(test.dummy) && test.hand.Length == 13 * 2 ? UnknownCards(13) : test.dummy;
             var players = new[] { new TestPlayer(), new TestPlayer(), new TestPlayer(), new TestPlayer() };
             for (var i = 0; i < 4; i++)
@@ -243,6 +244,12 @@ namespace TestBots
             for (var i = 0; i < test.plays.Length; i += 4)
             {
                 var trick = test.plays.Skip(i).Take(4).ToList();
+                for (var j = 0; j < trick.Count; j++)
+                {
+                    var card = trick[j];
+                    var seat = (nextSeat + j) % 4;
+                    cardsPlayedInOrder += $"{seat}{card}";
+                }
                 if (trick.Count == 4)
                 {
                     var topCard = PBN.GetTopCard(trick, test.contract[1]);
@@ -294,7 +301,10 @@ namespace TestBots
                 var bot = GetBot(contract.suit);
                 var trickLength = test.plays.Length % 4;
                 var trick = string.Join("", test.plays.Skip(test.plays.Length - trickLength));
-                var cardState = new TestCardState<BridgeOptions>(bot, players, trick) { trumpSuit = contract.suit };
+                var cardState = new TestCardState<BridgeOptions>(bot, players, trick) {
+                    cardsPlayedInOrder = cardsPlayedInOrder,
+                    trumpSuit = contract.suit,
+                };
                 var suggestion = bot.SuggestNextCard(cardState);
                 if (!string.IsNullOrEmpty(test.play))
                 {
