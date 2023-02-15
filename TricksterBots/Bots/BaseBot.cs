@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -25,6 +26,8 @@ namespace Trickster.Bots
 
     public abstract class BaseBot<T> : IBaseBot where T : GameOptions
     {
+        // ReSharper disable once StaticMemberInGenericType
+        private static readonly Regex rxSeatCard = new Regex(@"(?<seat>\d{1})(?<card>\w{2})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private Dictionary<Suit, int> _highRankBySuit;
 
         protected BaseBot(T options, Suit trumpSuit)
@@ -32,6 +35,8 @@ namespace Trickster.Bots
             this.options = options;
             trump = trumpSuit;
         }
+
+        public bool returnLog { get; set; }
 
         protected Dictionary<Suit, int> highRankBySuit =>
             _highRankBySuit ?? (_highRankBySuit = DeckBuilder.BuildDeck(DeckType).GroupBy(c => EffectiveSuit(c, trump))
@@ -80,8 +85,6 @@ namespace Trickster.Bots
             return RankSort(c, trump);
         }
 
-        public bool returnLog { get; set; }
-
         public virtual int SuitOrder(Suit s)
         {
             return (int)s;
@@ -104,10 +107,8 @@ namespace Trickster.Bots
 
             //  find the index of the takeCard
             for (var i = 0; i < trick.Count; ++i)
-            {
                 if (trick[i] == takeCard)
                     return i;
-            }
 
             return -1;
         }
@@ -125,6 +126,37 @@ namespace Trickster.Bots
         protected Suit EffectiveSuit(Card c, Suit trumpSuit)
         {
             return options.EffectiveSuit(c, trumpSuit);
+        }
+
+        protected List<List<SeatAndCard>> GetCardsPlayedByTrick(string cardsPlayedInOrder, int players)
+        {
+            var tricks = new List<List<SeatAndCard>>();
+            var cardsPlayed = GetCardsPlayedInOrder(cardsPlayedInOrder);
+
+            for (var skip = 0; skip < cardsPlayed.Count; skip += players)
+                tricks.Add(cardsPlayed.Skip(skip).Take(players).ToList());
+
+            return tricks;
+        }
+
+        protected List<SeatAndCard> GetCardsPlayedInOrder(string cardsPlayedInOrder)
+        {
+            var seatsAndCards = new List<SeatAndCard>();
+
+            if (!string.IsNullOrEmpty(cardsPlayedInOrder))
+            {
+                var matches = rxSeatCard.Matches(cardsPlayedInOrder);
+
+                seatsAndCards.AddRange(matches.Cast<Match>()
+                    .Select(match => new SeatAndCard
+                    {
+                        seat = int.Parse(match.Groups["seat"].Value),
+                        card = new Card(match.Groups["card"].Value)
+                    })
+                );
+            }
+
+            return seatsAndCards;
         }
 
         protected int HighRankInSuit(Card card)
@@ -160,7 +192,8 @@ namespace Trickster.Bots
         }
 
         //  NOTE: If you're going to edit this in a game-specific way, copy the method to your bot and edit it there
-        protected Card TryTakeEm(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, bool isPartnerTakingTrick,
+        protected Card TryTakeEm(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed,
+            PlayersCollectionBase players, bool isPartnerTakingTrick,
             Card cardTakingTrick, bool isDefending)
         {
             Card suggestion = null;
@@ -234,7 +267,8 @@ namespace Trickster.Bots
                 }
 
                 var cards = legalCards;
-                var bossCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed)).OrderByDescending(c => cards.Count(c1 => EffectiveSuit(c1) == EffectiveSuit(c))).ToList();
+                var bossCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed))
+                    .OrderByDescending(c => cards.Count(c1 => EffectiveSuit(c1) == EffectiveSuit(c))).ToList();
                 if (bossCards.Count > 0)
                 {
                     //  consider leading our "boss" cards favoring boss in our longest suit
@@ -342,6 +376,7 @@ namespace Trickster.Bots
             return LowestCardFromWeakestSuit(legalCards, cardsPlayed);
         }
 
+
         //  NOTE: If you're going to edit this in a game-specific way, copy the method to your bot and edit it there
         private Card LowestCardFromWeakestSuit(IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed)
         {
@@ -354,7 +389,8 @@ namespace Trickster.Bots
             var suitCounts = nonTrumpCards.GroupBy(EffectiveSuit).Select(g => new { suit = g.Key, count = g.Count() }).ToList();
 
             //  try to ditch a singleton that's not "boss" and whose suit has the most outstanding cards
-            var bestSingletonSuitCount = suitCounts.Where(sc => sc.count == 1).Where(sc => !IsCardHigh(nonTrumpCards.Single(c => EffectiveSuit(c) == sc.suit), cardsPlayed))
+            var bestSingletonSuitCount = suitCounts.Where(sc => sc.count == 1)
+                .Where(sc => !IsCardHigh(nonTrumpCards.Single(c => EffectiveSuit(c) == sc.suit), cardsPlayed))
                 .OrderBy(sc => cardsPlayed.Count(c => EffectiveSuit(c) == sc.suit)).FirstOrDefault();
 
             if (bestSingletonSuitCount != null)
@@ -369,17 +405,13 @@ namespace Trickster.Bots
 
                 //  TODO: Use RankSort
                 if (IsCardHigh(cards[1], cardsPlayed) && cards[0].rank < cards[1].rank - 1)
-                {
                     //  okay to ditch from this doubleton where the high card is "boss" and the card below it isn't adjacent
                     return cards[0];
-                }
 
                 //  TODO: fix assumption about the king. Also, use RankSort
                 if (cards.All(c => c.rank != Rank.King))
-                {
                     //  okay to ditch from this doubleton that doesn't contain a king we might be able to make "boss"
                     return cards[0];
-                }
             }
 
             //  return the lowest card from the longest non-trump suit
@@ -403,11 +435,18 @@ namespace Trickster.Bots
 
             //  otherwise try to signal a suit where we hold boss and at least one other card, or where we hold a singleton and at least one trump
             var hasTrump = legalCards.Any(IsTrump);
-            var suitRange = legalCards.Where(c => !IsTrump(c)).OrderBy(RankSort).GroupBy(EffectiveSuit).Select(g => new { suit = g.Key, low = g.First(), high = g.Last() }).ToList();
+            var suitRange = legalCards.Where(c => !IsTrump(c)).OrderBy(RankSort).GroupBy(EffectiveSuit)
+                .Select(g => new { suit = g.Key, low = g.First(), high = g.Last() }).ToList();
             var signalableSuit = suitRange.FirstOrDefault(sr => sr.high != sr.low && IsCardHigh(sr.high, cardsPlayed))
                                  ?? suitRange.FirstOrDefault(sr => sr.low == sr.high && hasTrump);
 
             return signalableSuit?.low;
+        }
+
+        protected class SeatAndCard
+        {
+            public Card card { get; set; }
+            public int seat { get; set; }
         }
     }
 }
