@@ -59,5 +59,78 @@ H4 HQ H5 H3
 H4 HQ H5 H3
 -  SJ SQ -
 
-% TODO: An exception to the exception: if you have two honors higher than dummy, cover on the first.
+% An exception to the exception: if you have two honors higher than dummy, cover on the first.
 % So if J10x and you have KQ9, you'd cover the J with the Q and then the 10 with the 9)
+
+[Event "2nd Hand Defense: Cover dummy-led honor if dummy lacks touching honor"]
+[Deal "N:KQ9.JT985.J43.94 - - JT2.Q432.K765.T8"]
+[Contract "3NT"]
+[Play "S"]
+H4 HQ H5 H3
+S4 SJ SQ SA
+C2 CT C4 C3
+-  ST S9 -
+
+%
+% Third hand rules
+%
+
+% Generally third and fourth hand play as high as necessary.
+% That means that if dummy has Qxx, and you play third after dummy plays a low card from KJx, you’d play J.
+
+[Event "3rd Hand Defense: Play as high as necessary"]
+[Deal "N:KQ9.KJ5.J432.943 - - JT2.Q43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H2 H3 HJ -
+
+% If you have touching honors, play the lower one
+
+[Event "3rd Hand Defense: Play lower of touching honors"]
+[Deal "N:KQ9.KJT.J432.943 - - JT2.Q43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H2 H3 HT -
+
+% If J is in dummy, and we're playing 3rd with KQT (or KQTx)
+% * If dummy played J, we'd play Q
+
+[Event "3rd Hand Defense: Cover honor played by dummy (case 2)"]
+[Deal "N:KQ9.KQT5.432.943 - - JT2.J43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H2 HJ HQ -
+
+% If J is in dummy, and we're playing 3rd with KQT (or KQTx)
+% * If dummy did not play J, we'd play T
+
+[Event "3rd Hand Defense: Play lower of touching honors (case 2)"]
+[Deal "N:KQ9.KQT5.432.943 - - JT2.J43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H2 H3 HT -
+
+% If partner is winning with an honor, play low
+
+[Event "3rd Hand Defense: Play low if partner is winning with an honor"]
+[Deal "N:KQ9.JT2.J432.943 - - JT2.Q43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+HK H3 H2 -
+
+% If partner is winning with 9 and dummy did not have J and we're playing 3rd with KQTx, we'd play Q
+% General rule: we're trying to push declarer to have to play their higher cards to win the trick
+
+[Event "3rd Hand Defense: Push declarer to play higher cards"]
+[Deal "N:K9.KQT5.J432.943 - - JT2.843.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H9 H3 HQ -
+
+% Third hand play rules: if the second card played will win the trick, play a higher card.
+
+[Event "3rd Hand Defense: Cover second card if it's winning"]
+[Deal "N:K9.752.J432.943 - - JT2.864.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H3 H4 H5 -
