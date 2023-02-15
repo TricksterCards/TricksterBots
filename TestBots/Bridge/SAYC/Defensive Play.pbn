@@ -1,4 +1,93 @@
 %
+% Leads
+%
+
+% Suit contracts:
+% If dummy has shortness and fewer trumps than declarer,
+% play a trump to prevent ruffing in dummy
+
+[Event "Lead on Defense: Trump if dummy is short with fewer trumps than declarer"]
+[Deal "N:65.AKQ.J432.T532 QJT.T.T987.98764 - -"]
+[Contract "2S"]
+[Auction "W"]
+2S Pass Pass Pass
+[Play "N"]
+HA HT H3 H2
+S5 -  -  -
+
+% Other defensive rules against both suit and notrump:
+% If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
+% and the player behind dummy does not have K,
+% try to win tricks quickly
+
+[Deal "N:65.AKQ.J432.T532 QJT.T9.AKQ87.987 - -"]
+[Contract "2S"]
+[Play "N"]
+HA H9 H3 H2
+HK -  -  -
+
+% Prefer leading a sequence of your own
+
+[Deal "N:65.KQ8.J432.T532 - - JT98.987.987.987"]
+[Contract "2S"]
+[Play "S"]
+D3 D7 DJ D5
+-  -  HK -
+
+% Otherwise give priority to returning partner's suit (especially in NT),
+% Returning partner's initially led suit: low from three
+
+[Deal "N:65.K85.J432.T532 - - JT98.987.987.987"]
+[Contract "2NT"]
+[Play "S"]
+D6 D7 DJ D5
+-  -  D2 -
+
+% Leading dummy's weakest suit is a good fallback
+
+[Deal "N:65.JT95.J432.T532 JT98.876.9876.87 - -"]
+[Contract "2NT"]
+[Play "N"]
+HJ H8 H4 H3
+C3 -  -  -
+
+% Returning partner's initially led suit: high-low from two
+
+[Deal "N:65.K85.J32.T532 - - JT98.987.987.987"]
+[Contract "2NT"]
+[Play "S"]
+D6 D7 DJ D5
+-  -  D3 -
+
+% Returning partner's initially led suit: third best from four
+
+[Deal "N:65.K85.JT432.T532 - - JT98.987.987.987"]
+[Contract "2NT"]
+[Play "S"]
+D6 D7 DJ D5
+-  -  D3 -
+
+% Returning partner's initially led suit: second highest from four small (9 and under)
+
+[Deal "N:65.K85.J5432.T532 - - JT98.987.987.987"]
+[Contract "2NT"]
+[Play "S"]
+D6 D7 DJ D5
+-  -  D4 -
+
+% General principle: if you have a trick that is now good as the defender,
+% and it is the "setting trick" aka the trick to defeat the contract,
+% take it.
+
+[Deal "N:65.K85.AJ32.T532 - - JT98.987.987.987"]
+[Contract "6NT"]
+[Play "S"]
+D6 D7 DJ D5
+-  -  DA -
+
+
+
+%
 % Second hand rules
 %
 
@@ -71,12 +160,14 @@ S4 SJ SQ SA
 C2 CT C4 C3
 -  ST S9 -
 
+
+
 %
 % Third hand rules
 %
 
 % Generally third and fourth hand play as high as necessary.
-% That means that if dummy has Qxx, and you play third after dummy plays a low card from KJx, you’d play J.
+% That means that if dummy has Qxx, and you play third after dummy plays a low card from KJx, you'd play J.
 
 [Event "3rd Hand Defense: Play as high as necessary"]
 [Deal "N:KQ9.KJ5.J432.943 - - JT2.Q43.K765.T87"]
