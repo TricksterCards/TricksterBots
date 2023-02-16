@@ -101,6 +101,10 @@ namespace Trickster.Bots
             if (isOpeningLead)
                 return SuggestOpeningLead(state);
 
+            var isSecondHandDefensivePlay = trick.Count == 1 && player.Bid == BridgeBid.Defend;
+            if (isSecondHandDefensivePlay)
+                return SuggestSecondHandDefensivePlay(state);
+
             return TryTakeEm(player, players.PartnerOf(player), trick, legalCards, cardsPlayed, players, isPartnerTakingTrick, cardTakingTrick);
         }
 
@@ -150,6 +154,11 @@ namespace Trickster.Bots
                 suit = summary.p2.HandShape.Where(hs => hs.Value.Min > 0).OrderByDescending(hs => hs.Value.Min).Select(hs => hs.Key).FirstOrDefault();
 
             return legalBids.FirstOrDefault(b => b.why.bidIsDeclare && b.why.declareBid.suit == suit);
+        }
+
+        private PlayerBase GetDummy(SuggestCardState<BridgeOptions> state)
+        {
+            return state.players.Single(p => p.Bid == BidBase.Dummy);
         }
 
         private Card LowestCardFromWeakestSuit(IReadOnlyList<Card> legalCards, IReadOnlyList<Card> teamCards)
@@ -408,6 +417,63 @@ namespace Trickster.Bots
             // it’s ok to lead more aggressively(low from an honor, or even a random ace)
 
             return LeadAceOrLowOrFourthBest(cardsBySuit.First().Value);
+        }
+
+        private Card SuggestSecondHandDefensivePlay(SuggestCardState<BridgeOptions> state)
+        {
+            var ledCard = state.trick[0];
+            Card coverHonor = null;
+
+            // If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
+            if (ledCard.rank >= Rank.Ten)
+            {
+                var possibleHonors = state.legalCards.Where(c => c.suit == ledCard.suit && c.rank > ledCard.rank);
+                coverHonor = possibleHonors.OrderBy(c => c.rank).FirstOrDefault();
+            }
+
+            // Exceptions:
+            // * If dummy can be seen with the rest of the missing cards
+            //   (so don’t cover J if dummy has AK1098, but do cover if dummy has AK102).
+            if (coverHonor != null)
+            {
+                var dummyCardsInSuit = new Hand(GetDummy(state).Hand).Where(c => c.suit == ledCard.suit).ToList();
+                var combinedCards = dummyCardsInSuit.Concat(state.legalCards).ToList();
+                var knownCardsInSuit = combinedCards.Concat(state.cardsPlayed.Where(c => c.suit == ledCard.suit)).ToList();
+                knownCardsInSuit.Add(ledCard);
+
+                if (IsCardHigh(ledCard, knownCardsInSuit) && dummyCardsInSuit.All(c => IsCardHigh(c, knownCardsInSuit)))
+                    coverHonor = null;
+            }
+
+            // If lead is from dummy and they play an honor
+            if (coverHonor != null && state.trickTaker.Bid == BidBase.Dummy && ledCard.rank >= Rank.Ten)
+            {
+                // Do not cover unless dummy does not also have a touching honor.
+                // In other words, from Qxx,
+                // do not cover J from dummy if dummy has J10x,
+                // but do cover if J is played and dummy has J32.
+                var dummyCardsInSuit = new Hand(GetDummy(state).Hand).Where(c => c.suit == ledCard.suit).ToList();
+                var dummyHasTouchingHonor = dummyCardsInSuit.Any(c => Math.Abs(c.rank - ledCard.rank) == 1);
+
+                // An exception to the exception: if you have two honors higher than dummy, cover on the first.
+                // So if J10x and you have KQ9, you’d cover the J with the Q and then the 10 with the 9)
+                var nHonorsHigherThanDummy = state.legalCards.Count(c => c.suit == ledCard.suit && c.rank > ledCard.rank);
+
+                // TODO: Do we need to remember dummy had two touching honors?
+                // If so, for how long? Until the end of the hand? Until dummy's next lead?
+                // Otherwise JTx and KQ9 looks like Tx and K9 on the second trick.
+                // So without memory we'd cover on the 2nd trick too in this case
+                // because dummy no longer has a touching honor.
+
+                if (dummyHasTouchingHonor && nHonorsHigherThanDummy < 2)
+                    coverHonor = null;
+            }
+
+            if (coverHonor != null)
+                return coverHonor;
+
+            // Second hand rules: play low generally best.
+            return LowestCardFromWeakestSuit(state.legalCards, state.cardsPlayed.Concat(state.legalCards).ToList());
         }
 
         //  we're trying to take a trick
