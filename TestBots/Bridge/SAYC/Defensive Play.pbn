@@ -49,12 +49,19 @@ D6 D7 DJ D5
 
 % Leading dummy's weakest suit is a good fallback
 
-[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit"]
-[Deal "N:65.JT95.J43.T532 JT98.876.9876.87 - -"]
+[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (NT)"]
+[Deal "N:654.K.J5432.T532 - - JT98.876.9876.87"]
 [Contract "2NT"]
-[Play "N"]
-HJ H8 H4 H3
-C3 -  -  -
+[Play "S"]
+H3 H4 HK H6
+-  -  C2  -
+
+[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (Suit)"]
+[Deal "N:654.K.J5432.T532 - - JT98.876.9876.87"]
+[Contract "2S"]
+[Play "S"]
+H3 H4 HK H6
+-  -  C2 -
 
 % Returning partner's initially led suit: high-low from two
 

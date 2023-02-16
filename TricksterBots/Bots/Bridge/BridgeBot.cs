@@ -94,25 +94,22 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<BridgeOptions> state)
         {
-            var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
-                state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
-
             if (IsOpeningLead(state))
                 return SuggestDefensiveLead(state);
 
-            var isDefensiveLead = trick.Count == 0 && player.Bid == BridgeBid.Defend;
+            var isDefensiveLead = state.trick.Count == 0 && state.player.Bid == BridgeBid.Defend;
             if (isDefensiveLead)
                 return SuggestDefensiveLeadAfterFirstTrick(state);
 
-            var isSecondHandDefensivePlay = trick.Count == 1 && player.Bid == BridgeBid.Defend;
+            var isSecondHandDefensivePlay = state.trick.Count == 1 && state.player.Bid == BridgeBid.Defend;
             if (isSecondHandDefensivePlay)
                 return SuggestSecondHandDefensivePlay(state);
 
-            var isThirdHandDefensivePlay = trick.Count == 2 && player.Bid == BridgeBid.Defend;
+            var isThirdHandDefensivePlay = state.trick.Count == 2 && state.player.Bid == BridgeBid.Defend;
             if (isThirdHandDefensivePlay)
                 return SuggestThirdHandDefensivePlay(state);
 
-            return TryTakeEm(player, players.PartnerOf(player), trick, legalCards, cardsPlayed, players, isPartnerTakingTrick, cardTakingTrick);
+            return TryTakeEm(state);
         }
 
         public override List<Card> SuggestPass(SuggestPassState<BridgeOptions> state)
@@ -173,9 +170,19 @@ namespace Trickster.Bots
             return state.players.Single(p => p.Bid == BidBase.Dummy);
         }
 
+        private int GetNextSeat(SuggestCardState<BridgeOptions> state)
+        {
+            return GetNextSeatAfter(state.player.Seat, state.players.Count);
+        }
+
+        private int GetNextSeatAfter(int seat, int nPlayers)
+        {
+            return (seat + 1) % nPlayers;
+        }
+
         private PlayerBase GetPartner(SuggestCardState<BridgeOptions> state)
         {
-            return state.players.Single(p => p.Seat == (state.player.Seat + 2) % 4);
+            return state.players.Single(p => p.Seat == (state.player.Seat + 2) % state.players.Count);
         }
 
         private bool IsOpeningLead(SuggestCardState<BridgeOptions> state)
@@ -267,8 +274,8 @@ namespace Trickster.Bots
 
         private List<Card> GetCardsInPartnersBestBidSuit(SuggestCardState<BridgeOptions> state, Dictionary<Suit, List<Card>> legalCardsBySuit)
         {
-            var partnerSeat = (state.player.Seat + 2) % 4;
-            var summary = GetPlayerSummary(state, partnerSeat);
+            var partner = GetPartner(state);
+            var summary = GetPlayerSummary(state, partner.Seat);
             var legalHandShapes = summary.HandShape.Where(hs => legalCardsBySuit.ContainsKey(hs.Key));
             var bestBidSuitLength = legalHandShapes.Max(hs => hs.Value.Min);
 
@@ -301,6 +308,21 @@ namespace Trickster.Bots
                 return GetCardsInPartnersFirstLedSuit(state, legalCardsBySuit);
         }
 
+        private Suit GetDummysWeakestSuit(SuggestCardState<BridgeOptions> state)
+        {
+            if (IsOpeningLead(state))
+                return Suit.Unknown;
+
+            var dummy = GetDummy(state);
+            var dummyHand = new Hand(dummy.Hand);
+            var dummyCardsBySuit = GetCardsBySuit(dummyHand)
+                .Where(s => s.Key != state.trumpSuit)
+                .OrderBy(s => s.Value.Max(c => c.rank))
+                .ThenBy(s => s.Value.Count());
+
+            return dummyCardsBySuit.Select(s => s.Key).First();
+        }
+
         private int CountDeclarersCardsInTrump(SuggestCardState<BridgeOptions> state)
         {
             var declarer = GetDeclarer(state);
@@ -318,6 +340,23 @@ namespace Trickster.Bots
             nCardsInTrump -= GetCardsPlayedInOrder(state.cardsPlayedInOrder).Count(sc => sc.seat == declarer.Seat && sc.card.suit == state.trumpSuit);
 
             return Math.Max(0, nCardsInTrump);
+        }
+
+        private List<Card> GetSureWinners(SuggestCardState<BridgeOptions> state)
+        {
+            var knownCards = state.legalCards.Concat(state.cardsPlayed);
+            var bossCards = state.legalCards.Where(c => IsCardHigh(c, knownCards));
+            if (state.trumpSuit != Suit.Unknown)
+            {
+                var lho = state.players.Single(p => p.Seat == (state.player.Seat + 1) % state.players.Count);
+                var rho = state.players.Single(p => p.Seat == (state.player.Seat - 1 + state.players.Count) % state.players.Count);
+
+                // Don't count off suit boss cards if opponents still have trump
+                if (!lho.VoidSuits.Contains(state.trumpSuit) || !rho.VoidSuits.Contains(state.trumpSuit))
+                    bossCards = bossCards.Where(c => c.suit == state.trumpSuit);
+            }
+
+            return bossCards.ToList();
         }
 
         private List<List<Card>> GetSequences(IReadOnlyList<Card> cards, int minLength = 0, int minTopRank = 0, int minRank = 0, int gap = 0)
@@ -440,8 +479,6 @@ namespace Trickster.Bots
             if (cardsInPartnersSuit.Count >= 3 || (!IsOpeningLead(state) && cardsInPartnersSuit.Any()))
                 return LeadPartnersSuit(state, cardsInPartnersSuit);
 
-            // TODO: prefer dummy's weakest suit (if after opening lead)
-
             // If partner hasn’t bid or led,
             // lead fourth best card from longest / strongest suit.
             // If longest strongest suit has no 10 or higher,
@@ -449,6 +486,12 @@ namespace Trickster.Bots
             var maxSuitLength = cardsBySuit.Max(sc => sc.Value.Count());
             var longestSuits = cardsBySuit.Where(sc => sc.Value.Count() == maxSuitLength).Select(sc => sc.Key);
             var bestSuit = longestSuits.First(); // TODO: Tie-break by determining stronger suit
+
+            // Prefer dummy's weakest suit (if after opening lead)
+            var dummysWeakestSuit = GetDummysWeakestSuit(state);
+            if (dummysWeakestSuit != Suit.Unknown && cardsBySuit.Any(sc => sc.Key == dummysWeakestSuit))
+                bestSuit = dummysWeakestSuit;
+
             var cardsInBestSuit = cardsBySuit[bestSuit];
             if (cardsInBestSuit.First().rank >= Rank.Ten)
                 return cardsBySuit[bestSuit].Count() < 4 ? cardsInBestSuit.Last() : cardsInBestSuit[3];
@@ -492,13 +535,17 @@ namespace Trickster.Bots
             if (aceKingSequences.Any())
                 return aceKingSequences.First().First();
 
-            // TODO: prefer dummy's weakest suit (if after opening lead)
-
             // Do not lead suit with ace unless leading ace
             // Preference to lead unbid suits. Low from K or Q better than low from J, generally
             // Generally better to lead from three small than away from an honor
             // Lead low from three card suits, 4th from four or five card suits
             var unbidSuits = GetUnbidSuits(state).Where(s => cardsBySuit.ContainsKey(s) && cardsBySuit[s].Count > 0);
+
+            // Prefer dummy's weakest suit (if after opening lead)
+            var dummysWeakestSuit = GetDummysWeakestSuit(state);
+            if (dummysWeakestSuit != Suit.Unknown && cardsBySuit.Any(sc => sc.Key == dummysWeakestSuit))
+                unbidSuits = new List<Suit>() { dummysWeakestSuit };
+
             var unbidSuitsWithoutAce = unbidSuits.Where(s => cardsBySuit[s][0].rank != Rank.Ace);
             var unbidSuitsWithThreeSmall = unbidSuitsWithoutAce.Where(s => cardsBySuit[s].Count >= 3 && cardsBySuit[s][0].rank < Rank.Ten);
             if (unbidSuitsWithThreeSmall.Any())
@@ -520,10 +567,10 @@ namespace Trickster.Bots
             // Suit contracts:
             // If dummy has shortness and fewer trumps than declarer,
             // play a trump to prevent ruffing in dummy.
+            var dummy = GetDummy(state);
+            var dummyHand = new Hand(dummy.Hand);
             if (state.trumpSuit != Suit.Unknown && state.legalCards.Any(c => c.suit == state.trumpSuit))
             {
-                var dummy = GetDummy(state);
-                var dummyHand = new Hand(dummy.Hand);
                 var dummyHasTrump = dummyHand.Any(c => c.suit == state.trumpSuit);
                 var dummyHasShortness = SuitRank.stdSuits.Any(s => s != state.trumpSuit && dummyHand.Count(c => c.suit == s) == 0);
                 if (dummyHasTrump && dummyHasShortness)
@@ -538,22 +585,42 @@ namespace Trickster.Bots
                 }
             }
 
+            // General principle: if you have a trick that is now good as the defender,
+            // and it is the "setting trick" aka the trick to defeat the contract,
+            // take it.
+            var declarer = GetDeclarer(state);
+            var partner = GetPartner(state);
+            var level = new DeclareBid(declarer.Bid).level;
+            var takenTricks = state.player.CardsTaken.Length / 8 + partner.CardsTaken.Length / 8;
+            var neededTricksToSet = 14 - (level + 6) - takenTricks;
+            var sureWinners = GetSureWinners(state);
+            if (sureWinners.Count() >= neededTricksToSet)
+                return TryTakeEm(state);
+
             // Other defensive rules against both suit and notrump:
 
-            // TODO: If dummy has a long side suit that will be good,
-            // like AKQxx or AQJ10xx (when the player behind dummy does not have K),
+            // If dummy has a long side suit that will be good, like AKQxx,
             // try to win tricks quickly
+            var knownCards = dummyHand.Concat(state.cardsPlayed).ToList();
+            var sideSuits = SuitRank.stdSuits.Where(s => s != state.trumpSuit);
+            var goodSideSuits = sideSuits.Where(s =>
+            {
+                var cardsInSuit = dummyHand.Where(c => c.suit == s);
+                var hasEnoughLength = cardsInSuit.Count() >= 5;
+                var hasEnoughStrength = cardsInSuit.Count(c => IsCardHigh(c, knownCards)) >= 3;
+                return hasEnoughLength && hasEnoughStrength;
+            });
+            if (goodSideSuits.Any())
+                return TryTakeEm(state);
 
+            // TODO: or AQJ10xx (when the player behind dummy does not have K),
+            //       try to take tricks quickly
 
             // Leads after trick 1: same general rules apply (playing touching honors, etc).
             // * Give priority to returning partner's suit (especially in NT),
             // * unless you have a sequence of your own
             // * (if neither works, leading dummy's weakest suit is a good fallback)
             return SuggestDefensiveLead(state);
-
-            // TODO: General principle: if you have a trick that is now good as the defender,
-            // and it is the “setting trick” aka the trick to defeat the contract,
-            // take it.
         }
 
         private Card SuggestSecondHandDefensivePlay(SuggestCardState<BridgeOptions> state)
@@ -631,7 +698,7 @@ namespace Trickster.Bots
             var knownCards = state.cardsPlayed.Concat(legalCards).ToList();
             var dummy = GetDummy(state);
             var dummyHand = new Hand(dummy.Hand);
-            var isDummyRHO = state.player.Seat == (dummy.Seat + 1) % 4;
+            var isDummyRHO = state.player.Seat == GetNextSeatAfter(dummy.Seat, state.players.Count);
 
             if (isDummyRHO)
                 knownCards = knownCards.Concat(dummyHand).ToList();
@@ -641,7 +708,7 @@ namespace Trickster.Bots
                 return LowestCardFromWeakestSuit(legalCards, knownCards);
 
             // If 4th seat is void, should we play low if partner is winning? Probably.
-            var fourthSeatPlayer = state.players.Single(p => p.Seat == (state.player.Seat + 1) % 4);
+            var fourthSeatPlayer = state.players.Single(p => p.Seat == GetNextSeat(state));
             var isFourthSeatVoid = fourthSeatPlayer.VoidSuits.Contains(state.cardTakingTrick.suit);
             if (state.isPartnerTakingTrick && isFourthSeatVoid)
                 return LowestCardFromWeakestSuit(legalCards, knownCards);
@@ -670,6 +737,14 @@ namespace Trickster.Bots
                 return legalCards.Last(c => c.suit == state.trumpSuit);
 
             return LowestCardFromWeakestSuit(legalCards, knownCards);
+        }
+
+        private Card TryTakeEm(SuggestCardState<BridgeOptions> state)
+        {
+            var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
+                state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
+
+            return TryTakeEm(player, players.PartnerOf(player), trick, legalCards, cardsPlayed, players, isPartnerTakingTrick, cardTakingTrick);
         }
 
         //  we're trying to take a trick
