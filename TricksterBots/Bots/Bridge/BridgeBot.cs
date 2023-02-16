@@ -489,7 +489,7 @@ namespace Trickster.Bots
 
             // Prefer dummy's weakest suit (if after opening lead)
             var dummysWeakestSuit = GetDummysWeakestSuit(state);
-            if (dummysWeakestSuit != Suit.Unknown && cardsBySuit.Any(sc => sc.Key == dummysWeakestSuit))
+            if (dummysWeakestSuit != Suit.Unknown && cardsBySuit.Any(sc => sc.Key == dummysWeakestSuit && sc.Value.Count > 1))
                 bestSuit = dummysWeakestSuit;
 
             var cardsInBestSuit = cardsBySuit[bestSuit];
