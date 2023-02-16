@@ -142,7 +142,7 @@ H4 HQ H5 H3
 % But do cover if J is played and dummy has J32.
 
 [Event "2nd Hand Defense: Cover dummy-led honor if dummy lacks touching honor"]
-[Deal "N:Q65.JT985.J43.T4 - - JT2.Q432.K765.98"]
+[Deal "N:Q65.JT985.J43.T4 - - J32.Q432.K765.98"]
 [Contract "3NT"]
 [Play "S"]
 H4 HQ H5 H3
@@ -151,7 +151,7 @@ H4 HQ H5 H3
 % An exception to the exception: if you have two honors higher than dummy, cover on the first.
 % So if J10x and you have KQ9, you'd cover the J with the Q and then the 10 with the 9)
 
-[Event "2nd Hand Defense: Cover dummy-led honor if dummy lacks touching honor"]
+[Event "2nd Hand Defense: Cover first honor if holding two honors higher than dummy"]
 [Deal "N:KQ9.JT985.J43.94 - - JT2.Q432.K765.T8"]
 [Contract "3NT"]
 [Play "S"]
