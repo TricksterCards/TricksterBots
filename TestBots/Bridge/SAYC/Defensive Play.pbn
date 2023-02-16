@@ -7,10 +7,11 @@
 % play a trump to prevent ruffing in dummy
 
 [Event "Lead on Defense: Trump if dummy is short with fewer trumps than declarer"]
-[Deal "N:65.AKQ.J432.T532 QJT.T.T987.98764 - -"]
-[Contract "2S"]
+[Deal "W:- 65.AKQ.J432.T532 QJT.T.T987.98764 -"]
+[Contract "3S"]
 [Auction "W"]
-2S Pass Pass Pass
+2S Pass 3S Pass
+Pass Pass
 [Play "N"]
 HA HT H3 H2
 S5 -  -  -
@@ -20,6 +21,7 @@ S5 -  -  -
 % and the player behind dummy does not have K,
 % try to win tricks quickly
 
+[Event "Lead on Defense: Win tricks quickly if dummy has long, good side suit"]
 [Deal "N:65.AKQ.J432.T532 QJT.T9.AKQ87.987 - -"]
 [Contract "2S"]
 [Play "N"]
@@ -28,7 +30,8 @@ HK -  -  -
 
 % Prefer leading a sequence of your own
 
-[Deal "N:65.KQ8.J432.T532 - - JT98.987.987.987"]
+[Event "Lead on Defense: 1st preference - lead own sequence"]
+[Deal "N:65.KQ6.J432.T532 - - JT98.987.987.987"]
 [Contract "2S"]
 [Play "S"]
 D3 D7 DJ D5
@@ -37,7 +40,8 @@ D3 D7 DJ D5
 % Otherwise give priority to returning partner's suit (especially in NT),
 % Returning partner's initially led suit: low from three
 
-[Deal "N:65.K85.J432.T532 - - JT98.987.987.987"]
+[Event "Lead on Defense: 2nd preference - return partner's suit"]
+[Deal "N:65.K65.J432.T532 - - JT98.987.987.987"]
 [Contract "2NT"]
 [Play "S"]
 D6 D7 DJ D5
@@ -45,7 +49,8 @@ D6 D7 DJ D5
 
 % Leading dummy's weakest suit is a good fallback
 
-[Deal "N:65.JT95.J432.T532 JT98.876.9876.87 - -"]
+[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit"]
+[Deal "N:65.JT95.J43.T532 JT98.876.9876.87 - -"]
 [Contract "2NT"]
 [Play "N"]
 HJ H8 H4 H3
@@ -53,23 +58,26 @@ C3 -  -  -
 
 % Returning partner's initially led suit: high-low from two
 
-[Deal "N:65.K85.J32.T532 - - JT98.987.987.987"]
+[Event "Lead on Defense: Returning partner's suit - high from two"]
+[Deal "N:654.K65.J63.T532 - - JT98.987.987.987"]
 [Contract "2NT"]
 [Play "S"]
 D6 D7 DJ D5
--  -  D3 -
+-  -  D6 -
 
 % Returning partner's initially led suit: third best from four
 
-[Deal "N:65.K85.JT432.T532 - - JT98.987.987.987"]
+[Event "Lead on Defense: Returning partner's suit - 3rd best from four"]
+[Deal "N:65.K65.JT432.532 - - JT98.987.987.987"]
 [Contract "2NT"]
 [Play "S"]
-D6 D7 DJ D5
+D6 D7 DT D5
 -  -  D3 -
 
 % Returning partner's initially led suit: second highest from four small (9 and under)
 
-[Deal "N:65.K85.J5432.T532 - - JT98.987.987.987"]
+[Event "Lead on Defense: Returning partner's suit - 2nd highest from four small"]
+[Deal "N:65.K65.J5432.532 - - JT98.987.987.987"]
 [Contract "2NT"]
 [Play "S"]
 D6 D7 DJ D5
@@ -79,7 +87,8 @@ D6 D7 DJ D5
 % and it is the "setting trick" aka the trick to defeat the contract,
 % take it.
 
-[Deal "N:65.K85.AJ32.T532 - - JT98.987.987.987"]
+[Event "Lead on Defense: Take the setting trick"]
+[Deal "N:65.K65.AJ32.T532 - - JT98.987.987.987"]
 [Contract "6NT"]
 [Play "S"]
 D6 D7 DJ D5
@@ -221,7 +230,7 @@ H9 H3 HQ -
 % Third hand play rules: if the second card played will win the trick, play a higher card.
 
 [Event "3rd Hand Defense: Cover second card if it's winning"]
-[Deal "N:K9.752.J432.943 - - JT2.864.K765.T87"]
+[Deal "N:K98.752.J432.943 - - JT2.864.K765.T87"]
 [Contract "3NT"]
 [Play "S"]
 H3 H4 H5 -
