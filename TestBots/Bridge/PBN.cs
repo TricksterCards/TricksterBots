@@ -158,6 +158,24 @@ namespace TestBots.Bridge
                 hands[seat] = hand;
             }
 
+            // validate known hands are of the correct length with no shared cards
+            var knownHands = hands.Where(h => !IsUnknownHand(h));
+            foreach (var hand in knownHands)
+            {
+                if (hand.Length != 13 * 2)
+                    throw new ArgumentException($"Hand without exactly 13 cards found in '{handsString}'");
+
+                if (hands.Count(h => h == hand) > 1)
+                    throw new ArgumentException($"Multiple identical hands found in '{handsString}'");
+
+                for (var i = 0; i < hand.Length; i+=2)
+                {
+                    var card = hand.Substring(i, 2);
+                    if (knownHands.Any(h => h != hand && h.Contains(card)))
+                        throw new ArgumentException($"Multiple hands with {card} found in '{handsString}'");
+                }
+            }
+
             return hands;
         }
 
