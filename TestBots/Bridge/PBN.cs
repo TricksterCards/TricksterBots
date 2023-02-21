@@ -37,8 +37,10 @@ namespace TestBots.Bridge
                         name = tag.Description;
                         break;
                     case "Deal":
+                        contract = "";
                         dealerSeat = Sides.IndexOf(tag.Description.Substring(0, 1).ToUpper());
                         hands = ImportHands(dealerSeat, tag.Description);
+                        history = new List<string>();
                         break;
                     case "Auction":
                     {
