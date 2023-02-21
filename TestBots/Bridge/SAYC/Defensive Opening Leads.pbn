@@ -44,6 +44,15 @@ Pass
 [Play "W"]
 D4 - - -
 
+[Event "Opening Lead in Suit ignore Partner's Suit if 1D"]
+[Deal "E:- - 54.765.765.KQ543 -"]
+[Contract "4S"]
+[Auction "E"]
+1D   4S Pass Pass
+Pass
+[Play "W"]
+CK - - -
+
 [Event "Opening Lead in Suit without Partner's Suit"]
 [Deal "E:5432.7654..J7654 - - -"]
 [Contract "4S"]

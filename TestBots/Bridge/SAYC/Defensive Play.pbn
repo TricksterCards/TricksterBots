@@ -16,6 +16,15 @@ Pass Pass
 HA HT H3 H2
 S5 -  -  -
 
+% If we have one trump left, we should lead it to take two of defender's trumps (if both declarer and dummy still have trump)
+
+[Event "Lead on Defense: Lead last trump if declarer and dummy aren't void"]
+[Deal "N:5.AKQJ.J432.T532 QJT.T987.AKQ.987 - -"]
+[Contract "2S"]
+[Play "N"]
+HA H9 H3 H2
+S5 -  -  -
+
 % Other defensive rules against both suit and notrump:
 % If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
 % and the player behind dummy does not have K,
@@ -31,7 +40,7 @@ HK -  -  -
 % Prefer leading a sequence of your own
 
 [Event "Lead on Defense: 1st preference - lead own sequence"]
-[Deal "N:A65.KQ6.J432.953 - - JT98.987.87.AKJT"]
+[Deal "N:A65.KQ6.J432.953 - - JT9.987.8765.AKJ"]
 [Contract "2S"]
 [Play "S"]
 D3 D7 DJ DQ

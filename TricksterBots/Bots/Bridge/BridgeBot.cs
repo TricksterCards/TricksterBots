@@ -279,10 +279,16 @@ namespace Trickster.Bots
             var legalHandShapes = summary.HandShape.Where(hs => legalCardsBySuit.ContainsKey(hs.Key));
             var bestBidSuitLength = legalHandShapes.Max(hs => hs.Value.Min);
 
-            if (bestBidSuitLength == 0)
+            // Should we exclude any suits with less than a 4-card minimum (as those don't indicate a strong suit for partner)? Probably.
+            if (bestBidSuitLength < 3)
                 return new List<Card>();
 
-            // TODO: May want to exclude if we're only going off partner opening with 1C or 1D (as those are weak)
+            // Exclude if we're only going off partner opening with 1C or 1D (as those are weak)
+            var partnerDeclareBids = partner.BidHistory.Where(b => DeclareBid.Is(b)).Select(b => new DeclareBid(b));
+            var firstPartnerDeclareBid = partnerDeclareBids.FirstOrDefault();
+            if (partnerDeclareBids.Count() == 1 && firstPartnerDeclareBid.level == 1 && (firstPartnerDeclareBid.suit == Suit.Clubs || firstPartnerDeclareBid.suit == Suit.Diamonds))
+                return new List<Card>();
+
             var bestBidSuits = legalHandShapes.Where(hs => hs.Value.Min == bestBidSuitLength).Select(hs => hs.Key);
             return legalCardsBySuit[bestBidSuits.First()];
         }
@@ -323,14 +329,19 @@ namespace Trickster.Bots
             var dummyHand = new Hand(dummy.Hand);
             var dummyHasTrump = dummyHand.Any(c => c.suit == state.trumpSuit);
             var dummyCardsBySuit = GetCardsBySuit(dummyHand)
+                // Only suits with no honors and fewer than 5 cards are considered "weak"
+                .Where(s => s.Value.Count < 5 && s.Value.All(c => c.rank < Rank.Ten))
                 // Avoid helping dummy get void in a suit if they still have trump
-                // TODO: 2 or less cards? How far into the hand until we ignore this?)
                 .Where(s => s.Key != state.trumpSuit && (!dummyHasTrump || s.Value.Count() > 2))
-                // TODO: Is highest rank correct? Or should we look at honors/HCP?
-                .OrderBy(s => s.Value.Max(c => c.rank))
-                .ThenBy(s => s.Value.Count());
+                // Prefer leading dummy's shorter suits first
+                .OrderBy(s => s.Value.Count())
+                // If two suits have the same length, pick the one with the smaller high card
+                .ThenBy(s => s.Value.Max(c => c.rank));
 
-            return dummyCardsBySuit.Select(s => s.Key).First();
+            if (dummyCardsBySuit.Any())
+                return dummyCardsBySuit.Select(s => s.Key).First();
+
+            return Suit.Unknown;
         }
 
         private int CountDeclarersCardsInTrump(SuggestCardState<BridgeOptions> state)
@@ -486,18 +497,22 @@ namespace Trickster.Bots
             // If partner has bid or led
             // lead the suit if you have three or more (same rules as for suit contracts) or we're past the opening lead
             // TODO: If you have two and five or fewer points,
-            // lead partner’s suit unless you have a 5 + card suit with 3 honor sequence, lead that
+            // lead partner’s suit unless you have a 5+ card suit with 3 honor sequence, lead that
             var cardsInPartnersSuit = GetCardsInPartnersSuit(state, cardsBySuit);
             if (cardsInPartnersSuit.Count >= 3 || (!IsOpeningLead(state) && cardsInPartnersSuit.Any()))
                 return LeadPartnersSuit(state, cardsInPartnersSuit);
 
             // If partner hasn’t bid or led,
-            // lead fourth best card from longest / strongest suit.
+            // lead fourth best card from longest / strongest (HCP) suit.
             // If longest strongest suit has no 10 or higher,
             // lead 2nd highest from that suit
             var maxSuitLength = cardsBySuit.Max(sc => sc.Value.Count());
-            var longestSuits = cardsBySuit.Where(sc => sc.Value.Count() == maxSuitLength).Select(sc => sc.Key);
-            var bestSuit = longestSuits.First(); // TODO: Tie-break by determining stronger suit
+            var longestSuits = cardsBySuit
+                .Where(sc => sc.Value.Count() == maxSuitLength)
+                // Tie-break by determining stronger suit (most HCP)
+                .OrderByDescending(sc => BasicBidding.ComputeHighCardPoints(sc.Value))
+                .Select(sc => sc.Key);
+            var bestSuit = longestSuits.First(); 
 
             // Prefer dummy's weakest suit (if after opening lead)
             var dummysWeakestSuit = GetDummysWeakestSuit(state);
@@ -507,13 +522,15 @@ namespace Trickster.Bots
             var cardsInBestSuit = cardsBySuit[bestSuit];
             if (cardsInBestSuit.First().rank >= Rank.Ten)
                 return cardsBySuit[bestSuit].Count() < 4 ? cardsInBestSuit.Last() : cardsInBestSuit[3];
-            // TODO: is it possible to only have one card?
-            return cardsBySuit[bestSuit][1];
+
+            return cardsInBestSuit.Count() > 1 ? cardsInBestSuit[1] : cardsInBestSuit.First();
         }
 
         private Card SuggestDefensiveLeadInSuit(SuggestCardState<BridgeOptions> state, IReadOnlyList<Card> legalCards)
         {
-            // Opening Leads: Suits
+            // Leads: Suits
+
+            // TODO: For opening lead, if playing in declarer's 2nd bid suit - lead trump
 
             // If you have a 3-card sequence starting with ace, lead that
             var threeCardSequences = GetSequences(legalCards, minLength: 3, minTopRank: (int)Rank.Ace);
@@ -522,11 +539,12 @@ namespace Trickster.Bots
 
             // Lead singleton in suit that isn’t trump
             // Except for singleton A, K, or Q (for now)
-            // TODO: Skip this if I don't have any trump.
+            // Or if we don't have any trump to trump in with later
             var cardsBySuit = GetCardsBySuit(legalCards);
             var nonTrumpSingletons = cardsBySuit.Where(cs => cs.Key != state.trumpSuit && cs.Value.Count() == 1).Select(cs => cs.Value.First());
             var belowQueenNonTrumpSingletons = nonTrumpSingletons.Where(c => c.rank < Rank.Queen);
-            if (belowQueenNonTrumpSingletons.Any())
+            var hasTrump = legalCards.Any(c => c.suit == state.trumpSuit);
+            if (hasTrump && belowQueenNonTrumpSingletons.Any())
                 return belowQueenNonTrumpSingletons.First();
 
             // If you have a sequence of two or more cards with the highest card the 10 or higher,
@@ -579,27 +597,29 @@ namespace Trickster.Bots
         private Card SuggestDefensiveLeadAfterFirstTrick(SuggestCardState<BridgeOptions> state)
         {
             // Suit contracts:
-            // If dummy has shortness, four or fewer trump, and the same or fewer trumps than declarer,
+            // If dummy has shortness (2 or fewer cards), four or fewer trump, and the same or fewer trumps than declarer,
             // play a trump to prevent ruffing in dummy.
             var dummy = GetDummy(state);
             var dummyHand = new Hand(dummy.Hand);
+            var nDummyTrump = dummyHand.Count(c => c.suit == state.trumpSuit);
+            var legalTrump = state.legalCards.Where(c => c.suit == state.trumpSuit).ToList();
             if (state.trumpSuit != Suit.Unknown && state.legalCards.Any(c => c.suit == state.trumpSuit))
             {
-                var nDummyTrump = dummyHand.Count(c => c.suit == state.trumpSuit);
                 var dummyHasShortness = SuitRank.stdSuits.Any(s => s != state.trumpSuit && dummyHand.Count(c => c.suit == s) == 0);
-                // TODO: Should this be four or fewer trump at any point?
-                // Or only if dummy originally had four or fewer trump?
-                // Or at any point, but only until we're so far into the hand?
                 if (nDummyTrump > 0 && nDummyTrump <= 4 && dummyHasShortness)
                 {
                     var nDeclarerTrump = CountDeclarersCardsInTrump(state);
                     if (nDummyTrump <= 4 && nDummyTrump <= nDeclarerTrump)
                     {
-                        var legalTrump = state.legalCards.Where(c => c.suit == state.trumpSuit).ToList();
                         return SuggestDefensiveLeadInSuit(state, legalTrump);
                     }
                 }
             }
+
+            // If we have one trump left, we should lead it to take two of defender's trumps (if both declarer and dummy still have trump)
+            var declarerIsVoidInTrump = GetDeclarer(state).VoidSuits.Contains(state.trumpSuit);
+            if (!declarerIsVoidInTrump && nDummyTrump > 0 && legalTrump.Count() == 1)
+                return legalTrump.First();
 
             // General principle: if you have a trick that is now good as the defender,
             // and it is the "setting trick" aka the trick to defeat the contract,
@@ -610,8 +630,8 @@ namespace Trickster.Bots
             var takenTricks = state.player.CardsTaken.Length / 8 + partner.CardsTaken.Length / 8;
             var neededTricksToSet = 14 - (level + 6) - takenTricks;
             var sureWinners = GetSureWinners(state);
-            if (sureWinners.Count() >= neededTricksToSet)
-                return TryTakeEm(state);
+            if (sureWinners.Any() && sureWinners.Count() >= neededTricksToSet)
+                return sureWinners.First();
 
             // Other defensive rules against both suit and notrump:
 
