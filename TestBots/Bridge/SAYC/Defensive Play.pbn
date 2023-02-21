@@ -132,6 +132,15 @@ D6 D7 DJ D5
 HJ H2 H4 HQ
 S5 -  -  S8
 
+% Trump in if the first card played is known to be high.
+
+[Event "2nd Hand Defense: Trump in if first card played is high"]
+[Deal "N:.JT985.J432.T432 QT9.432.KQ765.98 - -"]
+[Contract "2C"]
+[Play "N"]
+HJ H2 H4 HQ
+C2 -  -  SA
+
 % If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
 
 [Event "2nd Hand Defense: Cover led honor"]

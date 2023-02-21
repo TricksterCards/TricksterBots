@@ -587,7 +587,9 @@ namespace Trickster.Bots
             {
                 var nDummyTrump = dummyHand.Count(c => c.suit == state.trumpSuit);
                 var dummyHasShortness = SuitRank.stdSuits.Any(s => s != state.trumpSuit && dummyHand.Count(c => c.suit == s) == 0);
-                // TODO: Should this be four or fewer trump at any point? Or only if dummy originally had four or fewer trump?
+                // TODO: Should this be four or fewer trump at any point?
+                // Or only if dummy originally had four or fewer trump?
+                // Or at any point, but only until we're so far into the hand?
                 if (nDummyTrump > 0 && nDummyTrump <= 4 && dummyHasShortness)
                 {
                     var nDeclarerTrump = CountDeclarersCardsInTrump(state);
@@ -643,8 +645,11 @@ namespace Trickster.Bots
             var ledCard = state.trick[0];
             Card coverHonor = null;
 
-            // TODO: Discuss when we should trump in from 2nd seat
-            // We should if the first card played is known to be high
+            // Trump in if the first card played is known to be high
+            var legalTrump = state.legalCards.Where(c => c.suit == state.trumpSuit).OrderBy(c => c.rank);
+            var dummyCardsInSuit = new Hand(GetDummy(state).Hand).Where(c => c.suit == ledCard.suit).ToList();
+            if (legalTrump.Any() && ledCard.suit != state.trumpSuit && IsCardHigh(ledCard, dummyCardsInSuit.Concat(state.cardsPlayed)))
+                return legalTrump.First();
 
             // If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
             if (ledCard.rank >= Rank.Ten)
@@ -658,7 +663,6 @@ namespace Trickster.Bots
             //   (so don’t cover J if dummy has AK1098, but do cover if dummy has AK102).
             if (coverHonor != null)
             {
-                var dummyCardsInSuit = new Hand(GetDummy(state).Hand).Where(c => c.suit == ledCard.suit).ToList();
                 var combinedCards = dummyCardsInSuit.Concat(state.legalCards).ToList();
                 var knownCardsInSuit = combinedCards.Concat(state.cardsPlayed.Where(c => c.suit == ledCard.suit)).ToList();
                 knownCardsInSuit.Add(ledCard);
@@ -674,7 +678,6 @@ namespace Trickster.Bots
                 // In other words, from Qxx,
                 // do not cover J from dummy if dummy has J10x,
                 // but do cover if J is played and dummy has J32.
-                var dummyCardsInSuit = new Hand(GetDummy(state).Hand).Where(c => c.suit == ledCard.suit).ToList();
                 var dummyHasTouchingHonor = dummyCardsInSuit.Any(c => Math.Abs(c.rank - ledCard.rank) == 1);
 
                 // An exception to the exception: if you have two honors higher than dummy, cover on the first.
