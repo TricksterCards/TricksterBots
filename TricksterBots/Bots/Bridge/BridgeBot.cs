@@ -302,10 +302,16 @@ namespace Trickster.Bots
 
         private List<Card> GetCardsInPartnersSuit(SuggestCardState<BridgeOptions> state, Dictionary<Suit, List<Card>> legalCardsBySuit)
         {
-            if (IsOpeningLead(state))
-                return GetCardsInPartnersBestBidSuit(state, legalCardsBySuit);
-            else
+            // Give preference to partner's suit from the auction (instead of what they led)
+            var cards = GetCardsInPartnersBestBidSuit(state, legalCardsBySuit);
+            if (cards.Count > 0)
+                return cards;
+
+            // Otherwise prefer partner's first led suit (if any)
+            if (!IsOpeningLead(state)) // skip for opening lead since no led suit exists yet
                 return GetCardsInPartnersFirstLedSuit(state, legalCardsBySuit);
+
+            return new List<Card>();
         }
 
         private Suit GetDummysWeakestSuit(SuggestCardState<BridgeOptions> state)
@@ -315,8 +321,12 @@ namespace Trickster.Bots
 
             var dummy = GetDummy(state);
             var dummyHand = new Hand(dummy.Hand);
+            var dummyHasTrump = dummyHand.Any(c => c.suit == state.trumpSuit);
             var dummyCardsBySuit = GetCardsBySuit(dummyHand)
-                .Where(s => s.Key != state.trumpSuit)
+                // Avoid helping dummy get void in a suit if they still have trump
+                // TODO: 2 or less cards? How far into the hand until we ignore this?)
+                .Where(s => s.Key != state.trumpSuit && (!dummyHasTrump || s.Value.Count() > 2))
+                // TODO: Is highest rank correct? Or should we look at honors/HCP?
                 .OrderBy(s => s.Value.Max(c => c.rank))
                 .ThenBy(s => s.Value.Count());
 
@@ -414,6 +424,7 @@ namespace Trickster.Bots
                 return cardsInSuit.First();
             if (cardsInSuit.Count == 3)
                 return cardsInSuit.Last();
+            // TODO: what about 6+ cards?
             if (cardsInSuit.Count == 4 || cardsInSuit.Count == 5)
                 return cardsInSuit[3];
 
@@ -424,13 +435,14 @@ namespace Trickster.Bots
         {
             // Returning partner’s initially led suit (either partner):
             // * high-low from two (play high first),
-            // * low from three (third best from four).
+            // * low from three (third best from four remaining).
             // * From four small (9 and under), lead second highest.
             if (cardsInSuit.Count == 2)
                 return cardsInSuit.First();
             if (cardsInSuit.Count == 3)
                 return cardsInSuit.Last();
-            if (cardsInSuit.Count == 4 && cardsInSuit.Max(c => c.rank) < Rank.Ten)
+            // TODO: what about 5+ cards?
+            if (cardsInSuit.Count == 4 && cardsInSuit.All(c => c.rank < Rank.Ten))
                 return cardsInSuit[1];
             if (cardsInSuit.Count == 4)
                 return cardsInSuit[2];
@@ -495,6 +507,7 @@ namespace Trickster.Bots
             var cardsInBestSuit = cardsBySuit[bestSuit];
             if (cardsInBestSuit.First().rank >= Rank.Ten)
                 return cardsBySuit[bestSuit].Count() < 4 ? cardsInBestSuit.Last() : cardsInBestSuit[3];
+            // TODO: is it possible to only have one card?
             return cardsBySuit[bestSuit][1];
         }
 
@@ -509,6 +522,7 @@ namespace Trickster.Bots
 
             // Lead singleton in suit that isn’t trump
             // Except for singleton A, K, or Q (for now)
+            // TODO: Skip this if I don't have any trump.
             var cardsBySuit = GetCardsBySuit(legalCards);
             var nonTrumpSingletons = cardsBySuit.Where(cs => cs.Key != state.trumpSuit && cs.Value.Count() == 1).Select(cs => cs.Value.First());
             var belowQueenNonTrumpSingletons = nonTrumpSingletons.Where(c => c.rank < Rank.Queen);
@@ -525,7 +539,7 @@ namespace Trickster.Bots
                 return nonDoubletonTwoCardSequencesWithoutAce.First().First();
 
             // Lead partner’s bid/led suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
-            // Lead highest of partner’s bid suit, we're okay leading a suit with an Ace here
+            // Lead highest of partner’s bid/led suit, we're okay leading a suit with an Ace here
             var cardsInPartnersSuit = GetCardsInPartnersSuit(state, cardsBySuit);
             if (cardsInPartnersSuit.Any())
                 return LeadPartnersSuit(state, cardsInPartnersSuit);
@@ -565,19 +579,19 @@ namespace Trickster.Bots
         private Card SuggestDefensiveLeadAfterFirstTrick(SuggestCardState<BridgeOptions> state)
         {
             // Suit contracts:
-            // If dummy has shortness and fewer trumps than declarer,
+            // If dummy has shortness, four or fewer trump, and the same or fewer trumps than declarer,
             // play a trump to prevent ruffing in dummy.
             var dummy = GetDummy(state);
             var dummyHand = new Hand(dummy.Hand);
             if (state.trumpSuit != Suit.Unknown && state.legalCards.Any(c => c.suit == state.trumpSuit))
             {
-                var dummyHasTrump = dummyHand.Any(c => c.suit == state.trumpSuit);
+                var nDummyTrump = dummyHand.Count(c => c.suit == state.trumpSuit);
                 var dummyHasShortness = SuitRank.stdSuits.Any(s => s != state.trumpSuit && dummyHand.Count(c => c.suit == s) == 0);
-                if (dummyHasTrump && dummyHasShortness)
+                // TODO: Should this be four or fewer trump at any point? Or only if dummy originally had four or fewer trump?
+                if (nDummyTrump > 0 && nDummyTrump <= 4 && dummyHasShortness)
                 {
-                    var nDummyTrump = dummyHand.Count(c => c.suit == state.trumpSuit);
                     var nDeclarerTrump = CountDeclarersCardsInTrump(state);
-                    if (nDummyTrump < nDeclarerTrump)
+                    if (nDummyTrump <= 4 && nDummyTrump <= nDeclarerTrump)
                     {
                         var legalTrump = state.legalCards.Where(c => c.suit == state.trumpSuit).ToList();
                         return SuggestDefensiveLeadInSuit(state, legalTrump);
@@ -615,6 +629,7 @@ namespace Trickster.Bots
 
             // TODO: or AQJ10xx (when the player behind dummy does not have K),
             //       try to take tricks quickly
+            // Note: only applies with one missing honor (K or Q)
 
             // Leads after trick 1: same general rules apply (playing touching honors, etc).
             // * Give priority to returning partner's suit (especially in NT),
@@ -627,6 +642,9 @@ namespace Trickster.Bots
         {
             var ledCard = state.trick[0];
             Card coverHonor = null;
+
+            // TODO: Discuss when we should trump in from 2nd seat
+            // We should if the first card played is known to be high
 
             // If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
             if (ledCard.rank >= Rank.Ten)
@@ -660,14 +678,8 @@ namespace Trickster.Bots
                 var dummyHasTouchingHonor = dummyCardsInSuit.Any(c => Math.Abs(c.rank - ledCard.rank) == 1);
 
                 // An exception to the exception: if you have two honors higher than dummy, cover on the first.
-                // So if J10x and you have KQ9, you’d cover the J with the Q and then the 10 with the 9)
+                // So if J10x and you have KQ9, you’d cover the J with the Q and then the 10 with the K)
                 var nHonorsHigherThanDummy = state.legalCards.Count(c => c.suit == ledCard.suit && c.rank > ledCard.rank);
-
-                // TODO: Do we need to remember dummy had two touching honors?
-                // If so, for how long? Until the end of the hand? Until dummy's next lead?
-                // Otherwise JTx and KQ9 looks like Tx and K9 on the second trick.
-                // So without memory we'd cover on the 2nd trick too in this case
-                // because dummy no longer has a touching honor.
 
                 if (dummyHasTouchingHonor && nHonorsHigherThanDummy < 2)
                     coverHonor = null;
@@ -707,7 +719,7 @@ namespace Trickster.Bots
             if (state.isPartnerTakingTrick && state.cardTakingTrick.rank >= Rank.Ten)
                 return LowestCardFromWeakestSuit(legalCards, knownCards);
 
-            // If 4th seat is void, should we play low if partner is winning? Probably.
+            // If 4th seat is void, we should play low if partner is winning
             var fourthSeatPlayer = state.players.Single(p => p.Seat == GetNextSeat(state));
             var isFourthSeatVoid = fourthSeatPlayer.VoidSuits.Contains(state.cardTakingTrick.suit);
             if (state.isPartnerTakingTrick && isFourthSeatVoid)
@@ -730,11 +742,14 @@ namespace Trickster.Bots
             if (!state.isPartnerTakingTrick && minimumWinner != null)
                 return minimumWinner;
 
-            // Should we trump in if possible (with our lowest trump)? Probably.
-            // TODO: If we're trumping in and 4th seat is void (but may still have trump),
-            //       should we trump in with an honor if possible? Probably.
+            // If second card played will win the trick, trump in if possible.
             if (!state.isPartnerTakingTrick && legalCards.Any(c => c.suit == state.trumpSuit) && state.cardTakingTrick.suit != state.trumpSuit)
+            {
+                // TODO: If we're trumping in and 4th seat is void (but may still have trump), try to force them to trump high.
+
+                // otherwise trump in with our lowest trump
                 return legalCards.Last(c => c.suit == state.trumpSuit);
+            }
 
             return LowestCardFromWeakestSuit(legalCards, knownCards);
         }
