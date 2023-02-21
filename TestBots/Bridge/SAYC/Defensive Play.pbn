@@ -31,10 +31,11 @@ HK -  -  -
 % Prefer leading a sequence of your own
 
 [Event "Lead on Defense: 1st preference - lead own sequence"]
-[Deal "N:65.KQ6.J432.T532 - - JT98.987.987.987"]
+[Deal "N:A65.KQ6.J432.953 - - JT98.987.87.AKJT"]
 [Contract "2S"]
 [Play "S"]
-D3 D7 DJ D5
+D3 D7 DJ DQ
+S2 S8 SA S3
 -  -  HK -
 
 % Otherwise give priority to returning partner's suit (especially in NT),
@@ -47,21 +48,36 @@ D3 D7 DJ D5
 D6 D7 DJ D5
 -  -  D2 -
 
+[Event "Lead on Defense: 2nd preference - return partner's suit (case 2)"]
+[Deal "N:65.KJ6.Q432.T532 - - JT98.987.987.987"]
+[Contract "2S"]
+[Play "S"]
+D3 D7 DQ D5
+-  -  D2 -
+
 % Leading dummy's weakest suit is a good fallback
 
+[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (Suit)"]
+[Deal "N:A65.Q65.J.976543 - - JT9874.982.7.AKJ"]
+[Contract "2S"]
+[Play "S"]
+D3 D7 DJ DQ
+S2 S8 SA S3
+-  -  H5 -
+
 [Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (NT)"]
+[Deal "N:Q652.Q652.Q652.A - - 873.J94.A94.KJT4"]
+[Contract "2NT"]
+[Play "S"]
+C3 C4 CA C5
+-  -  S2 -
+
+[Event "Lead on Defense: 3rd-preference - lead dummy's weakest suit (NT case 2)"]
 [Deal "N:654.K.J5432.T532 - - JT98.876.9876.87"]
 [Contract "2NT"]
 [Play "S"]
 H3 H4 HK H6
 -  -  C2  -
-
-[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (Suit)"]
-[Deal "N:654.K.J5432.T532 - - JT98.876.9876.87"]
-[Contract "2S"]
-[Play "S"]
-H3 H4 HK H6
--  -  C2 -
 
 % Returning partner's initially led suit: high-low from two
 
@@ -165,7 +181,7 @@ H4 HQ H5 H3
 -  SJ SQ -
 
 % An exception to the exception: if you have two honors higher than dummy, cover on the first.
-% So if J10x and you have KQ9, you'd cover the J with the Q and then the 10 with the 9)
+% So if J10x and you have KQ9, you'd cover the J with the Q and then the 10 with the K)
 
 [Event "2nd Hand Defense: Cover first honor if holding two honors higher than dummy"]
 [Deal "N:KQ9.JT985.J43.94 - - JT2.Q432.K765.T8"]
@@ -173,9 +189,8 @@ H4 HQ H5 H3
 [Play "S"]
 H4 HQ H5 H3
 S4 SJ SQ SA
-% TODO
-% C2 CT C4 C3
-% -  ST S9 -
+C2 CT C4 C3
+-  ST SK -
 
 
 
@@ -242,3 +257,11 @@ H9 H3 HQ -
 [Contract "3NT"]
 [Play "S"]
 H3 H4 H5 -
+
+% If the second card played will win the trick, trump in if possible.
+
+[Event "3rd Hand Defense: Trump in over second card if it's winning"]
+[Deal "N:K987..J8432.9543 - - JT2.864.K765.T87"]
+[Contract "3S"]
+[Play "S"]
+H3 H4 S7 -
