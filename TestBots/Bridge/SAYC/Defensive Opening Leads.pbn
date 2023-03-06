@@ -4,6 +4,15 @@
 [Play "N"]
 HJ - - -
 
+[Event "Opening Lead in Declarer's 2nd Bid Suit"]
+[Deal "N:65.AKQ.J432.T532 - - -"]
+[Contract "2S"]
+[Auction "W"]
+1H Pass 1N   Pass
+2S Pass Pass Pass
+[Play "N"]
+S5 - - -
+
 [Event "Opening Lead in Suit with 3-Card Sequence with Ace"]
 [Deal "N:65.AKQ.J432.T532 - - -"]
 [Contract "3S"]

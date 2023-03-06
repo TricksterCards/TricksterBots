@@ -530,7 +530,12 @@ namespace Trickster.Bots
         {
             // Leads: Suits
 
-            // TODO: For opening lead, if playing in declarer's 2nd bid suit - lead trump
+            // For opening lead, if playing in declarer's 2nd bid suit - lead trump
+            var hasLegalTrump = legalCards.Any(c => c.suit == state.trumpSuit);
+            // TODO: Does NT count as a first bid suit? Currently this treats it as one.
+            var declarersFirstBidSuit = GetDeclarer(state).BidHistory.Where(b => DeclareBid.Is(b)).Select(b => new DeclareBid(b).suit).First();
+            if (IsOpeningLead(state) && hasLegalTrump && state.trumpSuit != declarersFirstBidSuit)
+                legalCards = legalCards.Where(c => c.suit == state.trumpSuit).ToList();
 
             // If you have a 3-card sequence starting with ace, lead that
             var threeCardSequences = GetSequences(legalCards, minLength: 3, minTopRank: (int)Rank.Ace);
