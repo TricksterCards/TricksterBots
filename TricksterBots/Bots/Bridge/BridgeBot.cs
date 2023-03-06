@@ -435,8 +435,7 @@ namespace Trickster.Bots
                 return cardsInSuit.First();
             if (cardsInSuit.Count == 3)
                 return cardsInSuit.Last();
-            // TODO: what about 6+ cards?
-            if (cardsInSuit.Count == 4 || cardsInSuit.Count == 5)
+            if (cardsInSuit.Count >= 4)
                 return cardsInSuit[3];
 
             return cardsInSuit[0];
@@ -452,10 +451,9 @@ namespace Trickster.Bots
                 return cardsInSuit.First();
             if (cardsInSuit.Count == 3)
                 return cardsInSuit.Last();
-            // TODO: what about 5+ cards?
-            if (cardsInSuit.Count == 4 && cardsInSuit.All(c => c.rank < Rank.Ten))
+            if (cardsInSuit.Count >= 4 && cardsInSuit.All(c => c.rank < Rank.Ten))
                 return cardsInSuit[1];
-            if (cardsInSuit.Count == 4)
+            if (cardsInSuit.Count >= 4)
                 return cardsInSuit[2];
 
             return cardsInSuit[0];
