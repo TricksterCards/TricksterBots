@@ -126,6 +126,15 @@ D6 D7 DJ D5
 D6 D7 DJ D5
 -  -  DA -
 
+% View AQ as a sequence once the K is played (and similar positions)
+
+[Event "Lead on Defense: Top of Effective Non-Doubleton Sequence"]
+[Deal "W:5.JT765.KQ.T7653 - - -"]
+[Contract "3S"]
+[Play "W"]
+HJ H9 H8 H2
+HT -  -  -
+
 
 
 %

@@ -237,9 +237,9 @@ namespace Trickster.Bots
             return SuggestDefensiveLeadInSuit(state, state.legalCards);
         }
 
-        private List<List<Card>> GetBrokenSequences(IReadOnlyList<Card> cards, int minLength = 0, int minTopRank = 0, int minRank = 0)
+        private List<List<Card>> GetBrokenSequences(IReadOnlyList<Card> cards, IReadOnlyList<Card> played, int minLength = 0, int minTopRank = 0, int minRank = 0)
         {
-            return GetSequences(cards, minLength, minTopRank, minRank, gap: 1);
+            return GetSequences(cards, played, minLength, minTopRank, minRank, gap: 1);
         }
 
         private int FindDealerSeat(SuggestCardState<BridgeOptions> state)
@@ -380,30 +380,38 @@ namespace Trickster.Bots
             return bossCards.ToList();
         }
 
-        private List<List<Card>> GetSequences(IReadOnlyList<Card> cards, int minLength = 0, int minTopRank = 0, int minRank = 0, int gap = 0)
+        private int AdjustedRank(Card card, IReadOnlyList<Card> played)
+        {
+            var rank = RankSort(card);
+            var nCardsPlayedBelow = played.Count(c => EffectiveSuit(c) == EffectiveSuit(card) && RankSort(c) < rank);
+            return rank - nCardsPlayedBelow;
+        }
+
+        private List<List<Card>> GetSequences(IReadOnlyList<Card> cards, IReadOnlyList<Card> played, int minLength = 0, int minTopRank = 0, int minRank = 0, int gap = 0)
         {
             var prevSuit = Suit.Unknown;
-            var prevRank = -1;
+            var prevAdjustedRank = -1;
             var remainingGaps = gap;
             List<List<Card>> sequences = new List<List<Card>>();
             foreach (var card in cards.OrderBy(EffectiveSuit).ThenByDescending(RankSort))
             {
+                var adjustedRank = AdjustedRank(card, played);
                 if (RankSort(card) < minRank)
                 {
                     continue;
                 }
-                if (prevSuit == Suit.Unknown || prevSuit != EffectiveSuit(card) || prevRank > RankSort(card) + 1 + gap)
+                if (prevSuit == Suit.Unknown || prevSuit != EffectiveSuit(card) || prevAdjustedRank > adjustedRank + 1 + gap)
                 {
                     remainingGaps = gap;
                     prevSuit = EffectiveSuit(card);
-                    prevRank = RankSort(card);
+                    prevAdjustedRank = adjustedRank;
                     sequences.Add(new List<Card> { card });
                 }
                 else
                 {
-                    remainingGaps -= prevRank - (RankSort(card) + 1);
+                    remainingGaps -= prevAdjustedRank - (adjustedRank + 1);
                     prevSuit = EffectiveSuit(card);
-                    prevRank = RankSort(card);
+                    prevAdjustedRank = adjustedRank;
                     sequences.Last().Add(card);
                 }
             }
@@ -473,7 +481,7 @@ namespace Trickster.Bots
 
             // If you have a sequence of three or more cards with the highest card the 10 or higher,
             // lead top of that sequence if the suit is four cards or longer.
-            var sequences = GetSequences(state.legalCards, minLength: 3, minTopRank: (int)Rank.Ten);
+            var sequences = GetSequences(state.legalCards, state.cardsPlayed, minLength: 3, minTopRank: (int)Rank.Ten);
             var cardsBySuit = GetCardsBySuit(state.legalCards);
             var suitCounts = state.legalCards.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
             var matches = sequences.Where(seq => suitCounts[seq.First().suit] >= 4);
@@ -482,7 +490,7 @@ namespace Trickster.Bots
 
             // If you have a broken sequence(KQ10),
             // lead the top.
-            var brokenSequences = GetBrokenSequences(state.legalCards, minLength: 3, minRank: (int)Rank.Ten);
+            var brokenSequences = GetBrokenSequences(state.legalCards, state.cardsPlayed, minLength: 3, minRank: (int)Rank.Ten);
             var nonKJT = brokenSequences.Where(seq => seq[0].rank != Rank.King || seq[1].rank != Rank.Jack || seq[2].rank != Rank.Ten);
             if (nonKJT.Any())
                 return nonKJT.First().First();
@@ -536,7 +544,7 @@ namespace Trickster.Bots
                 legalCards = legalCards.Where(c => c.suit == state.trumpSuit).ToList();
 
             // If you have a 3-card sequence starting with ace, lead that
-            var threeCardSequences = GetSequences(legalCards, minLength: 3, minTopRank: (int)Rank.Ace);
+            var threeCardSequences = GetSequences(legalCards, state.cardsPlayed, minLength: 3, minTopRank: (int)Rank.Ace);
             if (threeCardSequences.Any())
                 return threeCardSequences.First().First();
 
@@ -553,7 +561,7 @@ namespace Trickster.Bots
             // If you have a sequence of two or more cards with the highest card the 10 or higher,
             // lead top of that sequence as long as not doubleton, eg KQ.
             // ignore the suit if it has an Ace
-            var twoCardSequences = GetSequences(legalCards, minLength: 2, minTopRank: (int)Rank.Ten);
+            var twoCardSequences = GetSequences(legalCards, state.cardsPlayed, minLength: 2, minTopRank: (int)Rank.Ten);
             var nonDoubletonTwoCardSequences = twoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())].Count > 2);
             var nonDoubletonTwoCardSequencesWithoutAce = nonDoubletonTwoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())][0].rank != Rank.Ace);
             if (nonDoubletonTwoCardSequencesWithoutAce.Any())

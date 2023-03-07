@@ -90,9 +90,9 @@ namespace TestBots
                         failures.Add($"{filename}: '{test.type}' must have either an expected bid or expected play.");
                     }
                 }
-                if (failures.Count > 0)
-                    Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
             }
+            if (failures.Count > 0)
+                Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
         }
 
         [TestMethod]
