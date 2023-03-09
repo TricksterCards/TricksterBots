@@ -94,6 +94,9 @@ namespace Trickster.Bots
 
         public override Card SuggestNextCard(SuggestCardState<BridgeOptions> state)
         {
+            if (state.legalCards.Count == 1)
+                return state.legalCards.First();
+
             if (IsOpeningLead(state))
                 return SuggestDefensiveLead(state);
 
@@ -108,6 +111,10 @@ namespace Trickster.Bots
             var isThirdHandDefensivePlay = state.trick.Count == 2 && state.player.Bid == BridgeBid.Defend;
             if (isThirdHandDefensivePlay)
                 return SuggestThirdHandDefensivePlay(state);
+
+            var isFourthHandDefensivePlay = state.trick.Count == 3 && state.player.Bid == BridgeBid.Defend;
+            if (isFourthHandDefensivePlay)
+                return SuggestFourthHandDefensivePlay(state);
 
             return TryTakeEm(state);
         }
@@ -671,6 +678,77 @@ namespace Trickster.Bots
             return SuggestDefensiveLead(state);
         }
 
+        private Card SuggestDefensiveDiscard(SuggestCardState<BridgeOptions> state)
+        {
+            // If all legal cards are in the same suit, slough the lowest
+            var firstSuit = EffectiveSuit(state.legalCards.First());
+            if (state.legalCards.All(c => EffectiveSuit(c) == firstSuit))
+                return state.legalCards.OrderBy(RankSort).First();
+
+            // If dummy only has trump left, just discard our lowest card from any non-trump suit (as it doesn't matter which)
+            var dummy = GetDummy(state);
+            var dummyHand = new Hand(dummy.Hand);
+            if (dummyHand.All(c => EffectiveSuit(c) == state.trumpSuit))
+                return state.legalCards.Where(c => EffectiveSuit(c) != state.trumpSuit).OrderBy(RankSort).First();
+
+            var dummyCardsBySuit = GetCardsBySuit(dummyHand).Where(suitAndCards => suitAndCards.Key != state.trumpSuit);
+            var dummysLongSuitLength = dummyCardsBySuit.Max(suitAndCards => suitAndCards.Value.Count);
+            var dummysLongSuits = dummyCardsBySuit.Where(suitAndCards => suitAndCards.Value.Count == dummysLongSuitLength);
+
+            var knownCards = state.cardsPlayed.Concat(state.legalCards).ToList();
+            var preferredDiscardsBySuit = GetCardsBySuit(state.legalCards).OrderBy(suitAndCards => {
+                var suit = suitAndCards.Key;
+
+                // Don't discard trump
+                if (suit == state.trumpSuit)
+                    return 0;
+
+                var cardsInSuit = suitAndCards.Value;
+                var highestCardInSuit = cardsInSuit.First();
+                var cardsPlayedInSuit = state.cardsPlayed.Where(c => EffectiveSuit(c) == suit);
+                var nCardsPlayedAboveHighest = cardsPlayedInSuit.Count(c => c.rank > highestCardInSuit.rank);
+
+                // C) Generally, we want to keep an equal amount of length to the dummy in dummy's long suit.
+                // For example, if dummy has Kxxx of spades, and we have 10xxx... we should not discard a spade.
+                // The exception is if our highest card can't beat dummy's lowest card.
+                var isDummysLongSuit = dummysLongSuits.Any(g => g.Key == suit);
+                if (isDummysLongSuit)
+                {
+                    var dummysCardsInSuit = dummyCardsBySuit.Where(g => g.Key == suit).Select(g => g.Value).First();
+                    var dummysLowestCardInSuit = dummysCardsInSuit.Last();
+                    if (dummysLowestCardInSuit.rank < highestCardInSuit.rank && dummysCardsInSuit.Count() == cardsInSuit.Count())
+                        return 1;
+                }
+
+                // B) When you can't keep all your winners, your job is to hold onto cards that block the opponents.
+                // Check if we have a stopper that would be invalidated if we discard any more from this suit.
+                var nRemainingCardsAbove = Rank.Ace - highestCardInSuit.rank - nCardsPlayedAboveHighest;
+                var nExtraCardsForStopper = cardsInSuit.Count - nRemainingCardsAbove - 1;
+                if (nExtraCardsForStopper == 0)
+                    // A) Keep winners, throw away losers.
+                    // Prefer not tossing the last winner from a suit.
+                    return nRemainingCardsAbove == 0 ? 2 : 3;
+
+                // A) Keep winners, throw away losers.
+                // Prefer not tossing winners from a suit with all winners
+                if (IsCardHigh(cardsInSuit.Last(), knownCards))
+                    return 4;
+
+                // We won't sacrifice any winners, stoppers, or cards blocking opponents - prefer discarding from this suit.
+                return 5;
+            }).ThenBy(suitAndCards =>
+            {
+                // If deciding between two otherwise equivalent options,
+                // prefer discarding from a suit where dummy is void
+                var suit = suitAndCards.Key;
+                var dummyHasCardsInSuit = dummyHand.Any(c => EffectiveSuit(c) == suit);
+                return dummyHasCardsInSuit ? 0 : 1;
+            });
+
+            //  Discard the lowest card from our most preferred discard suit
+            return preferredDiscardsBySuit.Last().Value.Last();
+        }
+
         private Card SuggestSecondHandDefensivePlay(SuggestCardState<BridgeOptions> state)
         {
             var ledCard = state.trick[0];
@@ -723,14 +801,22 @@ namespace Trickster.Bots
                 return coverHonor;
 
             // Second hand rules: play low generally best.
-            return LowestCardFromWeakestSuit(state.legalCards, state.cardsPlayed.Concat(state.legalCards).ToList());
+            return SuggestDefensiveDiscard(state);
         }
 
         private bool IsAboveGaps(Card card, int highRank, IEnumerable<Card> cardsPlayed)
         {
-            return RankSort(card) == highRank ||
-                   cardsPlayed.Count(c => EffectiveSuit(c) == EffectiveSuit(card) && RankSort(c) > RankSort(card)) ==
-                   highRank - RankSort(card);
+            return RankSort(card) == highRank
+                || cardsPlayed.Count(c => EffectiveSuit(c) == EffectiveSuit(card)
+                && RankSort(c) > RankSort(card)) == highRank - RankSort(card);
+        }
+
+        private bool IsStopper(Card card, IEnumerable<Card> hand, IEnumerable<Card> cardsPlayed)
+        {
+            var highRank = (int)Rank.Ace;
+            return RankSort(card) == highRank
+                || cardsPlayed.Count(c => EffectiveSuit(c) == EffectiveSuit(card)
+                && RankSort(c) > RankSort(card)) == highRank - RankSort(card);
         }
 
         private Card SuggestThirdHandDefensivePlay(SuggestCardState<BridgeOptions> state)
@@ -751,13 +837,13 @@ namespace Trickster.Bots
 
             // If partner is winning with an honor, play low
             if (state.isPartnerTakingTrick && state.cardTakingTrick.rank >= Rank.Ten)
-                return LowestCardFromWeakestSuit(legalCards, knownCards);
+                return SuggestDefensiveDiscard(state);
 
             // If 4th seat is void, we should play low if partner is winning
             var fourthSeatPlayer = state.players.Single(p => p.Seat == GetNextSeat(state));
             var isFourthSeatVoid = fourthSeatPlayer.VoidSuits.Contains(state.cardTakingTrick.suit);
             if (state.isPartnerTakingTrick && isFourthSeatVoid)
-                return LowestCardFromWeakestSuit(legalCards, knownCards);
+                return SuggestDefensiveDiscard(state);
 
             // If dummy has Qxx, and you play third after dummy plays a low card from KJx, you'd play J.
             // If you have touching honors, play the lower one
@@ -785,21 +871,37 @@ namespace Trickster.Bots
                 return legalCards.Last(c => c.suit == state.trumpSuit);
             }
 
-            return LowestCardFromWeakestSuit(legalCards, knownCards);
+            return SuggestDefensiveDiscard(state);
+        }
+
+        private Card SuggestFourthHandDefensivePlay(SuggestCardState<BridgeOptions> state)
+        {
+            // If partner is taking the trick, play low or discard.
+            if (state.isPartnerTakingTrick)
+                return SuggestDefensiveDiscard(state);
+
+            // If not, play just as high as needed to win if possible.
+            var legalCards = state.legalCards.OrderByDescending(c => c.rank);
+            var legalCardsInWinningSuit = legalCards.Where(c => c.suit == state.cardTakingTrick.suit);
+            var minimumWinner = legalCardsInWinningSuit.LastOrDefault(c => c.rank > state.cardTakingTrick.rank);
+            if (minimumWinner != null)
+                return minimumWinner;
+
+            // If not and we can trump in, play our lowest trump.
+            var legalTrump = legalCards.Where(c => c.suit == state.trumpSuit).OrderByDescending(c => c.rank);
+            if (legalTrump.Any() && state.cardTakingTrick.suit != state.trumpSuit)
+                return legalTrump.Last();
+
+            // Otherwise play low or discard.
+            return SuggestDefensiveDiscard(state);
         }
 
         private Card TryTakeEm(SuggestCardState<BridgeOptions> state)
         {
             var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
+            var partner = players.PartnerOf(player);
 
-            return TryTakeEm(player, players.PartnerOf(player), trick, legalCards, cardsPlayed, players, isPartnerTakingTrick, cardTakingTrick);
-        }
-
-        //  we're trying to take a trick
-        private Card TryTakeEm(PlayerBase player, PlayerBase partner, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards,
-            IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, bool isPartnerTakingTrick, Card cardTakingTrick)
-        {
             var lho = players.Lho(player);
             var rho = players.Rho(player);
 
