@@ -16,7 +16,7 @@ namespace TestBots.Bridge
 
         public static int CardRank(string card)
         {
-            return CardRanks.IndexOf(card[1]);
+            return CardRanks.IndexOf(card[0]);
         }
 
         public static BasicTests.BasicTest[] ImportTests(string text)
@@ -37,8 +37,10 @@ namespace TestBots.Bridge
                         name = tag.Description;
                         break;
                     case "Deal":
+                        contract = "";
                         dealerSeat = Sides.IndexOf(tag.Description.Substring(0, 1).ToUpper());
                         hands = ImportHands(dealerSeat, tag.Description);
+                        history = new List<string>();
                         break;
                     case "Auction":
                     {
@@ -76,6 +78,7 @@ namespace TestBots.Bridge
                         var leadSeat = Sides.IndexOf(tag.Description.ToUpper());
                         var declarerSeat = (4 + leadSeat - 1) % 4;
                         var dummySeat = (leadSeat + 1) % 4;
+                        var trick = new List<string>();
                         var trump = contract[1];
                         var plays = ImportPlays(trump, tag.Data);
                         for (var i = 0; i < plays.Count; i++)
@@ -85,7 +88,9 @@ namespace TestBots.Bridge
                             var hand = hands[seat];
                             var seatName = Sides[seat];
                             var playNumber = 1 + i / 4;
-                            if (!IsUnknownHand(hand))
+                            // Don't validate plays for unknown hands
+                            // And don't validate dummy plays when declarer's hand is unknown
+                            if (!IsUnknownHand(hand) && !(seat == dummySeat && IsUnknownHand(hands[(dummySeat + 2) % 4])))
                             {
                                 tests.Add(
                                     new BasicTests.BasicTest
@@ -102,9 +107,17 @@ namespace TestBots.Bridge
                                     }
                                 );
                             }
+                            trick.Add(play);
                             // Remove played card from hand
                             var regex = new Regex(IsUnknownHand(hand) ? UnknownCard : play);
                             hands[seat] = regex.Replace(hands[seat], "", 1);
+                            // Update lead seat if end of trick
+                            if (i % 4 == 3)
+                            {
+                                var card = GetTopCard(trick, trump);
+                                leadSeat = (leadSeat + trick.IndexOf(card)) % 4;
+                                trick.Clear();
+                            }
                         }
                         break;
                     }
@@ -145,6 +158,24 @@ namespace TestBots.Bridge
                         hand += $"{card}{SuitLetters[j]}";
 
                 hands[seat] = hand;
+            }
+
+            // validate known hands are of the correct length with no shared cards
+            var knownHands = hands.Where(h => !IsUnknownHand(h));
+            foreach (var hand in knownHands)
+            {
+                if (hand.Length != 13 * 2)
+                    throw new ArgumentException($"Hand without exactly 13 cards found in '{handsString}'");
+
+                if (hands.Count(h => h == hand) > 1)
+                    throw new ArgumentException($"Multiple identical hands found in '{handsString}'");
+
+                for (var i = 0; i < hand.Length; i+=2)
+                {
+                    var card = hand.Substring(i, 2);
+                    if (knownHands.Any(h => h != hand && h.Contains(card)))
+                        throw new ArgumentException($"Multiple hands with {card} found in '{handsString}'");
+                }
             }
 
             return hands;

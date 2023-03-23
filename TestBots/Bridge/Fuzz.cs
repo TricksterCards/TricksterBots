@@ -29,7 +29,8 @@ namespace TestBots.Bridge
                     dummy = dummy,
                     hand = string.Join("", hand),
                     history = history,
-                    plays = plays
+                    plays = plays,
+                    type = $"Fuzz {i}",
                 });
             }
 
