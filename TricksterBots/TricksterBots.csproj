@@ -107,6 +107,13 @@
     <Compile Include="Bots\Bridge\bridgebid\phases\ResponderRebid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\phases\Response.cs" />
     <Compile Include="Bots\Bridge\BridgeBot.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BiddingSummary.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Constraint.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Opener.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Points.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Responder.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Shape.cs" />
     <Compile Include="Bots\Euchre\EuchreBot.cs" />
     <Compile Include="Bots\FiveHundred\FiveHundredBot.cs" />
     <Compile Include="Bots\Hearts\HeartsBot.cs" />

@@ -230,7 +230,7 @@ namespace TricksterBots.Bots {
 
         public void ResponderGameChoice(InterpretedBid rebid, Suit openersMajor)
         {
-            // TODO: NEED TO BID IF POSSIBLE... Otherewise handle intereference...
+            // TODO: NEED TO Bid IF POSSIBLE... Otherewise handle intereference...
             if (rebid.RhoBid)
             {
                 CompetitiveAuction.HandleInterference(rebid);

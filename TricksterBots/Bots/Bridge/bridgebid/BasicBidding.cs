@@ -4,13 +4,22 @@ using Trickster.cloud;
 
 namespace Trickster.Bots
 {
+    public enum Direction { North, East, South, West }
+    public enum Vulnerability { None, Favorable, BothVul, Unfavorable }
+
+    public enum Pair { NorthSouth, EastWest }
+
+
     /// <summary>
     ///     Based on ACBL Bridge Series "Bidding in the 21st Century" updated 2010 edition
     /// </summary>
     public class BasicBidding
     {
-        private static readonly Suit[] BasicSuits = { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades };
+        public static readonly Suit[] BasicSuits = { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades };
         public static readonly Suit[] MajorSuits = { Suit.Hearts, Suit.Spades };
+
+        public static readonly Direction[] Directions = { Direction.North, Direction.East, Direction.South, Direction.West };
+
 
         public static int ComputeDistributionPoints(Hand hand)
         {

@@ -119,7 +119,7 @@ namespace Trickster.Bots
             //  we have 4C bid after our partner has bid 
             var partnerBid = bid.History[bid.Index - 2];
 
-            //  SAYC Booklet: 4C IS GERBER OVER ANY 1NT OR 2NT BY PARTNER, INCLUDING A REBID OF 1NT OR 2NT
+            //  SAYC Booklet: 4C IS GERBER OVER ANY 1NT OR 2NT BY PARTNER, INCLUDING A REBid OF 1NT OR 2NT
             if (partnerBid.BidConvention != BidConvention.None)
                 return false;
 
