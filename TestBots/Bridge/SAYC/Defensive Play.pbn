@@ -159,6 +159,49 @@ S5 -  -  S8
 HJ H2 H4 HQ
 C2 -  -  SA
 
+% Trump in if dummy hasn't played and we can see they have high
+
+[Event "2nd Hand Defense: Trump in if dummy is next and has high"]
+[Deal "N:.JT985.J432.T432 AT9.432.KQ765.98 - -"]
+[Contract "2C"]
+[Play "N"]
+HJ H2 H4 HQ
+C2 -  -  S3
+
+% Trump in if partner is void in suit and trump
+
+[Event "2nd Hand Defense: Trump in if partner is void in suit and trump"]
+[Deal "N:Q.JT98.J432.T432 T98.432.KQ765.98 - -"]
+[Contract "2C"]
+[Play "N"]
+HJ H2 H4 HQ
+C2 C8 H5 CA
+SQ S9 H6 SA
+C3 -  -  S3
+
+% General principle: if you have a trick that is now good as the defender,
+% and it is the "setting trick" aka the trick to defeat the contract,
+% take it.
+
+[Event "2nd Hand Defense: Take the setting trick"]
+[Deal "N:65.K65.AJ32.T532 - - JT98.987.987.A87"]
+[Contract "7NT"]
+[Play "S"]
+CK CA C2 C4
+-  D7 DA -
+
+% Other defensive rules against both suit and notrump:
+% If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
+% and the player behind dummy does not have K,
+% try to win tricks quickly
+
+[Event "2nd Hand Defense: Win tricks quickly if dummy has long, good side suit"]
+[Deal "N:654.AQ.J432.T532 QJT.K9.AKQ87.987 - -"]
+[Contract "2S"]
+[Play "N"]
+C2 C7 CK CA
+HA -  -  H5
+
 % If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
 
 [Event "2nd Hand Defense: Cover led honor"]
@@ -233,6 +276,29 @@ C2 CT C4 C3
 [Contract "3NT"]
 [Play "S"]
 H2 H3 HJ -
+
+% General principle: if you have a trick that is now good as the defender,
+% and it is the "setting trick" aka the trick to defeat the contract,
+% take it.
+
+[Event "3rd Hand Defense: Take the setting trick"]
+[Deal "N:65.K65.AJ32.T532 - - JT98.987.987.A87"]
+[Contract "7NT"]
+[Play "S"]
+CK C7 C2 C4
+D4 D7 DA -
+
+% Other defensive rules against both suit and notrump:
+% If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
+% and the player behind dummy does not have K,
+% try to win tricks quickly
+
+[Event "3rd Hand Defense: Win tricks quickly if dummy has long, good side suit"]
+[Deal "N:654.AQ.J432.T532 QJT.K9.AKQ87.987 - -"]
+[Contract "2S"]
+[Play "N"]
+C2 C7 CA CK
+HA -  H3 H7
 
 % If you have touching honors, play the lower one
 
