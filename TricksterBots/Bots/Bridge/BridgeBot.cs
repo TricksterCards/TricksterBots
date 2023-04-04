@@ -752,13 +752,24 @@ namespace Trickster.Bots
         private Card SuggestSecondHandDefensivePlay(SuggestCardState<BridgeOptions> state)
         {
             var ledCard = state.trick[0];
+            var dummy = GetDummy(state);
+            var dummyCardsInSuit = new Hand(dummy.Hand).Where(c => c.suit == ledCard.suit).OrderBy(c => c.rank).ToList();
             Card coverHonor = null;
 
-            // Trump in if the first card played is known to be high
+            // If we can trump in...
             var legalTrump = state.legalCards.Where(c => c.suit == state.trumpSuit).OrderBy(c => c.rank);
-            var dummyCardsInSuit = new Hand(GetDummy(state).Hand).Where(c => c.suit == ledCard.suit).ToList();
-            if (legalTrump.Any() && ledCard.suit != state.trumpSuit && IsCardHigh(ledCard, dummyCardsInSuit.Concat(state.cardsPlayed)))
-                return legalTrump.First();
+            if (ledCard.suit != state.trumpSuit && legalTrump.Any())
+            {
+                // Trump in if the first card played is high
+                if (IsCardHigh(ledCard, dummyCardsInSuit.Concat(state.cardsPlayed)))
+                    return legalTrump.First();
+
+                // Trump in if dummy plays next and has high
+                var dummyHighCardInSuit = dummyCardsInSuit.LastOrDefault();
+                var isDummyLHO = dummy.Seat == GetNextSeatAfter(state.player.Seat, state.players.Count);
+                if (isDummyLHO && IsCardHigh(dummyCardsInSuit.Last(), state.cardsPlayed))
+                    return legalTrump.First();
+            }
 
             // If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
             if (ledCard.rank >= Rank.Ten)
