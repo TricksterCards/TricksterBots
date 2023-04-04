@@ -769,6 +769,11 @@ namespace Trickster.Bots
                 var isDummyLHO = dummy.Seat == GetNextSeatAfter(state.player.Seat, state.players.Count);
                 if (isDummyLHO && IsCardHigh(dummyCardsInSuit.Last(), state.cardsPlayed))
                     return legalTrump.First();
+
+                // Trump in if partner is void in suit and trump
+                var partner = GetPartner(state);
+                if (partner.VoidSuits.Contains(ledCard.suit) && partner.VoidSuits.Contains(state.trumpSuit))
+                    return legalTrump.First();
             }
 
             // If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
