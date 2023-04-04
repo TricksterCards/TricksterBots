@@ -435,6 +435,25 @@ namespace Trickster.Bots
             return unbidSuits.ToList();
         }
 
+        private bool DummyHasLongGoodSideSuit(SuggestCardState<BridgeOptions> state)
+        {
+            // If dummy has a long side suit that will be good, like AKQxx,
+            // TODO: or AQJTxx (when the player behind dummy does not have K),
+            //       try to take tricks quickly
+            // Note: only applies with one missing honor (K or Q)
+            var dummyHand = new Hand(GetDummy(state).Hand);
+            var knownCards = dummyHand.Concat(state.cardsPlayed).ToList();
+            var sideSuits = SuitRank.stdSuits.Where(s => s != state.trumpSuit);
+            var goodSideSuits = sideSuits.Where(s =>
+            {
+                var cardsInSuit = dummyHand.Where(c => c.suit == s);
+                var hasEnoughLength = cardsInSuit.Count() >= 5;
+                var hasEnoughStrength = cardsInSuit.Count(c => IsCardHigh(c, knownCards)) >= 3;
+                return hasEnoughLength && hasEnoughStrength;
+            });
+            return goodSideSuits.Any();
+        }
+
         private Card LeadAceOrLowOrFourthBest(List<Card> cards)
         {
             if (cards[0].rank == Rank.Ace)
@@ -653,23 +672,9 @@ namespace Trickster.Bots
 
             // Other defensive rules against both suit and notrump:
 
-            // If dummy has a long side suit that will be good, like AKQxx,
-            // try to win tricks quickly
-            var knownCards = dummyHand.Concat(state.cardsPlayed).ToList();
-            var sideSuits = SuitRank.stdSuits.Where(s => s != state.trumpSuit);
-            var goodSideSuits = sideSuits.Where(s =>
-            {
-                var cardsInSuit = dummyHand.Where(c => c.suit == s);
-                var hasEnoughLength = cardsInSuit.Count() >= 5;
-                var hasEnoughStrength = cardsInSuit.Count(c => IsCardHigh(c, knownCards)) >= 3;
-                return hasEnoughLength && hasEnoughStrength;
-            });
-            if (goodSideSuits.Any())
+            // try to win tricks quickly if dummy has a long, good side suit
+            if (DummyHasLongGoodSideSuit(state))
                 return TryTakeEm(state);
-
-            // TODO: or AQJ10xx (when the player behind dummy does not have K),
-            //       try to take tricks quickly
-            // Note: only applies with one missing honor (K or Q)
 
             // Leads after trick 1: same general rules apply (playing touching honors, etc).
             // * Give priority to returning partner's suit (especially in NT),
@@ -776,6 +781,10 @@ namespace Trickster.Bots
                     return legalTrump.First();
             }
 
+            // try to win tricks quickly if dummy has a long, good side suit
+            if (DummyHasLongGoodSideSuit(state))
+                return TryTakeEm(state);
+
             // If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
             if (ledCard.rank >= Rank.Ten)
             {
@@ -860,6 +869,10 @@ namespace Trickster.Bots
             var isFourthSeatVoid = fourthSeatPlayer.VoidSuits.Contains(state.cardTakingTrick.suit);
             if (state.isPartnerTakingTrick && isFourthSeatVoid)
                 return SuggestDefensiveDiscard(state);
+
+            // try to win tricks quickly if dummy has a long, good side suit
+            if (DummyHasLongGoodSideSuit(state))
+                return TryTakeEm(state);
 
             // If dummy has Qxx, and you play third after dummy plays a low card from KJx, you'd play J.
             // If you have touching honors, play the lower one
