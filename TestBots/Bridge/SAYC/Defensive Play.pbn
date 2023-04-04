@@ -159,6 +159,26 @@ S5 -  -  S8
 HJ H2 H4 HQ
 C2 -  -  SA
 
+% Trump in if dummy hasn't played and we can see they have high
+
+[Event "2nd Hand Defense: Trump in if dummy is next and has high"]
+[Deal "N:.JT985.J432.T432 AT9.432.KQ765.98 - -"]
+[Contract "2C"]
+[Play "N"]
+HJ H2 H4 HQ
+C2 -  -  S3
+
+% Trump in if partner is void in suit and trump
+
+[Event "2nd Hand Defense: Trump in if partner is void in suit and trump"]
+[Deal "N:Q.JT98.J432.T432 KT9.432.KQ765.98 - -"]
+[Contract "2C"]
+[Play "N"]
+HJ H2 H4 HQ
+C2 C8 H5 CA
+SQ S9 H6 SA
+C3 -  -  S3
+
 % If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
 
 [Event "2nd Hand Defense: Cover led honor"]
