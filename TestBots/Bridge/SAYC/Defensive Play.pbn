@@ -179,6 +179,18 @@ C2 C8 H5 CA
 SQ S9 H6 SA
 C3 -  -  S3
 
+% Other defensive rules against both suit and notrump:
+% If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
+% and the player behind dummy does not have K,
+% try to win tricks quickly
+
+[Event "2nd Hand Defense: Win tricks quickly if dummy has long, good side suit"]
+[Deal "N:654.AQ.J432.T532 QJT.K9.AKQ87.987 - -"]
+[Contract "2S"]
+[Play "N"]
+C2 C7 CK CA
+HA -  -  H5
+
 % If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
 
 [Event "2nd Hand Defense: Cover led honor"]
@@ -253,6 +265,18 @@ C2 CT C4 C3
 [Contract "3NT"]
 [Play "S"]
 H2 H3 HJ -
+
+% Other defensive rules against both suit and notrump:
+% If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
+% and the player behind dummy does not have K,
+% try to win tricks quickly
+
+[Event "3rd Hand Defense: Win tricks quickly if dummy has long, good side suit"]
+[Deal "N:654.AQ.J432.T532 QJT.K9.AKQ87.987 - -"]
+[Contract "2S"]
+[Play "N"]
+C2 C7 CA CK
+HA -  H3 H7
 
 % If you have touching honors, play the lower one
 
