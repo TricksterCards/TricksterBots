@@ -179,6 +179,17 @@ C2 C8 H5 CA
 SQ S9 H6 SA
 C3 -  -  S3
 
+% General principle: if you have a trick that is now good as the defender,
+% and it is the "setting trick" aka the trick to defeat the contract,
+% take it.
+
+[Event "2nd Hand Defense: Take the setting trick"]
+[Deal "N:65.K65.AJ32.T532 - - JT98.987.987.A87"]
+[Contract "7NT"]
+[Play "S"]
+CK CA C2 C4
+-  D7 DA -
+
 % Other defensive rules against both suit and notrump:
 % If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
 % and the player behind dummy does not have K,
@@ -265,6 +276,17 @@ C2 CT C4 C3
 [Contract "3NT"]
 [Play "S"]
 H2 H3 HJ -
+
+% General principle: if you have a trick that is now good as the defender,
+% and it is the "setting trick" aka the trick to defeat the contract,
+% take it.
+
+[Event "3rd Hand Defense: Take the setting trick"]
+[Deal "N:65.K65.AJ32.T532 - - JT98.987.987.A87"]
+[Contract "7NT"]
+[Play "S"]
+CK C7 C2 C4
+D4 D7 DA -
 
 % Other defensive rules against both suit and notrump:
 % If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
