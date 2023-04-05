@@ -247,10 +247,7 @@ namespace TestBots
                 {
                     var card = trick[j];
                     var seat = (nextSeat + j) % 4;
-                    var player = players[seat];
                     cardsPlayedInOrder += $"{seat}{card}";
-                    if (j > 0 && card[1] != trick[0][1])
-                        player.VoidSuits.Add(LetterToSuit[trick[0][1]]);
                 }
                 if (trick.Count == 4)
                 {
