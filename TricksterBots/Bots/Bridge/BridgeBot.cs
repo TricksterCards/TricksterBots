@@ -774,9 +774,8 @@ namespace Trickster.Bots
                     return legalTrump.First();
 
                 // Trump in if dummy plays next and has high
-                var dummyHighCardInSuit = dummyCardsInSuit.LastOrDefault();
                 var isDummyLHO = dummy.Seat == GetNextSeatAfter(state.player.Seat, state.players.Count);
-                if (isDummyLHO && IsCardHigh(dummyCardsInSuit.Last(), state.cardsPlayed))
+                if (isDummyLHO && dummyCardsInSuit.Any() && IsCardHigh(dummyCardsInSuit.Last(), state.cardsPlayed))
                     return legalTrump.First();
 
                 // Trump in if partner is void in suit and trump
