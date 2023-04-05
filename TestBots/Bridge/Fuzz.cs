@@ -159,6 +159,7 @@ namespace TestBots.Bridge
                     var card = legalCards[random.Next(legalCards.Count)];
                     trick += card;
                     plays.Add(card);
+                    hand.Remove(card);
 
                     var rank = PBN.CardRanks.IndexOf(card[0]);
                     var topRank = PBN.CardRanks.IndexOf(topCard[0]);
@@ -191,6 +192,7 @@ namespace TestBots.Bridge
                     ledSuit = card[1];
                     nextPlaySeat = (nextPlaySeat + 1) % 4;
                     plays.Add(card);
+                    hand.Remove(card);
                 }
             }
             return plays.ToArray();

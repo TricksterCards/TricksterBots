@@ -379,12 +379,22 @@ namespace Trickster.Bots
                 var lho = state.players.Single(p => p.Seat == (state.player.Seat + 1) % state.players.Count);
                 var rho = state.players.Single(p => p.Seat == (state.player.Seat - 1 + state.players.Count) % state.players.Count);
 
-                // Don't count off suit boss cards if opponents still have trump
-                if (!lho.VoidSuits.Contains(state.trumpSuit) || !rho.VoidSuits.Contains(state.trumpSuit))
+                // Don't count off suit boss cards if opponents still have trump (excluding those who have already played to the trick)
+                if (!lho.VoidSuits.Contains(state.trumpSuit) || (state.trick.Count == 0 && !rho.VoidSuits.Contains(state.trumpSuit)))
                     bossCards = bossCards.Where(c => c.suit == state.trumpSuit);
             }
 
             return bossCards.ToList();
+        }
+
+        private int GetTricksNeededToSet(SuggestCardState<BridgeOptions> state)
+        {
+            var declarer = GetDeclarer(state);
+            var partner = GetPartner(state);
+            var level = new DeclareBid(declarer.Bid).level;
+            var takenTricks = state.player.CardsTaken.Length / 8 + partner.CardsTaken.Length / 8;
+            var neededTricksToSet = 14 - (level + 6) - takenTricks;
+            return neededTricksToSet;
         }
 
         private int AdjustedRank(Card card, IReadOnlyList<Card> played)
@@ -433,6 +443,25 @@ namespace Trickster.Bots
             var interpretedHistory = InterpretedBid.InterpretHistory(history);
             var unbidSuits = SuitRank.stdSuits.Where(suit => interpretedHistory.All(b => b.HandShape[suit].Min <= 2));
             return unbidSuits.ToList();
+        }
+
+        private bool DummyHasLongGoodSideSuit(SuggestCardState<BridgeOptions> state)
+        {
+            // If dummy has a long side suit that will be good, like AKQxx,
+            // TODO: or AQJTxx (when the player behind dummy does not have K),
+            //       try to take tricks quickly
+            // Note: only applies with one missing honor (K or Q)
+            var dummyHand = new Hand(GetDummy(state).Hand);
+            var knownCards = dummyHand.Concat(state.cardsPlayed).ToList();
+            var sideSuits = SuitRank.stdSuits.Where(s => s != state.trumpSuit);
+            var goodSideSuits = sideSuits.Where(s =>
+            {
+                var cardsInSuit = dummyHand.Where(c => c.suit == s);
+                var hasEnoughLength = cardsInSuit.Count() >= 5;
+                var hasEnoughStrength = cardsInSuit.Count(c => IsCardHigh(c, knownCards)) >= 3;
+                return hasEnoughLength && hasEnoughStrength;
+            });
+            return goodSideSuits.Any();
         }
 
         private Card LeadAceOrLowOrFourthBest(List<Card> cards)
@@ -642,34 +671,14 @@ namespace Trickster.Bots
             // General principle: if you have a trick that is now good as the defender,
             // and it is the "setting trick" aka the trick to defeat the contract,
             // take it.
-            var declarer = GetDeclarer(state);
-            var partner = GetPartner(state);
-            var level = new DeclareBid(declarer.Bid).level;
-            var takenTricks = state.player.CardsTaken.Length / 8 + partner.CardsTaken.Length / 8;
-            var neededTricksToSet = 14 - (level + 6) - takenTricks;
+            int tricksNeededToSet = GetTricksNeededToSet(state);
             var sureWinners = GetSureWinners(state);
-            if (sureWinners.Any() && sureWinners.Count() >= neededTricksToSet)
+            if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
                 return sureWinners.First();
 
-            // Other defensive rules against both suit and notrump:
-
-            // If dummy has a long side suit that will be good, like AKQxx,
-            // try to win tricks quickly
-            var knownCards = dummyHand.Concat(state.cardsPlayed).ToList();
-            var sideSuits = SuitRank.stdSuits.Where(s => s != state.trumpSuit);
-            var goodSideSuits = sideSuits.Where(s =>
-            {
-                var cardsInSuit = dummyHand.Where(c => c.suit == s);
-                var hasEnoughLength = cardsInSuit.Count() >= 5;
-                var hasEnoughStrength = cardsInSuit.Count(c => IsCardHigh(c, knownCards)) >= 3;
-                return hasEnoughLength && hasEnoughStrength;
-            });
-            if (goodSideSuits.Any())
+            // try to win tricks quickly if dummy has a long, good side suit
+            if (DummyHasLongGoodSideSuit(state))
                 return TryTakeEm(state);
-
-            // TODO: or AQJ10xx (when the player behind dummy does not have K),
-            //       try to take tricks quickly
-            // Note: only applies with one missing honor (K or Q)
 
             // Leads after trick 1: same general rules apply (playing touching honors, etc).
             // * Give priority to returning partner's suit (especially in NT),
@@ -752,13 +761,40 @@ namespace Trickster.Bots
         private Card SuggestSecondHandDefensivePlay(SuggestCardState<BridgeOptions> state)
         {
             var ledCard = state.trick[0];
+            var dummy = GetDummy(state);
+            var dummyCardsInSuit = new Hand(dummy.Hand).Where(c => c.suit == ledCard.suit).OrderBy(c => c.rank).ToList();
             Card coverHonor = null;
 
-            // Trump in if the first card played is known to be high
+            // If we can trump in...
             var legalTrump = state.legalCards.Where(c => c.suit == state.trumpSuit).OrderBy(c => c.rank);
-            var dummyCardsInSuit = new Hand(GetDummy(state).Hand).Where(c => c.suit == ledCard.suit).ToList();
-            if (legalTrump.Any() && ledCard.suit != state.trumpSuit && IsCardHigh(ledCard, dummyCardsInSuit.Concat(state.cardsPlayed)))
-                return legalTrump.First();
+            if (ledCard.suit != state.trumpSuit && legalTrump.Any())
+            {
+                // Trump in if the first card played is high
+                if (IsCardHigh(ledCard, dummyCardsInSuit.Concat(state.cardsPlayed)))
+                    return legalTrump.First();
+
+                // Trump in if dummy plays next and has high
+                var isDummyLHO = dummy.Seat == GetNextSeatAfter(state.player.Seat, state.players.Count);
+                if (isDummyLHO && dummyCardsInSuit.Any() && IsCardHigh(dummyCardsInSuit.Last(), state.cardsPlayed))
+                    return legalTrump.First();
+
+                // Trump in if partner is void in suit and trump
+                var partner = GetPartner(state);
+                if (partner.VoidSuits.Contains(ledCard.suit) && partner.VoidSuits.Contains(state.trumpSuit))
+                    return legalTrump.First();
+            }
+
+            // General principle: if you have a trick that is now good as the defender,
+            // and it is the "setting trick" aka the trick to defeat the contract,
+            // take it.
+            int tricksNeededToSet = GetTricksNeededToSet(state);
+            var sureWinners = GetSureWinners(state);
+            if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
+                return sureWinners.First();
+
+            // try to win tricks quickly if dummy has a long, good side suit
+            if (DummyHasLongGoodSideSuit(state))
+                return TryTakeEm(state);
 
             // If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
             if (ledCard.rank >= Rank.Ten)
@@ -835,14 +871,30 @@ namespace Trickster.Bots
             if (isDummyRHO)
                 knownCards = knownCards.Concat(dummyHand).ToList();
 
-            // If partner is winning with an honor, play low
-            if (state.isPartnerTakingTrick && state.cardTakingTrick.rank >= Rank.Ten)
+            // If partner is winning with a high card, play low
+            if (state.isPartnerTakingTrick && IsCardHigh(state.cardTakingTrick, knownCards))
                 return SuggestDefensiveDiscard(state);
 
             // If 4th seat is void, we should play low if partner is winning
             var fourthSeatPlayer = state.players.Single(p => p.Seat == GetNextSeat(state));
             var isFourthSeatVoid = fourthSeatPlayer.VoidSuits.Contains(state.cardTakingTrick.suit);
             if (state.isPartnerTakingTrick && isFourthSeatVoid)
+                return SuggestDefensiveDiscard(state);
+
+            // General principle: if you have a trick that is now good as the defender,
+            // and it is the "setting trick" aka the trick to defeat the contract,
+            // take it.
+            int tricksNeededToSet = GetTricksNeededToSet(state);
+            var sureWinners = GetSureWinners(state);
+            if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
+                return sureWinners.First();
+
+            // try to win tricks quickly if dummy has a long, good side suit
+            if (DummyHasLongGoodSideSuit(state))
+                return TryTakeEm(state);
+
+            // If partner is winning with an honor, play low
+            if (state.isPartnerTakingTrick && state.cardTakingTrick.rank >= Rank.Ten)
                 return SuggestDefensiveDiscard(state);
 
             // If dummy has Qxx, and you play third after dummy plays a low card from KJx, you'd play J.
