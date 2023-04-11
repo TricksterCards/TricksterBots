@@ -10,6 +10,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
+    /*
     public class Responder : Bidder
     {
 
@@ -165,29 +166,28 @@ namespace TricksterBots.Bots.Bridge
                 {
                     BidRule[] b =
                     {
-                              new BidRule(1, Suit.Unknown, 0, Points(Respond1NT), Balanced()),
+                        new BidRule(1, Suit.Unknown, 0, Points(Respond1NT), Balanced()),
 
-                    // Two level minor bids are handled by NewMinorSuit2Level...
-                    // THIS IS HIGHER PRIORITY THAN SHOWING MINORS NO MATTER WHAT THE LENGTH...
-                    new BidRule(2, Suit.Hearts, 1000, Points(NewSuit2Level), Shape(5, 11)),
+                        // Two level minor bids are handled by NewMinorSuit2Level...
+                        // THIS IS HIGHER PRIORITY THAN SHOWING MINORS NO MATTER WHAT THE LENGTH...
+                        new BidRule(2, Suit.Hearts, 1000, Points(NewSuit2Level), Shape(5, 11)),
 
-                    new BidRule(2, Suit.Spades, 200, DummyPoints(Suit.Spades, Raise1), Shape(3, 8)),
+                        new BidRule(2, Suit.Spades, 200, DummyPoints(Suit.Spades, Raise1), Shape(3, 8)),
 
 
-                    new BidRule(2, Suit.Unknown, 200, Points(RaiseTo2NT), Balanced()),
+                        new BidRule(2, Suit.Unknown, 200, Points(RaiseTo2NT), Balanced()),
 
-                    new BidRule(3, Suit.Spades, 1, DummyPoints(Suit.Spades, LimitRaise), Shape(4, 8)),
+                        new BidRule(3, Suit.Spades, 1, DummyPoints(Suit.Spades, LimitRaise), Shape(4, 8)),
 
-                    new BidRule(3, Suit.Unknown, 1, Points(RaiseTo3NT), LongestMajor(3)),
+                        new BidRule(3, Suit.Unknown, 1, Points(RaiseTo3NT), LongestMajor(3)),
 
-                    // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
+                        // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-                    new BidRule(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11)),
+                        new BidRule(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11)),
 
-                    new BidRule(4, Suit.Spades, 1, DummyPoints(Suit.Spades, Weak4Level), Shape(5, 8))
-                };
+                        new BidRule(4, Suit.Spades, 1, DummyPoints(Suit.Spades, Weak4Level), Shape(5, 8))
+                    };
                     bids.Concat(b);
-
                 }
             }
             else if (partnersBid.Is(1, Suit.Unknown) && lhoBid.IsPass)
@@ -263,6 +263,6 @@ namespace TricksterBots.Bots.Bridge
         }
 
     }
-    
+    */
 
 }

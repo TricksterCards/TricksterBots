@@ -12,6 +12,8 @@ namespace TricksterBots.Bots.Bridge
 
     public class Points : HiddenConstraint
     {
+        
+
         protected int _min;
         protected int _max;
         protected Suit? _trumpSuit;
@@ -37,13 +39,8 @@ namespace TricksterBots.Bots.Bridge
         // Returns the points for the hand, adjusted for dummy points if appropriate.
         protected int GetPoints(Bid bid, HandSummary handSummary)
         {
-            int points = handSummary.HighCardPoints;
-            if (_countAsDummy)
-            {
-                Suit trumpSuit = _trumpSuit ?? (Suit)bid.Suit;
-                points += BasicBidding.DummyPoints(handSummary.Hand, trumpSuit);
-            }
-            return points;
+            if (!_countAsDummy) { return handSummary.OpeningPoints; }
+			return handSummary.DummyPoints(bid.SuitIfNot(_trumpSuit));
         }
 
         public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
@@ -58,9 +55,9 @@ namespace TricksterBots.Bots.Bridge
             return (_min <= points.max && _max >= points.min);
         }
 
-        public override void UpdateKnownState(Bid bid, Direction direction, BiddingSummary biddingSummary, KnownState knownState)
+        public override void UpdateShownState(Bid bid, Direction direction, BiddingSummary biddingSummary, ShownState shownState)
         {
-            knownState.ShowsPoints(_min, _max);
+            shownState.ShowsPoints(_min, _max);
         }
     }
 
@@ -94,14 +91,12 @@ namespace TricksterBots.Bots.Bridge
         // out at 13 points since 15+13=28 which is the max for the pair...   I think min is the critical
         // basis for everything, with the _max - _min giving us the range for the min->max known...
 
-        public override void UpdateKnownState(Bid bid, Direction direction, BiddingSummary biddingSummary, KnownState knownState)
+        public override void UpdateShownState(Bid bid, Direction direction, BiddingSummary biddingSummary, ShownState shownState)
         {
             (int min, int max) partnerPoints = biddingSummary.Positions[direction].Partner.ShownPoints;
             var min = Math.Min(0, _min - partnerPoints.min);
             var max = min + _max - _min;        // TODO: IS THIS RIGHT?  OR MAX+MAX?  NOT SURE.. THINK IT THORUGH
-            knownState.ShowsPoints(min, max);
+            shownState.ShowsPoints(min, max);
         }
     }
-
-
 }

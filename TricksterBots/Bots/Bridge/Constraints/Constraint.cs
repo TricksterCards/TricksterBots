@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -14,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
+
 
 namespace TricksterBots.Bots.Bridge
 {
@@ -30,35 +32,9 @@ namespace TricksterBots.Bots.Bridge
     public abstract class HiddenConstraint : Constraint
     {
         public abstract bool CouldConform(Bid bid, Direction direction, BiddingSummary biddingSummary);
-        public abstract void UpdateKnownState(Bid bid, Direction direction, BiddingSummary biddingSummary, KnownState knownState);
+        public abstract void UpdateShownState(Bid bid, Direction direction, BiddingSummary biddingSummary, ShownState shownState);
     }
 
-
-
-    public class BidRule
-    {
-        public Bid Bid { get; }
-
-        private Constraint[] _contraints;
-        public BidRule(int level, Suit suit, int priority, params Constraint[] constraints) 
-        {
-            this.Bid = new Bid(level, suit);
-            this._contraints = constraints;
-        }
-        public BidRule(CallType callType, int priority, params Constraint[] constraints) 
-        {
-            this.Bid = new Bid(callType);
-            this._contraints = constraints;
-        }
-        public bool Conforms(Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
-        {
-            foreach (Constraint constraint in _contraints)
-            {
-                if (!constraint.Conforms(Bid, direction, handSummary, biddingSummary)) { return false; }
-            }
-            return true;
-        }
-    }
 
 
 
@@ -119,67 +95,7 @@ namespace TricksterBots.Bots.Bridge
 
         */
 
-    public class HandSummary
-    {
-        public Hand Hand { get; }
-        public Dictionary<Suit, int> Counts { get; }
-        public int HighCardPoints { get; }
-        public bool IsBalanced { get; }
-        public bool Is4333 { get; }
 
-        public HandSummary(Hand hand)
-        {
-            Hand = hand;
-            Counts = BasicBidding.CountsBySuit(hand);
-            HighCardPoints = BasicBidding.ComputeHighCardPoints(hand);
-            IsBalanced = BasicBidding.IsBalanced(hand);
-            Is4333 = BasicBidding.Is4333(Counts);
-        }
-    }
-
-
-
-    public class KnownState
-    {
-        private int _pointsMin = 0;
-        private int _pointsMax = int.MaxValue;
-        private Dictionary<Suit, (int min, int max)> _suitShapes = new Dictionary<Suit, (int min, int max)>();
-        public KnownState()
-        {
-
-        }
-
-        public void ShowsPoints(int min, int max)
-        {
-            _pointsMin = Math.Max(min, _pointsMin);
-            _pointsMax = Math.Min(max, _pointsMax);
-            // TODO: Assert or throw if _pointsMin > _pointsMax...
-        }
-
-        public void ShowsShape(Suit suit, int min, int max)
-        {
-            (int min, int max) shape = _suitShapes.TryGetValue(suit, out shape) ? shape : (0, 13);
-            shape.min = Math.Max(min, shape.min);
-            shape.max = Math.Min(max, shape.max);
-            _suitShapes[suit] = shape;
-            // TODO: Throw if max<min...
-        }
-
-        internal void Union(KnownState other)
-        {
-            _pointsMin = Math.Min(_pointsMin, other._pointsMin);
-            _pointsMax = Math.Max(_pointsMax, other._pointsMax);
-            foreach (Suit suit in BasicBidding.BasicSuits)
-            {
-                (int min, int max) shapeThis = this._suitShapes.TryGetValue(suit, out shapeThis) ? shapeThis : (0, 13);
-                (int min, int max) shapeOther = other._suitShapes.TryGetValue(suit, out shapeOther) ? shapeOther : (0, 13);
-                shapeThis.min = Math.Min(shapeThis.min, shapeOther.min);
-                shapeThis.max = Math.Max(shapeThis.max, shapeOther.max);
-                this._suitShapes[suit] = shapeThis;
-            }
-        }
-
-    }
 
 
 
@@ -226,7 +142,44 @@ namespace TricksterBots.Bots.Bridge
     }
 
 
-    public class Seat : Constraint
+	public class PreviousBid : Constraint
+	{
+		private Suit _suit;
+		private int _level;
+		private bool _desiredValue;
+
+		public PreviousBid(Suit suit, bool desiredValue)
+		{
+			this._level = 0;
+			this._suit = suit;
+			this._desiredValue = desiredValue;
+		}
+
+		public PreviousBid(int level, Suit suit, bool desiredValue)
+		{
+			this._level = level;
+			this._suit = suit;
+			this._desiredValue = desiredValue;
+		}
+
+		public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
+		{
+			var we = biddingSummary.Positions[direction];
+			if (we.Bids.Count > 0)
+			{
+                var lastBid = we.Bids.Last();
+				if (lastBid.CallType == CallType.Bid && lastBid.Suit == _suit &&
+					(_level == 0 || _level == lastBid.Level))
+				{
+					return _desiredValue;
+				}
+			}
+			return !_desiredValue;
+		}
+	}
+
+
+	public class Seat : Constraint
     {
         private int[] seats;
         public Seat(params int[] seats)
@@ -240,7 +193,87 @@ namespace TricksterBots.Bots.Bridge
         }
     }
 
+  
+    class BetterSuit : HiddenConstraint
+    {
+        private Suit? _better;
+        private Suit? _worse;
+        private Suit? _defaultIfEqual;
+		private bool _lengthOnly;
 
+
+		// TODO: Move this to BasicBidding after massive merge
+		public Suit HigherRanking(Suit s1, Suit s2)
+        {
+            Debug.Assert(s1 != s2);
+            Debug.Assert(s1 == Suit.Clubs || s1 == Suit.Diamonds || s1 == Suit.Hearts || s1 == Suit.Spades);
+			Debug.Assert(s2 == Suit.Clubs || s2 == Suit.Diamonds || s2 == Suit.Hearts || s2 == Suit.Spades);
+            switch (s1)
+            {
+                case Suit.Clubs:
+                    return s2;
+                case Suit.Diamonds:
+                    return (s2 == Suit.Clubs) ? s1 : s2;
+                case Suit.Hearts:
+					return (s2 == Suit.Spades) ? s2 : s1;
+                case Suit.Spades:
+                    return s1;
+			}
+            throw new ArgumentException();  // TODO: Is this OK?  Is it right?
+		}
+
+        // Suit "better" must be better than suit "worse".  If lengthOnly is true then length is the only consideration
+        // and the default value will be returned
+		public BetterSuit(Suit? better, Suit? worse, Suit? defaultIfEqual = null, bool lengthOnly = false)
+        {
+            Debug.Assert(better != worse);
+            Debug.Assert(defaultIfEqual == better || defaultIfEqual == worse);
+            // TODO: More checks.  Should they be Assert or throw?
+            this._better = better;
+            this._worse = worse;
+            this._defaultIfEqual = defaultIfEqual;
+			this._lengthOnly = lengthOnly;
+        }
+
+        // TODO: This is repeated too often.  Maybe move to Constraint...
+       
+
+		public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
+		{
+            var better = bid.SuitIfNot(_better);
+            var worse = bid.SuitIfNot(_worse);
+			if (handSummary.Counts[better] > handSummary.Counts[worse]) { return true; }
+            if (handSummary.Counts[better] < handSummary.Counts[worse]) { return false; }
+            if (!_lengthOnly)
+            {
+                int hcpBetter = BasicBidding.ComputeHighCardPoints(handSummary.Hand, better);
+                int hcpWorse = BasicBidding.ComputeHighCardPoints(handSummary.Hand, better);
+                if (hcpBetter != hcpWorse)
+                {
+
+                    return hcpBetter > hcpWorse;
+                }
+            }
+			return (better == bid.SuitIfNot(_defaultIfEqual));
+		}
+
+		public override bool CouldConform(Bid bid, Direction direction, BiddingSummary biddingSummary)
+		{
+			var better = bid.SuitIfNot(_better);
+			var worse = bid.SuitIfNot(_worse);
+            var ps = biddingSummary.Positions[direction];
+			return (ps.Suits[better].Max <= ps.Suits[worse].Min);
+		}
+
+		public override void UpdateShownState(Bid bid, Direction direction, BiddingSummary biddingSummary, ShownState shownState)
+		{
+			var better = bid.SuitIfNot(_better);
+			var worse = bid.SuitIfNot(_worse);
+			// The worse suit can not be longer than the better suit...
+			var ps = biddingSummary.Positions[direction];
+            shownState.ShowsShape(worse, ps.Suits[worse].Min, Math.Min(ps.Suits[worse].Max, ps.Suits[better].Max));
+		}
+	}
 
 
     // TODO: Could make this a more generic composite
@@ -266,10 +299,10 @@ namespace TricksterBots.Bots.Bridge
                     _c2.CouldConform(bid, direction, biddingSummary);
         }
 
-        public override void UpdateKnownState(Bid bid, Direction direction, BiddingSummary biddingSummary, KnownState knownState)
+        public override void UpdateShownState(Bid bid, Direction direction, BiddingSummary biddingSummary, ShownState shownState)
         {
-            _c1.UpdateKnownState(bid, direction, biddingSummary, knownState);
-            _c2.UpdateKnownState(bid, direction, biddingSummary, knownState);
+            _c1.UpdateShownState(bid, direction, biddingSummary, shownState);
+            _c2.UpdateShownState(bid, direction, biddingSummary, shownState);
         }
     }
 
@@ -322,6 +355,7 @@ namespace TricksterBots.Bots.Bridge
         }
 
         // TODO: This is NOT FINAL CODE.  Just a quick implementaiton.  Need more clear definitions of quality...
+        // This should probably go into HandEvaluation class...
         public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
         {
             Suit suit = (_suit == null) ? (Suit)bid.Suit : (Suit)_suit;

@@ -14,10 +14,7 @@ namespace TricksterBots.Bots.Bridge
         private int _min;
         private int _max;
 
-        private Suit GetSuit(Bid bid)
-        {
-            return _suit ?? (Suit)bid.Suit;
-        }
+
 
         public Shape(int min, int max)
         {
@@ -31,20 +28,20 @@ namespace TricksterBots.Bots.Bridge
 
         public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
         {
-            int count = handSummary.Counts[GetSuit(bid)];
+            int count = handSummary.Counts[bid.SuitIfNot(_suit)];
             return (count >= _min && count <= _max);
 
         }
         public override bool CouldConform(Bid bid, Direction direction, BiddingSummary biddingSummary)
         {
-            SuitSummary suitSummary = biddingSummary.Positions[direction].Suits[GetSuit(bid)];
+            SuitSummary suitSummary = biddingSummary.Positions[direction].Suits[bid.SuitIfNot(_suit)];
             if (suitSummary.Max < _min) { return false; }
             if (suitSummary.Min > _max) { return false; }
             return true;
         }
-        public override void UpdateKnownState(Bid bid, Direction position, BiddingSummary biddingSummary, KnownState knownState)
+        public override void UpdateShownState(Bid bid, Direction position, BiddingSummary biddingSummary, ShownState shownState)
         {
-            knownState.ShowsShape(GetSuit(bid), _min, _max);
+            shownState.ShowsShape(bid.SuitIfNot(_suit), _min, _max);
         }
 
     }
@@ -87,14 +84,14 @@ namespace TricksterBots.Bots.Bridge
             return (count5 < 2 && (count5 + count4 < 2) && (count2 < 2));
         }
 
-        public override void UpdateKnownState(Bid bid, Direction direction, BiddingSummary biddingSummary, KnownState knownState)
+        public override void UpdateShownState(Bid bid, Direction direction, BiddingSummary biddingSummary, ShownState shownState)
         {
             // TODO: Need to union suit knowledge, not just set it.  knownstate[pos].SetSuit(suit, (range))
             if (_desiredValue)
             {
                 foreach (Suit suit in BasicBidding.BasicSuits)
                 {
-                    knownState.ShowsShape(suit, 2, 5);
+                    shownState.ShowsShape(suit, 2, 5);
                 }
             }
         }
@@ -124,27 +121,21 @@ namespace TricksterBots.Bots.Bridge
             if (_desiredValue == false) { return true; }
 
             // This will check if it is POSSIBLE that the hand is flat.  Not that it actaully is...
-            bool found4 = false;
             foreach (Suit suit in BasicBidding.BasicSuits)
             {
                 SuitSummary ss = biddingSummary.Positions[direction].Suits[suit];
                 if (ss.Min > 4 || ss.Max < 3) { return false; }
-                if (ss.Min == 4)
-                {
-                    if (found4) { return false; }
-                    found4 = true;
-                }
             }
             return true;
         }
 
-        public override void UpdateKnownState(Bid bid, Direction direction, BiddingSummary biddingSummary, KnownState knownState)
+        public override void UpdateShownState(Bid bid, Direction direction, BiddingSummary biddingSummary, ShownState shownState)
         {
             if (_desiredValue)
             {
                 foreach (Suit suit in BasicBidding.BasicSuits)
                 {
-                    knownState.ShowsShape(suit, 3, 4);
+                    shownState.ShowsShape(suit, 3, 4);
                 }
             }
         }
