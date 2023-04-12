@@ -643,6 +643,18 @@ namespace Trickster.Bots
 
         private Card SuggestDefensiveLeadAfterFirstTrick(SuggestCardState<BridgeOptions> state)
         {
+            // General principle: if you have a trick that is now good as the defender,
+            // and it is the "setting trick" aka the trick to defeat the contract,
+            // take it.
+            int tricksNeededToSet = GetTricksNeededToSet(state);
+            var sureWinners = GetSureWinners(state);
+            if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
+                return sureWinners.First();
+
+            // try to win tricks quickly if dummy has a long, good side suit
+            if (DummyHasLongGoodSideSuit(state))
+                return TryTakeEm(state);
+
             // Suit contracts:
             // If dummy has shortness (2 or fewer cards), four or fewer trump, and the same or fewer trumps than declarer,
             // play a trump to prevent ruffing in dummy.
@@ -667,18 +679,6 @@ namespace Trickster.Bots
             var declarerIsVoidInTrump = GetDeclarer(state).VoidSuits.Contains(state.trumpSuit);
             if (!declarerIsVoidInTrump && nDummyTrump > 0 && legalTrump.Count() == 1)
                 return legalTrump.First();
-
-            // General principle: if you have a trick that is now good as the defender,
-            // and it is the "setting trick" aka the trick to defeat the contract,
-            // take it.
-            int tricksNeededToSet = GetTricksNeededToSet(state);
-            var sureWinners = GetSureWinners(state);
-            if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
-                return sureWinners.First();
-
-            // try to win tricks quickly if dummy has a long, good side suit
-            if (DummyHasLongGoodSideSuit(state))
-                return TryTakeEm(state);
 
             // Leads after trick 1: same general rules apply (playing touching honors, etc).
             // * Give priority to returning partner's suit (especially in NT),
