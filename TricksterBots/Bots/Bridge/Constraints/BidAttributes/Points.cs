@@ -10,10 +10,8 @@ namespace TricksterBots.Bots.Bridge
 {
 
 
-    public class Points : HiddenConstraint
+    public class Points : Constraint
     {
-        
-
         protected int _min;
         protected int _max;
         protected Suit? _trumpSuit;
@@ -37,49 +35,58 @@ namespace TricksterBots.Bots.Bridge
         }
 
         // Returns the points for the hand, adjusted for dummy points if appropriate.
-        protected int GetPoints(Bid bid, HandSummary handSummary)
+        protected (int, int) GetPoints(Bid bid, HandSummary handSummary)
         {
             if (!_countAsDummy) { return handSummary.OpeningPoints; }
-			return handSummary.DummyPoints(bid.SuitIfNot(_trumpSuit));
+            return handSummary.Suits[bid.SuitIfNot(_trumpSuit)].DummyPoints;
         }
 
-        public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
-        {
-            var points = GetPoints(bid, handSummary);
-            return points >= _min && points <= _max;
-        }
 
-        public override bool CouldConform(Bid bid, Direction direction, BiddingSummary biddingSummary)
+        public override bool Conforms(Bid bid, HandSummary handSummary, PositionState positionState)
         {
-            (int min, int max) points = biddingSummary.Positions[direction].ShownPoints;
-            return (_min <= points.max && _max >= points.min);
-        }
-
-        public override void UpdateShownState(Bid bid, Direction direction, BiddingSummary biddingSummary, ShownState shownState)
-        {
-            shownState.ShowsPoints(_min, _max);
+            (int Min, int Max) points = GetPoints(bid, handSummary);
+            return (_min <= points.Max && _max >= points.Min);
         }
     }
 
+    class ShowsPoints : Points, IShowsState
+    {
+		public ShowsPoints(int min, int max) : base(min, max) { }
 
-    public class PairPoints : Points
+		public ShowsPoints(Suit? trumpSuit, int min, int max) : base(trumpSuit, min, max) { }
+
+		void IShowsState.UpdateState(Bid bid, ModifiableHandSummary handSummary, ModifiablePositionState positionState)
+		{
+			if (_countAsDummy)
+			{
+				handSummary.ModifiableSuits[bid.SuitIfNot(_trumpSuit)].ShowDummyPoints(_min, _max);
+			}
+			else
+			{
+				handSummary.ShowOpeningPoints(_min, _max);
+			}
+		}
+	}
+
+    /*
+    public class PairPoints : Points, IHandConstraint, IPublicConstraint, IShowsState
     {
         public PairPoints(int min, int max) : base(min, max) { }
         public PairPoints(Suit? trumpSuit, int min, int max) : base(trumpSuit, min, max) { }
 
-        public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
-        {
-            (int min, int max) partnerPoints = biddingSummary.Positions[direction].Partner.ShownPoints;
+		bool IHandConstraint.Conforms(Bid bid, HandSummary handSummary, PositionState positionState)
+		{
+            (int min, int max) partnerPoints = positionState.Partner.ShownState.Points;
             int points = GetPoints(bid, handSummary);
             int pairMin = points + partnerPoints.min;
             int pairMax = pairMin + _max - _min;
             return pairMin >= this._min && pairMax <= this._max;
         }
 
-        public override bool CouldConform(Bid bid, Direction direction, BiddingSummary biddingSummary)
+        bool IPublicConstraint.Conforms(Bid bid, PositionState positionState)
         {
-            (int min, int max) ourPoints = biddingSummary.Positions[direction].ShownPoints;
-            (int min, int max) partnerPoints = biddingSummary.Positions[direction].Partner.ShownPoints;
+            (int min, int max) ourPoints = positionState.ShownState.Points;
+            (int min, int max) partnerPoints = positionState.Partner.ShownState.Points;
             int min = ourPoints.min + partnerPoints.min;
             int max = min + _max - _min;
             return (_min <= min && _max >= max);
@@ -99,4 +106,5 @@ namespace TricksterBots.Bots.Bridge
             shownState.ShowsPoints(min, max);
         }
     }
+    */
 }

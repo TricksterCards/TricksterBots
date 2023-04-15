@@ -9,22 +9,34 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
 
+	abstract public class BidAttribute { }
+
+	public interface IHandConstraint 
+	{
+		bool Conforms(Bid bid, HandSummary handSummary, PositionState positionState);
+		void UpdateState(Bid bid, ModifiableHandSummary handSummary, PositionState positionState);
+	}
+
+	public interface IPositionConstraint 
+	{
+		bool Conforms(Bid bid, PositionState positionState);
+		void UpdateState(Bid bid, ModifiablePositionState positionState);
+	}
+
+
+
+
 	public class BidRule
 	{
 		public Bid Bid { get; }
 		public int Priority { get; }
 
-		private Constraint[] _contraints;
-		public BidRule(int level, Suit suit, BidConvention convention, int priority, params Constraint[] constraints)
+		private Constraint[] _constraints;
+		public BidRule(Bid bid, int priority, params Constraint[] constraints)
 		{
-			this.Bid = new Bid(level, suit, convention);
+			this.Bid = bid;
 			this.Priority = priority;
-			this._contraints = constraints;
-		}
-		public BidRule(CallType callType, BidConvention convention, int priority, params Constraint[] constraints)
-		{
-			this.Bid = new Bid(callType, convention);
-			this._contraints = constraints;
+			this._constraints = constraints;
 		}
 
 

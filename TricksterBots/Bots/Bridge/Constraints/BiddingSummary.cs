@@ -52,32 +52,13 @@ namespace TricksterBots.Bots.Bridge
 
     }
 
-    public struct BidXXX
-    {
-        public PositionRole Role;
-        public int Round;
-        public bool LhoInterferred;
-        public Bid PartnersBid;
 
-        public BidXXX(PositionRole role, int round, bool lhoInterferred, Bid partnersBid)
-        {
-            this.Role = role;
-            this.Round = round;
-            this.LhoInterferred = lhoInterferred;
-            this.PartnersBid = partnersBid;
-        }
-
-    }
 
     public enum PositionRole { Opener, Overcaller, Responder, Advancer }
 
-    public class SuitSummary
-    {
-        public int Min;
-        public int Max;
-    }
 
 
+    /*
     public class PositionSummary
     {
         public List<Bid> Bids { get; }
@@ -113,50 +94,8 @@ namespace TricksterBots.Bots.Bridge
             // TODO: Should this be a static function that returns a dictionary so that set can be private?
         }
     }
+    */
 
 
- 
-
-	public class ShownState
-	{
-		private int _pointsMin = 0;
-		private int _pointsMax = int.MaxValue;
-		private Dictionary<Suit, (int min, int max)> _suitShapes = new Dictionary<Suit, (int min, int max)>();
-		public ShownState()
-		{
-
-		}
-
-		public void ShowsPoints(int min, int max)
-		{
-			_pointsMin = Math.Max(min, _pointsMin);
-			_pointsMax = Math.Min(max, _pointsMax);
-			// TODO: Assert or throw if _pointsMin > _pointsMax...
-		}
-
-		public void ShowsShape(Suit suit, int min, int max)
-		{
-			(int min, int max) shape = _suitShapes.TryGetValue(suit, out shape) ? shape : (0, 13);
-			shape.min = Math.Max(min, shape.min);
-			shape.max = Math.Min(max, shape.max);
-			_suitShapes[suit] = shape;
-			// TODO: Throw if max<min...
-		}
-
-		internal void Union(ShownState other)
-		{
-			_pointsMin = Math.Min(_pointsMin, other._pointsMin);
-			_pointsMax = Math.Max(_pointsMax, other._pointsMax);
-			foreach (Suit suit in SuitRank.stdSuits)
-			{
-				(int min, int max) shapeThis = this._suitShapes.TryGetValue(suit, out shapeThis) ? shapeThis : (0, 13);
-				(int min, int max) shapeOther = other._suitShapes.TryGetValue(suit, out shapeOther) ? shapeOther : (0, 13);
-				shapeThis.min = Math.Min(shapeThis.min, shapeOther.min);
-				shapeThis.max = Math.Max(shapeThis.max, shapeOther.max);
-				this._suitShapes[suit] = shapeThis;
-			}
-		}
-
-	}
 
 }

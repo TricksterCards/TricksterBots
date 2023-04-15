@@ -43,43 +43,43 @@ namespace TricksterBots.Bots.Bridge
 				{
 					BidRule[] b =
 					{
-					Rule(1, Suit.Diamonds, 10, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
-					Rule(1, Suit.Diamonds, 10, Points(Respond1Level), Shape(6), LongestMajor(5)),
-					Rule(1, Suit.Diamonds, 10, Points(Respond1Level), Shape(7, 11), LongestMajor(6)),
+					Forcing(1, Suit.Diamonds, 10, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
+					Forcing(1, Suit.Diamonds, 10, Points(Respond1Level), Shape(6), LongestMajor(5)),
+					Forcing(1, Suit.Diamonds, 10, Points(Respond1Level), Shape(7, 11), LongestMajor(6)),
 
-					Rule(1, Suit.Hearts, 100, Points(Respond1Level), Shape(4), Shape(Suit.Diamonds, 0, 3), Shape(Suit.Spades, 0, 4)),
-					Rule(1, Suit.Hearts, 100, Points(Respond1Level), Shape(5), Shape(Suit.Diamonds, 0, 5), Shape(Suit.Spades, 0, 4)),
-					Rule(1, Suit.Hearts, 100, Points(Respond1Level), Shape(6), Shape(Suit.Diamonds, 0, 6), Shape(Suit.Spades, 0, 5)),
-					Rule(1, Suit.Hearts, 100, Points(Respond1Level), Shape(7, 11)),
+					Forcing(1, Suit.Hearts, 100, Points(Respond1Level), Shape(4), Shape(Suit.Diamonds, 0, 3), Shape(Suit.Spades, 0, 4)),
+					Forcing(1, Suit.Hearts, 100, Points(Respond1Level), Shape(5), Shape(Suit.Diamonds, 0, 5), Shape(Suit.Spades, 0, 4)),
+					Forcing(1, Suit.Hearts, 100, Points(Respond1Level), Shape(6), Shape(Suit.Diamonds, 0, 6), Shape(Suit.Spades, 0, 5)),
+					Forcing(1, Suit.Hearts, 100, Points(Respond1Level), Shape(7, 11)),
 
-					Rule(1, Suit.Spades, 100, Points(Respond1Level), Shape(4), Shape(Suit.Diamonds, 0, 3), Shape(Suit.Hearts, 0, 3)),
-					Rule(1, Suit.Spades, 100, Points(Respond1Level), Shape(5), Shape(Suit.Diamonds, 0, 5), Shape(Suit.Hearts, 0, 5)),
-					Rule(1, Suit.Spades, 100, Points(Respond1Level), Shape(6, 11), Shape(Suit.Diamonds, 0, 6), Shape(Suit.Hearts, 0, 6)),
+					Forcing(1, Suit.Spades, 100, Points(Respond1Level), Shape(4), Shape(Suit.Diamonds, 0, 3), Shape(Suit.Hearts, 0, 3)),
+					Forcing(1, Suit.Spades, 100, Points(Respond1Level), Shape(5), Shape(Suit.Diamonds, 0, 5), Shape(Suit.Hearts, 0, 5)),
+					Forcing(1, Suit.Spades, 100, Points(Respond1Level), Shape(6, 11), Shape(Suit.Diamonds, 0, 6), Shape(Suit.Hearts, 0, 6)),
 
-					Rule(1, Suit.Unknown, 0, Points(Respond1NT), Balanced()),
+					NonForcing(1, Suit.Unknown, 0, Points(Respond1NT), Balanced()),
 
-					Rule(2, Suit.Clubs, 0, Points(Raise1), Shape(5), LongestMajor(3)),
+					Invitational(2, Suit.Clubs, 0, Points(Raise1), Shape(5), LongestMajor(3)),
 
-					Rule(2, Suit.Diamonds, 200, Points(SlamInterest), Shape(5, 11)),
+					Forcing(2, Suit.Diamonds, 200, Points(SlamInterest), Shape(5, 11)),
 
-					Rule(2, Suit.Hearts, 200, Points(SlamInterest), Shape(5, 11)),
+					Forcing(2, Suit.Hearts, 200, Points(SlamInterest), Shape(5, 11)),
 
-					Rule(2, Suit.Spades, 200, Points(SlamInterest), Shape(5, 11)),
+					Forcing(2, Suit.Spades, 200, Points(SlamInterest), Shape(5, 11)),
 
                     // TODO: Really balanced?  This would only be the case for 4333 given current rules.  Maybe so...
-                    Rule(2, Suit.Unknown, 1, Points(RaiseTo2NT), LongestMajor(3), Balanced()),
+                    Invitational(2, Suit.Unknown, 1, Points(RaiseTo2NT), LongestMajor(3), Balanced()),
 
-					Rule(3, Suit.Clubs, 1, Points(LimitRaise), Shape(5), LongestMajor(3)),
+					Invitational(3, Suit.Clubs, 1, Points(LimitRaise), Shape(5), LongestMajor(3)),
 
-					Rule(3, Suit.Unknown, 1, Points(RaiseTo3NT), Balanced(), LongestMajor(3)),
+					Signoff(3, Suit.Unknown, 1, Points(RaiseTo3NT), Balanced(), LongestMajor(3)),
 
-					Rule(4, Suit.Clubs, 1, Points(Weak4Level), Shape(6, 11)),
+					Signoff(4, Suit.Clubs, 1, Points(Weak4Level), Shape(6, 11)),
 
                     // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-                    Rule(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good)),
+                    Signoff(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good)),
 
-					Rule(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good)),
+					Signoff(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good)),
 
 				};
 					bids.Concat(b);

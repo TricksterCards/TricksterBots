@@ -44,10 +44,12 @@ namespace TricksterBots.Bots.Bridge
 		{
 			BidRule[] rules =
 			{
-				Rule(2, Suit.Clubs, Points(NTInviteOrBetter), Shape(Suit.Hearts, 4), Flat(false)),
-				Rule(2, Suit.Clubs, Points(NTInviteOrBetter), Shape(Suit.Spades, 4), Flat(false)),
+				Forcing(2, Suit.Clubs, Points(NTInviteOrBetter), Shape(Suit.Hearts, 4), Flat(false)),
+				Forcing(2, Suit.Clubs, Points(NTInviteOrBetter), Shape(Suit.Spades, 4), Flat(false)),
+				Forcing(2, Suit.Clubs, Points(NTGameOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5)),
+				Forcing(2, Suit.Clubs, Points(NTGameOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4)),
 				// TODO: The following rule is "Garbage Stayman"
-				//Rule(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
+				//Forcing(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
 			};
 			return rules;
 		}
@@ -56,12 +58,13 @@ namespace TricksterBots.Bots.Bridge
 		{
 			BidRule[] rules =
 			{
-				Rule(2, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3)),
+				// TODO: Are these bids truly forcing?  Not if garbage stayman...
+				Forcing(2, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3)),
 
 				// If we are 4-4 then hearts bid before spades.  Can't be 5-5 or wouldn't be balanced.
-				Rule(2, Suit.Hearts, Shape(4, 5), LongerOrEqualTo(Suit.Spades)),
+				Forcing(2, Suit.Hearts, Shape(4, 5), LongerOrEqualTo(Suit.Spades)),
 
-				Rule(2, Suit.Spades, Shape(4, 5), LongerThan(Suit.Hearts)),
+				Forcing(2, Suit.Spades, Shape(4, 5), LongerThan(Suit.Hearts)),
 			};
 			return rules;
 		}
@@ -70,25 +73,25 @@ namespace TricksterBots.Bots.Bridge
 		{
 			BidRule[] rules =
 			{
-				Rule(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Diamonds)),
-				Rule(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Hearts), Shape(Suit.Hearts, 0, 3)),
-				Rule(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Spades), Shape(Suit.Spades, 0, 3)),
+				Invitational(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Diamonds)),
+				Invitational(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Hearts), Shape(Suit.Hearts, 0, 3)),
+				Invitational(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Spades), Shape(Suit.Spades, 0, 3)),
 
 
-				Rule(3, Suit.Hearts, DummyPoints(NTInvite), PartnerBid(2, Suit.Hearts), Shape(4, 5)),
-				Rule(3, Suit.Hearts, DefaultPriority + 10, Points(NTGameOrBetter), Shape(5), PartnerBid(2, Suit.Diamonds)),
+				Invitational(3, Suit.Hearts, DummyPoints(NTInvite), PartnerBid(2, Suit.Hearts), Shape(4, 5)),
+				Forcing(3, Suit.Hearts, DefaultPriority + 10, Points(NTGameOrBetter), Shape(5), PartnerBid(2, Suit.Diamonds)),
 
 
-				Rule(3, Suit.Spades, DummyPoints(NTInvite), PartnerBid(2, Suit.Spades), Shape(4, 5)),
-				Rule(3, Suit.Spades, DefaultPriority + 10, Points(NTGameOrBetter), Shape(5), PartnerBid(2, Suit.Diamonds)),
+				Invitational(3, Suit.Spades, DummyPoints(NTInvite), PartnerBid(2, Suit.Spades), Shape(4, 5)),
+				Forcing(3, Suit.Spades, DefaultPriority + 10, Points(NTGameOrBetter), Shape(5), PartnerBid(2, Suit.Diamonds)),
 
-				Rule(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Diamonds)),
-				Rule(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Hearts), Shape(Suit.Hearts, 2, 3)),
-				Rule(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Spades), Shape(Suit.Spades, 2, 3)),
+				Signoff(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Diamonds)),
+				Signoff(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Hearts), Shape(Suit.Hearts, 2, 3)),
+				Signoff(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Spades), Shape(Suit.Spades, 2, 3)),
 
-				Rule(4, Suit.Hearts, Points(NTGame), PartnerBid(2, Suit.Hearts), Shape(4, 5)),
+				Signoff(4, Suit.Hearts, Points(NTGame), PartnerBid(2, Suit.Hearts), Shape(4, 5)),
 
-				Rule(4, Suit.Spades, Points(NTGame), PartnerBid(2, Suit.Spades), Shape(4, 5))
+				Signoff(4, Suit.Spades, Points(NTGame), PartnerBid(2, Suit.Spades), Shape(4, 5))
 			};
 			return rules;
 		}

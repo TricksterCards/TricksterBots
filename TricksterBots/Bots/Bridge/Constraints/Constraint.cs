@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -25,20 +26,21 @@ namespace TricksterBots.Bots.Bridge
 
     public abstract class Constraint
     {
-        public abstract bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary);
+        public abstract bool Conforms(Bid bid, HandSummary handSummary, PositionState positionState);
 
-    }
+	}
 
-    public abstract class HiddenConstraint : Constraint
+
+    public interface IShowsState 
     {
-        public abstract bool CouldConform(Bid bid, Direction direction, BiddingSummary biddingSummary);
-        public abstract void UpdateShownState(Bid bid, Direction direction, BiddingSummary biddingSummary, ShownState shownState);
-    }
+        void UpdateState(Bid bid, ModifiableHandSummary handSummary, ModifiablePositionState positionState);
+	}
 
 
 
 
-    /*
+
+	/*
     // TODO: Max priority??
     public class BidGroup
     {
@@ -60,7 +62,7 @@ namespace TricksterBots.Bots.Bridge
     */
 
 
-    /*
+	/*
         public struct SuitInfo
         {
             public int Count;
@@ -99,102 +101,14 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-    
-    // TODO: Need lots more work.  Pass, Double, Redouble, etc...
-    public class PartnerBid : Constraint
-    {
-        private Suit _suit;
-        private int _level;
-        private bool _desiredValue;
-
-        public PartnerBid(Suit suit, bool desiredValue)
-        {
-            this._level = 0;
-            this._suit = suit;
-            this._desiredValue = desiredValue;
-        }
-
-        public PartnerBid(int level, Suit suit, bool desiredValue)
-        {
-            this._level = level;
-            this._suit = suit;
-            this._desiredValue = desiredValue;
-        }
-
-        public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
-        {
-            var partner = biddingSummary.Positions[direction].Partner;
-            if (partner.Bids.Count > 0)
-            {
-                var partnerBid = partner.Bids.Last();
-                if (partnerBid.CallType == CallType.Bid && partnerBid.Suit == _suit &&
-                    (_level == 0 || _level == partnerBid.Level))
-                {
-                    return _desiredValue;
-                }
-                
-
-            }
-            return !_desiredValue;
-
-        }
-
-    }
 
 
-	public class PreviousBid : Constraint
-	{
-		private Suit _suit;
-		private int _level;
-		private bool _desiredValue;
-
-		public PreviousBid(Suit suit, bool desiredValue)
-		{
-			this._level = 0;
-			this._suit = suit;
-			this._desiredValue = desiredValue;
-		}
-
-		public PreviousBid(int level, Suit suit, bool desiredValue)
-		{
-			this._level = level;
-			this._suit = suit;
-			this._desiredValue = desiredValue;
-		}
-
-		public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
-		{
-			var we = biddingSummary.Positions[direction];
-			if (we.Bids.Count > 0)
-			{
-                var lastBid = we.Bids.Last();
-				if (lastBid.CallType == CallType.Bid && lastBid.Suit == _suit &&
-					(_level == 0 || _level == lastBid.Level))
-				{
-					return _desiredValue;
-				}
-			}
-			return !_desiredValue;
-		}
-	}
 
 
-	public class Seat : Constraint
-    {
-        private int[] seats;
-        public Seat(params int[] seats)
-        {
-            this.seats = seats;
-        }
 
-        public override bool Conforms(Bid bid, Direction position, HandSummary handSummary, BiddingSummary biddingSummary)
-        {
-            return seats.Contains(biddingSummary.Positions[position].Seat);
-        }
-    }
 
-  
-    class BetterSuit : HiddenConstraint
+
+	class BetterSuit : HiddenConstraint
     {
         private Suit? _better;
         private Suit? _worse;
@@ -358,24 +272,7 @@ namespace TricksterBots.Bots.Bridge
         // This should probably go into HandEvaluation class...
         public override bool Conforms(Bid bid, Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
         {
-            Suit suit = (_suit == null) ? (Suit)bid.Suit : (Suit)_suit;
-            var q = SuitQuality.Poor;
-            switch (BasicBidding.ComputeHighCardPoints(handSummary.Hand, suit))
-            {
-                case 10:
-                    q = SuitQuality.Solid; break;
-                case 8:
-                case 9:
-                    q = SuitQuality.Excellent; break;
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    q = (BasicBidding.IsGoodSuit(handSummary.Hand, suit)) ? SuitQuality.Good : SuitQuality.Decent; break;
-                default:
-                    q = SuitQuality.Poor; break;
-            }
-            return q >= _suitQuality;
+            // TODO: Just use quality in handsummary....
         }
     }
 

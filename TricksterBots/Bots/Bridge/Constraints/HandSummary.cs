@@ -9,47 +9,99 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
 
-
-	public abstract class HandSummary 
+	public class SuitSummary
 	{
-		public Hand Hand { get; }
+		public (int Min, int Max) Shape { get; protected set; }
+		public (int Min, int Max) DummyPoints { get; protected set; }
 
-		public Dictionary<Suit, int> Counts { get; }
-		public bool IsBalanced { get; }
-		public bool Is4333 { get; }
+		public (int Min, int Max) LongHandPoints { get; protected set; }
 
-		public abstract int OpeningPoints { get; }
+		public (SuitQuality Min, SuitQuality Max) Quality { get; protected set; }
 
-		public abstract int DummyPoints(Suit trumpSuit);
 
-		public HandSummary(Hand hand)
+		public SuitSummary()
 		{
-			Hand = hand;
-			Counts = BasicBidding.CountsBySuit(hand);
-			IsBalanced = BasicBidding.IsBalanced(hand);
-			Is4333 = BasicBidding.Is4333(Counts);
+			this.Shape = (0, 13);
+			this.DummyPoints = (0, 40);
+			this.LongHandPoints = (0, 40);
+			this.Quality = (SuitQuality.Poor, SuitQuality.Solid);
+		}
+		// TODO: There are other properties like "Stopped", "Has Ace", that can go here...
+	}
+
+	public class ModifiableSuitSummary : SuitSummary
+	{
+		public void ShowShape(int min, int max)
+		{
+			Shape = (Math.Max(min, Shape.Min), Math.Min(max, Shape.Max));
+		}
+		public void ShowDummyPoints(int min, int max)
+		{
+			DummyPoints = (Math.Max(min, DummyPoints.Min), Math.Min(max, DummyPoints.Max)); 
+		}
+		public void ShowLongHandPoints(int min, int max)
+		{
+			LongHandPoints = (Math.Max(min, LongHandPoints.Min), Math.Min(max, LongHandPoints.Max));
+		}
+		public void ShowQuality(SuitQuality min, SuitQuality max)
+		{
+			int iNewMin = Math.Max((int)min, (int)Quality.Min);
+			int iCurMax = Math.Min((int)max, (int)Quality.Max);
+			SuitQuality newMin = (SuitQuality)iNewMin;
+			SuitQuality newMax = (SuitQuality)iCurMax;
+			Quality = (newMin, newMax);
+		}
+	}
+
+	public class HandSummary
+	{
+		protected Dictionary<Suit, ModifiableSuitSummary> _modifiableSuits;
+
+		public (int Min, int Max) OpeningPoints { get; protected set; }
+
+		public bool? IsBalanced { get; protected set; }
+
+		public bool? IsFlat { get; protected set; }
+
+		public Dictionary<Suit, SuitSummary> Suits { get; protected set; }
+
+		public HandSummary()
+		{
+			this.OpeningPoints = (0, int.MaxValue);
+			this.IsBalanced = null;
+			this.IsFlat = null;
+			this.Suits = new Dictionary<Suit, SuitSummary>();
+			this._modifiableSuits = new Dictionary<Suit, ModifiableSuitSummary>();
+			foreach (Suit suit in BasicBidding.BasicSuits)
+			{
+				var suitSummary = new ModifiableSuitSummary();
+				Suits[suit] = suitSummary;
+				_modifiableSuits[suit] = suitSummary;
+			}
+			var ss = new ModifiableSuitSummary();
+			Suits[Suit.Unknown] = ss;
+			_modifiableSuits[Suit.Unknown] = ss;
+
+			// TODO: Think this through...
 		}
 
 	}
 
 
-
-
-	public class StandardEvaluator : HandSummary
+	public class ModifiableHandSummary : HandSummary
 	{
-		private int _hcp;
-		private int _distributionPoints;
-		public StandardEvaluator(Hand hand) : base(hand) 
+		public void ShowOpeningPoints(int min, int max)
 		{
-			this._hcp = BasicBidding.ComputeHighCardPoints(hand);
-			this._distributionPoints = BasicBidding.ComputeDistributionPoints(hand);
+			OpeningPoints = (Math.Max(min, OpeningPoints.Min), Math.Min(max, OpeningPoints.Max));
 		}
-
-		public override int DummyPoints(Suit suit)
+		public void ShowIsBalanced(bool isBalanced)
 		{
-			return _hcp + BasicBidding.DummyPoints(Hand, suit);
+			IsBalanced = isBalanced;
 		}
-
-		public override int OpeningPoints => _distributionPoints;
+		public void ShowIsFlat(bool isFlat)
+		{
+			IsFlat = isFlat;
+		}
+		public Dictionary<Suit, ModifiableSuitSummary> ModifiableSuits => this._modifiableSuits;
 	}
 }

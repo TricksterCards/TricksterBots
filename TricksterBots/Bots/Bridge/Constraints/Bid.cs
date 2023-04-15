@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Mail;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -20,6 +21,8 @@ namespace TricksterBots.Bots.Bridge
 
 		public BidConvention Convention { get; }
 		public CallType CallType { get; }
+
+		public BidMessage Message { get; }
 
 		public bool Is(int level, Suit suit)
 		{
@@ -47,23 +50,25 @@ namespace TricksterBots.Bots.Bridge
 			return (suit == null) ? (Suit)Suit : (Suit)suit;
 		}
 
-		public Bid(CallType callType, BidConvention convention = BidConvention.None)
+		public Bid(CallType callType, BidConvention convention = BidConvention.None, BidMessage message = BidMessage.Invitational)
 		{
 			// TODO: ASSERT NOT TYPE == Bid
 			this.CallType = callType;
 			this.Level = null;
 			this.Suit = null;
 			this.Convention = convention; 
+			this.Message = message;
 		}
 
-		public Bid(int level, Suit suit, BidConvention convention = BidConvention.None)
+		public Bid(int level, Suit suit, BidConvention convention = BidConvention.None, BidMessage message = BidMessage.Invitational)
 		{
 			this.CallType = CallType.Bid;
-			// TODO: Assert level >=1 and <= 7
+			Debug.Assert(level >= 1 && level <= 7);
 			this.Level = level;
 			this.Suit = suit;
 			this.Convention = convention;
-		}
+			this.Message = message;
+		}	
 	}
 
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,25 +23,89 @@ namespace TricksterBots.Bots.Bridge
             this.Convention = convention;
             this.DefaultPriority = defaultPriority;
         }
-        public BidRule Rule(int level, Suit suit, params Constraint[] constraints)
+
+        public BidRule Forcing(int level, Suit suit, params Constraint[] constraints)
         {
-            return new BidRule(level, suit, Convention, DefaultPriority, constraints);
+            return Rule(level, suit, BidMessage.Forcing, DefaultPriority, constraints);
+        }
+        public BidRule Forcing(int level, Suit suit, int priority, params Constraint[] constraints)
+        {
+            return Rule(level, suit, BidMessage.Forcing, priority, constraints);
+        }
+        public BidRule Forcing(CallType callType, params Constraint[] constraints)
+        {
+			return Rule(callType, BidMessage.Forcing, DefaultPriority, constraints);
+		}
+		public BidRule Forcing(CallType callType, int priority, params Constraint[] constraints)
+		{
+			return Rule(callType, BidMessage.Forcing, priority, constraints);
+		}
+
+        // TODO: Need a non-forcing BidMessage...
+		public BidRule NonForcing(int level, Suit suit, params Constraint[] constraints)
+		{
+			return Rule(level, suit, BidMessage.Invitational, DefaultPriority, constraints);
+		}
+		public BidRule NonForcing(int level, Suit suit, int priority, params Constraint[] constraints)
+		{
+			return Rule(level, suit, BidMessage.Invitational, priority, constraints);
+		}
+		public BidRule NonForcing(CallType callType, params Constraint[] constraints)
+		{
+			return Rule(callType, BidMessage.Invitational, DefaultPriority, constraints);
+		}
+		public BidRule NonForcing(CallType callType, int priority, params Constraint[] constraints)
+		{
+			return Rule(callType, BidMessage.Invitational, priority, constraints);
+		}
+
+
+		public BidRule Invitational(int level, Suit suit, params Constraint[] constraints)
+		{
+			return Rule(level, suit, BidMessage.Invitational, DefaultPriority, constraints);
+		}
+		public BidRule Invitational(int level, Suit suit, int priority, params Constraint[] constraints)
+		{
+			return Rule(level, suit, BidMessage.Invitational, priority, constraints);
+		}
+		public BidRule Invitational(CallType callType, params Constraint[] constraints)
+		{
+			return Rule(callType, BidMessage.Invitational, DefaultPriority, constraints);
+		}
+		public BidRule Invitational(CallType callType, int priority, params Constraint[] constraints)
+		{
+			return Rule(callType, BidMessage.Invitational, priority, constraints);
+		}
+
+
+		public BidRule Signoff(int level, Suit suit, params Constraint[] constraints)
+		{
+			return Rule(level, suit, BidMessage.Signoff, DefaultPriority, constraints);
+		}
+		public BidRule Signoff(int level, Suit suit, int priority, params Constraint[] constraints)
+		{
+			return Rule(level, suit, BidMessage.Signoff, priority, constraints);
+		}
+		public BidRule Signoff(CallType callType, params Constraint[] constraints)
+		{
+			return Rule(callType, BidMessage.Signoff, DefaultPriority, constraints);
+		}
+		public BidRule Signoff(CallType callType, int priority, params Constraint[] constraints)
+		{
+			return Rule(callType, BidMessage.Signoff, priority, constraints);
+		}
+
+
+		public BidRule Rule(int level, Suit suit, BidMessage message, int priority, params Constraint[] constraints)
+        {
+            return new BidRule(new Bid(level, suit, Convention, message), priority, constraints);
         }
 
-		public BidRule Rule(int level, Suit suit, int priority, params Constraint[] constraints)
-		{
-			return new BidRule(level, suit, Convention, DefaultPriority, constraints);
-		}
 
-		public BidRule Rule(CallType callType, params Constraint[] constraints)
-		{
-			return new BidRule(callType, Convention, DefaultPriority, constraints);
-		}
-
-		public BidRule Rule(CallType callType, int priority, params Constraint[] constraints)
-		{
-			return new BidRule(callType, Convention, priority, constraints);
-		}
+        public BidRule Rule(CallType callType, BidMessage message, int priority, params Constraint[] constraints)
+        {
+            return new BidRule(new Bid(callType, Convention, message), priority, constraints);
+        }
 
 
 		public static Constraint Points((int min, int max) range) { return new Points(range.min, range.max); }
@@ -59,16 +124,19 @@ namespace TricksterBots.Bots.Bridge
         public static Constraint Balanced(bool desired = true) { return new Balanced(desired); }
         public static Constraint Flat(bool desired = true) { return new Flat(desired); }
 
-        public static Constraint PartnerBid(Suit suit, bool desired = true) { return new PartnerBid(suit, desired); }
-        public static Constraint PartnerBid(int level, Suit suit, bool desired = true) { return new PartnerBid(level, suit, desired); }
+		public static Constraint PreviousBid(Suit suit, bool desired = true) { return new BidHistory(suit, desired); }
+		public static Constraint PreviousBid(int level, Suit suit, bool desired = true) { return new BidHistory(level, suit, desired); }
+
+		public static Constraint PartnerBid(Suit suit, bool desired = true)
+		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(suit, desired)); }
+        public static Constraint PartnerBid(int level, Suit suit, bool desired = true) 
+        { return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(level, suit, desired)); }
 
         public static Constraint PartnerShows(Suit suit, int count)
         {
             throw new NotImplementedException();    // TODO: Need PartnerShows constraint class..
         }
 
-		public static Constraint PreviousBid(Suit suit, bool desired = true) { return new PreviousBid(suit, desired); }
-		public static Constraint PreviousBid(int level, Suit suit, bool desired = true) { return new PreviousBid(level, suit, desired); }
 
 
 

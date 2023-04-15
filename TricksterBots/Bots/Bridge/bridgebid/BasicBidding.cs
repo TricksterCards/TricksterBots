@@ -20,8 +20,23 @@ namespace Trickster.Bots
 
         public static readonly Direction[] Directions = { Direction.North, Direction.East, Direction.South, Direction.West };
 
+        public static Direction Partner(Direction direction)
+        {
+            return Directions[((int)direction + 2) % 4];
+        }
 
-        public static int ComputeDistributionPoints(Hand hand)
+        public static Direction RightHandOpponent(Direction direction)
+        {
+			return Directions[((int)direction + 3) % 4];
+		}
+
+		public static Direction LeftHandOpponent(Direction direction)
+		{
+			return Directions[((int)direction + 1) % 4];
+		}
+
+
+		public static int ComputeDistributionPoints(Hand hand)
         {
             var distributionPoints = 0;
 
