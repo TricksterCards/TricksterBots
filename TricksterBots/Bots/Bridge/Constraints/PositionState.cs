@@ -72,23 +72,18 @@ namespace TricksterBots.Bots.Bridge
 		private int _roleAssignedOffset = 0;
 		private bool _roleAssigned = false;
 
-		private HandSummary _publicHandSummary;
-
 		private HandSummary _privateHandSummary;
 
-		private BiddingSummary _biddingSummary;
-
 		private List<BidRuleGroup> _bids;
+
+		public BiddingSummary BiddingSummary { get; }
 
 		public BiddingState BiddingState { get; }
 
 		public PositionRole Role { get; internal set; }
 
-		public HandSummary PublicHandSummary
-		{
-			// TODO: Consider returning a copy so that it can never be modified...  
-			get { return _publicHandSummary; }
-		}
+		public HandSummary PublicHandSummary { get; private set; }
+
 
 		public Direction Direction { get; }
 
@@ -119,7 +114,8 @@ namespace TricksterBots.Bots.Bridge
 			this.Seat = seat;
 			this.Role = PositionRole.Opener;    // Best start for any position.  Will change with time.
 			this.Vulnerable = vulnerable;
-			this._publicHandSummary = new HandSummary();
+			this.PublicHandSummary = new HandSummary();
+			this.BiddingSummary = new BiddingSummary();
 
 			if (hand != null)
 			{
@@ -132,8 +128,6 @@ namespace TricksterBots.Bots.Bridge
 			{ 
 				this._privateHandSummary = null; 
 			}
-
-			this._biddingSummary = new BiddingSummary();
 		}
 
 		public int BidRound
@@ -178,7 +172,7 @@ namespace TricksterBots.Bots.Bridge
 
 		internal bool ConformsToPublicHand(Constraint constraint, Bid bid)
 		{
-			return constraint.Conforms(bid, this, this._publicHandSummary, this._biddingSummary);
+			return constraint.Conforms(bid, this, this.PublicHandSummary, this.BiddingSummary);
 		}
 
 		internal bool ConformsToPrivateHand(Constraint constraint, Bid bid)
@@ -188,8 +182,8 @@ namespace TricksterBots.Bots.Bridge
 
 		internal (HandSummary, BiddingSummary) Update(IShowsState showsState, Bid bid)
 		{
-			var hs = new HandSummary(this._publicHandSummary);
-			var bs = new BiddingSummary(this._biddingSummary);
+			var hs = new HandSummary(this.PublicHandSummary);
+			var bs = new BiddingSummary(this.BiddingSummary);
 			showsState.Update(bid, this, hs, bs);
 			return (hs, bs);
 		}

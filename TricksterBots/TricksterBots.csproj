@@ -132,7 +132,6 @@
     <Compile Include="Bots\Bridge\Constraints\PositionState.cs" />
     <Compile Include="Bots\Bridge\Constraints\Responder.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Shape.cs" />
-    <Compile Include="Bots\Bridge\Constraints\ShownState.cs" />
     <Compile Include="Bots\Euchre\EuchreBot.cs" />
     <Compile Include="Bots\FiveHundred\FiveHundredBot.cs" />
     <Compile Include="Bots\Hearts\HeartsBot.cs" />

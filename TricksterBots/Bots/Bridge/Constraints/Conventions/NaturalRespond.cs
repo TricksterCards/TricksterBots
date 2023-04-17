@@ -103,24 +103,24 @@ namespace TricksterBots.Bots.Bridge
 
 					Forcing(2, Suit.Diamonds, Points(Raise1), Shape(5, 11), LongestMajor(3)),
 
-					Rule(2, Suit.Hearts, 200, Points(SlamInterest), Shape(5, 11)),
+					Forcing(2, Suit.Hearts, Points(SlamInterest), Shape(5, 11)),
 
-					Rule(2, Suit.Spades, 200, Points(SlamInterest), Shape(5, 11)),
+					Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
 
                     // TODO: Really balanced?  This would only be the case for 4333 given current rules.  Maybe so...
-                    Rule(2, Suit.Unknown, 1, Points(RaiseTo2NT), LongestMajor(3), Balanced()),
+                    Invitational(2, Suit.Unknown, Points(RaiseTo2NT), LongestMajor(3), Balanced()),
 
-					Rule(3, Suit.Diamonds, 1, Points(LimitRaise), Shape(5, 11), LongestMajor(3)),
+					Invitational(3, Suit.Diamonds, Points(LimitRaise), Shape(5, 11), LongestMajor(3)),
 
-					Rule(3, Suit.Unknown, 1, Points(RaiseTo3NT), LongestMajor(3)),
+					Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
-					Rule(4, Suit.Diamonds, 1, Points(Weak4Level), Shape(6, 11)),
+					Signoff(4, Suit.Diamonds, 1, Points(Weak4Level), Shape(6, 11)),
 
                     // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-                    Rule(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11)),
+                    Signoff(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11)),
 
-					Rule(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11)),
+					Signoff(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11)),
 
 				};
 					bids.Concat(b);

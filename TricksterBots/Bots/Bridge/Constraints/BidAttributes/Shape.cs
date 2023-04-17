@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -17,7 +18,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-        public HasShape(Suit? suit, int min, int max) : this(min, max)
+        public HasShape(Suit? suit, int min, int max) 
         {
             Debug.Assert(min <= max && min >= 0 && max <= 13);
             this._suit = suit;
@@ -25,9 +26,9 @@ namespace TricksterBots.Bots.Bridge
             this._max = max;
         }
 
-        public override bool Conforms(Bid bid, Bridge.HandSummary handSummary, PositionState positionState)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
         {
-            (int Min, int Max) shape = handSummary.Suits[bid.SuitIfNot(_suit)].Shape;
+            (int Min, int Max) shape = hs.Suits[bid.SuitIfNot(_suit)].Shape;
 			return (shape.Max >= _min && shape.Min <= _max);
 		}
 
@@ -37,10 +38,9 @@ namespace TricksterBots.Bots.Bridge
 	{
         public ShowsShape(Suit? suit, int min, int max) : base(suit, min, max) { }
 
-		public void UpdateState(Bid bid, ModifiableHandSummary handSummary, ModifiablePositionState positionState)
+		public void Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
-            handSummary.ModifiableSuits[bid.SuitIfNot(_suit)].ShowShape(_min, _max);
+            hs.Suits[bid.SuitIfNot(_suit)].Shape = (_min, _max);
 		}
 	}
-
 }

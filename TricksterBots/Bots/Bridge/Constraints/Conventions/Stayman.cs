@@ -28,12 +28,12 @@ namespace TricksterBots.Bots.Bridge
 
 
 		public Stayman() : base(BidConvention.Stayman, 5000) { }
-		public override IEnumerable<BidRule> GetRules(BidXXX xxx, Direction direction, BiddingSummary biddingSummary)
+		public override IEnumerable<BidRule> GetRules(PositionState ps)
 		{
 			// TODO: Make sure no interference
 			// TODO: Check to make sure stayman is enabled
 			
-			if (xxx.Role == PositionRole.Responder && xxx.PartnersBid.Is(1, Suit.Unknown) && xxx.Round == 1)
+			if (ps.Role == PositionRole.Responder && ps.PartnersBid.Is(1, Suit.Unknown) && ps.BidRound == 1)
 			{
 				return InitiateStayman();
 			}

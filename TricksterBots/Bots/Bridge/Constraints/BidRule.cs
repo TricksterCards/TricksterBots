@@ -25,23 +25,37 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public bool Conforms(HandSummary handSummary, PositionState positionState)
+		public bool Conforms(PositionState ps, bool privateHand)
 		{
 			foreach (Constraint constraint in _constraints)
 			{
-				if (!constraint.Conforms(Bid, handSummary, positionState)) { return false; }
+				if (privateHand)
+				{
+					if (!ps.ConformsToPrivateHand(constraint, Bid)) { return false; }
+				}
+				else
+				{
+					if (!ps.ConformsToPublicHand(constraint, Bid)) { return false; }
+				}
 			}
 			return true;
 		}
 
 
-		public void ShowState(ModifiableHandSummary handSummary, ModifiablePositionState positionState)
+		public void ShowState(PositionState ps)
 		{
+			var handSummary = new HandSummary(ps.PublicHandSummary);
+			var biddingSummary = new BiddingSummary(ps.BiddingSummary);
 			foreach (Constraint constraint in _constraints)
 			{
 				if (constraint is IShowsState showsState)
 				{
-					showsState.UpdateState(Bid, handSummary, positionState);
+					var hs = new HandSummary(ps.PublicHandSummary);
+					var bs = new BiddingSummary(ps.BiddingSummary);
+					showsState.Update(Bid, ps, hs, bs);
+					handSummary.Union(hs);
+					biddingSummary.Union(bs);
+
 				}
 			} 
 		}

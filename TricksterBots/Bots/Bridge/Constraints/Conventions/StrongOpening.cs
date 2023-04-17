@@ -15,10 +15,10 @@ namespace TricksterBots.Bots.Bridge
 
 
 		public StrongOpening() : base(BidConvention.StrongOpening, 5000) { }
-		public override IEnumerable<BidRule> GetRules(BidXXX xxx, Direction direction, BiddingSummary biddingSummary)
+		public override IEnumerable<BidRule> GetRules(PositionState ps)
 		{
 
-			if (xxx.Role == PositionRole.Opener && xxx.Round == 1)
+			if (ps.Role == PositionRole.Opener && ps.BidRound == 1)
 			{
 				return InitiateStrongOpen();
 			}
@@ -29,7 +29,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			BidRule[] rules =
 			{
-				Rule(2, Suit.Clubs, Points(StrongOpenRange)),
+				Forcing(2, Suit.Clubs, Points(StrongOpenRange)),
 				// TODO: Need to look at quick tricks.  Someting like
 				//Rule(2, Suit.Clubs, QuickTricks(10));
 			};

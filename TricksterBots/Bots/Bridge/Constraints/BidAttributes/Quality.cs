@@ -27,9 +27,9 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary handSummary)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
-			var quality = handSummary.Suits[bid.SuitIfNot(_suit)].Quality;
+			var quality = hs.Suits[bid.SuitIfNot(_suit)].Quality;
 			return ((int)_min <= (int)quality.Max && (int)_max >= (int)quality.Min);
 		}
 	}
@@ -40,9 +40,9 @@ namespace TricksterBots.Bots.Bridge
 		{
 		}
 
-		public void UpdateState(Bid bid, PositionState ps, ModifiableHandSummary handSummary, ModifiableBiddingSummary bs)
+		public void Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
-			handSummary.ModifiableSuits[bid.SuitIfNot(_suit)].ShowQuality(_min, _max);
+			hs.Suits[bid.SuitIfNot(_suit)].Quality = (_min, _max);
 		}
 	}
 

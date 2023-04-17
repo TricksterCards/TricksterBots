@@ -15,9 +15,9 @@ namespace TricksterBots.Bots.Bridge
 			this.seats = seats;
 		}
 
-		public override bool Conforms(Bid bid, HandSummary _, PositionState positionState)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
-			return seats.Contains(positionState.Seat);
+			return seats.Contains(ps.Seat);
 		}
 	}
 }

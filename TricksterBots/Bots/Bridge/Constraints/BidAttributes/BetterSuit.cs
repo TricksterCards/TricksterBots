@@ -53,18 +53,18 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-		public override bool Conforms(Bid bid, HandSummary handSummary, PositionState positionState)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
 			var better = bid.SuitIfNot(_better);
 			var worse = bid.SuitIfNot(_worse);
-			var betterShape = handSummary.Suits[better].Shape;
-			var worseShape = handSummary.Suits[worse].Shape;
+			var betterShape = hs.Suits[better].Shape;
+			var worseShape = hs.Suits[worse].Shape;
 			if (betterShape.Min > worseShape.Min) { return true; }
 			if (betterShape.Min < worseShape.Min) { return false; }
 			if (!_lengthOnly)
 			{
-				int bq = (int)(handSummary.Suits[better].Quality.Min);
-				int wq = (int)(handSummary.Suits[worse].Quality.Min);
+				int bq = (int)(hs.Suits[better].Quality.Min);
+				int wq = (int)(hs.Suits[worse].Quality.Min);
 				if (bq > wq) { return true; }
 				if (wq > bq) { return false;}
 			}
@@ -81,19 +81,19 @@ namespace TricksterBots.Bots.Bridge
 
 		// The worse suit can not be longer than thw better one, and the quality can not be higher, so all we can
 		// do here is simply restrict the maximums for both shape and quality.
-		public void UpdateState(Bid bid, ModifiableHandSummary handSummary, ModifiablePositionState positionState)
+		public void Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
 			var better = bid.SuitIfNot(_better);
 			var worse = bid.SuitIfNot(_worse);
-			var betterShape = handSummary.Suits[better].Shape;
-			var worseShape = handSummary.Suits[worse].Shape;
-			handSummary.ModifiableSuits[worse].ShowShape(worseShape.Min, Math.Min(worseShape.Max, betterShape.Max));
+			var betterShape = hs.Suits[better].Shape;
+			var worseShape = hs.Suits[worse].Shape;
+			hs.Suits[worse].Shape = (worseShape.Min, Math.Min(worseShape.Max, betterShape.Max));
 			if (!_lengthOnly)
 			{
-				var betterQuality = handSummary.Suits[better].Quality;
-				var worseQuality = handSummary.Suits[worse].Quality;
+				var betterQuality = hs.Suits[better].Quality;
+				var worseQuality = hs.Suits[worse].Quality;
 				SuitQuality maxWorse = (SuitQuality)(Math.Min((int)betterQuality.Max, (int)worseQuality.Max));
-				handSummary.ModifiableSuits[worse].ShowQuality(worseQuality.Min, maxWorse);
+				hs.Suits[worse].Quality = (worseQuality.Min, maxWorse);
 			}
 		}
 	}

@@ -30,9 +30,9 @@ namespace TricksterBots.Bots.Bridge
 			this._desiredValue = desiredValue;
 		}
 
-		public override bool Conforms(Bid bid, HandSummary handSummary, PositionState positionState) 
+		public override bool Conforms(Bid bid,PositionState ps, HandSummary hs, BiddingSummary bs) 
 		{
-			var lastBid = positionState.LastBid;
+			var lastBid = ps.LastBid;
 			if (lastBid.CallType == CallType.Bid && lastBid.Suit == _suit &&
 				(_level == 0 || _level == lastBid.Level))
 			{

@@ -187,6 +187,3 @@ namespace TricksterBots.Bots.Bridge
 	}
 };
 
-
-	}
-}

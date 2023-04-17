@@ -14,18 +14,18 @@ namespace TricksterBots.Bots.Bridge
 			this._desiredValue = desiredValue;
 		}
 
-		public override bool Conforms(Bid bid, HandSummary handSummary, PositionState positionState)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
-			return handSummary.IsFlat == null || handSummary.IsFlat == _desiredValue;
+			return hs.IsFlat == null || hs.IsFlat == _desiredValue;
 		}
 	}
 
 	public class ShowsFlat: IsFlat, IShowsState
 	{
 		public ShowsFlat(bool desiredValue = true) : base(desiredValue) { }
-		public void UpdateState(Bid bid, ModifiableHandSummary handSummary, ModifiablePositionState positionState)
+		public void Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
-			handSummary.ShowIsBalanced(_desiredValue);
+			hs.IsBalanced = _desiredValue;
 		}
 	}
 
