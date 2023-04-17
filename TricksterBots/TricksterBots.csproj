@@ -109,8 +109,12 @@
     <Compile Include="Bots\Bridge\BridgeBot.cs" />
     <Compile Include="Bots\Bridge\Constraints\Bid.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Balanced.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\BetterSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BidHistory.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\CompositeConstraint.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\Flat.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\PositionProxy.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\Quality.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Seat.cs" />
     <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />
     <Compile Include="Bots\Bridge\Constraints\BiddingSummary.cs" />

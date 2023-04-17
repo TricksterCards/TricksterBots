@@ -41,15 +41,15 @@ namespace TricksterBots.Bots.Bridge
 
         // TODO: How much information should be added to call and how much should you be able to get from bidding summary?
         // Perhaps all data should come back from bidding state....  No Role here...
-		public override IEnumerable<BidRule> GetRules(BidXXX xxx, Direction direction, BiddingSummary biddingSummary)
+		public override IEnumerable<BidRule> GetRules(PositionState positionState)
 		{
-            if (xxx.Role == PositionRole.Opener)
+            if (positionState.Role == PositionRole.Opener)
             {
-                return this._open.GetRules(xxx, direction, biddingSummary);
+                return this._open.GetRules(positionState);
             } 
-            else if (xxx.Role == PositionRole.Responder)
+            else if (positionState.Role == PositionRole.Responder)
             {
-                return this._respond.GetRules(xxx, direction, biddingSummary);
+                return this._respond.GetRules(positionState);
             }
 
 			throw new NotImplementedException();

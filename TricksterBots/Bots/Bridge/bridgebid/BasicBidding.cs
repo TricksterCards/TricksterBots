@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -17,8 +18,9 @@ namespace Trickster.Bots
     {
         public static readonly Suit[] BasicSuits = { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades };
         public static readonly Suit[] MajorSuits = { Suit.Hearts, Suit.Spades };
+        public static readonly Suit[] Strains = { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades, Suit.Unknown };
 
-        public static readonly Direction[] Directions = { Direction.North, Direction.East, Direction.South, Direction.West };
+		public static readonly Direction[] Directions = { Direction.North, Direction.East, Direction.South, Direction.West };
 
         public static Direction Partner(Direction direction)
         {

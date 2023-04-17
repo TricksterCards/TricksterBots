@@ -10,7 +10,7 @@ namespace TricksterBots.Bots.Bridge
 {
 
 
-    public class Points : Constraint
+    public class HasPoints : Constraint
     {
         protected int _min;
         protected int _max;
@@ -18,15 +18,8 @@ namespace TricksterBots.Bots.Bridge
         protected bool _countAsDummy;
 
 
-        public Points(int min, int max)
-        {
-            this._min = min;
-            this._max = max;
-            this._trumpSuit = null;
-            this._countAsDummy = false;
-        }
 
-        public Points(Suit? trumpSuit, int min, int max)
+        public HasPoints(Suit? trumpSuit, int min, int max)
         {
             this._countAsDummy = true;
             this._trumpSuit = trumpSuit;
@@ -42,28 +35,26 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        public override bool Conforms(Bid bid, HandSummary handSummary, PositionState positionState)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
         {
-            (int Min, int Max) points = GetPoints(bid, handSummary);
+            (int Min, int Max) points = GetPoints(bid, hs);
             return (_min <= points.Max && _max >= points.Min);
         }
     }
 
-    class ShowsPoints : Points, IShowsState
+    class ShowsPoints : HasPoints, IShowsState
     {
-		public ShowsPoints(int min, int max) : base(min, max) { }
-
 		public ShowsPoints(Suit? trumpSuit, int min, int max) : base(trumpSuit, min, max) { }
 
-		void IShowsState.UpdateState(Bid bid, ModifiableHandSummary handSummary, ModifiablePositionState positionState)
+		void IShowsState.Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
 			if (_countAsDummy)
 			{
-				handSummary.ModifiableSuits[bid.SuitIfNot(_trumpSuit)].ShowDummyPoints(_min, _max);
+				hs.Suits[bid.SuitIfNot(_trumpSuit)].DummyPoints = (_min, _max);
 			}
 			else
 			{
-				handSummary.ShowOpeningPoints(_min, _max);
+				hs.OpeningPoints = (_min, _max);
 			}
 		}
 	}

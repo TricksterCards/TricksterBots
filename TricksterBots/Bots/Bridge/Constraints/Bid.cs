@@ -52,7 +52,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public Bid(CallType callType, BidConvention convention = BidConvention.None, BidMessage message = BidMessage.Invitational)
 		{
-			// TODO: ASSERT NOT TYPE == Bid
+			Debug.Assert(callType != CallType.Bid);
 			this.CallType = callType;
 			this.Level = null;
 			this.Suit = null;
@@ -93,6 +93,8 @@ namespace TricksterBots.Bots.Bridge
 
 		public void Add(BidRule rule)
 		{
+			// TODO: Think about this a lot -- different conventions, different forcing, etc.  Seems like basic
+			// rules of equality are just the basic stuff.  I think that is what Equals does...
 			if (rule.Bid.Equals(Bid))
 			{
 				_rules.Append(rule);
@@ -105,19 +107,18 @@ namespace TricksterBots.Bots.Bridge
 		//
 		// This method makes sure that any rules that do not apply are removed.  If there are no rules that could apply
 		// then the priority.
-		public void Prune(Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
+		public void Prune(HandSummary handSummary, PositionState positionState)
 		{
 			var conforming = new List<BidRule>();
 			int priority = int.MinValue;
 			foreach (BidRule rule in _rules)
 			{
-				var c = rule.Conforms(direction, handSummary, biddingSummary);
-				if (c.DoesConform)
+				if (handSummary != null && rule.Conforms(handSummary, positionState))
 				{
 					priority = Math.Max(priority, rule.Priority);
-					Debug.Assert(c.CouldConform);
+					conforming.Append(rule);
 				}
-				if (c.CouldConform)
+				else if (rule.Conforms(positionState.HandSummary, positionState))
 				{
 					conforming.Append(rule);
 				}
@@ -128,12 +129,12 @@ namespace TricksterBots.Bots.Bridge
 
 		// Returns true if any rule has been removed.  In this case, the state needs to be updated again, and this
 		// method needs to be called again.
-		public bool PruneRules(Direction direction, BiddingSummary biddingSummary)
+		public bool PruneRules(PositionState positionState)
 		{
 			var rules = new List<BidRule>();
 			foreach (BidRule rule in _rules)
 			{
-				if (!rule.CouldConform(direction, biddingSummary))
+				if (rule.Conforms(positionState.HandSummary, positionState))
 				{
 					rules.Add(rule);
 				}

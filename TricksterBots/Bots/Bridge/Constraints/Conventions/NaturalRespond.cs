@@ -31,9 +31,9 @@ namespace TricksterBots.Bots.Bridge
 			//static private (int, int) NTGame = (10, 15);
 			//static private (int, int) NTSlamInterest = (16, 40);
 
-			public override IEnumerable<BidRule> GetRules(BidXXX xxx, Direction direction, BiddingSummary biddingSummary)
+			public override IEnumerable<BidRule> GetRules(PositionState ps) 
 			{
-				return Rules(xxx.PartnersBid, new Bid(CallType.Pass));	// TODO: Lots more work.  Need LHO bid, etc...
+				return Rules(ps.Partner.LastBid, ps.LeftHandOppenent.LastBid);	// TODO: Lots more work.  Need LHO bid, etc...
 			}
 
 			public List<BidRule> Rules(Bid partnersBid, Bid lhoBid) // TODO: Perhaps biddubg round passed in here???)
@@ -89,19 +89,19 @@ namespace TricksterBots.Bots.Bridge
 				{
 					BidRule[] b =
 					{
+			// TODO: Only forcing if not a passed hand...
+					Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
+					Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(5, 11), LongerThan(Suit.Spades)),
 
-					Rule(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
-					Rule(1, Suit.Hearts, Points(Respond1Level), Shape(5, 11), LongerThan(Suit.Spades)),
+					Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4), Shape(Suit.Hearts, 0, 3)),
+					Forcing(1, Suit.Spades, Points(Respond1Level), Shape(5, 11), LongerOrEqualTo(Suit.Hearts)),
 
-					Rule(1, Suit.Spades, Points(Respond1Level), Shape(4), Shape(Suit.Hearts, 0, 3)),
-					Rule(1, Suit.Spades, Points(Respond1Level), Shape(5, 11), LongerOrEqualTo(Suit.Hearts)),
-
-					Rule(1, Suit.Unknown, 0, Points(Respond1NT), Balanced(), LongestMajor(3)),
+					NonForcing(1, Suit.Unknown, Points(Respond1NT), Balanced(), LongestMajor(3)),
 
 
-					Rule(2, Suit.Clubs, 2, Points(NewSuit2Level), Shape(5, 11), LongestMajor(3)),
+					Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(5, 11), LongestMajor(3)),
 
-					Rule(2, Suit.Diamonds, 0, Points(Raise1), Shape(5, 11), LongestMajor(3)),
+					Forcing(2, Suit.Diamonds, Points(Raise1), Shape(5, 11), LongestMajor(3)),
 
 					Rule(2, Suit.Hearts, 200, Points(SlamInterest), Shape(5, 11)),
 

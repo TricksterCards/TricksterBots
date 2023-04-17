@@ -13,14 +13,14 @@ namespace TricksterBots.Bots.Bridge
 	{
 		public NaturalOpen() : base(PositionRole.Opener) { }
 
-		public override IEnumerable<BidRule> GetRules(BidXXX xxx, Direction direction, BiddingSummary biddingSummary)
+		public override IEnumerable<BidRule> GetRules(PositionState positionState)
 		{
-			Debug.Assert(xxx.Role == PositionRole.Opener);
-			if (xxx.Round == 1)
+			Debug.Assert(positionState.Role == PositionRole.Opener);
+			if (positionState.BidRound == 1)
 			{
 				return Open();
 			}
-			else if (xxx.Round == 2)
+			else if (positionState.BidRound == 2)
 			{
 				return Rebid();
 			}
@@ -48,31 +48,31 @@ namespace TricksterBots.Bots.Bridge
 				// this rule would be silly.
 				//Rule(2, Suit.Clubs, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good)),
 
-				NonForcing(2, Suit.Diamonds, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good)),
+				NonForcing(2, Suit.Diamonds, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-				NonForcing(2, Suit.Hearts, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good)),
+				NonForcing(2, Suit.Hearts, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-				NonForcing(2, Suit.Spades, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good)),
+				NonForcing(2, Suit.Spades, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
 				NonForcing(2, Suit.Unknown, DefaultPriority + 100, Points(Open2NT), Balanced()),
 
-				NonForcing(3, Suit.Clubs, 0, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good)),
+				NonForcing(3, Suit.Clubs, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-				NonForcing(3, Suit.Diamonds, 0, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good)),
+				NonForcing(3, Suit.Diamonds, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-				NonForcing(3, Suit.Hearts, 0, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good)),
+				NonForcing(3, Suit.Hearts, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-				NonForcing(3, Suit.Spades, 0, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good)),
+				NonForcing(3, Suit.Spades, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-				NonForcing(6, Suit.Clubs, 1000, Shape(12)),
-				NonForcing(6, Suit.Diamonds, 1000, Shape(12)),
-				NonForcing(6, Suit.Hearts, 1000, Shape(12)),
-				NonForcing(6, Suit.Spades, 1000, Shape(12)),
+				NonForcing(6, Suit.Clubs, Shape(12)),
+				NonForcing(6, Suit.Diamonds, Shape(12)),
+				NonForcing(6, Suit.Hearts, Shape(12)),
+				NonForcing(6, Suit.Spades, Shape(12)),
 
-				NonForcing(7, Suit.Clubs, 1000, Shape(13)),
-				NonForcing(7, Suit.Diamonds, 1000, Shape(13)),
-				NonForcing(7, Suit.Hearts, 1000, Shape(13)),
-				NonForcing(7, Suit.Spades, 1000, Shape(13)),
+				NonForcing(7, Suit.Clubs, Shape(13)),
+				NonForcing(7, Suit.Diamonds, Shape(13)),
+				NonForcing(7, Suit.Hearts, Shape(13)),
+				NonForcing(7, Suit.Spades, Shape(13)),
 			};
 			return bids;
 		}

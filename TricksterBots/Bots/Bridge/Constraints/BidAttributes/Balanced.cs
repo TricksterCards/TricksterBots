@@ -8,19 +8,27 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class Balanced : Constraint
+	public class IsBalanced : Constraint
 	{
-		private bool _desiredValue;
-		public Balanced(bool desiredValue = true)
+		protected bool _desiredValue;
+		public IsBalanced(bool desiredValue)
 		{
 			this._desiredValue = desiredValue;
 		}
 
-		public override bool Conforms(Bid bid, HandSummary handSummary, PositionState positionState)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
-			return handSummary.IsBalanced == null || handSummary.IsBalanced == _desiredValue;
+			return hs.IsBalanced == null || hs.IsBalanced == _desiredValue;
 		}
 	}
 
+	public class ShowsBalanced : IsBalanced, IShowsState
+	{
+		public ShowsBalanced(bool desiredValue) : base(desiredValue) { }
+		public void Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
+		{
+			hs.IsBalanced = _desiredValue;
+		}
+	}
 
 }

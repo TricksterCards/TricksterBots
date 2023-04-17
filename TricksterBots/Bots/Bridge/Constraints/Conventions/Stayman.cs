@@ -99,20 +99,20 @@ namespace TricksterBots.Bots.Bridge
 		{
 			BidRule[] rules =
 			{
-				Rule(3, Suit.Spades, Points(NTDontAcceptInvite), Shape(4), PartnerShows(Suit.Spades, 4)),
+				NonForcing(3, Suit.Spades, Points(NTDontAcceptInvite), Shape(4), PartnerShows(Suit.Spades, 4)),
 
-				Rule(3, Suit.Unknown, Points(NTAcceptInvite), PartnerBid(2, Suit.Unknown)),
-				Rule(3, Suit.Unknown, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Hearts),
+				Signoff(3, Suit.Unknown, Points(NTAcceptInvite), PartnerBid(2, Suit.Unknown)),
+				Signoff(3, Suit.Unknown, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Hearts),
 							Shape(Suit.Hearts, 2)),
-				Rule(3, Suit.Unknown, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Spades),
+				Signoff(3, Suit.Unknown, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Spades),
 							Shape(Suit.Spades, 2)),
 			
-				Rule(4, Suit.Hearts, Points(NTAcceptInvite), PartnerBid(3, Suit.Hearts), Shape(4, 5)),
-				Rule(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Hearts), Shape(3)),
+				Signoff(4, Suit.Hearts, Points(NTAcceptInvite), PartnerBid(3, Suit.Hearts), Shape(4, 5)),
+				Signoff(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Hearts), Shape(3)),
 
 
-				Rule(4, Suit.Spades, Points(NTAcceptInvite), PartnerBid(3, Suit.Spades), Shape(4, 5)),
-				Rule(4, Suit.Spades, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Spades), Shape(3)),
+				Signoff(4, Suit.Spades, Points(NTAcceptInvite), PartnerBid(3, Suit.Spades), Shape(4, 5)),
+				Signoff(4, Suit.Spades, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Spades), Shape(3)),
 			};
 			return rules;
 		}
@@ -122,7 +122,7 @@ namespace TricksterBots.Bots.Bridge
 			BidRule[] rules =
 			{
 				// Points as dummy here...
-				Rule(4, Suit.Spades, DummyPoints(NTGame), PartnerBid(3, Suit.Spades), Shape(4, 5)),
+				Signoff(4, Suit.Spades, DummyPoints(NTGame), PartnerBid(3, Suit.Spades), Shape(4, 5)),
 			};
 			return rules;
 		}

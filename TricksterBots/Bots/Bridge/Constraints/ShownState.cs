@@ -9,7 +9,7 @@ using Trickster.cloud;
 namespace TricksterBots.Bots
 {
 
-
+	/*
 
 	public class ShownState
 	{
@@ -72,5 +72,6 @@ namespace TricksterBots.Bots
 
 
 	}
+	*/
 
 }

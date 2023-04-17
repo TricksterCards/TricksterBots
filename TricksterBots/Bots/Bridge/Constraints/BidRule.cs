@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -8,22 +9,6 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-
-	abstract public class BidAttribute { }
-
-	public interface IHandConstraint 
-	{
-		bool Conforms(Bid bid, HandSummary handSummary, PositionState positionState);
-		void UpdateState(Bid bid, ModifiableHandSummary handSummary, PositionState positionState);
-	}
-
-	public interface IPositionConstraint 
-	{
-		bool Conforms(Bid bid, PositionState positionState);
-		void UpdateState(Bid bid, ModifiablePositionState positionState);
-	}
-
-
 
 
 	public class BidRule
@@ -40,52 +25,25 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public (bool DoesConform, bool CouldConform) Conforms(Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
+		public bool Conforms(HandSummary handSummary, PositionState positionState)
 		{
-			foreach (Constraint constraint in _contraints)
+			foreach (Constraint constraint in _constraints)
 			{
-				if ((constraint as HiddenConstraint) == null &&
-					!constraint.Conforms(Bid, direction, handSummary, biddingSummary)) { return (false, false); }
-			}
-			bool conforms = true;
-			foreach (Constraint constraint in _contraints)
-			{
-				if (constraint is HiddenConstraint hiddenConstraint &&
-					!hiddenConstraint.Conforms(Bid, direction, handSummary, biddingSummary))
-				{
-					conforms = false;
-					if (!hiddenConstraint.CouldConform(Bid, direction, biddingSummary)) { return (false, false); }
-				}
-			}
-			return (conforms, true);
-		}
-
-		public bool CouldConform(Direction direction, BiddingSummary biddingSummary)
-		{
-			foreach (Constraint constraint in _contraints)
-			{
-				if (constraint is HiddenConstraint hiddenConstraint)
-				{
-					if (!hiddenConstraint.CouldConform(Bid, direction, biddingSummary))
-					{
-						return false;
-					}
-				}
+				if (!constraint.Conforms(Bid, handSummary, positionState)) { return false; }
 			}
 			return true;
 		}
 
-		public ShownState ShownState(Direction direction, BiddingSummary biddingSummary)
+
+		public void ShowState(ModifiableHandSummary handSummary, ModifiablePositionState positionState)
 		{
-			var shownState = new ShownState();
-			foreach (Constraint constraint in _contraints)
+			foreach (Constraint constraint in _constraints)
 			{
-				if (constraint is HiddenConstraint hiddenConstraint)
+				if (constraint is IShowsState showsState)
 				{
-					hiddenConstraint.UpdateShownState(Bid, direction, biddingSummary, shownState);
+					showsState.UpdateState(Bid, handSummary, positionState);
 				}
-			}
-			return shownState;
+			} 
 		}
 	}
 

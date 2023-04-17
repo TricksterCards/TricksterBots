@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -11,12 +12,19 @@ namespace TricksterBots.Bots.Bridge
 
 	public class SuitSummary
 	{
-		public (int Min, int Max) Shape { get; protected set; }
-		public (int Min, int Max) DummyPoints { get; protected set; }
+		internal (int Min, int Max) _quality;
 
-		public (int Min, int Max) LongHandPoints { get; protected set; }
+		public (int Min, int Max) Shape { get;  set; }
+		public (int Min, int Max) DummyPoints { get; set; }
 
-		public (SuitQuality Min, SuitQuality Max) Quality { get; protected set; }
+		public (int Min, int Max) LongHandPoints { get; set; }
+
+		public (SuitQuality Min, SuitQuality Max) Quality
+		{ 
+			get { return ((SuitQuality)_quality.Min, (SuitQuality)_quality.Max); }
+			set { _quality.Min = (int)value.Min; _quality.Max = (int) value.Max; }
+		}
+
 
 
 		public SuitSummary()
@@ -27,41 +35,59 @@ namespace TricksterBots.Bots.Bridge
 			this.Quality = (SuitQuality.Poor, SuitQuality.Solid);
 		}
 		// TODO: There are other properties like "Stopped", "Has Ace", that can go here...
-	}
+	
+		public SuitSummary(SuitSummary other)
+		{
+			this.Shape = other.Shape;
+			this.DummyPoints = other.DummyPoints;
+			this.LongHandPoints = other.LongHandPoints;
+			this.Quality = other.Quality;
+		}
 
-	public class ModifiableSuitSummary : SuitSummary
-	{
-		public void ShowShape(int min, int max)
+		private static (int Min, int Max) IntersectRange((int Min, int Max) r1, (int Min, int Max) r2)
 		{
-			Shape = (Math.Max(min, Shape.Min), Math.Min(max, Shape.Max));
+			return (Math.Max(r1.Min, r2.Min), Math.Min(r1.Max, r2.Max));
 		}
-		public void ShowDummyPoints(int min, int max)
+
+		// TODO: This is duplicated code.  Figure out a decnent place for it
+		private static (int Min, int Max) UnionRange((int Min, int Max) r1, (int Min, int Max) r2)
 		{
-			DummyPoints = (Math.Max(min, DummyPoints.Min), Math.Min(max, DummyPoints.Max)); 
+			return (Math.Min(r1.Min, r2.Min), Math.Max(r1.Max, r2.Max));
 		}
-		public void ShowLongHandPoints(int min, int max)
+
+		internal void Union(SuitSummary other)
 		{
-			LongHandPoints = (Math.Max(min, LongHandPoints.Min), Math.Min(max, LongHandPoints.Max));
+			this.Shape = UnionRange(this.Shape, other.Shape);
+			this.DummyPoints = UnionRange(this.DummyPoints, other.DummyPoints);
+			this.LongHandPoints = UnionRange(this.LongHandPoints, other.LongHandPoints);
+			this._quality = UnionRange(this._quality, other._quality);
 		}
-		public void ShowQuality(SuitQuality min, SuitQuality max)
+
+
+		internal void Intersect(SuitSummary other)
 		{
-			int iNewMin = Math.Max((int)min, (int)Quality.Min);
-			int iCurMax = Math.Min((int)max, (int)Quality.Max);
-			SuitQuality newMin = (SuitQuality)iNewMin;
-			SuitQuality newMax = (SuitQuality)iCurMax;
-			Quality = (newMin, newMax);
+			this.Shape = IntersectRange(this.Shape, other.Shape);
+			this.DummyPoints = IntersectRange(this.DummyPoints, other.DummyPoints);
+			this.LongHandPoints = IntersectRange(this.LongHandPoints, other.LongHandPoints);
+			this._quality = IntersectRange(this._quality, other._quality);
 		}
 	}
 
 	public class HandSummary
 	{
-		protected Dictionary<Suit, ModifiableSuitSummary> _modifiableSuits;
 
-		public (int Min, int Max) OpeningPoints { get; protected set; }
+		private static Suit[] strains = { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades, Suit.Unknown };
 
-		public bool? IsBalanced { get; protected set; }
+		public (int Min, int Max) OpeningPoints { get; set; }
 
-		public bool? IsFlat { get; protected set; }
+		public bool? IsBalanced { get; set; }
+
+		public bool? IsFlat { get; set; }
+
+		// TODO: Perhaps things like this:
+		public int? CountAces { get; set; }
+			
+		public int? CountKings { get; set; }
 
 		public Dictionary<Suit, SuitSummary> Suits { get; protected set; }
 
@@ -70,38 +96,100 @@ namespace TricksterBots.Bots.Bridge
 			this.OpeningPoints = (0, int.MaxValue);
 			this.IsBalanced = null;
 			this.IsFlat = null;
+			this.CountAces = null;
+			this.CountKings = null;
 			this.Suits = new Dictionary<Suit, SuitSummary>();
-			this._modifiableSuits = new Dictionary<Suit, ModifiableSuitSummary>();
-			foreach (Suit suit in BasicBidding.BasicSuits)
+			foreach (Suit suit in strains)
 			{
-				var suitSummary = new ModifiableSuitSummary();
-				Suits[suit] = suitSummary;
-				_modifiableSuits[suit] = suitSummary;
+				Suits[suit] = new SuitSummary();
 			}
-			var ss = new ModifiableSuitSummary();
-			Suits[Suit.Unknown] = ss;
-			_modifiableSuits[Suit.Unknown] = ss;
-
-			// TODO: Think this through...
 		}
 
+		public HandSummary(HandSummary other)
+		{
+			this.OpeningPoints = other.OpeningPoints;
+			this.IsBalanced = other.IsBalanced;
+			this.IsFlat = other.IsFlat;
+			this.CountAces = other.CountAces;
+			this.CountKings = other.CountKings;
+			this.Suits = new Dictionary<Suit, SuitSummary>();
+			foreach (Suit suit in strains)
+			{
+				Suits[suit] = new SuitSummary(other.Suits[suit]);
+			}
+		}
+
+
+		private static (int Min, int Max) UnionRange((int Min, int Max) r1, (int Min, int Max) r2)
+		{
+			return (Math.Min(r1.Min, r2.Min), Math.Max(r1.Max, r2.Max));
+		}
+
+		private static bool? UnionBool(bool? b1, bool? b2)
+		{
+			return (b1 == null || b2 == null || b1 != b2) ? null : b1;
+		}
+
+		private static int? UnionInt(int? i1, int? i2)
+		{
+			return (i1 == null || i2 == null || i1 != i2) ? null : i1;
+		}
+
+
+		public void Union(HandSummary other)
+		{
+			this.OpeningPoints = UnionRange(this.OpeningPoints, other.OpeningPoints);
+			this.IsBalanced = UnionBool(this.IsBalanced, other.IsBalanced);
+			this.IsFlat = UnionBool(this.IsFlat, other.IsFlat);
+			this.CountAces = UnionInt(this.CountAces, other.CountAces);
+			this.CountKings = UnionInt(this.CountKings, other.CountKings);
+			foreach (var suit in strains)
+			{
+				this.Suits[suit].Union(other.Suits[suit]);
+			}
+			TrimShape();
+		}
+
+		private void TrimShape()
+		{
+			int claimed = 0;
+			foreach (var suit in BasicBidding.BasicSuits)
+			{
+				claimed += Suits[suit].Shape.Min;
+			}
+			foreach (var suit in BasicBidding.BasicSuits)
+			{
+				var shape = Suits[suit].Shape;
+				Suits[suit].Shape = (shape.Min, shape.Max - claimed + shape.Min);
+			}
+		}
+
+		private static (int Min, int Max) IntersectRange((int Min, int Max) r1, (int Min, int Max) r2)
+		{
+			return (Math.Max(r1.Min, r2.Min), Math.Min(r1.Max, r2.Max));
+		}
+		private static bool? IntersectBool(bool? b1, bool? b2)
+		{ 
+			return (b1 == null || b2 == null || b1 != b2) ? null : b1;
+		}
+
+		private static int? IntersectInt(int? v1, int? v2)
+		{
+			return (v1 == null || v2 == null || v1 != v2) ? null : v1;
+		}
+
+		public void Intersect(HandSummary other)
+		{
+			this.OpeningPoints = IntersectRange(this.OpeningPoints, other.OpeningPoints);
+			this.IsBalanced = IntersectBool(this.IsBalanced, other.IsBalanced);
+			this.IsFlat = IntersectBool(this.IsFlat, other.IsFlat);
+			this.CountAces = IntersectInt(this.CountAces, other.CountAces);
+			this.CountKings = IntersectInt(this.CountKings, other.CountKings);
+			foreach (var suit in strains)
+			{
+				this.Suits[suit].Intersect(other.Suits[suit]);
+			}
+		}
 	}
 
-
-	public class ModifiableHandSummary : HandSummary
-	{
-		public void ShowOpeningPoints(int min, int max)
-		{
-			OpeningPoints = (Math.Max(min, OpeningPoints.Min), Math.Min(max, OpeningPoints.Max));
-		}
-		public void ShowIsBalanced(bool isBalanced)
-		{
-			IsBalanced = isBalanced;
-		}
-		public void ShowIsFlat(bool isFlat)
-		{
-			IsFlat = isFlat;
-		}
-		public Dictionary<Suit, ModifiableSuitSummary> ModifiableSuits => this._modifiableSuits;
-	}
 }

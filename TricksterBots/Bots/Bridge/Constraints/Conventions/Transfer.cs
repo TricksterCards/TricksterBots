@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
 
+
 namespace TricksterBots.Bots.Bridge
 {
 	internal class Transfer : Bidder
@@ -29,27 +30,27 @@ namespace TricksterBots.Bots.Bridge
 		{
 		}
 
-		public override IEnumerable<BidRule> GetRules(BidXXX xxx, Direction direction, BiddingSummary biddingSummary)
+		public override IEnumerable<BidRule> GetRules(PositionState ps)
 		{
 			// TODO: Make sure no interference
 			// TODO: Check to make sure transfers are enabled
 
-			if (xxx.Role == PositionRole.Responder && xxx.PartnersBid.Is(1, Suit.Unknown) && xxx.Round == 1)
+			if (ps.Role == PositionRole.Responder && ps.Partner.LastBid.Is(1, Suit.Unknown) && ps.Round == 1)
 			{
 				return InitiateTransfer();
 			}
-			else if (xxx.Role == PositionRole.Opener && xxx.Round == 2)
+			else if (ps.Role == PositionRole.Opener && ps.BidRound == 2)
 			{
 				return AcceptTransfer();
 			}
 			// TODO: THIS IS A BUG -- NEED CONVENTION ROUND.  SHOULD BE 2 HERE.  WHEN INITIATED SHOULD GO TO 1.
 			// IF RESPONDER IS A PASSED HAND THEN Round will NOT equal 2!!!
 
-			else if (xxx.Role == PositionRole.Responder && xxx.Round == 2)
+			else if (ps.Role == PositionRole.Responder && ps.BidRound == 2)
 			{
 				return ExplainTransfer();
 			}
-			else if (xxx.Role== PositionRole.Opener && xxx.Round == 2)
+			else if (ps.Role== PositionRole.Opener && ps.BidRound == 2)
 			{
 				return OpenerRebid();
 			}
@@ -64,19 +65,20 @@ namespace TricksterBots.Bots.Bridge
                     // For invitational hands, 5/5 transfer to hearts then bid spades
                     // For game-going hands 5/5 transfer to spades then bid 3H
 
-				Rule(2, Suit.Diamonds, Points(NTLessThanInvite), Shape(Suit.Hearts, 5, 11), BetterSuit(Suit.Hearts, Suit.Spades)),
-				Rule(2, Suit.Diamonds, Points(NTInvite), Shape(Suit.Hearts, 5, 11), Shape(Suit.Spades, 0, 5)),
-				Rule(2, Suit.Diamonds, Points(GameOrBetter), Shape(Suit.Hearts, 5, 11), Shape(Suit.Spades, 0, 4)),
+				Forcing(2, Suit.Diamonds, Points(NTLessThanInvite), Shape(Suit.Hearts, 5, 11), BetterSuit(Suit.Hearts, Suit.Spades)),
+				Forcing(2, Suit.Diamonds, Points(NTInvite), Shape(Suit.Hearts, 5, 11), Shape(Suit.Spades, 0, 5)),
+				Forcing(2, Suit.Diamonds, Points(GameOrBetter), Shape(Suit.Hearts, 5, 11), Shape(Suit.Spades, 0, 4)),
 
-				Rule(2, Suit.Hearts, Points(NTLessThanInvite), Shape(Suit.Spades, 5, 11), BetterSuit(Suit.Spades, Suit.Hearts)),
-				Rule(2, Suit.Hearts, Points(NTInvite), Shape(Suit.Spades, 5, 11), Shape(Suit.Hearts, 0, 4)),
-				Rule(2, Suit.Hearts, Points(GameOrBetter), Shape(Suit.Spades, 5, 11)),
+				Forcing(2, Suit.Hearts, Points(NTLessThanInvite), Shape(Suit.Spades, 5, 11), BetterSuit(Suit.Spades, Suit.Hearts)),
+				Forcing(2, Suit.Hearts, Points(NTInvite), Shape(Suit.Spades, 5, 11), Shape(Suit.Hearts, 0, 4)),
+				Forcing(2, Suit.Hearts, Points(GameOrBetter), Shape(Suit.Spades, 5, 11)),
 
+				// TODO: Solid long minors are lots of tricks.  Need logic for those....
 
-				Rule(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Clubs, 6), Quality(Suit.Clubs, SuitQuality.Good)),
-				Rule(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Clubs, 7, 11)),
-				Rule(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Diamonds, 6), Quality(Suit.Diamonds, SuitQuality.Good)),
-				Rule(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Diamonds, 7, 11)),
+				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Clubs, 6), Quality(Suit.Clubs, SuitQuality.Good, SuitQuality.Solid)),
+				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Clubs, 7, 11)),
+				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Diamonds, 6), Quality(Suit.Diamonds, SuitQuality.Good, SuitQuality.Solid)),
+				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Diamonds, 7, 11)),
 
 			};
 			return rules;
@@ -86,17 +88,17 @@ namespace TricksterBots.Bots.Bridge
 		{
 			BidRule[] rules =
 			{
-				Rule(2, Suit.Hearts, PartnerBid(2, Suit.Diamonds), Points(LessThanSuperAccept)),
-				Rule(2, Suit.Hearts, PartnerBid(2, Suit.Diamonds), Points(SuperAccept), Shape(0, 3)),
+				NonForcing(2, Suit.Hearts, PartnerBid(2, Suit.Diamonds), Points(LessThanSuperAccept)),
+				NonForcing(2, Suit.Hearts, PartnerBid(2, Suit.Diamonds), Points(SuperAccept), Shape(0, 3)),
 
-				Rule(2, Suit.Spades, PartnerBid(2, Suit.Hearts), Points(LessThanSuperAccept)),
-				Rule(2, Suit.Spades, PartnerBid(2, Suit.Hearts), Points(SuperAccept), Shape(0, 3)),
+				NonForcing(2, Suit.Spades, PartnerBid(2, Suit.Hearts), Points(LessThanSuperAccept)),
+				NonForcing(2, Suit.Spades, PartnerBid(2, Suit.Hearts), Points(SuperAccept), Shape(0, 3)),
 
-				Rule(3, Suit.Clubs, PartnerBid(2, Suit.Spades)),
+				NonForcing(3, Suit.Clubs, PartnerBid(2, Suit.Spades)),
 
-				Rule(3, Suit.Hearts, PartnerBid(2, Suit.Diamonds), Points(SuperAccept), Shape(4, 5)),
+				NonForcing(3, Suit.Hearts, PartnerBid(2, Suit.Diamonds), Points(SuperAccept), Shape(4, 5)),
 
-				Rule(3, Suit.Spades, PartnerBid(2, Suit.Hearts), Points(SuperAccept), Shape(4, 5)),
+				NonForcing(3, Suit.Spades, PartnerBid(2, Suit.Hearts), Points(SuperAccept), Shape(4, 5)),
 			};
 			return rules;
 		}
@@ -106,30 +108,31 @@ namespace TricksterBots.Bots.Bridge
 		{
 			BidRule[] rules =
 			{
-				Rule(CallType.Pass, Points(NTLessThanInvite)),
+				Signoff(CallType.Pass, Points(NTLessThanInvite)),
 
 				// This can happen if we are 5/5 with invitational hand. Show Spades
-				Rule(2, Suit.Spades, DefaultPriority + 1, Points(NTLessThanInvite), Shape(5, 11)),
+				// TODDO: Higher prioiryt than other bids.  Seems reasonable...
+				Invitational(2, Suit.Spades, DefaultPriority + 1, Points(NTLessThanInvite), Shape(5, 11)),
 
-				Rule(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Hearts), Shape(Suit.Hearts, 5)),
-				Rule(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Spades), Shape(Suit.Spades, 5)),
+				Invitational(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Hearts), Shape(Suit.Hearts, 5)),
+				Invitational(2, Suit.Unknown, Points(NTInvite), PartnerBid(2, Suit.Spades), Shape(Suit.Spades, 5)),
 
-				Rule(3, Suit.Diamonds, PartnerBid(3, Suit.Clubs), Shape(Suit.Diamonds, 6, 11)),
+				Signoff(3, Suit.Diamonds, PartnerBid(3, Suit.Clubs), Shape(Suit.Diamonds, 6, 11)),
 
 				// Need to bid 3 hearts with 5/5 and game-going values.
-				Rule(3, Suit.Hearts, Points(NTInvite), PartnerBid(2, Suit.Hearts), Shape(6, 11)),
-				Rule(3, Suit.Hearts, DefaultPriority + 1, Points(GameOrBetter), PartnerBid(2, Suit.Spades), Shape(5)),
+				Invitational(3, Suit.Hearts, Points(NTInvite), PartnerBid(2, Suit.Hearts), Shape(6, 11)),
+				Forcing(3, Suit.Hearts, DefaultPriority + 1, Points(GameOrBetter), PartnerBid(2, Suit.Spades), Shape(5)),
 
-				Rule(3, Suit.Spades, Points(NTInvite), PartnerBid(2, Suit.Spades), Shape(6, 11)),
+				Invitational(3, Suit.Spades, Points(NTInvite), PartnerBid(2, Suit.Spades), Shape(6, 11)),
 
-				Rule(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Hearts), Shape(Suit.Hearts, 5)),
-				Rule(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Spades), Shape(Suit.Spades, 5)),
+				Signoff(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Hearts), Shape(Suit.Hearts, 5)),
+				Signoff(3, Suit.Unknown, Points(NTGame), PartnerBid(2, Suit.Spades), Shape(Suit.Spades, 5)),
 
-				Rule(4, Suit.Hearts, Points(NTGame), PartnerBid(2, Suit.Hearts), Shape(6, 11)),
-				Rule(4, Suit.Hearts, Points(GameIfSuperAccept), PartnerBid(3, Suit.Hearts)),
+				Signoff(4, Suit.Hearts, Points(NTGame), PartnerBid(2, Suit.Hearts), Shape(6, 11)),
+				Signoff(4, Suit.Hearts, Points(GameIfSuperAccept), PartnerBid(3, Suit.Hearts)),
 
-				Rule(4, Suit.Spades, Points(NTGame), PartnerBid(2, Suit.Spades), Shape(6,11)),
-				Rule(4, Suit.Spades, Points(GameIfSuperAccept), PartnerBid(3, Suit.Spades))
+				Signoff(4, Suit.Spades, Points(NTGame), PartnerBid(2, Suit.Spades), Shape(6,11)),
+				Signoff(4, Suit.Spades, Points(GameIfSuperAccept), PartnerBid(3, Suit.Spades))
 
 				// TODO: SLAM BIDDING.  REMEMBER RANGES NEED TO BE DIFFERENT IF SUPER ACCEPTED...
 			};
@@ -143,28 +146,28 @@ namespace TricksterBots.Bots.Bridge
 			BidRule[] rules =
 			{
 				// TODO: Make lower priority???  
-				Rule(CallType.Pass, Points(LessThanAcceptInvite)),
+				Signoff(CallType.Pass, Points(LessThanAcceptInvite)),
 
-				Rule(3, Suit.Hearts, Points(LessThanAcceptInvite), PreviousBid(2, Suit.Hearts), Flat(false), Shape(3)),
-				Rule(3, Suit.Hearts, Points(LessThanAcceptInvite), PreviousBid(2, Suit.Hearts), Shape(4, 5)),
+				Signoff(3, Suit.Hearts, Points(LessThanAcceptInvite), PreviousBid(2, Suit.Hearts), Flat(false), Shape(3)),
+				Signoff(3, Suit.Hearts, Points(LessThanAcceptInvite), PreviousBid(2, Suit.Hearts), Shape(4, 5)),
 
-				Rule(3, Suit.Spades, Points(LessThanAcceptInvite), PreviousBid(2, Suit.Spades), Flat(false), Shape(3)),
-				Rule(3, Suit.Spades, Points(LessThanAcceptInvite), PreviousBid(2, Suit.Spades), Shape(4, 5)),
+				Signoff(3, Suit.Spades, Points(LessThanAcceptInvite), PreviousBid(2, Suit.Spades), Flat(false), Shape(3)),
+				Signoff(3, Suit.Spades, Points(LessThanAcceptInvite), PreviousBid(2, Suit.Spades), Shape(4, 5)),
 
 				// TODO: Perhaps priority makes this the last choice... Maybe not.   May need lots of exclusions...
 				// TODO: Maybe if partner shows exactly 5 and we are flat then we bid to 3NT instead of accepting
 				// even if we have three  What about 4 of them?  Probably safest in suit.... 
-				Rule(3, Suit.Unknown, DefaultPriority - 10, Points(AcceptInvite)),
+				Signoff(3, Suit.Unknown, DefaultPriority - 10, Points(AcceptInvite)),
 
 
-				Rule(4, Suit.Hearts, Points(AcceptInvite), PartnerBid(3, Suit.Hearts)),
-				Rule(4, Suit.Hearts, Points(AcceptInvite), PreviousBid(2, Suit.Hearts), PartnerBid(2, Suit.Unknown), Shape(3, 5)),
-				Rule(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Spades), PartnerBid(3, Suit.Hearts), Shape(3, 5), BetterSuit(Suit.Hearts, Suit.Spades)),
+				Signoff(4, Suit.Hearts, Points(AcceptInvite), PartnerBid(3, Suit.Hearts)),
+				Signoff(4, Suit.Hearts, Points(AcceptInvite), PreviousBid(2, Suit.Hearts), PartnerBid(2, Suit.Unknown), Shape(3, 5)),
+				Signoff(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Spades), PartnerBid(3, Suit.Hearts), Shape(3, 5), BetterOrEqualSuit(Suit.Hearts, Suit.Spades)),
 
 
-				Rule(4, Suit.Spades, Points(AcceptInvite), PartnerBid(3, Suit.Spades)),
-				Rule(4, Suit.Spades, Points(AcceptInvite), PreviousBid(2, Suit.Spades), PartnerBid(2, Suit.Unknown), Shape(3, 5)),
-				Rule(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Spades), PartnerBid(3, Suit.Hearts), Shape(3, 5), BetterSuit(Suit.Spades, Suit.Hearts)),
+				Signoff(4, Suit.Spades, Points(AcceptInvite), PartnerBid(3, Suit.Spades)),
+				Signoff(4, Suit.Spades, Points(AcceptInvite), PreviousBid(2, Suit.Spades), PartnerBid(2, Suit.Unknown), Shape(3, 5)),
+				Signoff(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Spades), PartnerBid(3, Suit.Hearts), Shape(3, 5), BetterSuit(Suit.Spades, Suit.Hearts)),
 
 				// TODO: SLAM BIDDING...
 				// I Think here we will just defer to competative bidding.  Then ranges don't matter.  We just look for 

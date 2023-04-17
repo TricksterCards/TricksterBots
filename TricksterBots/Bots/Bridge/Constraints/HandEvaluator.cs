@@ -10,7 +10,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	 class StandardHandEvaluator
+	class StandardHandEvaluator
 	{
 
 
@@ -35,14 +35,14 @@ namespace TricksterBots.Bots.Bridge
 			}
 			return q;
 		}
-		public static void Evaluate(Hand hand, ModifiableHandSummary hs)
+		public static void Evaluate(Hand hand, HandSummary hs)
 		{
 			///this._hcp = BasicBidding.ComputeHighCardPoints(hand);
 			var p = BasicBidding.ComputeDistributionPoints(hand);
-			hs.ShowOpeningPoints(p, p);
+			hs.OpeningPoints = (p, p);
 			var counts = BasicBidding.CountsBySuit(hand);
-			hs.ShowIsBalanced(BasicBidding.IsBalanced(hand));
-			hs.ShowIsFlat(BasicBidding.Is4333(counts));
+			hs.IsBalanced = BasicBidding.IsBalanced(hand);
+			hs.IsFlat = BasicBidding.Is4333(counts);
 			foreach (Suit suit in BasicBidding.BasicSuits)
 			{
 				var dp = BasicBidding.DummyPoints(hand, suit);
@@ -56,6 +56,9 @@ namespace TricksterBots.Bots.Bridge
 			hs.ModifiableSuits[Suit.Unknown].ShowShape(0, 0);
 			hs.ModifiableSuits[Suit.Unknown].ShowDummyPoints(p, p);
 			hs.ModifiableSuits[Suit.Unknown].ShowLongHandPoints(p, p);
+			hs.ShowCountAces(hand.Count(c => c.rank == Rank.Ace));
+			hs.ShowCountKings(hand.Count(c => c.rank == Rank.King));
 
 		}
+	}
 }

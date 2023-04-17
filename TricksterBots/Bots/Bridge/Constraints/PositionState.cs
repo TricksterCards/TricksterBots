@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -9,46 +11,58 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
+	public enum PositionRole { Opener, Overcaller, Responder, Advancer }
 
 
 	public class BiddingState
 	{
 
 		public Dictionary<Direction, PositionState> Positions { get; }
-		public enum Vulxxx { None, Both, NS, EW };
-		public Vulxxx VulXXX { get; }
 
-		public bool IsVulnerable(Direction direction)
+
+		public PositionState Dealer { get; private set; }
+		
+		public PositionState NextToAct { get; private set; }
+
+
+		public static bool IsVulnerable(string vul, Direction direction)
 		{
-			switch (VulXXX)
+			switch (vul)
 			{
-				case Vulxxx.None:
+				case "None":
+				case "Love": 
+				case "-":
 					return false;
-				case Vulxxx.Both:
+				case "All":
+				case "Both":
 					return true;
-				case Vulxxx.NS:
+				case "NS":
 					return (direction == Direction.North || direction == Direction.South);
-				case Vulxxx.EW:
+				case "EW":
 					return (direction == Direction.East || direction == Direction.West);
 				default:
-					Debug.Assert(false);	// Should never get here...
+					// TODO: Throw???
+					Debug.Assert(false);    // Should never get here...
 					return false;
 			}
-			
+
 		}
 
-		public BiddingState(Hand[] hands, Direction dealer, Vulxxx vulxxx)
+		public BiddingState(Hand[] hands, Direction dealer, string vul)
 		{
-			this.VulXXX = vulxxx;
 			this.Positions = new Dictionary<Direction, PositionState>();
 			Debug.Assert(hands.Length == 4);
 			var d = dealer;
 			for (int i = 0; i < hands.Length; i++)
 			{
-				this.Positions[d] = new PositionState(this, d, i + 1, hands[i]);
+				this.Positions[d] = new PositionState(this, d, i + 1, IsVulnerable(vul, d), hands[i]);
+				d = BasicBidding.LeftHandOpponent(d);
 			}
+			this.Dealer = Positions[dealer];
+			this.NextToAct = Dealer;
 		}
 	}
+
 
 	public class PositionState
 	{
@@ -58,25 +72,28 @@ namespace TricksterBots.Bots.Bridge
 		private int _roleAssignedOffset = 0;
 		private bool _roleAssigned = false;
 
-		private ModifiableHandSummary _publicHandSummary;
+		private HandSummary _publicHandSummary;
 
 		private HandSummary _privateHandSummary;
 
-		private List<BidRuleGroup> _bids { get; }
+		private BiddingSummary _biddingSummary;
 
-		public ShownState ShownState { get; }
+		private List<BidRuleGroup> _bids;
+
 		public BiddingState BiddingState { get; }
 
 		public PositionRole Role { get; internal set; }
 
-		public HandSummary ShownHandSummary
+		public HandSummary PublicHandSummary
 		{
+			// TODO: Consider returning a copy so that it can never be modified...  
 			get { return _publicHandSummary; }
 		}
 
 		public Direction Direction { get; }
 
 		public int Seat { get; }
+		public bool Vulnerable { get; }
 
 		public Bid LastBid
 		{
@@ -93,33 +110,20 @@ namespace TricksterBots.Bots.Bridge
 
 		// TODO: Potentially LHO Interferred...  Maybe just in 
 
-		public Dictionary<Suit, (int Min, int Max)> ShownShape {  get; }
 
-		//public Dictionary<Suit, SuitSummary> Suits { get; }
-
-
-		public bool Vulnerable
-		{
-			get {
-				return BiddingState.IsVulnerable(this.Direction); 
-			}
-		}
-
-	
-
-		public PositionState(BiddingState biddingState, Direction direction, int seat, Hand hand)
+		public PositionState(BiddingState biddingState, Direction direction, int seat, bool vulnerable, Hand hand)
 		{
 			Debug.Assert(seat >= 1 && seat <= 4);
 			this.BiddingState = biddingState;
 			this.Direction = direction;
 			this.Seat = seat;
 			this.Role = PositionRole.Opener;    // Best start for any position.  Will change with time.
-		//	this.ShownState = new ShownState();
-			this._publicHandSummary = new ModifiableHandSummary();
+			this.Vulnerable = vulnerable;
+			this._publicHandSummary = new HandSummary();
 
 			if (hand != null)
 			{
-				var hs = new ModifiableHandSummary();
+				var hs = new HandSummary();
 				// TODO: This is where we would need to use a differnet implementation of HandSummary evaluator...
 				StandardHandEvaluator.Evaluate(hand, hs);
 				this._privateHandSummary = hs;
@@ -128,6 +132,8 @@ namespace TricksterBots.Bots.Bridge
 			{ 
 				this._privateHandSummary = null; 
 			}
+
+			this._biddingSummary = new BiddingSummary();
 		}
 
 		public int BidRound
@@ -170,14 +176,22 @@ namespace TricksterBots.Bots.Bridge
 			_roleAssignedOffset = _bids.Count;
 		}
 
-	}
-
-	// TODO: Is this correct?  Probalby always create the modifiable one but pass the other to the constraint interfaces..
-	public class ModifiablePositionState : PositionState
-	{
-		public ModifiablePositionState(BiddingState biddingState, Direction direction, int seat, Hand hand) : base(biddingState, direction, seat, hand)
+		internal bool ConformsToPublicHand(Constraint constraint, Bid bid)
 		{
+			return constraint.Conforms(bid, this, this._publicHandSummary, this._biddingSummary);
+		}
+
+		internal bool ConformsToPrivateHand(Constraint constraint, Bid bid)
+		{
+			return constraint.Conforms(bid, this, this._privateHandSummary, this._biddingSummary);
+		}
+
+		internal (HandSummary, BiddingSummary) Update(IShowsState showsState, Bid bid)
+		{
+			var hs = new HandSummary(this._publicHandSummary);
+			var bs = new BiddingSummary(this._biddingSummary);
+			showsState.Update(bid, this, hs, bs);
+			return (hs, bs);
 		}
 	}
-
 }
