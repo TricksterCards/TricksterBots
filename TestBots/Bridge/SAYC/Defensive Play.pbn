@@ -120,10 +120,10 @@ D6 D7 DJ D5
 % take it.
 
 [Event "Lead on Defense: Take the setting trick"]
-[Deal "N:65.K65.AJ32.T532 - - JT98.987.987.987"]
+[Deal "N:65.K65.AK32.T532 - - JT98.987.987.987"]
 [Contract "6NT"]
 [Play "S"]
-D6 D7 DJ D5
+D6 D7 DK D5
 -  -  DA -
 
 % View AQ as a sequence once the K is played (and similar positions)
