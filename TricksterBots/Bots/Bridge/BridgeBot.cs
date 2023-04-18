@@ -869,6 +869,14 @@ namespace Trickster.Bots
             if (isDummyRHO)
                 knownCards = knownCards.Concat(dummyHand).ToList();
 
+            // If we can't beat the best card in the trick, play low
+            if (EffectiveSuit(state.cardTakingTrick) == ledSuit && legalCardsInSuit.Any() && !legalCardsInSuit.Any(c => RankSort(c) > RankSort(state.cardTakingTrick)))
+                return SuggestDefensiveDiscard(state);
+
+            // If 2nd seat trumped in and we don't have any legal trump, play low
+            if (EffectiveSuit(state.cardTakingTrick) == state.trumpSuit && ledSuit != state.trumpSuit && !legalCards.Any(c => EffectiveSuit(c) == state.trumpSuit))
+                return SuggestDefensiveDiscard(state);
+
             // If partner is winning with a high card, play low
             if (state.isPartnerTakingTrick && IsCardHigh(state.cardTakingTrick, knownCards))
                 return SuggestDefensiveDiscard(state);

@@ -380,3 +380,10 @@ H3 H4 S7 -
 [Contract "4H"]
 [Play "W"]
 C5 C3 CA -
+
+[Event "3rd Hand Defense: Play low if we can't beat the card winning the trick"]
+[Deal "W:AQT7.J.AKQT2.T64 - - 9542.KT42.95.K98"]
+[Contract "1NT"]
+[Play "S"]
+H2 HJ HA H5
+C8 -  C2 CA
