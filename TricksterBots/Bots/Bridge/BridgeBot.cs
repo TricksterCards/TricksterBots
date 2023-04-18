@@ -573,11 +573,11 @@ namespace Trickster.Bots
             // Leads: Suits
 
             // For opening lead, if playing in declarer's 2nd bid suit - lead trump
-            var hasLegalTrump = legalCards.Any(c => c.suit == state.trumpSuit);
+            var hasLegalTrump = legalCards.Any(c => EffectiveSuit(c) == state.trumpSuit);
             // TODO: Does NT count as a first bid suit? Currently this treats it as one.
             var declarersFirstBidSuit = GetDeclarer(state).BidHistory.Where(b => DeclareBid.Is(b)).Select(b => new DeclareBid(b).suit).First();
             if (IsOpeningLead(state) && hasLegalTrump && state.trumpSuit != declarersFirstBidSuit)
-                legalCards = legalCards.Where(c => c.suit == state.trumpSuit).ToList();
+                legalCards = legalCards.Where(c => EffectiveSuit(c) == state.trumpSuit).ToList();
 
             // If you have a 3-card sequence starting with ace, lead that
             var threeCardSequences = GetSequences(legalCards, state.cardsPlayed, minLength: 3, minTopRank: (int)Rank.Ace);
@@ -761,40 +761,39 @@ namespace Trickster.Bots
         private Card SuggestSecondHandDefensivePlay(SuggestCardState<BridgeOptions> state)
         {
             var ledCard = state.trick[0];
+            var ledSuit = EffectiveSuit(ledCard);
             var dummy = GetDummy(state);
-            var dummyCardsInSuit = new Hand(dummy.Hand).Where(c => c.suit == ledCard.suit).OrderBy(c => c.rank).ToList();
+            var dummyCardsInSuit = new Hand(dummy.Hand).Where(c => EffectiveSuit(c) == ledSuit).OrderBy(RankSort).ToList();
             Card coverHonor = null;
 
-            // If we can trump in...
-            var legalTrump = state.legalCards.Where(c => c.suit == state.trumpSuit).OrderBy(c => c.rank);
+            // If we can trump in, do so
+            var legalTrump = state.legalCards.Where(c => EffectiveSuit(c) == state.trumpSuit).OrderBy(RankSort);
             if (ledCard.suit != state.trumpSuit && legalTrump.Any())
-            {
-                // Trump in if the first card played is high
-                if (IsCardHigh(ledCard, dummyCardsInSuit.Concat(state.cardsPlayed)))
-                    return legalTrump.First();
-
-                // Trump in if dummy plays next and has high
-                var isDummyLHO = dummy.Seat == GetNextSeatAfter(state.player.Seat, state.players.Count);
-                if (isDummyLHO && dummyCardsInSuit.Any() && IsCardHigh(dummyCardsInSuit.Last(), state.cardsPlayed))
-                    return legalTrump.First();
-
-                // Trump in if partner is void in suit and trump
-                var partner = GetPartner(state);
-                if (partner.VoidSuits.Contains(ledCard.suit) && partner.VoidSuits.Contains(state.trumpSuit))
-                    return legalTrump.First();
-            }
+                return legalTrump.First();
 
             // General principle: if you have a trick that is now good as the defender,
-            // and it is the "setting trick" aka the trick to defeat the contract,
-            // take it.
-            int tricksNeededToSet = GetTricksNeededToSet(state);
+            // and it is the "setting trick" aka the trick to defeat the contract, take it.
+            var tricksNeededToSet = GetTricksNeededToSet(state);
             var sureWinners = GetSureWinners(state);
             if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
                 return sureWinners.First();
 
+            var knownCards = state.legalCards.Concat(state.cardsPlayed);
+            var isDummyRHO = GetNextSeatAfter(dummy.Seat, state.players.Count) == state.player.Seat;
+            if (isDummyRHO)
+                knownCards = knownCards.Concat(dummyCardsInSuit);
+
             // try to win tricks quickly if dummy has a long, good side suit
-            if (DummyHasLongGoodSideSuit(state))
-                return TryTakeEm(state);
+            var legalCardsInSuit = state.legalCards.Where(c => EffectiveSuit(c) == ledSuit).OrderBy(RankSort).ToList();
+            var lowestHighCardInSuit = legalCardsInSuit.FirstOrDefault(c => IsCardHigh(c, knownCards));
+            if (lowestHighCardInSuit != null && DummyHasLongGoodSideSuit(state))
+                return lowestHighCardInSuit;
+
+            // Special-Case: play Ace above dummy's singleton King from second seat if dummy is LHO
+            var isDummyLHO = GetNextSeat(state) == dummy.Seat;
+            var legalAceInSuit = state.legalCards.SingleOrDefault(c => c.suit == ledCard.suit && c.rank == Rank.Ace);
+            if (isDummyLHO && dummyCardsInSuit.Count == 1 && dummyCardsInSuit[0].rank == Rank.King && legalAceInSuit != null)
+                return legalAceInSuit;
 
             // If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
             if (ledCard.rank >= Rank.Ten)
@@ -840,32 +839,31 @@ namespace Trickster.Bots
             return SuggestDefensiveDiscard(state);
         }
 
-        private bool IsAboveGaps(Card card, int highRank, IEnumerable<Card> cardsPlayed)
+        private bool IsEquivalent(Card card, Card target, IEnumerable<Card> cardsOutOfPlay)
         {
-            return RankSort(card) == highRank
-                || cardsPlayed.Count(c => EffectiveSuit(c) == EffectiveSuit(card)
-                && RankSort(c) > RankSort(card)) == highRank - RankSort(card);
-        }
+            if (EffectiveSuit(card) != EffectiveSuit(target))
+                return false;
 
-        private bool IsStopper(Card card, IEnumerable<Card> hand, IEnumerable<Card> cardsPlayed)
-        {
-            var highRank = (int)Rank.Ace;
-            return RankSort(card) == highRank
-                || cardsPlayed.Count(c => EffectiveSuit(c) == EffectiveSuit(card)
-                && RankSort(c) > RankSort(card)) == highRank - RankSort(card);
+            var suit = EffectiveSuit(card);
+            var highRank = Math.Max(RankSort(card), RankSort(target));
+            var lowRank = Math.Min(RankSort(card), RankSort(target));
+            var gaps = highRank - lowRank - 1;
+            var nPlayedBetween = cardsOutOfPlay.Count(c => EffectiveSuit(c) == suit && RankSort(c) > lowRank && RankSort(c) < highRank);
+            return gaps - nPlayedBetween < 1;
         }
 
         private Card SuggestThirdHandDefensivePlay(SuggestCardState<BridgeOptions> state)
         {
-            // Generally third and fourth hand play as high as necessary.
-            // General rule: we're trying to push declarer to have to play their higher cards to win the trick
+            // Generally third and fourth hand play as high as necessary to win the trick.
 
-            var legalCards = state.legalCards.OrderByDescending(c => c.rank).ToList();
-            var legalCardsInWinningSuit = legalCards.Where(c => c.suit == state.cardTakingTrick.suit);
+            var ledSuit = EffectiveSuit(state.trick[0]);
+            var legalCards = state.legalCards.OrderByDescending(RankSort).ToList();
+            var legalCardsInSuit = legalCards.Where(c => EffectiveSuit(c) == ledSuit);
+            var legalCardsInWinningSuit = legalCards.Where(c => EffectiveSuit(c) == EffectiveSuit(state.cardTakingTrick));
 
             var knownCards = state.cardsPlayed.Concat(legalCards).ToList();
             var dummy = GetDummy(state);
-            var dummyHand = new Hand(dummy.Hand);
+            var dummyHand = new Hand(dummy.Hand).OrderByDescending(RankSort).ToList();
             var isDummyRHO = state.player.Seat == GetNextSeatAfter(dummy.Seat, state.players.Count);
 
             if (isDummyRHO)
@@ -875,54 +873,55 @@ namespace Trickster.Bots
             if (state.isPartnerTakingTrick && IsCardHigh(state.cardTakingTrick, knownCards))
                 return SuggestDefensiveDiscard(state);
 
-            // If 4th seat is void, we should play low if partner is winning
+            // If partner is winning with an equivalent card to our best, play low
+            var bestCardInSuit = legalCardsInSuit.FirstOrDefault();
+            var minimumBestCardInSuit = bestCardInSuit == null ? null : legalCardsInSuit.LastOrDefault(c => IsEquivalent(bestCardInSuit, c, knownCards));
+            if (state.isPartnerTakingTrick && minimumBestCardInSuit != null && IsEquivalent(state.cardTakingTrick, minimumBestCardInSuit, knownCards))
+                return SuggestDefensiveDiscard(state);
+
+            // If partner is winning and 4th seat is void, play low
             var fourthSeatPlayer = state.players.Single(p => p.Seat == GetNextSeat(state));
-            var isFourthSeatVoid = fourthSeatPlayer.VoidSuits.Contains(state.cardTakingTrick.suit);
+            var isFourthSeatVoid = fourthSeatPlayer.VoidSuits.Contains(EffectiveSuit(state.cardTakingTrick));
             if (state.isPartnerTakingTrick && isFourthSeatVoid)
                 return SuggestDefensiveDiscard(state);
 
-            // General principle: if you have a trick that is now good as the defender,
-            // and it is the "setting trick" aka the trick to defeat the contract,
-            // take it.
-            int tricksNeededToSet = GetTricksNeededToSet(state);
-            var sureWinners = GetSureWinners(state);
-            if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
-                return sureWinners.First();
-
-            // try to win tricks quickly if dummy has a long, good side suit
-            if (DummyHasLongGoodSideSuit(state))
-                return TryTakeEm(state);
-
-            // If partner is winning with an honor, play low
-            if (state.isPartnerTakingTrick && state.cardTakingTrick.rank >= Rank.Ten)
-                return SuggestDefensiveDiscard(state);
-
-            // If dummy has Qxx, and you play third after dummy plays a low card from KJx, you'd play J.
-            // If you have touching honors, play the lower one
-            // If J is in dummy, and we're playing 3rd with KQT (or KQTx)
-            // * If dummy played J, we'd play Q
-            // * Otherwise we'd play T
-            // If partner is winning with 9 and dummy did not have J and we're playing 3rd with KQTx, we'd play Q
-            var legalNonBossHonorsInWinningSuit = legalCardsInWinningSuit.Where(c => c.rank >= Rank.Ten && !IsCardHigh(c, knownCards));
-            var highestLegalNonBossHonorRank = legalNonBossHonorsInWinningSuit.Any() ? (int)legalNonBossHonorsInWinningSuit.Max(c => c.rank) : 0;
-            var minimumWinningNonBossHonorAboveGaps = legalNonBossHonorsInWinningSuit.LastOrDefault(c => c.rank > state.cardTakingTrick.rank && IsAboveGaps(c, highestLegalNonBossHonorRank, knownCards));
-            if (minimumWinningNonBossHonorAboveGaps != null)
-                return minimumWinningNonBossHonorAboveGaps;
-
-            // Third hand play rules: if the second card played will win the trick, play a higher card.
-            var minimumWinner = legalCardsInWinningSuit.LastOrDefault(c => c.rank > state.cardTakingTrick.rank);
-            if (!state.isPartnerTakingTrick && minimumWinner != null)
+            // If partner is NOT winning and 4th seat is void, play lowest winner if possible
+            var minimumWinner = legalCardsInWinningSuit.LastOrDefault(c => RankSort(c) > RankSort(state.cardTakingTrick));
+            if (!state.isPartnerTakingTrick && isFourthSeatVoid && minimumWinner != null)
                 return minimumWinner;
 
-            // If second card played will win the trick, trump in if possible.
-            if (!state.isPartnerTakingTrick && legalCards.Any(c => c.suit == state.trumpSuit) && state.cardTakingTrick.suit != state.trumpSuit)
-            {
-                // TODO: If we're trumping in and 4th seat is void (but may still have trump), try to force them to trump high.
+            // If partner is winning, dummy is LHO, and partner's card is better than dummy's best, play low
+            var isDummyLHO = GetNextSeat(state) == dummy.Seat;
+            var dummyBestCardInSuit = dummyHand.Where(c => EffectiveSuit(c) == ledSuit).FirstOrDefault();
+            if (state.isPartnerTakingTrick && isDummyLHO && (dummyBestCardInSuit == null || RankSort(state.cardTakingTrick) > RankSort(dummyBestCardInSuit)))
+                return SuggestDefensiveDiscard(state);
 
-                // otherwise trump in with our lowest trump
+            // If dummy is LHO, play just high enough to beat their best card.
+            // Partner may be winning, but not with the best or equivalent card, so we want to try to win the trick.
+            var lowestCardAboveDummyInSuit = dummyBestCardInSuit == null ? null : legalCardsInWinningSuit.LastOrDefault(c => RankSort(c) > RankSort(dummyBestCardInSuit));
+            if (isDummyLHO && lowestCardAboveDummyInSuit != null)
+                return lowestCardAboveDummyInSuit;
+
+            // Play the our best card in the suit (if higher than the card winning the trick).
+            // Partner may be winning, but not with the best or equivalent card, so we want to try to win the trick.
+            if (minimumBestCardInSuit != null && EffectiveSuit(minimumBestCardInSuit) == EffectiveSuit(state.cardTakingTrick) && RankSort(minimumBestCardInSuit) > RankSort(state.cardTakingTrick))
+                return minimumBestCardInSuit;
+
+            // If second card played is will win the trick, is not trump, and we can trump in, do so.
+            var legalTrump = legalCards.Where(c => EffectiveSuit(c) == state.trumpSuit).ToList();
+            if (legalTrump.Any() && !state.isPartnerTakingTrick && EffectiveSuit(state.cardTakingTrick) != state.trumpSuit)
+                return legalTrump.Last();
+
+            // If second card played will win the trick and is trump, play a higher trump if possible.
+            var lowestTrumpAboveWinner = EffectiveSuit(state.cardTakingTrick) == state.trumpSuit ? legalTrump.LastOrDefault(c => RankSort(c) > RankSort(state.cardTakingTrick)) : null;
+            if (legalTrump.Any() && !state.isPartnerTakingTrick && lowestTrumpAboveWinner != null)
+                return lowestTrumpAboveWinner;
+
+            // If partner is winning, but their card isn't high, trump in if possible.
+            if (legalTrump.Any() && state.isPartnerTakingTrick && ledSuit != state.trumpSuit && !IsCardHigh(state.cardTakingTrick, knownCards))
                 return legalCards.Last(c => c.suit == state.trumpSuit);
-            }
 
+            // Otherwise, play low.
             return SuggestDefensiveDiscard(state);
         }
 
@@ -933,15 +932,15 @@ namespace Trickster.Bots
                 return SuggestDefensiveDiscard(state);
 
             // If not, play just as high as needed to win if possible.
-            var legalCards = state.legalCards.OrderByDescending(c => c.rank);
-            var legalCardsInWinningSuit = legalCards.Where(c => c.suit == state.cardTakingTrick.suit);
-            var minimumWinner = legalCardsInWinningSuit.LastOrDefault(c => c.rank > state.cardTakingTrick.rank);
+            var legalCards = state.legalCards.OrderByDescending(RankSort);
+            var legalCardsInWinningSuit = legalCards.Where(c => EffectiveSuit(c) == EffectiveSuit(state.cardTakingTrick));
+            var minimumWinner = legalCardsInWinningSuit.LastOrDefault(c => RankSort(c) > RankSort(state.cardTakingTrick));
             if (minimumWinner != null)
                 return minimumWinner;
 
             // If not and we can trump in, play our lowest trump.
-            var legalTrump = legalCards.Where(c => c.suit == state.trumpSuit).OrderByDescending(c => c.rank);
-            if (legalTrump.Any() && state.cardTakingTrick.suit != state.trumpSuit)
+            var legalTrump = legalCards.Where(c => EffectiveSuit(c) == state.trumpSuit).OrderByDescending(RankSort);
+            if (legalTrump.Any() && EffectiveSuit(state.cardTakingTrick) != state.trumpSuit)
                 return legalTrump.Last();
 
             // Otherwise play low or discard.
