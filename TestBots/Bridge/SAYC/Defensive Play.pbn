@@ -262,6 +262,16 @@ S4 SJ SQ SA
 C2 CT C4 C3
 -  ST SK -
 
+% Don't play below dummy if dummy has a singleton
+
+[Event "2nd Hand Defense: Play above visible singleton in dummy"]
+[Deal "S:K98.KJT6.AK6532. - - A654.A753.87.853"]
+[Contract "3H"]
+[Play "E"]
+C3 S8 CJ CK
+C5 S9 C2 CA
+SA -  -  S2
+
 
 
 %
@@ -351,6 +361,12 @@ H9 H3 HQ -
 [Play "S"]
 H3 H4 H5 -
 
+[Event "3rd Hand Defense: Cover second card if it's winning (case 2)"]
+[Deal "N:- - Q976.K62.AKQJ3.T AJT.AJ.T5.J86542"]
+[Contract "4S"]
+[Play "E"]
+C7 CT CJ -
+
 % If the second card played will win the trick, trump in if possible.
 
 [Event "3rd Hand Defense: Trump in over second card if it's winning"]
@@ -358,3 +374,9 @@ H3 H4 H5 -
 [Contract "3S"]
 [Play "S"]
 H3 H4 S7 -
+
+[Event "3rd Hand Defense: Play an honor after dummy if noone's played an honor to the trick"]
+[Deal "E:9643.Q5.9652.A98 - - KT82.74.KQJ4.743"]
+[Contract "4H"]
+[Play "W"]
+C5 C3 CA -
