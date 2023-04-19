@@ -387,3 +387,10 @@ C5 C3 CA -
 [Play "S"]
 H2 HJ HA H5
 C8 -  C2 CA
+
+[Event "3rd Hand Defense: Play minimum winner if dummy is next and void"]
+[Deal "W:AQT7.J.AKQT2.T64 - - 9542.KT42.95.K98"]
+[Contract "1NT"]
+[Play "S"]
+H2 HJ HA H5
+HT -  H7 H8
