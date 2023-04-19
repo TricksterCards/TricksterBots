@@ -120,10 +120,10 @@ D6 D7 DJ D5
 % take it.
 
 [Event "Lead on Defense: Take the setting trick"]
-[Deal "N:65.K65.AJ32.T532 - - JT98.987.987.987"]
+[Deal "N:65.K65.AK32.T532 - - JT98.987.987.987"]
 [Contract "6NT"]
 [Play "S"]
-D6 D7 DJ D5
+D6 D7 DK D5
 -  -  DA -
 
 % View AQ as a sequence once the K is played (and similar positions)
@@ -262,6 +262,16 @@ S4 SJ SQ SA
 C2 CT C4 C3
 -  ST SK -
 
+% Don't play below dummy if dummy has a singleton
+
+[Event "2nd Hand Defense: Play above visible singleton in dummy"]
+[Deal "S:K98.KJT6.AK6532. - - A654.A753.87.853"]
+[Contract "3H"]
+[Play "E"]
+C3 S8 CJ CK
+C5 S9 C2 CA
+SA -  -  S2
+
 
 
 %
@@ -276,6 +286,13 @@ C2 CT C4 C3
 [Contract "3NT"]
 [Play "S"]
 H2 H3 HJ -
+
+[Event "3rd Hand Defense: Play as high as necessary (RHO taking, dummy can't beat as LHO)"]
+[Deal "E:Q42.K75.AK83.764 753.3.QJ642.QT52 - -"]
+[Contract "3NT"]
+[Play "E"]
+D3 D2 DT D7
+HK -  H4 H8
 
 % General principle: if you have a trick that is now good as the defender,
 % and it is the "setting trick" aka the trick to defeat the contract,
@@ -351,6 +368,12 @@ H9 H3 HQ -
 [Play "S"]
 H3 H4 H5 -
 
+[Event "3rd Hand Defense: Cover second card if it's winning (case 2)"]
+[Deal "N:- - Q976.K62.AKQJ3.T AJT.AJ.T5.J86542"]
+[Contract "4S"]
+[Play "E"]
+C7 CT CJ -
+
 % If the second card played will win the trick, trump in if possible.
 
 [Event "3rd Hand Defense: Trump in over second card if it's winning"]
@@ -358,3 +381,23 @@ H3 H4 H5 -
 [Contract "3S"]
 [Play "S"]
 H3 H4 S7 -
+
+[Event "3rd Hand Defense: Play an honor after dummy if noone's played an honor to the trick"]
+[Deal "E:9643.Q5.9652.A98 - - KT82.74.KQJ4.743"]
+[Contract "4H"]
+[Play "W"]
+C5 C3 CA -
+
+[Event "3rd Hand Defense: Play low if we can't beat the card winning the trick"]
+[Deal "W:AQT7.J.AKQT2.T64 - - 9542.KT42.95.K98"]
+[Contract "1NT"]
+[Play "S"]
+H2 HJ HA H5
+C8 -  C2 CA
+
+[Event "3rd Hand Defense: Play minimum winner if dummy is next and void"]
+[Deal "W:AQT7.J.AKQT2.T64 - - 9542.KT42.95.K98"]
+[Contract "1NT"]
+[Play "S"]
+H2 HJ HA H5
+HT -  H7 H8

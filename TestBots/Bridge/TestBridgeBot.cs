@@ -231,8 +231,14 @@ namespace TestBots
             var players = new[] { new TestPlayer(), new TestPlayer(), new TestPlayer(), new TestPlayer() };
             for (var i = 0; i < 4; i++)
             {
-                players[i].Bid = i == 1 ? BidBase.Dummy : i % 2 == 0 ? BridgeBid.Defend : (int)contract;
-                players[i].Seat = (test.declarerSeat + 1 + i) % 4;
+                players[i].Seat = (test.declarerSeat + i) % 4;
+
+                if (players[i].Seat == test.declarerSeat)
+                    players[i].Bid = (int)contract;
+                else if (players[i].Seat == (test.declarerSeat + 2) % 4)
+                    players[i].Bid = BidBase.Dummy;
+                else
+                    players[i].Bid = BridgeBid.Defend;
             }
 
             // resort the players in seat order to simplify adding data

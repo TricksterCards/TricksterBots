@@ -104,7 +104,7 @@ namespace TestBots.Bridge
             {
                 if (bids[i][1] == contract[1])
                 {
-                    declarerSeat = i;
+                    declarerSeat = i % 4;
                     break;
                 }
             }

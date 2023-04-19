@@ -68,9 +68,10 @@ namespace TestBots
             //  save the underlying list into our state
             this.players = playersCollection;
 
-            //  set the seats of the players
-            for (var seat = 0; seat < this.players.Count; ++seat)
-                this.players[seat].Seat = seat;
+            //  set the seats of the players if not already set
+            if (this.players.All(p => p.Seat == 0))
+                for (var seat = 0; seat < this.players.Count; ++seat)
+                    this.players[seat].Seat = seat;
 
             //  the "playing player" is assumed to be the first
             player = this.players[0];
@@ -91,8 +92,7 @@ namespace TestBots
 
                 var highCardIndex = bot.TrickHighCardIndex(this.trick);
                 cardTakingTrick = this.trick[highCardIndex];
-                var seatTakingTrick =
-                    playersCollection.Count(p => p.Bid != BidBase.NotPlaying) - this.trick.Count + highCardIndex; // we assume it's seat 0's turn to play
+                var seatTakingTrick = SeatTakingTrick(bot, playersCollection, player);
                 isPartnerTakingTrick = playersCollection.PartnersOf(playersCollection[0]).Any(p => p.Seat == seatTakingTrick);
                 trickTaker = playersCollection.Single(p => p.Seat == seatTakingTrick);
 
@@ -113,6 +113,16 @@ namespace TestBots
 
             if (notLegalSuit != Suit.Unknown)
                 legalCards = legalCards.Where(c => bot.EffectiveSuit(c) != notLegalSuit).ToList();
+        }
+
+        private int SeatTakingTrick(IBaseBot bot, PlayersCollectionBase players, PlayerBase nextOrLastPlayer)
+        {
+            var highCardIndex = bot.TrickHighCardIndex(trick);
+            var activePlayers = players.Where(p => p.Bid != BidBase.NotPlaying && !p.Folded).OrderBy(p => p.Seat).ToList();
+            var nextOrLastPlayerIndex = activePlayers.IndexOf(nextOrLastPlayer);
+            var shift = trick.Count == activePlayers.Count ? 1 : 0; // shift by one if this is the last player
+            var firstPlayerIndex = (nextOrLastPlayerIndex + activePlayers.Count - trick.Count + shift) % activePlayers.Count;
+            return activePlayers[(firstPlayerIndex + highCardIndex) % activePlayers.Count].Seat;
         }
     }
 }
