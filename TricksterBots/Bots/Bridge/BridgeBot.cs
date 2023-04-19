@@ -380,7 +380,8 @@ namespace Trickster.Bots
                 var rho = state.players.Single(p => p.Seat == (state.player.Seat - 1 + state.players.Count) % state.players.Count);
 
                 // Don't count off suit boss cards if opponents still have trump (excluding those who have already played to the trick)
-                if (!lho.VoidSuits.Contains(state.trumpSuit) || (state.trick.Count == 0 && !rho.VoidSuits.Contains(state.trumpSuit)))
+                var players = new PlayersCollectionBase(this, state.players);
+                if (!players.LhoIsVoidInSuit(state.player, state.trumpSuit, knownCards) || (state.trick.Count == 0 && !players.RhoIsVoidInSuit(state.player, state.trumpSuit, knownCards)))
                     bossCards = bossCards.Where(c => c.suit == state.trumpSuit);
             }
 
@@ -676,7 +677,9 @@ namespace Trickster.Bots
             }
 
             // If we have one trump left, we should lead it to take two of defender's trumps (if both declarer and dummy still have trump)
-            var declarerIsVoidInTrump = GetDeclarer(state).VoidSuits.Contains(state.trumpSuit);
+            var players = new PlayersCollectionBase(this, state.players);
+            var knownCards = state.cardsPlayed.Concat(state.legalCards).ToList();
+            var declarerIsVoidInTrump = players.TargetIsVoidInSuit(state.player, GetDeclarer(state), state.trumpSuit, knownCards.Concat(dummyHand).ToList());
             if (!declarerIsVoidInTrump && nDummyTrump > 0 && legalTrump.Count() == 1)
                 return legalTrump.First();
 
@@ -856,7 +859,9 @@ namespace Trickster.Bots
         {
             // Generally third and fourth hand play as high as necessary to win the trick.
 
-            var ledSuit = EffectiveSuit(state.trick[0]);
+            var players = new PlayersCollectionBase(this, state.players);
+            var ledCard = state.trick[0];
+            var ledSuit = EffectiveSuit(ledCard);
             var legalCards = state.legalCards.OrderByDescending(RankSort).ToList();
             var legalCardsInSuit = legalCards.Where(c => EffectiveSuit(c) == ledSuit);
             var legalCardsInWinningSuit = legalCards.Where(c => EffectiveSuit(c) == EffectiveSuit(state.cardTakingTrick));
@@ -888,8 +893,7 @@ namespace Trickster.Bots
                 return SuggestDefensiveDiscard(state);
 
             // If partner is winning and 4th seat is void, play low
-            var fourthSeatPlayer = state.players.Single(p => p.Seat == GetNextSeat(state));
-            var isFourthSeatVoid = fourthSeatPlayer.VoidSuits.Contains(EffectiveSuit(state.cardTakingTrick));
+            var isFourthSeatVoid = players.LhoIsVoidInSuit(state.player, ledCard, knownCards);
             if (state.isPartnerTakingTrick && isFourthSeatVoid)
                 return SuggestDefensiveDiscard(state);
 
