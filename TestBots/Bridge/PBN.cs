@@ -155,7 +155,7 @@ namespace TestBots.Bridge
 
                 for (var j = 0; j < suits.Length; j++)
                     foreach (var card in suits[j])
-                        hand += $"{card}{SuitLetters[j]}";
+                        hand = $"{card}{SuitLetters[j]}" + hand; // Put high cards on right to match Trickster Cards production behavior
 
                 hands[seat] = hand;
             }
