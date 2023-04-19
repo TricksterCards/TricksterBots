@@ -68,9 +68,10 @@ namespace TestBots
             //  save the underlying list into our state
             this.players = playersCollection;
 
-            //  set the seats of the players
-            for (var seat = 0; seat < this.players.Count; ++seat)
-                this.players[seat].Seat = seat;
+            //  set the seats of the players if not already set
+            if (this.players.All(p => p.Seat == 0))
+                for (var seat = 0; seat < this.players.Count; ++seat)
+                    this.players[seat].Seat = seat;
 
             //  the "playing player" is assumed to be the first
             player = this.players[0];
