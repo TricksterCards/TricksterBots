@@ -287,6 +287,13 @@ SA -  -  S2
 [Play "S"]
 H2 H3 HJ -
 
+[Event "3rd Hand Defense: Play as high as necessary (RHO taking, dummy can't beat as LHO)"]
+[Deal "E:Q42.K75.AK83.764 753.3.QJ642.QT52 - -"]
+[Contract "3NT"]
+[Play "E"]
+D3 D2 DT D7
+HK -  H4 H8
+
 % General principle: if you have a trick that is now good as the defender,
 % and it is the "setting trick" aka the trick to defeat the contract,
 % take it.

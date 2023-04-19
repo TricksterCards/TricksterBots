@@ -897,14 +897,16 @@ namespace Trickster.Bots
             if (state.isPartnerTakingTrick && isFourthSeatVoid)
                 return SuggestDefensiveDiscard(state);
 
-            // If partner is NOT winning and 4th seat is void, play lowest winner if possible
+            // If partner is NOT winning and 4th seat is void or cannot beat the best card in the trick, play lowest winner if possible
+            var isDummyLHO = GetNextSeat(state) == dummy.Seat;
+            var dummyBestCardInSuit = dummyHand.Where(c => EffectiveSuit(c) == ledSuit).FirstOrDefault();
+            var canLhoDummyWinTrick = isDummyLHO && dummyBestCardInSuit != null && EffectiveSuit(state.cardTakingTrick) == ledSuit && RankSort(dummyBestCardInSuit) > RankSort(state.cardTakingTrick);
+            var isFourthSeatUnder = isDummyLHO && !canLhoDummyWinTrick;
             var minimumWinner = legalCardsInWinningSuit.LastOrDefault(c => RankSort(c) > RankSort(state.cardTakingTrick));
-            if (!state.isPartnerTakingTrick && isFourthSeatVoid && minimumWinner != null)
+            if (!state.isPartnerTakingTrick && (isFourthSeatVoid || isFourthSeatUnder) && minimumWinner != null)
                 return minimumWinner;
 
             // If partner is winning, dummy is LHO, and partner's card is better than dummy's best, play low
-            var isDummyLHO = GetNextSeat(state) == dummy.Seat;
-            var dummyBestCardInSuit = dummyHand.Where(c => EffectiveSuit(c) == ledSuit).FirstOrDefault();
             if (state.isPartnerTakingTrick && isDummyLHO && (dummyBestCardInSuit == null || RankSort(state.cardTakingTrick) > RankSort(dummyBestCardInSuit)))
                 return SuggestDefensiveDiscard(state);
 
