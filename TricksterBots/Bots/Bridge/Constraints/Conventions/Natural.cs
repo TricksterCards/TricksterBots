@@ -56,9 +56,25 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
+        public BidRule[] HighLevelHugeHands()
+        {
+            BidRule[] bids =
 
+            {
+                Signoff(6, Suit.Clubs, Shape(12)),
+                Signoff(6, Suit.Diamonds, Shape(12)),
+                Signoff(6, Suit.Hearts, Shape(12)),
+                Signoff(6, Suit.Spades, Shape(12)),
 
-	}
+                Signoff(7, Suit.Clubs, Shape(13)),
+                Signoff(7, Suit.Diamonds, Shape(13)),
+                Signoff(7, Suit.Hearts, Shape(13)),
+                Signoff(7, Suit.Spades, Shape(13))
+            };
+            return bids;
+        }
+
+    }
 
 
 

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -61,6 +63,23 @@ namespace TricksterBots.Bots.Bridge
 			this.Dealer = Positions[dealer];
 			this.NextToAct = Dealer;
 		}
+
+		public Bid GetHackBid(string expected)
+		{
+			var bidder = new Natural();
+			var bidRules = bidder.GetRules(Dealer);
+			var options = BidRuleGroup.BidsGrouped(bidRules);
+			var bid = Dealer.ChooseBid(options);
+			if (bid.ToString() == expected)
+			{
+				Debug.WriteLine(bid);
+			}
+			else
+			{
+				Debug.WriteLine($"Expected {expected} but got {bid}");
+			}
+			return bid;
+		}
 	}
 
 
@@ -116,6 +135,7 @@ namespace TricksterBots.Bots.Bridge
 			this.Vulnerable = vulnerable;
 			this.PublicHandSummary = new HandSummary();
 			this.BiddingSummary = new BiddingSummary();
+			this._bids = new List<BidRuleGroup>();
 
 			if (hand != null)
 			{
@@ -143,15 +163,21 @@ namespace TricksterBots.Bots.Bridge
 	
 
 		// THIS IS AN INTERNAL FUNCITON:
-		private void MakeBid(BidRuleGroup bidGroup)
+		private Bid MakeBid(BidRuleGroup bidGroup)
 		{
-			if (!bidGroup.Bid.IsPass && !this._roleAssigned)
+            if (bidGroup == null)
+            {
+				var pass = new BidRule(new Bid(CallType.Pass), 0, new Constraint[0]);
+                bidGroup = new BidRuleGroup(pass.Bid);
+                bidGroup.Add(pass);
+            }
+
+            if (!bidGroup.Bid.IsPass && !this._roleAssigned)
 			{
 				if (Role == PositionRole.Opener)
 				{
 					AssignRole(PositionRole.Opener);
 					Partner.AssignRole(PositionRole.Responder);
-
 				}
 				else if (this.Role == PositionRole.Overcaller)
 				{
@@ -159,7 +185,8 @@ namespace TricksterBots.Bots.Bridge
 					Partner.AssignRole(PositionRole.Advancer);
 				}
 			}
-			_bids.Append(bidGroup);
+			_bids.Add(bidGroup);
+			return bidGroup.Bid;
 		}
 
 		private void AssignRole(PositionRole role)
@@ -170,15 +197,7 @@ namespace TricksterBots.Bots.Bridge
 			_roleAssignedOffset = _bids.Count;
 		}
 
-		internal bool ConformsToPublicHand(Constraint constraint, Bid bid)
-		{
-			return constraint.Conforms(bid, this, this.PublicHandSummary, this.BiddingSummary);
-		}
 
-		internal bool ConformsToPrivateHand(Constraint constraint, Bid bid)
-		{
-			return constraint.Conforms(bid, this, this._privateHandSummary, this._biddingSummary);
-		}
 
 		internal (HandSummary, BiddingSummary) Update(IShowsState showsState, Bid bid)
 		{
@@ -187,5 +206,25 @@ namespace TricksterBots.Bots.Bridge
 			showsState.Update(bid, this, hs, bs);
 			return (hs, bs);
 		}
+
+
+	
+
+		// TODO: Just a start of taking a group of rules and returning a subest
+		public Bid ChooseBid(Dictionary<Bid, BidRuleGroup> rules)
+		{
+			BidRuleGroup choice = null;
+			var priority = int.MinValue;
+			foreach (var rule in rules.Values)
+			{
+				if ((choice == null || rule.Priority > priority) && rule.Conforms(this, _privateHandSummary, BiddingSummary))
+				{
+					choice = rule;
+					priority = rule.Priority;
+				}
+			}
+			return MakeBid(choice);
+		}
+
 	}
 }

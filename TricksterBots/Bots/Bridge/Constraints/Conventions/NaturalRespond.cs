@@ -10,8 +10,12 @@ namespace TricksterBots.Bots.Bridge
 {
 	namespace TricksterBots.Bots.Bridge
 	{
+
+
 		public class NaturalRespond : Natural 
 		{
+			public NaturalRespond() : base(PositionRole.Responder) { }
+
 
 			static private (int, int) Respond1Level = (6, 40);
 			static private (int, int) Raise1 = (6, 10);
@@ -77,9 +81,9 @@ namespace TricksterBots.Bots.Bridge
 
                     // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-                    Signoff(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good)),
+                    Signoff(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-					Signoff(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good)),
+					Signoff(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
 				};
 					bids.Concat(b);
@@ -132,30 +136,30 @@ namespace TricksterBots.Bots.Bridge
 					{
                     // TODO: Only if planning to raise if we ha
                   
-                    Rule(1, Suit.Spades, 100, Points(Respond1Level), Shape(4, 11), Shape(Suit.Hearts, 0, 2)),
-					Rule(1, Suit.Spades, 100, DummyPoints(Suit.Hearts, LimitRaise), Shape(4, 11), Shape(Suit.Hearts, 3)),
-					Rule(1, Suit.Spades, 100, DummyPoints(Suit.Hearts, GameOrBetter), Shape(4, 11), Shape(Suit.Hearts, 3, 8)),
+                    Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4, 11), Shape(Suit.Hearts, 0, 2)),
+					Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, LimitRaise), Shape(4, 11), Shape(Suit.Hearts, 3)),
+					Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, GameOrBetter), Shape(4, 11), Shape(Suit.Hearts, 3, 8)),
 
-					Rule(1, Suit.Unknown, 0, Points(Respond1NT), Balanced()),
+					NonForcing(1, Suit.Unknown, 0, Points(Respond1NT), Balanced()),
 
                     // Two level minor bids are handled by NewMinorSuit2Level...
 
-                    Rule(2, Suit.Hearts, 200, DummyPoints(Raise1), Shape(3, 8)),
+                    Invitational(2, Suit.Hearts, DummyPoints(Raise1), Shape(3, 8)),
 
-					Rule(2, Suit.Spades, 200, Points(SlamInterest), Shape(5, 11)),
+					Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
 
-					Rule(2, Suit.Unknown, 200, Points(RaiseTo2NT), Balanced()),
+					Invitational(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
 
-					Rule(3, Suit.Hearts, 1, DummyPoints(LimitRaise), Shape(4, 8)),
+					Invitational(3, Suit.Hearts, DummyPoints(LimitRaise), Shape(4, 8)),
 
-					Rule(3, Suit.Unknown, 1, Points(RaiseTo3NT), LongestMajor(3)),
+					Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
 
                     // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-                    Rule(4, Suit.Hearts, 1, DummyPoints(Suit.Hearts, Weak4Level), Shape(5, 8)),
+                    Signoff(4, Suit.Hearts, DummyPoints(Suit.Hearts, Weak4Level), Shape(5, 8)),
 
-					Rule(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11)),
+					Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11)),
 
 				};
 					bids.Concat(b);
@@ -166,28 +170,28 @@ namespace TricksterBots.Bots.Bridge
 					{
 						BidRule[] b =
 						{
-						Rule(1, Suit.Unknown, 0, Points(Respond1NT), Balanced()),
+						NonForcing(1, Suit.Unknown, Points(Respond1NT), Balanced()),
 
                         // Two level minor bids are handled by NewMinorSuit2Level...
                         // THIS IS HIGHER PRIORITY THAN SHOWING MINORS NO MATTER WHAT THE LENGTH...
-                        Rule(2, Suit.Hearts, 1000, Points(NewSuit2Level), Shape(5, 11)),
+						Forcing(2, Suit.Hearts, Points(NewSuit2Level), Shape(5, 11)),
 
-						Rule(2, Suit.Spades, 200, DummyPoints(Suit.Spades, Raise1), Shape(3, 8)),
+						Invitational(2, Suit.Spades, DummyPoints(Raise1), Shape(3, 8)),
 
+						Invitational(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
 
-						Rule(2, Suit.Unknown, 200, Points(RaiseTo2NT), Balanced()),
+						Invitational(3, Suit.Spades, DummyPoints(LimitRaise), Shape(4, 8)),
 
-						Rule(3, Suit.Spades, 1, DummyPoints(Suit.Spades, LimitRaise), Shape(4, 8)),
-
-						Rule(3, Suit.Unknown, 1, Points(RaiseTo3NT), LongestMajor(3)),
+						Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
                         // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-                        Rule(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11)),
+                        Signoff(4, Suit.Hearts, Points(Weak4Level), Shape(7, 11)),
 
-						Rule(4, Suit.Spades, 1, DummyPoints(Suit.Spades, Weak4Level), Shape(5, 8))
+						Signoff(4, Suit.Spades, DummyPoints(Weak4Level), Shape(5, 8))
 					};
 						bids.Concat(b);
+						bids.Concat(NewMinorSuit2Level(Suit.Spades));
 					}
 				}
 				else if (partnersBid.Is(1, Suit.Unknown) && lhoBid.IsPass)
@@ -200,7 +204,7 @@ namespace TricksterBots.Bots.Bridge
 				}
 
 				// Now add wacky bids for huge hands.
-				bids.Concat(HighLevelHugeHands);
+				bids.Concat(HighLevelHugeHands());
 				return bids;
 			}
 
@@ -209,29 +213,29 @@ namespace TricksterBots.Bots.Bridge
 			{
 				BidRule[] b =
 				{
-					Rule(2, Suit.Clubs, 2, Points(NewSuit2Level), Shape(4, 5), Shape(Suit.Diamonds, 0, 4)),
-					Rule(2, Suit.Clubs, 2, Points(NewSuit2Level), Shape(6), Shape(Suit.Diamonds, 0, 5)),
-					Rule(2, Suit.Clubs, 2, Points(NewSuit2Level), Shape(7, 11)),
-					Rule(2, Suit.Clubs, 2, DummyPoints(openersSuit, LimitRaise), Shape(3), Shape(openersSuit, 3), Shape(Suit.Diamonds, 0, 3)),
-					Rule(2, Suit.Clubs, 2, DummyPoints(openersSuit, LimitRaise), Shape(4, 5), Shape(openersSuit, 3), Shape(Suit.Diamonds, 0, 4)),
-					Rule(2, Suit.Clubs, 2, DummyPoints(openersSuit, LimitRaise), Shape(6), Shape(openersSuit, 3)),
-					Rule(2, Suit.Clubs, 2, DummyPoints(openersSuit, GameOrBetter), Shape(3), Shape(openersSuit, 3, 11), Shape(Suit.Diamonds, 0, 3)),
-					Rule(2, Suit.Clubs, 2, DummyPoints(openersSuit, GameOrBetter), Shape(4, 5), Shape(openersSuit, 3, 11), Shape(Suit.Diamonds, 0, 4)),
-					Rule(2, Suit.Clubs, 2, DummyPoints(openersSuit, GameOrBetter), Shape(6, 11), Shape(openersSuit, 3, 11)),
+					Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(4, 5), Shape(Suit.Diamonds, 0, 4)),
+					Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(6), Shape(Suit.Diamonds, 0, 5)),
+					Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(7, 11)),
+					Forcing(2, Suit.Clubs, DummyPoints(openersSuit, LimitRaise), Shape(3), Shape(openersSuit, 3), Shape(Suit.Diamonds, 0, 3)),
+					Forcing(2, Suit.Clubs, DummyPoints(openersSuit, LimitRaise), Shape(4, 5), Shape(openersSuit, 3), Shape(Suit.Diamonds, 0, 4)),
+					Forcing(2, Suit.Clubs, DummyPoints(openersSuit, LimitRaise), Shape(6), Shape(openersSuit, 3)),
+					Forcing(2, Suit.Clubs, DummyPoints(openersSuit, GameOrBetter), Shape(3), Shape(openersSuit, 3, 11), Shape(Suit.Diamonds, 0, 3)),
+					Forcing(2, Suit.Clubs, DummyPoints(openersSuit, GameOrBetter), Shape(4, 5), Shape(openersSuit, 3, 11), Shape(Suit.Diamonds, 0, 4)),
+					Forcing(2, Suit.Clubs, DummyPoints(openersSuit, GameOrBetter), Shape(6, 11), Shape(openersSuit, 3, 11)),
 
 
-					Rule(2, Suit.Diamonds, 2, Points(NewSuit2Level), Shape(4), Shape(Suit.Clubs, 0, 3)),
-					Rule(2, Suit.Diamonds, 2, Points(NewSuit2Level), Shape(5), Shape(Suit.Clubs, 0, 5)),
-					Rule(2, Suit.Diamonds, 2, Points(NewSuit2Level), Shape(6), Shape(Suit.Clubs, 0, 6)),
-					Rule(2, Suit.Diamonds, 2, Points(NewSuit2Level), Shape(7, 11)),
-					Rule(2, Suit.Diamonds, 2, DummyPoints(openersSuit, LimitRaise), Shape(3), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 2)),
-					Rule(2, Suit.Diamonds, 2, DummyPoints(openersSuit, LimitRaise), Shape(4), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 3)),
-					Rule(2, Suit.Diamonds, 2, DummyPoints(openersSuit, LimitRaise), Shape(5), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 5)),
-					Rule(2, Suit.Diamonds, 2, DummyPoints(openersSuit, LimitRaise), Shape(6, 11), Shape(openersSuit, 3)),
-					Rule(2, Suit.Diamonds, 2, DummyPoints(openersSuit, GameOrBetter), Shape(3), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 2)),
-					Rule(2, Suit.Diamonds, 2, DummyPoints(openersSuit, GameOrBetter), Shape(4), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 3)),
-					Rule(2, Suit.Diamonds, 2, DummyPoints(openersSuit, GameOrBetter), Shape(5), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 5)),
-					Rule(2, Suit.Diamonds, 2, DummyPoints(openersSuit, GameOrBetter), Shape(6, 11), Shape(openersSuit, 3, 11)),
+					Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(4), Shape(Suit.Clubs, 0, 3)),
+					Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(5), Shape(Suit.Clubs, 0, 5)),
+					Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(6), Shape(Suit.Clubs, 0, 6)),
+					Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(7, 11)),
+					Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(3), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 2)),
+					Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(4), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 3)),
+					Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(5), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 5)),
+					Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(6, 11), Shape(openersSuit, 3)),
+					Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(3), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 2)),
+					Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(4), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 3)),
+					Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(5), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 5)),
+					Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(6, 11), Shape(openersSuit, 3, 11)),
 			};
 				return b;
 			}

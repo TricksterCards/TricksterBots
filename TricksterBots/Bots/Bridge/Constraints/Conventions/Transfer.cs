@@ -35,7 +35,7 @@ namespace TricksterBots.Bots.Bridge
 			// TODO: Make sure no interference
 			// TODO: Check to make sure transfers are enabled
 
-			if (ps.Role == PositionRole.Responder && ps.Partner.LastBid.Is(1, Suit.Unknown) && ps.Round == 1)
+			if (ps.Role == PositionRole.Responder && ps.Partner.LastBid.Is(1, Suit.Unknown) && ps.BidRound == 1)
 			{
 				return InitiateTransfer();
 			}
@@ -65,19 +65,19 @@ namespace TricksterBots.Bots.Bridge
                     // For invitational hands, 5/5 transfer to hearts then bid spades
                     // For game-going hands 5/5 transfer to spades then bid 3H
 
-				Forcing(2, Suit.Diamonds, Points(NTLessThanInvite), Shape(Suit.Hearts, 5, 11), BetterSuit(Suit.Hearts, Suit.Spades)),
+				Forcing(2, Suit.Diamonds, Points(NTLessThanInvite), Shape(Suit.Hearts, 5, 11), Better(Suit.Hearts, Suit.Spades)),
 				Forcing(2, Suit.Diamonds, Points(NTInvite), Shape(Suit.Hearts, 5, 11), Shape(Suit.Spades, 0, 5)),
 				Forcing(2, Suit.Diamonds, Points(GameOrBetter), Shape(Suit.Hearts, 5, 11), Shape(Suit.Spades, 0, 4)),
 
-				Forcing(2, Suit.Hearts, Points(NTLessThanInvite), Shape(Suit.Spades, 5, 11), BetterSuit(Suit.Spades, Suit.Hearts)),
+				Forcing(2, Suit.Hearts, Points(NTLessThanInvite), Shape(Suit.Spades, 5, 11), BetterOrEqual(Suit.Spades, Suit.Hearts)),
 				Forcing(2, Suit.Hearts, Points(NTInvite), Shape(Suit.Spades, 5, 11), Shape(Suit.Hearts, 0, 4)),
 				Forcing(2, Suit.Hearts, Points(GameOrBetter), Shape(Suit.Spades, 5, 11)),
 
 				// TODO: Solid long minors are lots of tricks.  Need logic for those....
 
-				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Clubs, 6), Quality(Suit.Clubs, SuitQuality.Good, SuitQuality.Solid)),
+				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Clubs, 6), Quality(Suit.Clubs, SuitQuality.Good, SuitQuality.Excellent)),
 				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Clubs, 7, 11)),
-				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Diamonds, 6), Quality(Suit.Diamonds, SuitQuality.Good, SuitQuality.Solid)),
+				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Diamonds, 6), Quality(Suit.Diamonds, SuitQuality.Good, SuitQuality.Excellent)),
 				Forcing(2, Suit.Spades, Points(NTLessThanInvite), Shape(Suit.Diamonds, 7, 11)),
 
 			};
@@ -162,12 +162,12 @@ namespace TricksterBots.Bots.Bridge
 
 				Signoff(4, Suit.Hearts, Points(AcceptInvite), PartnerBid(3, Suit.Hearts)),
 				Signoff(4, Suit.Hearts, Points(AcceptInvite), PreviousBid(2, Suit.Hearts), PartnerBid(2, Suit.Unknown), Shape(3, 5)),
-				Signoff(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Spades), PartnerBid(3, Suit.Hearts), Shape(3, 5), BetterOrEqualSuit(Suit.Hearts, Suit.Spades)),
+				Signoff(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Spades), PartnerBid(3, Suit.Hearts), Shape(3, 5), BetterOrEqual(Suit.Hearts, Suit.Spades)),
 
 
 				Signoff(4, Suit.Spades, Points(AcceptInvite), PartnerBid(3, Suit.Spades)),
 				Signoff(4, Suit.Spades, Points(AcceptInvite), PreviousBid(2, Suit.Spades), PartnerBid(2, Suit.Unknown), Shape(3, 5)),
-				Signoff(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Spades), PartnerBid(3, Suit.Hearts), Shape(3, 5), BetterSuit(Suit.Spades, Suit.Hearts)),
+				Signoff(4, Suit.Hearts, Points(NTOpen), PreviousBid(2, Suit.Spades), PartnerBid(3, Suit.Hearts), Shape(3, 5), Better(Suit.Spades, Suit.Hearts)),
 
 				// TODO: SLAM BIDDING...
 				// I Think here we will just defer to competative bidding.  Then ranges don't matter.  We just look for 

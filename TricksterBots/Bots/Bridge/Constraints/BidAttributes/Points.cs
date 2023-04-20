@@ -21,7 +21,8 @@ namespace TricksterBots.Bots.Bridge
 
         public HasPoints(Suit? trumpSuit, int min, int max)
         {
-            this._countAsDummy = true;
+            // TODO:  Completely broken. But OK for now.  Need to rethink initiaializer
+            this._countAsDummy = false;
             this._trumpSuit = trumpSuit;
             this._min = min;
             this._max = max;

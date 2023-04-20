@@ -32,6 +32,8 @@ namespace TricksterBots.Bots.Bridge
 		{
 			BidRule[] bids =
 			{
+				NonForcing(CallType.Pass, DefaultPriority - 100, Points(LessThanOpen)),
+
 				NonForcing(1, Suit.Clubs, Points(Open1Suit), Shape(3), Shape(Suit.Diamonds, 0, 3), LongestMajor(4)),
 				NonForcing(1, Suit.Clubs, Points(Open1Suit), Shape(4, 11), LongerThan(Suit.Diamonds), LongestMajor(4)),
 

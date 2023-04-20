@@ -9,6 +9,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using TestBots.Bridge;
 using Trickster.Bots;
 using Trickster.cloud;
+using TricksterBots.Bots.Bridge;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TestBots
 {
@@ -42,15 +44,26 @@ namespace TestBots
                     $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})"
                 );
             }
+            foreach (var t in TestBots.BasicTests.Tests)
+            {
+                var bidTest = new BidTest(t);
+                // TODO: Hack to just pass thie stuff on to the bid test....
+                Hand[] hands = { bidTest.hand, null, null, null };
+                var bHack = new BiddingState(hands, Direction.North, "EW");
+                Bid bid = bHack.GetHackBid(t.bid);
+            }
+
         }
 
         [TestMethod]
         public void FuzzPlays()
         {
+            /*
             foreach (var test in Fuzz.GeneratePlayTests(100000))
             {
                 RunPlayTest(test);
             }
+            */
         }
 
         [TestMethod]

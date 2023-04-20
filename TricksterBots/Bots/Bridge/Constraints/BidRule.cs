@@ -25,18 +25,11 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public bool Conforms(PositionState ps, bool privateHand)
+		public bool Conforms(PositionState ps, HandSummary hs, BiddingSummary bs)
 		{
 			foreach (Constraint constraint in _constraints)
 			{
-				if (privateHand)
-				{
-					if (!ps.ConformsToPrivateHand(constraint, Bid)) { return false; }
-				}
-				else
-				{
-					if (!ps.ConformsToPublicHand(constraint, Bid)) { return false; }
-				}
+				if (!constraint.Conforms(Bid, ps, hs, bs)) { return false; }
 			}
 			return true;
 		}

@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Mail;
+using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
@@ -16,6 +20,8 @@ namespace TricksterBots.Bots.Bridge
 
 	public struct Bid : IEquatable<Bid>
 	{
+
+
 		public int? Level { get; }
 		public Suit? Suit { get; }
 
@@ -31,7 +37,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public bool Equals(Bid other)
 		{
-			return (CallType == other.CallType &&  Level == other.Level && Suit == other.Suit && Convention == other.Convention);
+			return (CallType == other.CallType && Level == other.Level && Suit == other.Suit && Convention == other.Convention);
 		}
 
 		public bool IsBid
@@ -50,13 +56,33 @@ namespace TricksterBots.Bots.Bridge
 			return (suit == null) ? (Suit)Suit : (Suit)suit;
 		}
 
+
+        public static Dictionary<string, Suit> SymbolToSuit = new Dictionary<string, Suit>
+        {
+            {  "♣",  Trickster.cloud.Suit.Clubs },
+            {  "♦",  Trickster.cloud.Suit.Diamonds},
+            {  "♥",  Trickster.cloud.Suit.Hearts  },
+            {  "♠",  Trickster.cloud.Suit.Spades  },
+            {  "NT", Trickster.cloud.Suit.Unknown  }
+        };
+
+        static Bid FromString(string str)
+		{
+			if (str == "Pass") { return new Bid(CallType.Pass);  }
+			if (str == "X") { return new Bid(CallType.Double); }
+			if (str == "XX") { return new Bid(CallType.Redouble); }
+			int level = int.Parse(str.Substring(0, 1));
+			var suit = SymbolToSuit[str.Substring(1)];
+			return new Bid(level, suit);
+		}
+
 		public Bid(CallType callType, BidConvention convention = BidConvention.None, BidMessage message = BidMessage.Invitational)
 		{
 			Debug.Assert(callType != CallType.Bid);
 			this.CallType = callType;
 			this.Level = null;
 			this.Suit = null;
-			this.Convention = convention; 
+			this.Convention = convention;
 			this.Message = message;
 		}
 
@@ -68,135 +94,34 @@ namespace TricksterBots.Bots.Bridge
 			this.Suit = suit;
 			this.Convention = convention;
 			this.Message = message;
-		}	
-	}
+		}
 
+		// TODO: I am sure this exists somewhere else...  Find it
 
-	public class BidRuleGroup
-	{
-		public Bid Bid { get; }
-		public int Priority { get; private set; }
-		private List<BidRule> _rules;
-		public BidRuleGroup(Bid bid) : base()
+		public static Dictionary<Suit, string> SuitToSymbol = new Dictionary<Suit, string>
 		{
-			Bid = bid;
-			_rules = new List<BidRule>();
-			Priority = int.MinValue;		// TODO: Is this right???
-		}
+			{ Trickster.cloud.Suit.Clubs,    "♣" },
+            { Trickster.cloud.Suit.Diamonds, "♦" },
+			{ Trickster.cloud.Suit.Hearts,   "♥" },
+            { Trickster.cloud.Suit.Spades,   "♠" },
+			{ Trickster.cloud.Suit.Unknown,  "NT" }
+		};
 
-		public bool IsConformingChoice
+        public override string ToString()
 		{
-			get { return Priority > int.MinValue;  }
-		}
-
-
-
-		public void Add(BidRule rule)
-		{
-			// TODO: Think about this a lot -- different conventions, different forcing, etc.  Seems like basic
-			// rules of equality are just the basic stuff.  I think that is what Equals does...
-			if (rule.Bid.Equals(Bid))
+			if (CallType == CallType.Bid)
 			{
-				_rules.Append(rule);
+				return $"{Level}{SuitToSymbol[(Suit)this.Suit]}";
 			}
-			else
+			if (CallType == CallType.Pass)
 			{
-				throw new ArgumentException("Bid must match group bid");
+				return "Pass";
 			}
+			if (CallType == CallType.Double) { return "X"; }
+			if (CallType == CallType.Redouble) { return "XX"; }
+			Debug.Assert(false);
+			return "";
 		}
-		//
-		// This method makes sure that any rules that do not apply are removed.  If there are no rules that could apply
-		// then the priority.
-		public void Prune(HandSummary handSummary, PositionState positionState)
-		{
-			var conforming = new List<BidRule>();
-			int priority = int.MinValue;
-			foreach (BidRule rule in _rules)
-			{
-				if (handSummary != null && rule.Conforms(handSummary, positionState))
-				{
-					priority = Math.Max(priority, rule.Priority);
-					conforming.Append(rule);
-				}
-				else if (rule.Conforms(positionState.HandSummary, positionState))
-				{
-					conforming.Append(rule);
-				}
-			}
-			this._rules = conforming;
-			this.Priority = priority;
-		}
-
-		// Returns true if any rule has been removed.  In this case, the state needs to be updated again, and this
-		// method needs to be called again.
-		public bool PruneRules(PositionState positionState)
-		{
-			var rules = new List<BidRule>();
-			foreach (BidRule rule in _rules)
-			{
-				if (rule.Conforms(positionState.HandSummary, positionState))
-				{
-					rules.Add(rule);
-				}
-			}
-			if (rules.Count == _rules.Count) { return false; }
-			_rules = rules;
-			return true;
-		}
-
-		// Returns true IFF the shown state is modified.
-		public bool UpdateShownState(Direction direction, BiddingSummary biddingSummary)
-		{
-			// TODO: Start with existing shown state
-			// Then create a new shownState object
-			ShownState compositeShown = new ShownState();
-			bool isFirstRule = true;
-			foreach (var rule in _rules)
-			{
-				var ruleShows = rule.ShownState(direction, biddingSummary);
-				if (isFirstRule)
-				{
-					compositeShown = ruleShows;
-					isFirstRule = false;
-				} 
-				else
-				{
-					compositeShown.Union(ruleShows);
-				}
-			}
-			return false;	// TODO:   THIS IS ABSOLUTELY BUSTED -- NEED TO COMPARE TO LAST STATE KNOWN....
-
-		}
-
-	}
-
-
-
-	class BidChoices : Dictionary<Bid, BidRuleGroup>
-	{
-		public BidChoices() { }
-		public void Add(IEnumerable<BidRule> rules)
-		{ 
-			foreach (var rule in rules)
-			{
-				var group = this.ContainsKey(rule.Bid) ? this[rule.Bid] : new BidRuleGroup(rule.Bid);
-				group.Add(rule);
-				this[group.Bid] = group;
-			}
-		}
-
-	
-
-		/*
-		public List<BidRuleGroup> ConformingBids(Direction direction, HandSummary handSummary, BiddingSummary biddingSummary)
-		{
-			var groups = new List<BidRuleGroup>();
-			foreach (BidRuleGroup group in this.Values)
-			{
-				if (group.Conforms(direction, handSummary, biddingSummary).)
-			}
-		}
-		*/
-	}
+    }
 
 }

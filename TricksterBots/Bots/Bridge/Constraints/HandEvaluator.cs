@@ -37,8 +37,7 @@ namespace TricksterBots.Bots.Bridge
 		}
 		public static void Evaluate(Hand hand, HandSummary hs)
 		{
-			///this._hcp = BasicBidding.ComputeHighCardPoints(hand);
-			var p = BasicBidding.ComputeDistributionPoints(hand);
+			var p = BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
 			hs.OpeningPoints = (p, p);
 			var counts = BasicBidding.CountsBySuit(hand);
 			hs.IsBalanced = BasicBidding.IsBalanced(hand);
@@ -48,17 +47,16 @@ namespace TricksterBots.Bots.Bridge
 				var dp = BasicBidding.DummyPoints(hand, suit);
 				var c = counts[suit];
 				var q = Quality(hand, suit);
-				hs.ModifiableSuits[suit].ShowShape(c, c);
-				hs.ModifiableSuits[suit].ShowDummyPoints(dp, dp);
-				hs.ModifiableSuits[suit].ShowLongHandPoints(p, p);
-				hs.ModifiableSuits[suit].ShowQuality(q, q);
+				hs.Suits[suit].Shape = (c, c);
+				hs.Suits[suit].DummyPoints = (dp, dp);
+				hs.Suits[suit].LongHandPoints = (p, p);
+				hs.Suits[suit].Quality = (q, q);
 			}
-			hs.ModifiableSuits[Suit.Unknown].ShowShape(0, 0);
-			hs.ModifiableSuits[Suit.Unknown].ShowDummyPoints(p, p);
-			hs.ModifiableSuits[Suit.Unknown].ShowLongHandPoints(p, p);
-			hs.ShowCountAces(hand.Count(c => c.rank == Rank.Ace));
-			hs.ShowCountKings(hand.Count(c => c.rank == Rank.King));
-
+			hs.Suits[Suit.Unknown].Shape = (0, 0);
+			hs.Suits[Suit.Unknown].DummyPoints = (p, p);
+			hs.Suits[Suit.Unknown].LongHandPoints = (p, p);
+			hs.CountAces = hand.Count(c => c.rank == Rank.Ace);
+			hs.CountKings = hand.Count(c => c.rank == Rank.King);
 		}
 	}
 }

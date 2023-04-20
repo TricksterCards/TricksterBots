@@ -33,7 +33,7 @@ namespace TricksterBots.Bots.Bridge
 			// TODO: Make sure no interference
 			// TODO: Check to make sure stayman is enabled
 			
-			if (ps.Role == PositionRole.Responder && ps.PartnersBid.Is(1, Suit.Unknown) && ps.BidRound == 1)
+			if (ps.Role == PositionRole.Responder && ps.Partner.LastBid.Is(1, Suit.Unknown) && ps.BidRound == 1)
 			{
 				return InitiateStayman();
 			}
@@ -99,7 +99,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			BidRule[] rules =
 			{
-				NonForcing(3, Suit.Spades, Points(NTDontAcceptInvite), Shape(4), PartnerShows(Suit.Spades, 4)),
+				NonForcing(3, Suit.Spades, Points(NTDontAcceptInvite), Shape(4), PartnerShape(4)),
 
 				Signoff(3, Suit.Unknown, Points(NTAcceptInvite), PartnerBid(2, Suit.Unknown)),
 				Signoff(3, Suit.Unknown, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Hearts),
@@ -112,6 +112,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 				Signoff(4, Suit.Spades, Points(NTAcceptInvite), PartnerBid(3, Suit.Spades), Shape(4, 5)),
+				Signoff(4, Suit.Spades, Points(NTAcceptInvite), PartnerShape(4), Shape(4, 5)),
 				Signoff(4, Suit.Spades, Points(NTOpen), PreviousBid(2, Suit.Diamonds), PartnerBid(3, Suit.Spades), Shape(3)),
 			};
 			return rules;

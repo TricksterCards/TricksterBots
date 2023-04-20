@@ -132,7 +132,13 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint PartnerBid(int level, Suit suit, bool desired = true)
 		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(level, suit, desired)); }
 
-		public static Constraint PartnerShape(Suit suit, int min, int max)
+		public static Constraint PartnerShape(int count)
+		{
+			return PartnerShape(null, count, count);
+		}
+
+
+		public static Constraint PartnerShape(Suit? suit, int min, int max)
 		{
 			return new PositionProxy(PositionProxy.RelativePosition.Partner, new HasShape(suit, min, max));
 		}
@@ -145,9 +151,13 @@ namespace TricksterBots.Bots.Bridge
 		{ return new ShowsQuality(suit, min, max); }
 
 
-		public static Constraint BetterSuit(Suit better, Suit worse) { return new ShowsBetterSuit(better, worse, null, false); }
+		public static Constraint Better(Suit better, Suit worse) { return new ShowsBetterSuit(better, worse, worse, false); }
 
-		public static Constraint BetterSuitThan(Suit worse) { return new ShowsBetterSuit(null, worse, null, false); }
+		public static Constraint BetterOrEqual(Suit better, Suit worse) { return new ShowsBetterSuit(better, worse, better, false);  }
+
+		public static Constraint BetterThan(Suit worse) { return new ShowsBetterSuit(null, worse, worse, false); }
+
+		public static Constraint BetterOrEqualTo(Suit worse) { return new ShowsBetterSuit(null, worse, null, false);  }
 
 
 		public static Constraint LongerThan(Suit shorter) { return new ShowsBetterSuit(null, shorter, shorter, true); }
@@ -170,20 +180,9 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 		// TODO: This should probably move to Natural..  But for now, this seems fine....
-		/*
-		public static BidRule[] HighLevelHugeHands = new BidRule[]
-		{
-			new BidRule(6, Suit.Clubs, BidConvention.None, 1000, Shape(12)),
-			new BidRule(6, Suit.Diamonds, BidConvention.None, 1000, Shape(12)),
-			new BidRule(6, Suit.Hearts, BidConvention.None, 1000, Shape(12)),
-			new BidRule(6, Suit.Spades, BidConvention.None, 1000, Shape(12)),
 
-			Signoff(7, Suit.Clubs, Shape(13)),
-			Signoff(7, Suit.Diamonds, Shape(13)),
-			Signoff(7, Suit.Hearts, Shape(13)),
-			Signoff(7, Suit.Spades, Shape(13))
-		}
-		*/
+
+		
 	}
 };
 

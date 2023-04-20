@@ -119,6 +119,7 @@
     <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />
     <Compile Include="Bots\Bridge\Constraints\BiddingSummary.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidRule.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidRuleGroup.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalOpen.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalRespond.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Stayman.cs" />
