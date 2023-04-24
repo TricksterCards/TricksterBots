@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,6 +90,29 @@ namespace TricksterBots.Bots.Bridge
                 if (rule.Conforms(ps, hs, bs)) { return true; }
             }
             return false;
+        }
+
+        public (HandSummary, BiddingSummary) UpdateState(PositionState ps)
+        {
+            HandSummary handSummary = null;
+            BiddingSummary biddingSummary = null;
+            foreach (var rule in _rules)
+            {
+                var newState = rule.ShowState(ps);
+                if (handSummary == null)
+                {
+                    handSummary = newState.Item1;
+                    biddingSummary = newState.Item2;
+                }
+                else
+                {
+                    handSummary.Union(newState.Item1);
+                    biddingSummary.Union(newState.Item2);
+                }
+            }
+            // After all of the possible shapes of suits have been unioned we can trim the max length of suits
+            handSummary.TrimShape();
+            return (handSummary, biddingSummary);
         }
 
         // Returns true if any rule has been removed.  In this case, the state needs to be updated again, and this

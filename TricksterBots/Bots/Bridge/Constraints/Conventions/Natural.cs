@@ -16,20 +16,9 @@ namespace TricksterBots.Bots.Bridge
 
     public class Natural : Bidder
     {
-        private NaturalOpen _open;
-        private NaturalRespond _respond;
 
         public Natural() : base(BidConvention.None, 1000)
         {
-            this._open = new NaturalOpen();
-            this._respond = new NaturalRespond();
-        }
-
-        internal Natural(PositionRole role) : base(BidConvention.None, 1000)
-        {
-            this._open = null;
-            this._respond = null;
-            
         }
 
         public (int, int) Open1Suit = (13, 21);
@@ -39,22 +28,10 @@ namespace TricksterBots.Bots.Bridge
         public (int, int) OpenStrong = (22, int.MaxValue);
         public (int, int) LessThanOpen = (0, 12);
 
-        // TODO: How much information should be added to call and how much should you be able to get from bidding summary?
-        // Perhaps all data should come back from bidding state....  No Role here...
-		public override IEnumerable<BidRule> GetRules(PositionState positionState)
-		{
-            if (positionState.Role == PositionRole.Opener)
-            {
-                return this._open.GetRules(positionState);
-            } 
-            else if (positionState.Role == PositionRole.Responder)
-            {
-                return this._respond.GetRules(positionState);
-            }
 
-			throw new NotImplementedException();
-		}
-
+        // TODO: This is not a great name.  Not exactly right.  Fix later.....
+        public (int, int) LessThanOvercall = (0, 17);
+        public (int, int) Overcall1Level = (7, 17);
 
         public BidRule[] HighLevelHugeHands()
         {
@@ -75,8 +52,4 @@ namespace TricksterBots.Bots.Bridge
         }
 
     }
-
-
-
-   
 }

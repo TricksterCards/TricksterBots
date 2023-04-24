@@ -6,31 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
+using TricksterBots.Bots.Bridge.TricksterBots.Bots.Bridge;
 
 namespace TricksterBots.Bots.Bridge
 {
 	public class NaturalOpen : Natural
 	{
-		public NaturalOpen() : base(PositionRole.Opener) { }
-
-		public override IEnumerable<BidRule> GetRules(PositionState positionState)
+		public NaturalOpen() : base() 
 		{
-			Debug.Assert(positionState.Role == PositionRole.Opener);
-			if (positionState.BidRound == 1)
+			this.ConventionRules = new ConventionRule[]
 			{
-				return Open();
-			}
-			else if (positionState.BidRound == 2)
-			{
-				return Rebid();
-			}
-			BidRule[] bids = new BidRule[0];
-			return bids;
-		}
-
-		public BidRule[] Open() 
-		{
-			BidRule[] bids =
+				new ConventionRule(Role(PositionRole.Opener), BidRound(1))
+			};
+			this.BidRules = new BidRule[]
 			{
 				NonForcing(CallType.Pass, DefaultPriority - 100, Points(LessThanOpen)),
 
@@ -76,16 +64,15 @@ namespace TricksterBots.Bots.Bridge
 				NonForcing(7, Suit.Hearts, Shape(13)),
 				NonForcing(7, Suit.Spades, Shape(13)),
 			};
-			return bids;
-		}
+			this.NextConventionState = () => new NaturalRespond();
+        }
 
-		public BidRule[] Rebid()
+		public BidRule[] Opener2ndBid()
 		{
-			BidRule[] bids =
+			return new BidRule[] 
 			{
 				
 			};
-			return bids;
 		}
 
 

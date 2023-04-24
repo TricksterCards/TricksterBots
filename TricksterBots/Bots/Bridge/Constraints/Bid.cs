@@ -66,7 +66,7 @@ namespace TricksterBots.Bots.Bridge
             {  "NT", Trickster.cloud.Suit.Unknown  }
         };
 
-        static Bid FromString(string str)
+        static public Bid FromString(string str)
 		{
 			if (str == "Pass") { return new Bid(CallType.Pass);  }
 			if (str == "X") { return new Bid(CallType.Double); }

@@ -16,71 +16,6 @@ namespace TricksterBots.Bots.Bridge
 	public enum PositionRole { Opener, Overcaller, Responder, Advancer }
 
 
-	public class BiddingState
-	{
-
-		public Dictionary<Direction, PositionState> Positions { get; }
-
-
-		public PositionState Dealer { get; private set; }
-		
-		public PositionState NextToAct { get; private set; }
-
-
-		public static bool IsVulnerable(string vul, Direction direction)
-		{
-			switch (vul)
-			{
-				case "None":
-				case "Love": 
-				case "-":
-					return false;
-				case "All":
-				case "Both":
-					return true;
-				case "NS":
-					return (direction == Direction.North || direction == Direction.South);
-				case "EW":
-					return (direction == Direction.East || direction == Direction.West);
-				default:
-					// TODO: Throw???
-					Debug.Assert(false);    // Should never get here...
-					return false;
-			}
-
-		}
-
-		public BiddingState(Hand[] hands, Direction dealer, string vul)
-		{
-			this.Positions = new Dictionary<Direction, PositionState>();
-			Debug.Assert(hands.Length == 4);
-			var d = dealer;
-			for (int i = 0; i < hands.Length; i++)
-			{
-				this.Positions[d] = new PositionState(this, d, i + 1, IsVulnerable(vul, d), hands[i]);
-				d = BasicBidding.LeftHandOpponent(d);
-			}
-			this.Dealer = Positions[dealer];
-			this.NextToAct = Dealer;
-		}
-
-		public Bid GetHackBid(string expected)
-		{
-			var bidder = new Natural();
-			var bidRules = bidder.GetRules(Dealer);
-			var options = BidRuleGroup.BidsGrouped(bidRules);
-			var bid = Dealer.ChooseBid(options);
-			if (bid.ToString() == expected)
-			{
-				Debug.WriteLine(bid);
-			}
-			else
-			{
-				Debug.WriteLine($"Expected {expected} but got {bid}");
-			}
-			return bid;
-		}
-	}
 
 
 	public class PositionState
@@ -163,21 +98,17 @@ namespace TricksterBots.Bots.Bridge
 	
 
 		// THIS IS AN INTERNAL FUNCITON:
-		private Bid MakeBid(BidRuleGroup bidGroup)
+		public Bid MakeBid(BidRuleGroup bidGroup)
 		{
-            if (bidGroup == null)
-            {
-				var pass = new BidRule(new Bid(CallType.Pass), 0, new Constraint[0]);
-                bidGroup = new BidRuleGroup(pass.Bid);
-                bidGroup.Add(pass);
-            }
-
             if (!bidGroup.Bid.IsPass && !this._roleAssigned)
 			{
 				if (Role == PositionRole.Opener)
 				{
 					AssignRole(PositionRole.Opener);
 					Partner.AssignRole(PositionRole.Responder);
+					// The opponenents are now 
+					LeftHandOppenent.Role = PositionRole.Overcaller;
+					RightHandOpponent.Role = PositionRole.Overcaller;
 				}
 				else if (this.Role == PositionRole.Overcaller)
 				{
@@ -186,6 +117,17 @@ namespace TricksterBots.Bots.Bridge
 				}
 			}
 			_bids.Add(bidGroup);
+			var newState = bidGroup.UpdateState(this);
+			var hs = newState.Item1;
+			Debug.WriteLine($"Points shown {hs.OpeningPoints}");
+			foreach (var suit in BasicBidding.BasicSuits)
+			{
+				var shape = hs.Suits[suit].Shape;
+				if (shape.Min > 0 || shape.Max < 13)
+				{
+					Debug.WriteLine($"{suit} has shape {shape.Min} -> {shape.Max}");
+				}
+			}
 			return bidGroup.Bid;
 		}
 
@@ -211,8 +153,9 @@ namespace TricksterBots.Bots.Bridge
 	
 
 		// TODO: Just a start of taking a group of rules and returning a subest
-		public Bid ChooseBid(Dictionary<Bid, BidRuleGroup> rules)
+		public BidRuleGroup ChooseBid(Dictionary<Bid, BidRuleGroup> rules)
 		{
+			Debug.Assert(_privateHandSummary != null);
 			BidRuleGroup choice = null;
 			var priority = int.MinValue;
 			foreach (var rule in rules.Values)
@@ -223,7 +166,13 @@ namespace TricksterBots.Bots.Bridge
 					priority = rule.Priority;
 				}
 			}
-			return MakeBid(choice);
+            if (choice == null)
+            {
+                var pass = new BidRule(new Bid(CallType.Pass), 0, new Constraint[0]);
+                choice = new BidRuleGroup(pass.Bid);
+                choice.Add(pass);
+            }
+            return choice;
 		}
 
 	}

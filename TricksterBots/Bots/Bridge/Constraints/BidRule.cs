@@ -35,7 +35,7 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public void ShowState(PositionState ps)
+		public (HandSummary, BiddingSummary) ShowState(PositionState ps)
 		{
 			var handSummary = new HandSummary(ps.PublicHandSummary);
 			var biddingSummary = new BiddingSummary(ps.BiddingSummary);
@@ -46,11 +46,12 @@ namespace TricksterBots.Bots.Bridge
 					var hs = new HandSummary(ps.PublicHandSummary);
 					var bs = new BiddingSummary(ps.BiddingSummary);
 					showsState.Update(Bid, ps, hs, bs);
-					handSummary.Union(hs);
-					biddingSummary.Union(bs);
+					handSummary.Intersect(hs);
+					biddingSummary.Intersect(bs);
 
 				}
-			} 
+			}
+			return (handSummary, biddingSummary);
 		}
 	}
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Policy;
@@ -147,11 +148,11 @@ namespace TricksterBots.Bots.Bridge
 			{
 				this.Suits[suit].Union(other.Suits[suit]);
 			}
-			TrimShape();
 		}
 
-		private void TrimShape()
+		public void TrimShape()
 		{
+		
 			int claimed = 0;
 			foreach (var suit in BasicBidding.BasicSuits)
 			{
@@ -160,8 +161,13 @@ namespace TricksterBots.Bots.Bridge
 			foreach (var suit in BasicBidding.BasicSuits)
 			{
 				var shape = Suits[suit].Shape;
-				Suits[suit].Shape = (shape.Min, shape.Max - claimed + shape.Min);
+				if (shape.Max + claimed - shape.Min > 13)
+				{
+					var newMax = 13 - claimed + shape.Min;
+					Suits[suit].Shape = (shape.Min, newMax);
+				}
 			}
+		
 		}
 
 		private static (int Min, int Max) IntersectRange((int Min, int Max) r1, (int Min, int Max) r2)

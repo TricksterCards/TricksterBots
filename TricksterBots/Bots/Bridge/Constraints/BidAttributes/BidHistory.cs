@@ -12,19 +12,16 @@ namespace TricksterBots.Bots.Bridge
 	// bid history.  But this works for now...
 	public class BidHistory : Constraint
 	{
+		private CallType _callType;
 		private Suit _suit;
 		private int _level;
 		private bool _desiredValue;
 
-		public BidHistory(Suit suit, bool desiredValue)
-		{
-			this._level = 0;
-			this._suit = suit;
-			this._desiredValue = desiredValue;
-		}
 
-		public BidHistory(int level, Suit suit, bool desiredValue)
+		// If you just want to see if the last action was a bid then pass level = 0 and CallType.Bid
+		public BidHistory(CallType callType, int level, Suit suit, bool desiredValue)
 		{
+			this._callType = callType;
 			this._level = level;
 			this._suit = suit;
 			this._desiredValue = desiredValue;
@@ -33,8 +30,12 @@ namespace TricksterBots.Bots.Bridge
 		public override bool Conforms(Bid bid,PositionState ps, HandSummary hs, BiddingSummary bs) 
 		{
 			var lastBid = ps.LastBid;
+			if (_callType != CallType.Bid || _level == 0)
+			{
+				return (lastBid.CallType == _callType) ? _desiredValue : !_desiredValue;
+			}
 			if (lastBid.CallType == CallType.Bid && lastBid.Suit == _suit &&
-				(_level == 0 || _level == lastBid.Level))
+				_level == lastBid.Level)
 			{
 				return _desiredValue;
 			}

@@ -48,9 +48,11 @@ namespace TestBots
             {
                 var bidTest = new BidTest(t);
                 // TODO: Hack to just pass thie stuff on to the bid test....
-                Hand[] hands = { bidTest.hand, null, null, null };
+                Hand[] hands = { null, null, null, null };
+                var i = t.history == null ? 0 : t.history.Length % 4;
+                hands[i] = bidTest.hand;
                 var bHack = new BiddingState(hands, Direction.North, "EW");
-                Bid bid = bHack.GetHackBid(t.bid);
+                Bid bid = bHack.GetHackBid(t.history, t.bid);
             }
 
         }

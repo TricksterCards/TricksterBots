@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Security.Policy;
@@ -8,17 +9,47 @@ using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
+using static TricksterBots.Bots.Bridge.ConventionRule;
 
 namespace TricksterBots.Bots.Bridge
 {
+
+	public delegate Bidder BidderFactory();
+
 	public abstract class Bidder
 	{
 		public BidConvention Convention { get; }
 
 		public int DefaultPriority { get; }
-		public abstract IEnumerable<BidRule> GetRules(PositionState positionState);
+		public IEnumerable<ConventionRule> ConventionRules { get; protected set; } = null;
+		public IEnumerable<BidRule> BidRules { get; protected set; }
 
-		public Bidder(BidConvention convention, int defaultPriority)
+		public IEnumerable<RedirectRule> Redirects { get; protected set; } = null;
+
+        public BidderFactory NextConventionState { get; protected set; }
+
+
+        // Convention rules..
+        public ConventionRule ConventionRule(params Constraint[] constraints)
+		{
+			return new ConventionRule(constraints);
+		}
+
+
+		// TODO: This is a bit of a hack - where to have the logic.
+		public bool Applies(PositionState ps)
+		{
+			var stupiddobetter = new Bid(CallType.Pass);
+			if (ConventionRules == null) { return true; }
+			foreach (var rule in ConventionRules)
+			{
+				if (rule.Conforms(stupiddobetter, ps)) { return true; }
+			}
+			return false;
+		}
+
+
+        public Bidder(BidConvention convention, int defaultPriority)
 		{
 			this.Convention = convention;
 			this.DefaultPriority = defaultPriority;
@@ -124,25 +155,55 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint Balanced(bool desired = true) { return new ShowsBalanced(desired); }
 		public static Constraint Flat(bool desired = true) { return new ShowsFlat(desired); }
 
-		public static Constraint PreviousBid(Suit suit, bool desired = true) { return new BidHistory(suit, desired); }
-		public static Constraint PreviousBid(int level, Suit suit, bool desired = true) { return new BidHistory(level, suit, desired); }
+		public static Constraint LastBid(int level, Suit suit, bool desired = true) {
+			return new BidHistory(CallType.Bid, level, suit, desired); }
 
-		public static Constraint PartnerBid(Suit suit, bool desired = true)
-		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(suit, desired)); }
-		public static Constraint PartnerBid(int level, Suit suit, bool desired = true)
-		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(level, suit, desired)); }
-
-		public static Constraint PartnerShape(int count)
+		public static Constraint DidBid(bool desired = true)
 		{
-			return PartnerShape(null, count, count);
+			return new BidHistory(CallType.Bid, 0, Suit.Unknown, desired);
+		}
+
+		public static Constraint DidDouble(bool desired = true)
+		{
+			return new BidHistory(CallType.Double, 0, Suit.Unknown, desired);
 		}
 
 
-		public static Constraint PartnerShape(Suit? suit, int min, int max)
+		public static Constraint Passed(bool desired = true)
 		{
-			return new PositionProxy(PositionProxy.RelativePosition.Partner, new HasShape(suit, min, max));
+			return new BidHistory(CallType.Pass, 0, Suit.Unknown, desired);
 		}
 
+	//	public static Constraint PartnerBid(Suit suit, bool desired = true)
+//		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(suit, desired)); }
+//		public static Constraint PartnerBid(int level, Suit suit, bool desired = true)
+//		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(level, suit, desired)); }
+
+	//	public static Constraint PartnerShape(int count)
+	//	{
+	//		return PartnerShape(null, count, count);
+	//	}
+
+
+	//	public static Constraint PartnerShape(Suit? suit, int min, int max)
+	//	{
+	//		return new PositionProxy(PositionProxy.RelativePosition.Partner, new HasShape(suit, min, max));
+	//	}
+
+		public static Constraint Partner(Constraint constraint)
+		{
+			return new PositionProxy(PositionProxy.RelativePosition.Partner, constraint);
+		}
+
+		public static Constraint RHO(Constraint constraint)
+		{
+			return new PositionProxy(PositionProxy.RelativePosition.RightHandOpponent, constraint);
+		}
+
+		public static Constraint HasShape(int count)
+		{
+			return new HasShape(null, count, count);
+		}
 
 		public static Constraint Quality(SuitQuality min, SuitQuality max) {
 			return new ShowsQuality(null, min, max);
@@ -176,13 +237,36 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint LongestMajor(int max)
 		{
-			return new CompositeConstraint(new ShowsShape(Suit.Hearts, 0, max), new ShowsShape(Suit.Spades, 0, max));
+			return new CompositeShowsState(new ShowsShape(Suit.Hearts, 0, max), new ShowsShape(Suit.Spades, 0, max));
 		}
 
 		// TODO: This should probably move to Natural..  But for now, this seems fine....
 
 
+
+		// THIS IS ALL CONVENTION RULE STUFF
+		public static Constraint Role(PositionRole role, int round = 0)
+		{
+			return new Role(role, round);
+		}
 		
+		public static Constraint BidRound(int round)
+		{
+			return new BidRound(round);
+		}
+		public static Constraint OffIfRhoBid()
+		{
+			// TODO: Need to implement this one... 
+			// Need to improve BidHistory class...
+			throw new NotImplementedException();
+		}
+
+		public static Constraint ShowsTrump(Suit? trumpSuit = null)
+		{
+			return new ShowsTrump(trumpSuit);
+		}
+
+
 	}
 };
 

@@ -16,6 +16,9 @@ namespace TricksterBots.Bots.Bridge
 
     public class BiddingSummary
     {
+        // TODO: Add conventions here...
+        // Anything else about global agreements that are not specific to the hand.
+
         public Suit? TrumpSuit { get; set; }
         public BiddingSummary()
         {
