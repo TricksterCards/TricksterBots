@@ -48,7 +48,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			get
 			{
-				return (_bids.Count == 0) ? new Bid(CallType.NotActed) : _bids.Last().Bid;
+				return (_bids.Count == 0) ? new Bid(CallType.NotActed, BidForce.Nonforcing) : _bids.Last().Bid;
 			}
 		}
 
@@ -95,7 +95,10 @@ namespace TricksterBots.Bots.Bridge
 			get { return BidRound - _roleAssignedOffset;  }
 		}
 
-	
+		public BidderFactory PartnerNextState
+		{
+			get { return this._bids.Count > 0 ? this._bids[0].NextBidder : null; }
+		}
 
 		// THIS IS AN INTERNAL FUNCITON:
 		public Bid MakeBid(BidRuleGroup bidGroup)
@@ -119,13 +122,13 @@ namespace TricksterBots.Bots.Bridge
 			_bids.Add(bidGroup);
 			var newState = bidGroup.UpdateState(this);
 			var hs = newState.Item1;
-			Debug.WriteLine($"Points shown {hs.OpeningPoints}");
+			Debug.WriteLine($"   Points shown {hs.OpeningPoints}");
 			foreach (var suit in BasicBidding.BasicSuits)
 			{
 				var shape = hs.Suits[suit].Shape;
 				if (shape.Min > 0 || shape.Max < 13)
 				{
-					Debug.WriteLine($"{suit} has shape {shape.Min} -> {shape.Max}");
+					Debug.WriteLine($"   {suit} shape {shape.Min} -> {shape.Max}");
 				}
 			}
 			return bidGroup.Bid;
@@ -150,28 +153,32 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-	
 
-		// TODO: Just a start of taking a group of rules and returning a subest
-		public BidRuleGroup ChooseBid(Dictionary<Bid, BidRuleGroup> rules)
+
+        // TODO: Just a start of taking a group of rules and returning a subest
+        // TODO: NEED TO ADD -PRIORITY BIDS FOR FALL-BACK. THESE SHOULD BE IGNORED IN THE FIRST ROUND
+        public BidRuleGroup ChooseBid(Dictionary<Bid, BidRuleGroup> rules)
 		{
 			Debug.Assert(_privateHandSummary != null);
 			BidRuleGroup choice = null;
 			var priority = int.MinValue;
-			foreach (var rule in rules.Values)
+			foreach (var ruleGroup in rules.Values)
 			{
-				if ((choice == null || rule.Priority > priority) && rule.Conforms(this, _privateHandSummary, BiddingSummary))
+				if ((choice == null || ruleGroup.Priority > priority) &&
+					ruleGroup.Conforms(this, _privateHandSummary, BiddingSummary))
 				{
-					choice = rule;
-					priority = rule.Priority;
+					choice = ruleGroup;
+					priority = ruleGroup.Priority;
 				}
 			}
-            if (choice == null)
-            {
-                var pass = new BidRule(new Bid(CallType.Pass), 0, new Constraint[0]);
-                choice = new BidRuleGroup(pass.Bid);
-                choice.Add(pass);
-            }
+
+			if (choice == null)
+			{
+                // UGLY TODO: CLEAN THIS UP!!!
+                var pass = new BidRule(new Bid(CallType.Pass, BidForce.Nonforcing), 0, new Constraint[0]); 
+				choice = new BidRuleGroup(pass.Bid, Convention.Natural, null);
+				choice.Add(pass);
+			}
             return choice;
 		}
 

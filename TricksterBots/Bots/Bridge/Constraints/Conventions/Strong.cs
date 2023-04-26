@@ -11,13 +11,15 @@ namespace TricksterBots.Bots.Bridge
 {
     public class Strong : Bidder
     {
+        public static Bidder Bidder() => new StrongOpen();
+
         protected static (int, int) StrongOpenRange = (22, 40);
         protected static (int, int) PositiveResponse = (8, 18);
         protected static (int, int) Waiting = (0, 18);
         protected static (int, int) Rebid2NT = (22, 24);
 
 
-        public Strong() : base(BidConvention.StrongOpening, 5000) { }
+        public Strong() : base(Convention.StrongOpen, 5000) { }
 
     }
 

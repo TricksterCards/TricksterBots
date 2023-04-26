@@ -128,6 +128,7 @@
     <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalOpen.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalOvercall.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalRespond.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Conventions\NoTrump.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Stayman.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Strong.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Transfer.cs" />

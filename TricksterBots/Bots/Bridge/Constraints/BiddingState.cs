@@ -12,12 +12,14 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
     // TODO: Line this up with trickser conventions, but re-declare for now for flexibility...
-    public enum Convention { Natural, StrongOpen, Stayman, Transfer };
+    public enum Convention { Natural, StrongOpen, NT, Stayman, Transfer };
 
     public class BiddingState
     {
 
-        public Dictionary<Convention, Bidder> Conventions { get; protected set; }
+     //   public Dictionary<Convention, Bidder> Conventions { get; protected set; }
+
+        public List<Bidder> DefaultBidders = new List<Bidder>();
 
         public Dictionary<Direction, PositionState> Positions { get; }
 
@@ -64,71 +66,127 @@ namespace TricksterBots.Bots.Bridge
             this.Dealer = Positions[dealer];
             this.NextToAct = Dealer;
 
+            /*
             this.Conventions = new Dictionary<Convention, Bidder>();
             this.Conventions[Convention.Natural] = new NaturalOpen();
             this.Conventions[Convention.StrongOpen] = new StrongOpen();
             this.Conventions[Convention.Stayman] = new InitiateStayman();
 
             this.Conventions[Convention.Transfer] = new NaturalOvercall(); // TODO: HACK HACK HACK HACK!
-
-
+            */
+            this.DefaultBidders.Add(Natural.Bidder());
+            this.DefaultBidders.Add(NoTrumpConventions.Bidder());
+            this.DefaultBidders.Add(Strong.Bidder());
         }
 
 
-        internal Dictionary<Bid, BidRuleGroup> AvailableBids()
+        internal Dictionary<Bid, BidRuleGroup> AvailableBids(PositionState ps)
         {
+            var options = new BidOptions();
             var bidRules = new List<BidRule>();
+
+            var bidders = new List<Bidder>();
+
+
+            if (ps.Partner.PartnerNextState != null)
+            { 
+                bidders.Add(ps.Partner.PartnerNextState());
+            }
+            bidders.AddRange(DefaultBidders);
+
+            // Now we look at every bidder.  For each one:
+            //    1. If they don't conform then skip to next one
+            //    2. If they do conform then see if is a redirect.  If so ignore rules
+            //    3. Otherwise, if they conform and there is not a redirect then append the bid rules.
+
             // Look at the Partner's previous bid (if there is one) and if there
             // is a bidder specified, then do that first --- Need to redirect, etc here too but not yet...
-           
-            foreach (var bidder in this.Conventions.Values)
+
+            while (bidders.Count > 0)
             {
-                if (bidder.Applies(NextToAct))
+                var redirect = new List<Bidder>();
+                foreach (var bidder in bidders)
                 {
-                    bidRules.AddRange(bidder.BidRules);
+                    if (bidder.Applies(NextToAct))
+                    {
+                        bool didRedirect = false;
+                        if (bidder.Redirects != null)
+                        {
+                            foreach (var r in bidder.Redirects)
+                            {
+                                var redirectBidder = r.Redirect(NextToAct);
+                                if (redirectBidder != null)
+                                {
+                                    redirect.Add(redirectBidder);
+                                    didRedirect = true;
+                                }
+                            }
+                        }
+                        if (!didRedirect && bidder.BidRules != null)
+                        {
+                            options.Add(bidder.Convention, bidder.NextConventionState, bidder.BidRules, NextToAct);
+                        }
+                    }
+                    // TODO: Deal with redirect.  Where?  Here, or in Applies?  Not sure. 
                 }
-                // TODO: Deal with redirect.  Where?  Here, or in Applies?  Not sure. 
-
+                bidders = redirect;
             }
-            return BidRuleGroup.BidsGrouped(bidRules);
-
-
+            return options.GetChoices();
         }
+
 
         public Bid GetHackBid(string[] history, string expected)
         {
-            Debug.WriteLine($"======================= {expected}");
+            Debug.WriteLine($"==== START TEST ==== Expect {expected}");
+            if (history == null)
+            {
+                Debug.WriteLine("No historical bids.");
+            }
+            else
+            {
+                Debug.Write("Bids: ");
+                foreach (var bidString in history)
+                {
+                    Debug.Write($"{bidString} ");
+                }
+                Debug.WriteLine("");
+            }
             // If there is any history then we need to get those bids first and at the end evaluate the hand
             if (history != null)
             {
                 foreach (var b in history)
                 {
-                    Debug.WriteLine($"+++ HISTORY: {b}");
+                    Debug.WriteLine($"--- Historical: {b}");
                     var bid = Bid.FromString(b);
-                    var o = AvailableBids();
-                    if (o == null || o.ContainsKey(bid) == false)
+                    var o = AvailableBids(NextToAct);
+                    BidRuleGroup choice;
+                    if (o.TryGetValue(bid, out choice) == false)
                     {
-                        Debug.Write("GJLGLGJ");
+                        Debug.WriteLine($"*** ERROR: Did not find {b} in bid optoins.  Constructing a bid with state information");
+                        var rule = new BidRule(bid, 1, new Constraint[0]);
+                        choice = new BidRuleGroup(bid, Convention.Natural, null);
+                        choice.Add(rule);
                     }
-                    NextToAct.MakeBid(o[bid]);
+                    NextToAct.MakeBid(choice);
                     NextToAct = NextToAct.LeftHandOppenent;
                 }
             }
             // Now we are actually ready to look at a hand and do somethihg
 
-            var options = AvailableBids();
+            var options = AvailableBids(NextToAct);
             var bidRule = NextToAct.ChooseBid(options);
-
+            NextToAct.MakeBid(bidRule);
 
             if (bidRule.Bid.ToString() == expected)
             {
-                Debug.WriteLine(bidRule.Bid);
+                Debug.WriteLine($"SUCCESS - Got expected {bidRule.Bid}");
             }
             else
             {
-                Debug.WriteLine($"Expected {expected} but got {bidRule.Bid}");
+                Debug.WriteLine($"******** ERROR!  Expected {expected} but got {bidRule.Bid}");
             }
-            NextToAct.MakeBid(bidRule);
+            Debug.WriteLine("");
+
             NextToAct = NextToAct.LeftHandOppenent;
             return bidRule.Bid;
         }

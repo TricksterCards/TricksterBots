@@ -26,7 +26,7 @@ namespace TricksterBots.Bots.Bridge
 		static protected (int, int) GameOrBetter = (10, 40);
 		static protected (int, int) NTOpen = (15, 17);
 
-		public Transfer() : base(BidConvention.JacobyTransfer, 2000)
+		public Transfer() : base(Convention.Transfer, 2000)
 		{
 		}
 	}
@@ -70,17 +70,17 @@ namespace TricksterBots.Bots.Bridge
 		{
 			this.BidRules = new BidRule[]
 			{
-				NonForcing(2, Suit.Hearts, Partner(LastBid(2, Suit.Diamonds)), Points(LessThanSuperAccept)),
-				NonForcing(2, Suit.Hearts, Partner(LastBid(2, Suit.Diamonds)), Points(SuperAccept), Shape(0, 3)),
+				Nonforcing(2, Suit.Hearts, Partner(LastBid(2, Suit.Diamonds)), Points(LessThanSuperAccept)),
+				Nonforcing(2, Suit.Hearts, Partner(LastBid(2, Suit.Diamonds)), Points(SuperAccept), Shape(0, 3)),
 
-				NonForcing(2, Suit.Spades, Partner(LastBid(2, Suit.Hearts)), Points(LessThanSuperAccept)),
-				NonForcing(2, Suit.Spades, Partner(LastBid(2, Suit.Hearts)), Points(SuperAccept), Shape(0, 3)),
+				Nonforcing(2, Suit.Spades, Partner(LastBid(2, Suit.Hearts)), Points(LessThanSuperAccept)),
+				Nonforcing(2, Suit.Spades, Partner(LastBid(2, Suit.Hearts)), Points(SuperAccept), Shape(0, 3)),
 
-				NonForcing(3, Suit.Clubs, Partner(LastBid(2, Suit.Spades))),
+				Nonforcing(3, Suit.Clubs, Partner(LastBid(2, Suit.Spades))),
 
-				NonForcing(3, Suit.Hearts, ShowsTrump(), Partner(LastBid(2, Suit.Diamonds)), Points(SuperAccept), Shape(4, 5)),
+				Nonforcing(3, Suit.Hearts, ShowsTrump(), Partner(LastBid(2, Suit.Diamonds)), Points(SuperAccept), Shape(4, 5)),
 
-				NonForcing(3, Suit.Spades, ShowsTrump(), Partner(LastBid(2, Suit.Hearts)), Points(SuperAccept), Shape(4, 5)),
+				Nonforcing(3, Suit.Spades, ShowsTrump(), Partner(LastBid(2, Suit.Hearts)), Points(SuperAccept), Shape(4, 5)),
 			};
 			this.NextConventionState = () => new ExplainTransfer();
         }

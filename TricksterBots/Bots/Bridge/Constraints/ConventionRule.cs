@@ -18,11 +18,12 @@ namespace TricksterBots.Bots.Bridge
             this._constraints = constraints;
         }
 
-        public bool Conforms(Bid nextLegalBid, PositionState ps)
+        public bool Conforms(PositionState ps)
         {
+            var nullBid = new Bid(CallType.NotActed, BidForce.Nonforcing);
             foreach (var constraint in _constraints)
             {
-                if (!constraint.Conforms(nextLegalBid, ps, ps.PublicHandSummary, ps.BiddingSummary)) { return false; }
+                if (!constraint.Conforms(nullBid, ps, ps.PublicHandSummary, ps.BiddingSummary)) { return false; }
             }
             return true;
         }
@@ -36,9 +37,9 @@ namespace TricksterBots.Bots.Bridge
         {
             this._redirectTo = redirectTo;
         }
-        public Bidder Redirect(Bid imnotsure, PositionState ps)
+        public Bidder Redirect(PositionState ps)
         {
-            return (this.Conforms(imnotsure, ps)) ? this._redirectTo() : null;
+            return (this.Conforms(ps)) ? this._redirectTo() : null;
         }
     }
 }

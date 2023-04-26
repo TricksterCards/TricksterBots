@@ -59,16 +59,19 @@ namespace TricksterBots.Bots.Bridge
 			var worse = bid.SuitIfNot(_worse);
 			var betterShape = hs.Suits[better].Shape;
 			var worseShape = hs.Suits[worse].Shape;
-			if (betterShape.Min > worseShape.Min) { return true; }
-			if (betterShape.Min < worseShape.Min) { return false; }
-			if (!_lengthOnly)
+			var defaultIfEqual = bid.SuitIfNot(_defaultIfEqual);
+
+			
+			if (betterShape.Max < worseShape.Min) { return false; }
+			if (betterShape.Max == worseShape.Min && worse == defaultIfEqual) { return false; }
+			if (!_lengthOnly && betterShape == worseShape)
 			{
 				int bq = (int)(hs.Suits[better].Quality.Min);
 				int wq = (int)(hs.Suits[worse].Quality.Min);
 				if (bq > wq) { return true; }
 				if (wq > bq) { return false;}
 			}
-			return (better == bid.SuitIfNot(_defaultIfEqual));
+			return true;
 		}
 
 	}

@@ -11,7 +11,7 @@ namespace TricksterBots.Bots.Bridge
 {
 	public class BidderThingie : Bidder
 	{
-		public BidderThingie(BidConvention convention, int defaultPriority) : base(convention, defaultPriority) { }	
+		public BidderThingie(Convention convention, int defaultPriority) : base(convention, defaultPriority) { }	
 
 		public ConventionRule[] RedirectRules { get; protected set; }
 		
@@ -21,7 +21,7 @@ namespace TricksterBots.Bots.Bridge
 			if (ConventionRules == null) { return true; }
 			foreach (var rule in ConventionRules)
 			{
-				if (rule.Conforms(nextLegalBid, ps))
+				if (rule.Conforms(ps))
 				{
 					return true;
 				}
@@ -60,7 +60,7 @@ namespace TricksterBots.Bots.Bridge
 		static protected (int, int) NTOpen = (15, 17);
 
 
-		public Stayman() : base(BidConvention.Stayman, 5000)
+		public Stayman() : base(Convention.Stayman, 5000)
 		{
 		}
 
@@ -145,7 +145,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			this.BidRules = new BidRule[]
             {
-                NonForcing(3, Suit.Spades, Points(NTDontAcceptInvite), Shape(4), Partner(HasShape(4))),
+                Nonforcing(3, Suit.Spades, Points(NTDontAcceptInvite), Shape(4), Partner(HasShape(4))),
 
                 Signoff(3, Suit.Unknown, Points(NTAcceptInvite), Partner(LastBid(2, Suit.Unknown))),
                 Signoff(3, Suit.Unknown, Points(NTOpen), LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Hearts)),

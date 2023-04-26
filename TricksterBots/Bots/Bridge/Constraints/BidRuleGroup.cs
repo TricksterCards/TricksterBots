@@ -1,23 +1,119 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
 
+    public class BidOptions
+    {
+
+        internal class BidGroupChoices
+        {
+            public BidRuleGroup Natural;
+            public BidRuleGroup Conventional;
+            public BidGroupChoices()
+            {
+                Natural = null;
+                Conventional = null;
+            }
+
+            // Unconditionally add the rule to the appropriate convention group 
+            internal void Add(Convention convention, BidderFactory nextState, BidRule rule)
+            {
+                if (convention == Convention.Natural)
+                {
+                    if (this.Natural == null)
+                    {
+                        this.Natural = new BidRuleGroup(rule.Bid, convention, nextState);
+                    }
+                    this.Natural.Add(rule);
+                } 
+                else
+                {
+                    if (this.Conventional == null)
+                    {
+                        this.Conventional = new BidRuleGroup(rule.Bid, convention, nextState);
+                    }
+                    Debug.Assert(this.Conventional.Convention == convention);
+                    // TODO: Make sure bidding factory is the same...
+                    this.Conventional.Add(rule);
+                }
+            }
+
+            internal BidRuleGroup BidRules {
+                get 
+                { 
+                    if (Conventional != null && Conventional.HasRules) { return Conventional; }
+                    if (Natural != null && Natural.HasRules) { return Natural;  }
+                    return null;
+                }
+            }
+        }
+
+
+        private Dictionary<Bid, BidGroupChoices> Choices { get; }
+        public BidOptions() { 
+            this.Choices = new Dictionary<Bid, BidGroupChoices>();
+        }
+
+        public void Add(Convention convention, BidderFactory nextState, IEnumerable<BidRule> rules, PositionState ps)
+        {
+            foreach (var rule in rules)
+            {
+                if (rule.Conforms(ps, ps.PublicHandSummary, ps.BiddingSummary))
+                { 
+                    if (Choices.ContainsKey(rule.Bid) == false)
+                    {
+                        Choices[rule.Bid] = new BidGroupChoices();
+                    }
+                    Choices[rule.Bid].Add(convention, nextState, rule);
+                }
+            }
+        }
+
+        public Dictionary<Bid, BidRuleGroup> GetChoices()
+        {
+            var choices = new Dictionary<Bid, BidRuleGroup>();
+            foreach (var convChoice in Choices)
+            {
+                var rules = convChoice.Value.BidRules;
+                if (rules != null) 
+                {
+                    choices[convChoice.Key] = rules;
+                }
+            }
+            return choices;
+        }
+    }
+
+
     public class BidRuleGroup
     {
         public Bid Bid { get; }
+
+        public Convention Convention { get; }
+
+        public BidderFactory NextBidder { get; }
         public int Priority { get; private set; }
+
+        public bool HasRules {  get {  return _rules.Count > 0; } }
+
         private List<BidRule> _rules;
-        public BidRuleGroup(Bid bid) : base()
+        public BidRuleGroup(Bid bid, Convention convention, BidderFactory bidderFactory) 
         {
-            Bid = bid;
-            _rules = new List<BidRule>();
-            Priority = int.MinValue;        // TODO: Is this right???
+            this.Bid = bid;
+            this._rules = new List<BidRule>();
+            this.Priority = int.MinValue;        // TODO: Is this right???
+            this.NextBidder = bidderFactory;
+            this.Convention = convention;
         }
 
         public bool IsConformingChoice
@@ -26,19 +122,6 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        public static Dictionary<Bid, BidRuleGroup> BidsGrouped(IEnumerable<BidRule> rules)
-        {
-            var dict = new Dictionary<Bid, BidRuleGroup>();
-            foreach (var rule in rules)
-            {
-                if (dict.ContainsKey(rule.Bid) == false)
-                {
-                    dict[rule.Bid] = new BidRuleGroup(rule.Bid);
-                }
-                dict[rule.Bid].Add(rule);
-            }
-            return dict;
-        }
 
 
         public void Add(BidRule rule)

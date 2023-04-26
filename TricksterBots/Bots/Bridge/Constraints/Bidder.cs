@@ -18,7 +18,7 @@ namespace TricksterBots.Bots.Bridge
 
 	public abstract class Bidder
 	{
-		public BidConvention Convention { get; }
+		public Convention Convention { get; }
 
 		public int DefaultPriority { get; }
 		public IEnumerable<ConventionRule> ConventionRules { get; protected set; } = null;
@@ -39,17 +39,16 @@ namespace TricksterBots.Bots.Bridge
 		// TODO: This is a bit of a hack - where to have the logic.
 		public bool Applies(PositionState ps)
 		{
-			var stupiddobetter = new Bid(CallType.Pass);
 			if (ConventionRules == null) { return true; }
 			foreach (var rule in ConventionRules)
 			{
-				if (rule.Conforms(stupiddobetter, ps)) { return true; }
+				if (rule.Conforms(ps)) { return true; }
 			}
 			return false;
 		}
 
 
-        public Bidder(BidConvention convention, int defaultPriority)
+        public Bidder(Convention convention, int defaultPriority)
 		{
 			this.Convention = convention;
 			this.DefaultPriority = defaultPriority;
@@ -57,85 +56,85 @@ namespace TricksterBots.Bots.Bridge
 
 		public BidRule Forcing(int level, Suit suit, params Constraint[] constraints)
 		{
-			return Rule(level, suit, BidMessage.Forcing, DefaultPriority, constraints);
+			return Rule(level, suit, BidForce.Forcing, DefaultPriority, constraints);
 		}
 		public BidRule Forcing(int level, Suit suit, int priority, params Constraint[] constraints)
 		{
-			return Rule(level, suit, BidMessage.Forcing, priority, constraints);
+			return Rule(level, suit, BidForce.Forcing, priority, constraints);
 		}
 		public BidRule Forcing(CallType callType, params Constraint[] constraints)
 		{
-			return Rule(callType, BidMessage.Forcing, DefaultPriority, constraints);
+			return Rule(callType, BidForce.Forcing, DefaultPriority, constraints);
 		}
 		public BidRule Forcing(CallType callType, int priority, params Constraint[] constraints)
 		{
-			return Rule(callType, BidMessage.Forcing, priority, constraints);
+			return Rule(callType, BidForce.Forcing, priority, constraints);
 		}
 
 		// TODO: Need a non-forcing BidMessage...
-		public BidRule NonForcing(int level, Suit suit, params Constraint[] constraints)
+		public BidRule Nonforcing(int level, Suit suit, params Constraint[] constraints)
 		{
-			return Rule(level, suit, BidMessage.Invitational, DefaultPriority, constraints);
+			return Rule(level, suit, BidForce.Nonforcing, DefaultPriority, constraints);
 		}
-		public BidRule NonForcing(int level, Suit suit, int priority, params Constraint[] constraints)
+		public BidRule Nonforcing(int level, Suit suit, int priority, params Constraint[] constraints)
 		{
-			return Rule(level, suit, BidMessage.Invitational, priority, constraints);
+			return Rule(level, suit, BidForce.Nonforcing, priority, constraints);
 		}
-		public BidRule NonForcing(CallType callType, params Constraint[] constraints)
+		public BidRule Nonforcing(CallType callType, params Constraint[] constraints)
 		{
-			return Rule(callType, BidMessage.Invitational, DefaultPriority, constraints);
+			return Rule(callType, BidForce.Nonforcing, DefaultPriority, constraints);
 		}
-		public BidRule NonForcing(CallType callType, int priority, params Constraint[] constraints)
+		public BidRule Nonforcing(CallType callType, int priority, params Constraint[] constraints)
 		{
-			return Rule(callType, BidMessage.Invitational, priority, constraints);
+			return Rule(callType, BidForce.Nonforcing, priority, constraints);
 		}
 
 
 		public BidRule Invitational(int level, Suit suit, params Constraint[] constraints)
 		{
-			return Rule(level, suit, BidMessage.Invitational, DefaultPriority, constraints);
+			return Rule(level, suit, BidForce.Invitational, DefaultPriority, constraints);
 		}
 		public BidRule Invitational(int level, Suit suit, int priority, params Constraint[] constraints)
 		{
-			return Rule(level, suit, BidMessage.Invitational, priority, constraints);
+			return Rule(level, suit, BidForce.Invitational, priority, constraints);
 		}
 		public BidRule Invitational(CallType callType, params Constraint[] constraints)
 		{
-			return Rule(callType, BidMessage.Invitational, DefaultPriority, constraints);
+			return Rule(callType, BidForce.Invitational, DefaultPriority, constraints);
 		}
 		public BidRule Invitational(CallType callType, int priority, params Constraint[] constraints)
 		{
-			return Rule(callType, BidMessage.Invitational, priority, constraints);
+			return Rule(callType, BidForce.Invitational, priority, constraints);
 		}
 
 
 		public BidRule Signoff(int level, Suit suit, params Constraint[] constraints)
 		{
-			return Rule(level, suit, BidMessage.Signoff, DefaultPriority, constraints);
+			return Rule(level, suit, BidForce.Signoff, DefaultPriority, constraints);
 		}
 		public BidRule Signoff(int level, Suit suit, int priority, params Constraint[] constraints)
 		{
-			return Rule(level, suit, BidMessage.Signoff, priority, constraints);
+			return Rule(level, suit, BidForce.Signoff, priority, constraints);
 		}
 		public BidRule Signoff(CallType callType, params Constraint[] constraints)
 		{
-			return Rule(callType, BidMessage.Signoff, DefaultPriority, constraints);
+			return Rule(callType, BidForce.Signoff, DefaultPriority, constraints);
 		}
 		public BidRule Signoff(CallType callType, int priority, params Constraint[] constraints)
 		{
-			return Rule(callType, BidMessage.Signoff, priority, constraints);
+			return Rule(callType, BidForce.Signoff, priority, constraints);
 		}
 
 
-		public BidRule Rule(int level, Suit suit, BidMessage message, int priority, params Constraint[] constraints)
+		public BidRule Rule(int level, Suit suit, BidForce force, int priority, params Constraint[] constraints)
 		{
-			return new BidRule(new Bid(level, suit, Convention, message), priority, constraints);
+			return new BidRule(new Bid(level, suit, force), priority, constraints);
 		}
 
 
-		public BidRule Rule(CallType callType, BidMessage message, int priority, params Constraint[] constraints)
+		public BidRule Rule(CallType callType, BidForce force, int priority, params Constraint[] constraints)
 		{
-			return new BidRule(new Bid(callType, Convention, message), priority, constraints);
+			return new BidRule(new Bid(callType, force), priority, constraints);
 		}
 
 

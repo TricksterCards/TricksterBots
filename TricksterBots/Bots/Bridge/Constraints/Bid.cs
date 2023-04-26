@@ -18,17 +18,15 @@ namespace TricksterBots.Bots.Bridge
 {
 	public enum CallType { Pass, Bid, Double, Redouble, NotActed }
 
+	public enum BidForce { Nonforcing, Invitational, Forcing, Signoff }
 	public struct Bid : IEquatable<Bid>
 	{
-
-
 		public int? Level { get; }
 		public Suit? Suit { get; }
 
-		public BidConvention Convention { get; }
 		public CallType CallType { get; }
 
-		public BidMessage Message { get; }
+		public BidForce Force { get; }
 
 		public bool Is(int level, Suit suit)
 		{
@@ -37,7 +35,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public bool Equals(Bid other)
 		{
-			return (CallType == other.CallType && Level == other.Level && Suit == other.Suit && Convention == other.Convention);
+			return (CallType == other.CallType && Level == other.Level && Suit == other.Suit);
 		}
 
 		public bool IsBid
@@ -68,32 +66,30 @@ namespace TricksterBots.Bots.Bridge
 
         static public Bid FromString(string str)
 		{
-			if (str == "Pass") { return new Bid(CallType.Pass);  }
-			if (str == "X") { return new Bid(CallType.Double); }
-			if (str == "XX") { return new Bid(CallType.Redouble); }
+			if (str == "Pass") { return new Bid(CallType.Pass, BidForce.Nonforcing);  }
+			if (str == "X") { return new Bid(CallType.Double, BidForce.Nonforcing); }
+			if (str == "XX") { return new Bid(CallType.Redouble, BidForce.Nonforcing); }
 			int level = int.Parse(str.Substring(0, 1));
 			var suit = SymbolToSuit[str.Substring(1)];
-			return new Bid(level, suit);
+			return new Bid(level, suit, BidForce.Nonforcing);
 		}
 
-		public Bid(CallType callType, BidConvention convention = BidConvention.None, BidMessage message = BidMessage.Invitational)
+		public Bid(CallType callType, BidForce force)
 		{
 			Debug.Assert(callType != CallType.Bid);
 			this.CallType = callType;
 			this.Level = null;
 			this.Suit = null;
-			this.Convention = convention;
-			this.Message = message;
+			this.Force = force;
 		}
 
-		public Bid(int level, Suit suit, BidConvention convention = BidConvention.None, BidMessage message = BidMessage.Invitational)
+		public Bid(int level, Suit suit, BidForce force)
 		{
 			this.CallType = CallType.Bid;
 			Debug.Assert(level >= 1 && level <= 7);
 			this.Level = level;
 			this.Suit = suit;
-			this.Convention = convention;
-			this.Message = message;
+			this.Force = force;
 		}
 
 		// TODO: I am sure this exists somewhere else...  Find it
