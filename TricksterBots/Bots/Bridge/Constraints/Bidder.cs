@@ -211,6 +211,13 @@ namespace TricksterBots.Bots.Bridge
 		{ return new ShowsQuality(suit, min, max); }
 
 
+		// Suit quality is good or better
+		public static Constraint GoodSuit(Suit? suit = null)
+		{ return new ShowsQuality(suit, SuitQuality.Good, SuitQuality.Solid); }
+
+		public static Constraint DecentSuit(Suit? suit = null)
+		{ return new ShowsQuality(suit, SuitQuality.Decent, SuitQuality.Solid); }
+
 		public static Constraint Better(Suit better, Suit worse) { return new ShowsBetterSuit(better, worse, worse, false); }
 
 		public static Constraint BetterOrEqual(Suit better, Suit worse) { return new ShowsBetterSuit(better, worse, better, false);  }
@@ -265,6 +272,10 @@ namespace TricksterBots.Bots.Bridge
 			return new ShowsTrump(trumpSuit);
 		}
 
+		public static Constraint Jump(params int[] jumpLevels)
+		{
+			return new JumpBid(jumpLevels);
+		}
 
 	}
 };

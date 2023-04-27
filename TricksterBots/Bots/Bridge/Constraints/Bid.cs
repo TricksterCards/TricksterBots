@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Markup;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -103,7 +104,16 @@ namespace TricksterBots.Bots.Bridge
 			{ Trickster.cloud.Suit.Unknown,  "NT" }
 		};
 
-        public override string ToString()
+		public static Dictionary<Suit, int> StrainToInt = new Dictionary<Suit, int>
+		{
+			{ Trickster.cloud.Suit.Clubs,    0 },
+			{ Trickster.cloud.Suit.Diamonds, 1 },
+			{ Trickster.cloud.Suit.Hearts,   2 },
+			{ Trickster.cloud.Suit.Spades,   3 },
+			{ Trickster.cloud.Suit.Unknown,  4 }
+		};
+
+		public override string ToString()
 		{
 			if (CallType == CallType.Bid)
 			{
@@ -117,6 +127,42 @@ namespace TricksterBots.Bots.Bridge
 			if (CallType == CallType.Redouble) { return "XX"; }
 			Debug.Assert(false);
 			return "";
+		}
+
+		internal int RawLevel
+		{
+			get
+			{
+				Debug.Assert(this.IsBid);
+				return ((int)this.Level - 1) * 5 + StrainToInt[(Suit)this.Suit];
+			}
+		}
+
+		public (bool Valid, int Jump) IsValid(PositionState position, Contract contract)
+		{
+			if (this.IsPass) { return (true, 0); }
+			if (this.CallType == CallType.Double)
+			{
+				if (!contract.Bid.IsBid || contract.Doubled) { return (false, 0); }
+				return ((position.LeftHandOppenent == contract.By || position.RightHandOpponent == contract.By), 0);
+			}
+			if (this.CallType == CallType.Redouble)
+			{
+				if (contract.Doubled && !contract.Redoubled)
+				{
+					return ((position == contract.By || position.Partner == contract.By), 0);
+				}
+				return (false, 0);
+			}
+			Debug.Assert(this.CallType == CallType.Bid);
+			if (contract.Bid.CallType == CallType.NotActed)
+			{
+				return (true, 1 - (int)this.Level);
+			}
+			int thisLevel = this.RawLevel;
+			int contractLevel = contract.Bid.RawLevel;
+			if (thisLevel <= contractLevel) { return (false, 0); }
+			return (true, (thisLevel - contractLevel) % 5);
 		}
     }
 

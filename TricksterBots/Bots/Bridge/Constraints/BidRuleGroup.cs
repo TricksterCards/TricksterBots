@@ -66,9 +66,10 @@ namespace TricksterBots.Bots.Bridge
 
         public void Add(Convention convention, BidderFactory nextState, IEnumerable<BidRule> rules, PositionState ps)
         {
+            var contract = ps.BiddingState.GetContract();
             foreach (var rule in rules)
             {
-                if (rule.Conforms(ps, ps.PublicHandSummary, ps.BiddingSummary))
+                if (rule.Bid.IsValid(ps, contract).Valid && rule.Conforms(ps, ps.PublicHandSummary, ps.BiddingSummary))
                 { 
                     if (Choices.ContainsKey(rule.Bid) == false)
                     {

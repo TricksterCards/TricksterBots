@@ -16,8 +16,6 @@ namespace TricksterBots.Bots.Bridge
 	public enum PositionRole { Opener, Overcaller, Responder, Advancer }
 
 
-
-
 	public class PositionState
 	{
 		// When the first bid is made for a role, this variable is assigned to the length of _bids.  This allows
@@ -30,7 +28,7 @@ namespace TricksterBots.Bots.Bridge
 
 		private List<BidRuleGroup> _bids;
 
-		public BiddingSummary BiddingSummary { get; }
+		public BiddingSummary BiddingSummary { get; private set; }
 
 		public BiddingState BiddingState { get; }
 
@@ -48,8 +46,17 @@ namespace TricksterBots.Bots.Bridge
 		{
 			get
 			{
-				return (_bids.Count == 0) ? new Bid(CallType.NotActed, BidForce.Nonforcing) : _bids.Last().Bid;
+				return GetBidHistory(0);
 			}
+		}
+
+		public Bid GetBidHistory(int historyLevel)
+		{
+			if (_bids.Count <= historyLevel)
+			{
+				return new Bid(CallType.NotActed, BidForce.Nonforcing);
+			}
+			return _bids[_bids.Count - 1 - historyLevel].Bid;
 		}
 
 		public PositionState Partner => BiddingState.Positions[BasicBidding.Partner(Direction)];
@@ -97,7 +104,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public BidderFactory PartnerNextState
 		{
-			get { return this._bids.Count > 0 ? this._bids[0].NextBidder : null; }
+			get { return this._bids.Count > 0 ? this._bids.Last().NextBidder : null; }
 		}
 
 		// THIS IS AN INTERNAL FUNCITON:
@@ -120,8 +127,10 @@ namespace TricksterBots.Bots.Bridge
 				}
 			}
 			_bids.Add(bidGroup);
-			var newState = bidGroup.UpdateState(this);
-			var hs = newState.Item1;
+			(HandSummary hs, BiddingSummary bs) newState = bidGroup.UpdateState(this);
+			var hs = newState.hs;
+			this.PublicHandSummary = newState.hs;
+			this.BiddingSummary = newState.bs;
 			Debug.WriteLine($"   Points shown {hs.OpeningPoints}");
 			foreach (var suit in BasicBidding.BasicSuits)
 			{

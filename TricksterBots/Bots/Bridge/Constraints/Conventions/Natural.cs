@@ -38,6 +38,7 @@ namespace TricksterBots.Bots.Bridge
         public (int, int) Overcall1Level = (7, 17);
         public (int, int) OvercallStrong2Level = (13, 17);
         public (int, int) OvercallWeak2Level = (7, 11);
+        public (int, int) OvercallWeak3Level = (7, 11);
 
         public BidRule[] HighLevelHugeHands()
         {

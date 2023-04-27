@@ -114,6 +114,7 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BidRound.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\CompositeConstraint.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Flat.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\JumpBid.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\PositionProxy.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Role.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Quality.cs" />

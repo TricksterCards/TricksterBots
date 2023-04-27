@@ -14,7 +14,26 @@ namespace TricksterBots.Bots.Bridge
     // TODO: Line this up with trickser conventions, but re-declare for now for flexibility...
     public enum Convention { Natural, StrongOpen, NT, Stayman, Transfer };
 
-    public class BiddingState
+
+
+    
+	public class Contract
+	{
+		public Bid Bid;    // Bid must be either CallType.NotActed or .Pass or .Bid
+		public PositionState By;
+		public bool Doubled;
+		public bool Redoubled;
+
+        public Contract()
+        {
+            this.Bid = new Bid(CallType.NotActed, BidForce.Nonforcing);
+            this.By = null;
+            this.Doubled = false;
+            this.Redoubled = false;
+        }
+	}
+
+	public class BiddingState
     {
 
      //   public Dictionary<Convention, Bidder> Conventions { get; protected set; }
@@ -28,7 +47,56 @@ namespace TricksterBots.Bots.Bridge
 
         public PositionState NextToAct { get; private set; }
 
+        public Contract GetContract()
+        {
+            Contract contract = new Contract();
+            int historyLevel = 0;
+            var position = NextToAct;
+            int countPasses = 0;
+            while (true)
+            {
+                position = position.RightHandOpponent;
+                var bid = position.GetBidHistory(historyLevel);
+                if (bid.CallType == CallType.NotActed)
+                {
+                    Debug.Assert(contract.Bid.CallType == CallType.NotActed);
+                    break;
+                }
+				if (bid.CallType == CallType.Pass)
+				{
+					countPasses++;
+					if (countPasses == 4)
+					{
+						contract.Bid = bid;
+						break;
+					}
+					else
+					{
+						countPasses = 0;
+					}
+				}
+				if (bid.CallType == CallType.Bid)
+                {
+                    contract.Bid = bid;
+                    contract.By = position;
+                    break;
+                }
+                if (bid.CallType == CallType.Double)
+                {
+                    contract.Doubled = true;
+                }
+                if (bid.CallType == CallType.Redouble)
+                {
+                    contract.Redoubled = true;
+                }
 
+                if (position == NextToAct)
+                {
+                    historyLevel += 1;
+                }
+            }
+            return contract;
+        }
 
         public static bool IsVulnerable(string vul, Direction direction)
         {
