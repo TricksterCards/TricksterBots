@@ -18,7 +18,7 @@ namespace TricksterBots.Bots.Bridge
             _round = round;
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
         {
             return (_role == ps.Role && (_round == 0 || ps.RoleRound == _round));
         }

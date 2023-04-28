@@ -15,7 +15,7 @@ namespace TricksterBots.Bots.Bridge
 			this._jumpLevels = jumpLevels;
 		}
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
 			var contract = ps.BiddingState.GetContract();
 			(bool Valid, int jump) bidOverContract = bid.IsValid(ps, contract);

@@ -26,7 +26,7 @@ namespace TricksterBots.Bots.Bridge
             this._max = max;
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
         {
             (int Min, int Max) shape = hs.Suits[bid.SuitIfNot(_suit)].Shape;
 			return (shape.Max >= _min && shape.Min <= _max);
@@ -38,7 +38,7 @@ namespace TricksterBots.Bots.Bridge
 	{
         public ShowsShape(Suit? suit, int min, int max) : base(suit, min, max) { }
 
-		public void Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
+		public void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
             hs.Suits[bid.SuitIfNot(_suit)].Shape = (_min, _max);
 		}

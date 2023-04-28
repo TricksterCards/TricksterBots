@@ -28,7 +28,7 @@ namespace TricksterBots.Bots.Bridge
 
 		private List<BidRuleGroup> _bids;
 
-		public BiddingSummary BiddingSummary { get; private set; }
+		public PairAgreements PairAgreements { get; private set; }
 
 		public BiddingState BiddingState { get; }
 
@@ -76,7 +76,7 @@ namespace TricksterBots.Bots.Bridge
 			this.Role = PositionRole.Opener;    // Best start for any position.  Will change with time.
 			this.Vulnerable = vulnerable;
 			this.PublicHandSummary = new HandSummary();
-			this.BiddingSummary = new BiddingSummary();
+			this.PairAgreements = new PairAgreements();
 			this._bids = new List<BidRuleGroup>();
 
 			if (hand != null)
@@ -127,14 +127,17 @@ namespace TricksterBots.Bots.Bridge
 				}
 			}
 			_bids.Add(bidGroup);
-			(HandSummary hs, BiddingSummary bs) newState = bidGroup.UpdateState(this);
-			var hs = newState.hs;
-			this.PublicHandSummary = newState.hs;
-			this.BiddingSummary = newState.bs;
-			Debug.WriteLine($"   Points shown {hs.OpeningPoints}");
+			// Now we prune any rules that do not 
+
+			if (RepeatUpdatesUntilStable(bidGroup))
+			{
+				BiddingState.UpdateStateFromFirstBid();
+			}
+
+			Debug.WriteLine($"   Points shown {PublicHandSummary.StartingPoints}");
 			foreach (var suit in BasicBidding.BasicSuits)
 			{
-				var shape = hs.Suits[suit].Shape;
+				var shape = PublicHandSummary.Suits[suit].Shape;
 				if (shape.Min > 0 || shape.Max < 13)
 				{
 					Debug.WriteLine($"   {suit} shape {shape.Min} -> {shape.Max}");
@@ -151,12 +154,41 @@ namespace TricksterBots.Bots.Bridge
 			_roleAssignedOffset = _bids.Count;
 		}
 
+		internal bool UpdateBidIndex(int bidIndex, out bool updateHappened)
+		{
+			if (bidIndex >= _bids.Count)
+			{
+				updateHappened = false;
+				return false;
+			}
+			updateHappened = RepeatUpdatesUntilStable(this._bids[bidIndex]);
+			return true;
+		}
 
+		internal bool RepeatUpdatesUntilStable(BidRuleGroup bidGroup)
+		{
+			bool stateChanged = false;
+			for (int i = 0; i < 1000; i++)
+			{
+                stateChanged |= bidGroup.PruneRules(this);
 
-		internal (HandSummary, BiddingSummary) Update(IShowsState showsState, Bid bid)
+                (HandSummary hs, PairAgreements pa) newState = bidGroup.ShowState(this);
+				if (this.PublicHandSummary.Equals(newState.hs) && this.PairAgreements.Equals(newState.pa)) 
+				{ 
+					return stateChanged;
+				}
+				stateChanged = true;
+				this.PublicHandSummary = newState.hs;
+				this.PairAgreements = newState.pa;
+			}
+			Debug.Assert(false); // This is bad - we had over 1000 state changes.  Infinite loop time...
+			return false;	// Seems the best thing to do to avoid repeated
+		}
+
+		internal (HandSummary, PairAgreements) Update(IShowsState showsState, Bid bid)
 		{
 			var hs = new HandSummary(this.PublicHandSummary);
-			var bs = new BiddingSummary(this.BiddingSummary);
+			var bs = new PairAgreements(this.PairAgreements);
 			showsState.Update(bid, this, hs, bs);
 			return (hs, bs);
 		}
@@ -174,7 +206,7 @@ namespace TricksterBots.Bots.Bridge
 			foreach (var ruleGroup in rules.Values)
 			{
 				if ((choice == null || ruleGroup.Priority > priority) &&
-					ruleGroup.Conforms(this, _privateHandSummary, BiddingSummary))
+					ruleGroup.Conforms(this, _privateHandSummary, PairAgreements))
 				{
 					choice = ruleGroup;
 					priority = ruleGroup.Priority;

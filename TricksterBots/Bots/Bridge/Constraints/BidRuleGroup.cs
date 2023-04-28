@@ -69,7 +69,7 @@ namespace TricksterBots.Bots.Bridge
             var contract = ps.BiddingState.GetContract();
             foreach (var rule in rules)
             {
-                if (rule.Bid.IsValid(ps, contract).Valid && rule.Conforms(ps, ps.PublicHandSummary, ps.BiddingSummary))
+                if (rule.Bid.IsValid(ps, contract).Valid && rule.Conforms(ps, ps.PublicHandSummary, ps.PairAgreements))
                 { 
                     if (Choices.ContainsKey(rule.Bid) == false)
                     {
@@ -166,48 +166,46 @@ namespace TricksterBots.Bots.Bridge
 
 
         // Returns true if at least one rule conforms in this group.
-        public bool Conforms(PositionState ps, HandSummary hs, BiddingSummary bs)
+        public bool Conforms(PositionState ps, HandSummary hs, PairAgreements pa)
         {
             foreach (var rule in _rules)
             {
                 // TODO: Hack for now
-                if (rule.Conforms(ps, hs, bs)) { return true; }
+                if (rule.Conforms(ps, hs, pa)) { return true; }
             }
             return false;
         }
 
-        public (HandSummary, BiddingSummary) UpdateState(PositionState ps)
+        public (HandSummary, PairAgreements) ShowState(PositionState ps)
         {
             HandSummary handSummary = null;
-            BiddingSummary biddingSummary = null;
+            PairAgreements PairAgreements = null;
             foreach (var rule in _rules)
             {
-                var newState = rule.ShowState(ps);
+                (HandSummary hs, PairAgreements pa) newState = rule.ShowState(ps);
                 if (handSummary == null)
                 {
-                    handSummary = newState.Item1;
-                    biddingSummary = newState.Item2;
+                    handSummary = newState.hs;
+                    PairAgreements = newState.pa;
                 }
                 else
                 {
-                    handSummary.Union(newState.Item1);
-                    biddingSummary.Union(newState.Item2);
+                    handSummary.Union(newState.hs);
+                    PairAgreements.Union(newState.pa);
                 }
             }
             // After all of the possible shapes of suits have been unioned we can trim the max length of suits
             handSummary.TrimShape();
-            return (handSummary, biddingSummary);
+            return (handSummary, PairAgreements);
         }
 
-        // Returns true if any rule has been removed.  In this case, the state needs to be updated again, and this
-        // method needs to be called again.
-        /*
-		public bool PruneRules(PositionState positionState)
+
+		public bool PruneRules(PositionState ps)
 		{
 			var rules = new List<BidRule>();
 			foreach (BidRule rule in _rules)
 			{
-				if (rule.Conforms(positionState, false))
+				if (rule.Conforms(ps, ps.PublicHandSummary, ps.PairAgreements))
 				{
 					rules.Add(rule);
 				}
@@ -216,11 +214,10 @@ namespace TricksterBots.Bots.Bridge
 			_rules = rules;
 			return true;
 		}
-		*/
-        // Returns true IFF the shown state is modified.
 
+        
         /*
-		public bool UpdateShownState(Direction direction, BiddingSummary biddingSummary)
+		public bool UpdateShownState(Direction direction, PairAgreements PairAgreements)
 		{
 			// TODO: Start with existing shown state
 			// Then create a new shownState object
@@ -228,7 +225,7 @@ namespace TricksterBots.Bots.Bridge
 			bool isFirstRule = true;
 			foreach (var rule in _rules)
 			{
-				var ruleShows = rule.ShownState(direction, biddingSummary);
+				var ruleShows = rule.ShownState(direction, PairAgreements);
 				if (isFirstRule)
 				{
 					compositeShown = ruleShows;

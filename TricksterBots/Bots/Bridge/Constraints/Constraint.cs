@@ -22,13 +22,13 @@ namespace TricksterBots.Bots.Bridge
 {
     public abstract class Constraint
     {
-        public abstract bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs);
+        public abstract bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa);
 
 	}
 
     public interface IShowsState 
     {
-        void Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs);
+        void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa);
 	}  
 }
 

@@ -121,7 +121,7 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Seat.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\ShowsTrump.cs" />
     <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />
-    <Compile Include="Bots\Bridge\Constraints\BiddingSummary.cs" />
+    <Compile Include="Bots\Bridge\Constraints\PairAgreements.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidRule.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidRuleGroup.cs" />
     <Compile Include="Bots\Bridge\Constraints\BiddingState.cs" />

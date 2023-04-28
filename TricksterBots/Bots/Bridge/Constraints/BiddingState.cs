@@ -33,10 +33,10 @@ namespace TricksterBots.Bots.Bridge
         }
 	}
 
-	public class BiddingState
+    public class BiddingState
     {
 
-     //   public Dictionary<Convention, Bidder> Conventions { get; protected set; }
+        //   public Dictionary<Convention, Bidder> Conventions { get; protected set; }
 
         public List<Bidder> DefaultBidders = new List<Bidder>();
 
@@ -62,20 +62,20 @@ namespace TricksterBots.Bots.Bridge
                     Debug.Assert(contract.Bid.CallType == CallType.NotActed);
                     break;
                 }
-				if (bid.CallType == CallType.Pass)
-				{
-					countPasses++;
-					if (countPasses == 4)
-					{
-						contract.Bid = bid;
-						break;
-					}
-					else
-					{
-						countPasses = 0;
-					}
-				}
-				if (bid.CallType == CallType.Bid)
+                if (bid.CallType == CallType.Pass)
+                {
+                    countPasses++;
+                    if (countPasses == 4)
+                    {
+                        contract.Bid = bid;
+                        break;
+                    }
+                    else
+                    {
+                        countPasses = 0;
+                    }
+                }
+                if (bid.CallType == CallType.Bid)
                 {
                     contract.Bid = bid;
                     contract.By = position;
@@ -157,7 +157,7 @@ namespace TricksterBots.Bots.Bridge
 
 
             if (ps.Partner.PartnerNextState != null)
-            { 
+            {
                 bidders.Add(ps.Partner.PartnerNextState());
             }
             bidders.AddRange(DefaultBidders);
@@ -257,6 +257,26 @@ namespace TricksterBots.Bots.Bridge
 
             NextToAct = NextToAct.LeftHandOppenent;
             return bidRule.Bid;
+        }
+
+
+        internal void UpdateStateFromFirstBid()
+        {
+            for (int i = 0; i < 1000; i++)
+            {
+                var position = Dealer;
+                var bidIndex = 0;
+                bool someStateChanged = false;
+                bool posStateChanged;
+                while (position.UpdateBidIndex(bidIndex, out posStateChanged))
+                {
+                    someStateChanged |= posStateChanged;
+                    position = position.LeftHandOppenent;
+                    if (position == Dealer) { bidIndex++; }
+                }
+                if (!someStateChanged) { return; }
+            }
+            Debug.Assert(false);    // In infinite loop of updating but getting nowhere...
         }
     }
 }

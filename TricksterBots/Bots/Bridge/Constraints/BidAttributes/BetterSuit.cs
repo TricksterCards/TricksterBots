@@ -53,7 +53,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
 			var better = bid.SuitIfNot(_better);
 			var worse = bid.SuitIfNot(_worse);
@@ -84,7 +84,7 @@ namespace TricksterBots.Bots.Bridge
 
 		// The worse suit can not be longer than thw better one, and the quality can not be higher, so all we can
 		// do here is simply restrict the maximums for both shape and quality.
-		public void Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
+		public void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
 			var better = bid.SuitIfNot(_better);
 			var worse = bid.SuitIfNot(_worse);

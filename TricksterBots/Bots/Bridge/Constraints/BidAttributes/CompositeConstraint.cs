@@ -16,9 +16,9 @@ namespace TricksterBots.Bots.Bridge
 			this._c2 = c2;
 		}
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
-			return _c1.Conforms(bid, ps, hs, bs) && _c2.Conforms(bid, ps, hs, bs);
+			return _c1.Conforms(bid, ps, hs, pa) && _c2.Conforms(bid, ps, hs, pa);
 		}
 	}
 
@@ -26,15 +26,15 @@ namespace TricksterBots.Bots.Bridge
 	{
 		public CompositeShowsState(Constraint c1, Constraint c2) : base (c1, c2)
 		{ }
-		public void Update(Bid bid, PositionState ps, HandSummary hs, BiddingSummary bs)
+		public void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
 			if (_c1 is IShowsState c1)
 			{
-				c1.Update(bid, ps, hs, bs);
+				c1.Update(bid, ps, hs, pa);
 			}
 			if (_c2 is IShowsState c2)
 			{
-				c2.Update(bid, ps, hs, bs);
+				c2.Update(bid, ps, hs, pa);
 			}
 		}
 	}

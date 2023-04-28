@@ -23,7 +23,7 @@ namespace TricksterBots.Bots.Bridge
             var nullBid = new Bid(CallType.NotActed, BidForce.Nonforcing);
             foreach (var constraint in _constraints)
             {
-                if (!constraint.Conforms(nullBid, ps, ps.PublicHandSummary, ps.BiddingSummary)) { return false; }
+                if (!constraint.Conforms(nullBid, ps, ps.PublicHandSummary, ps.PairAgreements)) { return false; }
             }
             return true;
         }

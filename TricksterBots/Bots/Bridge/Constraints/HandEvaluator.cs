@@ -24,6 +24,7 @@ namespace TricksterBots.Bots.Bridge
 				case 8:
 				case 9:
 					q = SuitQuality.Excellent; break;
+				case 3:
 				case 4:
 				case 5:
 				case 6:
@@ -38,11 +39,13 @@ namespace TricksterBots.Bots.Bridge
 		public static void Evaluate(Hand hand, HandSummary hs)
 		{
 			var p = BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
-			hs.OpeningPoints = (p, p);
+			hs.StartingPoints = (p, p);
 			var counts = BasicBidding.CountsBySuit(hand);
 			hs.IsBalanced = BasicBidding.IsBalanced(hand);
 			hs.IsFlat = BasicBidding.Is4333(counts);
-			foreach (Suit suit in BasicBidding.BasicSuits)
+            hs.CountAces = hand.Count(c => c.rank == Rank.Ace);
+			hs.CountKings = hand.Count(c => c.rank == Rank.King);
+            foreach (Suit suit in BasicBidding.BasicSuits)
 			{
 				var dp = BasicBidding.DummyPoints(hand, suit);
 				var c = counts[suit];
@@ -51,12 +54,17 @@ namespace TricksterBots.Bots.Bridge
 				hs.Suits[suit].DummyPoints = (dp, dp);
 				hs.Suits[suit].LongHandPoints = (p, p);
 				hs.Suits[suit].Quality = (q, q);
+				var keyCards = (int)hs.CountAces;
+				if (hand.Contains(new Card(suit, Rank.King)))
+				{
+					keyCards += 1;
+				}
+				hs.Suits[suit].Keycards = (keyCards, keyCards);
+				hs.Suits[suit].HaveQueen = hand.Contains(new Card(suit, Rank.Queen));
 			}
 			hs.Suits[Suit.Unknown].Shape = (0, 0);
 			hs.Suits[Suit.Unknown].DummyPoints = (p, p);
 			hs.Suits[Suit.Unknown].LongHandPoints = (p, p);
-			hs.CountAces = hand.Count(c => c.rank == Rank.Ace);
-			hs.CountKings = hand.Count(c => c.rank == Rank.King);
 		}
 	}
 }
