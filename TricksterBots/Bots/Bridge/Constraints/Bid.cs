@@ -162,7 +162,7 @@ namespace TricksterBots.Bots.Bridge
 			int thisLevel = this.RawLevel;
 			int contractLevel = contract.Bid.RawLevel;
 			if (thisLevel <= contractLevel) { return (false, 0); }
-			return (true, (thisLevel - contractLevel) % 5);
+			return (true, (thisLevel - contractLevel) / 5);
 		}
     }
 

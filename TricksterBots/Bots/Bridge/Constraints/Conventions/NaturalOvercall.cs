@@ -16,7 +16,7 @@ namespace TricksterBots.Bots.Bridge
         {
             this.BidRules = new BidRule[]
             {
-                Nonforcing(CallType.Pass, Points(LessThanOvercall)),
+                Nonforcing(CallType.Pass, DefaultPriority - 100, Points(LessThanOvercall)),
 
                 Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(5, 11)),
                 Nonforcing(1, Suit.Hearts, Points(Overcall1Level), Shape(5, 11)),
@@ -31,7 +31,7 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(2, Suit.Diamonds, Jump(0), Points(OvercallStrong2Level), Shape(5, 11)),
                 Nonforcing(2, Suit.Diamonds, Jump(1), Points(OvercallWeak2Level), Shape(6), GoodSuit()),
 
-                Nonforcing(2, Suit.Hearts, Jump(0), Points(OvercallStrong2Level), Shape(5)),
+                Nonforcing(2, Suit.Hearts, Jump(0), Points(OvercallStrong2Level), Shape(5, 11)),
                 Nonforcing(2, Suit.Hearts, Jump(1), Points(OvercallWeak2Level), Shape(6), GoodSuit()),
 
                 Nonforcing(2, Suit.Spades, Jump(0), Points(OvercallStrong2Level), Shape(5, 11)),

@@ -17,7 +17,8 @@ namespace TricksterBots.Bots.Bridge
 		{
 			_relativePosition = relativePosition;
 			_constraint = constraint;
-			if (constraint as IShowsState != null)
+            this.OnceAndDone = constraint.OnceAndDone;
+            if (constraint as IShowsState != null)
 			{
 				throw new ArgumentException();
 			}

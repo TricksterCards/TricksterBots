@@ -13,6 +13,7 @@ namespace TricksterBots.Bots.Bridge
 		public JumpBid(params int[] jumpLevels)
 		{
 			this._jumpLevels = jumpLevels;
+			this.OnceAndDone = true;
 		}
 
 		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)

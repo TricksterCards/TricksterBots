@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace TricksterBots.Bots.Bridge
 		{
 			this._c1 = c1;
 			this._c2 = c2;
+			Debug.Assert(c1.OnceAndDone == c2.OnceAndDone);
+			this.OnceAndDone = c1.OnceAndDone;
 		}
 
 		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)

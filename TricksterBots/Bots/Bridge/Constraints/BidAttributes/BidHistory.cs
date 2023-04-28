@@ -25,6 +25,7 @@ namespace TricksterBots.Bots.Bridge
 			this._level = level;
 			this._suit = suit;
 			this._desiredValue = desiredValue;
+			this.OnceAndDone = true;
 		}
 
 		public override bool Conforms(Bid bid,PositionState ps, HandSummary hs, PairAgreements pa) 

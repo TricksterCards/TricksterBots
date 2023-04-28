@@ -14,6 +14,7 @@ namespace TricksterBots.Bots.Bridge
         {
             Debug.Assert(round > 0);
             this._bidRound = round;
+            this.OnceAndDone = true;
         }
 
         public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)

@@ -13,6 +13,7 @@ namespace TricksterBots.Bots.Bridge
 		public Seat(params int[] seats)
 		{
 			this.seats = seats;
+			this.OnceAndDone = true;
 		}
 
 		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)

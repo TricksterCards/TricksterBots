@@ -69,7 +69,7 @@ namespace TricksterBots.Bots.Bridge
             var contract = ps.BiddingState.GetContract();
             foreach (var rule in rules)
             {
-                if (rule.Bid.IsValid(ps, contract).Valid && rule.Conforms(ps, ps.PublicHandSummary, ps.PairAgreements))
+                if (rule.Bid.IsValid(ps, contract).Valid && rule.Conforms(true, ps, ps.PublicHandSummary, ps.PairAgreements))
                 { 
                     if (Choices.ContainsKey(rule.Bid) == false)
                     {
@@ -170,14 +170,17 @@ namespace TricksterBots.Bots.Bridge
         {
             foreach (var rule in _rules)
             {
-                // TODO: Hack for now
-                if (rule.Conforms(ps, hs, pa)) { return true; }
+                if (rule.Conforms(false, ps, hs, pa)) { return true; }
             }
             return false;
         }
 
         public (HandSummary, PairAgreements) ShowState(PositionState ps)
         {
+            // TODO: This is a hack. Need to understand what's going on here.  But for now if empty rules
+            // just return the current state...
+            if (_rules.Count == 0) { return (ps.PublicHandSummary, ps.PairAgreements); }
+
             HandSummary handSummary = null;
             PairAgreements PairAgreements = null;
             foreach (var rule in _rules)
@@ -205,7 +208,7 @@ namespace TricksterBots.Bots.Bridge
 			var rules = new List<BidRule>();
 			foreach (BidRule rule in _rules)
 			{
-				if (rule.Conforms(ps, ps.PublicHandSummary, ps.PairAgreements))
+				if (rule.Conforms(false, ps, ps.PublicHandSummary, ps.PairAgreements))
 				{
 					rules.Add(rule);
 				}

@@ -38,16 +38,20 @@ namespace TricksterBots.Bots.Bridge
 		}
 		public static void Evaluate(Hand hand, HandSummary hs)
 		{
-			var p = BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
+			// TODO: This is a hack but trying to get NT opening to work properly.  If balanced and in NT
+			// opening range then don't add length points
+			var balanced = BasicBidding.IsBalanced(hand);
+			var p = BasicBidding.ComputeHighCardPoints(hand);
+			if (!balanced || p < 15) { p += BasicBidding.ComputeDistributionPoints(hand); }
 			hs.StartingPoints = (p, p);
 			var counts = BasicBidding.CountsBySuit(hand);
-			hs.IsBalanced = BasicBidding.IsBalanced(hand);
+			hs.IsBalanced = balanced;
 			hs.IsFlat = BasicBidding.Is4333(counts);
             hs.CountAces = hand.Count(c => c.rank == Rank.Ace);
 			hs.CountKings = hand.Count(c => c.rank == Rank.King);
             foreach (Suit suit in BasicBidding.BasicSuits)
 			{
-				var dp = BasicBidding.DummyPoints(hand, suit);
+				var dp = p + BasicBidding.DummyPoints(hand, suit);
 				var c = counts[suit];
 				var q = Quality(hand, suit);
 				hs.Suits[suit].Shape = (c, c);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -222,6 +223,22 @@ namespace TestBots
             Assert.AreEqual(test.expectedBid, suggestion,
                 $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})"
             );
+
+            // NOW TRY OUR HACKED BID THINGING....
+            var historyStrings = new List<string>();
+            foreach (var b in test.bidHistory)
+            {
+                historyStrings.Add(BidString(b));
+            }
+            // TODO: Hack to just pass thie stuff on to the bid test....
+            Hand[] hands = { null, null, null, null };
+            var i = historyStrings.Count % 4;
+            hands[i] = test.hand;
+            var bHack = new BiddingState(hands, Direction.North, "EW");
+            Debug.WriteLine($"**** {test.type} ****");
+       
+            Bid bid = bHack.GetHackBid(historyStrings.ToArray(), BidString(test.expectedBid));
+
         }
 
         private static void RunPlayTest(BasicTests.BasicTest test)

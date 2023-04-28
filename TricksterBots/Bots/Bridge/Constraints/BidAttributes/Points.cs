@@ -19,10 +19,10 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-        public HasPoints(Suit? trumpSuit, int min, int max)
+        public HasPoints(Suit? trumpSuit, int min, int max, bool countAsDummy)
         {
             // TODO:  Completely broken. But OK for now.  Need to rethink initiaializer
-            this._countAsDummy = false;
+            this._countAsDummy = countAsDummy;
             this._trumpSuit = trumpSuit;
             this._min = min;
             this._max = max;
@@ -45,7 +45,7 @@ namespace TricksterBots.Bots.Bridge
 
     class ShowsPoints : HasPoints, IShowsState
     {
-		public ShowsPoints(Suit? trumpSuit, int min, int max) : base(trumpSuit, min, max) { }
+		public ShowsPoints(Suit? trumpSuit, int min, int max, bool countAsDummy) : base(trumpSuit, min, max, countAsDummy) { }
 
 		void IShowsState.Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{

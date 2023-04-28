@@ -16,6 +16,7 @@ namespace TricksterBots.Bots.Bridge
         {
             _role = role;
             _round = round;
+            this.OnceAndDone = true;
         }
 
         public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)

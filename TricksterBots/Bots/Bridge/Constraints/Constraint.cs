@@ -20,8 +20,11 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
+
+
     public abstract class Constraint
     {
+        public bool OnceAndDone = false;
         public abstract bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa);
 
 	}

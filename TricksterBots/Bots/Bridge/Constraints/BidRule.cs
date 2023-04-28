@@ -25,11 +25,14 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public bool Conforms(PositionState ps, HandSummary hs, PairAgreements pa)
+		public bool Conforms(bool firstInvocation, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
 			foreach (Constraint constraint in _constraints)
 			{
-				if (!constraint.Conforms(Bid, ps, hs, pa)) { return false; }
+				if (firstInvocation || constraint.OnceAndDone == false)
+				{
+					if (!constraint.Conforms(Bid, ps, hs, pa)) { return false; }
+				}
 			}
 			return true;
 		}

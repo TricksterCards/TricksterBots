@@ -138,13 +138,15 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public static Constraint Points((int min, int max) range) { return new ShowsPoints(null, range.min, range.max); }
+		public static Constraint Points((int min, int max) range) {
+			return new ShowsPoints(null, range.min, range.max, false); }
 
-		public static Constraint DummyPoints((int min, int max) range) { return new ShowsPoints(null, range.min, range.max); }
+		public static Constraint DummyPoints((int min, int max) range) { 
+			return new ShowsPoints(null, range.min, range.max, true); }
 
 		public static Constraint DummyPoints(Suit? trumpSuit, (int min, int max) range)
 		{
-			return new ShowsPoints(trumpSuit, range.min, range.max);
+			return new ShowsPoints(trumpSuit, range.min, range.max, true);
 		}
 
 		public static Constraint Shape(int min) { return new ShowsShape(null, min, min); }
@@ -238,7 +240,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint DummyPoints(Suit trumpSuit, (int min, int max) range)
 		{
-			return new ShowsPoints(trumpSuit, range.min, range.max);
+			return new ShowsPoints(trumpSuit, range.min, range.max, true);
 		}
 
 		public static Constraint LongestMajor(int max)
