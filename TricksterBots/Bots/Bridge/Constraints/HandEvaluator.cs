@@ -42,7 +42,8 @@ namespace TricksterBots.Bots.Bridge
 			// opening range then don't add length points
 			var balanced = BasicBidding.IsBalanced(hand);
 			var p = BasicBidding.ComputeHighCardPoints(hand);
-			if (!balanced || p < 15) { p += BasicBidding.ComputeDistributionPoints(hand); }
+			hs.HighCardPoints = (p, p);
+			p += BasicBidding.ComputeDistributionPoints(hand); 
 			hs.StartingPoints = (p, p);
 			var counts = BasicBidding.CountsBySuit(hand);
 			hs.IsBalanced = balanced;

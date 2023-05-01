@@ -239,6 +239,9 @@ namespace TestBots
        
             Bid bid = bHack.GetHackBid(historyStrings.ToArray(), BidString(test.expectedBid));
 
+       //     Assert.AreEqual(BidString(test.expectedBid), bid.ToString(),
+         //       $"NEW TEST '{test.type}' suggested {bid.ToString()} but expected {BidString(test.expectedBid)}");
+
         }
 
         private static void RunPlayTest(BasicTests.BasicTest test)

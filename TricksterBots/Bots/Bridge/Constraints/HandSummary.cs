@@ -12,8 +12,6 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
 
-
-
 	public class HandSummary: IEquatable<HandSummary>
 	{
 
@@ -92,6 +90,7 @@ namespace TricksterBots.Bots.Bridge
             }
         }
 
+		public (int Min, int Max) HighCardPoints { get; set; }
 		public (int Min, int Max) StartingPoints { get; set; }
 
 		public bool? IsBalanced { get; set; }
@@ -107,6 +106,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public HandSummary()
 		{
+			this.HighCardPoints = (0, 40);
 			this.StartingPoints = (0, int.MaxValue);
 			this.IsBalanced = null;
 			this.IsFlat = null;
@@ -121,6 +121,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public HandSummary(HandSummary other)
 		{
+			this.HighCardPoints = other.HighCardPoints;
 			this.StartingPoints = other.StartingPoints;
 			this.IsBalanced = other.IsBalanced;
 			this.IsFlat = other.IsFlat;
@@ -152,6 +153,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public void Union(HandSummary other)
 		{
+			this.HighCardPoints = UnionRange(this.HighCardPoints, other.HighCardPoints);
 			this.StartingPoints = UnionRange(this.StartingPoints, other.StartingPoints);
 			this.IsBalanced = UnionBool(this.IsBalanced, other.IsBalanced);
 			this.IsFlat = UnionBool(this.IsFlat, other.IsFlat);
@@ -199,6 +201,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public void Intersect(HandSummary other)
 		{
+			this.HighCardPoints = IntersectRange(this.HighCardPoints, other.HighCardPoints);
 			this.StartingPoints = IntersectRange(this.StartingPoints, other.StartingPoints);
 			this.IsBalanced = IntersectBool(this.IsBalanced, other.IsBalanced);
 			this.IsFlat = IntersectBool(this.IsFlat, other.IsFlat);
@@ -212,7 +215,8 @@ namespace TricksterBots.Bots.Bridge
 
         public bool Equals(HandSummary other)
         {
-			if (this.StartingPoints != other.StartingPoints ||
+			if (this.HighCardPoints != other.HighCardPoints ||
+				this.StartingPoints != other.StartingPoints ||
 				this.IsBalanced != other.IsBalanced ||
 				this.IsFlat != other.IsFlat ||
 				this.CountAces != other.CountAces ||

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,14 +16,15 @@ namespace TricksterBots.Bots.Bridge
         protected int _min;
         protected int _max;
         protected Suit? _trumpSuit;
-        protected bool _countAsDummy;
+        protected PointType _pointType;
+
+        public enum PointType { HighCard, Starting, Dummy, LongHand }
 
 
-
-        public HasPoints(Suit? trumpSuit, int min, int max, bool countAsDummy)
+        public HasPoints(Suit? trumpSuit, int min, int max, PointType pointType)
         {
             // TODO:  Completely broken. But OK for now.  Need to rethink initiaializer
-            this._countAsDummy = countAsDummy;
+            this._pointType = pointType;
             this._trumpSuit = trumpSuit;
             this._min = min;
             this._max = max;
@@ -31,8 +33,20 @@ namespace TricksterBots.Bots.Bridge
         // Returns the points for the hand, adjusted for dummy points if appropriate.
         protected (int, int) GetPoints(Bid bid, HandSummary handSummary)
         {
-            if (!_countAsDummy) { return handSummary.StartingPoints; }
-            return handSummary.Suits[bid.SuitIfNot(_trumpSuit)].DummyPoints;
+            switch (_pointType)
+            {
+                case PointType.HighCard:
+                    return handSummary.HighCardPoints;
+                case PointType.Starting:
+                    return handSummary.StartingPoints;
+                case PointType.Dummy:
+                    return handSummary.Suits[bid.SuitIfNot(_trumpSuit)].DummyPoints;
+                case PointType.LongHand:
+                    return handSummary.Suits[bid.SuitIfNot(_trumpSuit)].LongHandPoints;
+                default:
+                    Debug.Assert(false);
+                    return (0, 0);
+            }
         }
 
 
@@ -45,18 +59,28 @@ namespace TricksterBots.Bots.Bridge
 
     class ShowsPoints : HasPoints, IShowsState
     {
-		public ShowsPoints(Suit? trumpSuit, int min, int max, bool countAsDummy) : base(trumpSuit, min, max, countAsDummy) { }
+		public ShowsPoints(Suit? trumpSuit, int min, int max, PointType pointType) : base(trumpSuit, min, max, pointType) { }
 
 		void IShowsState.Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
-			if (_countAsDummy)
-			{
-				hs.Suits[bid.SuitIfNot(_trumpSuit)].DummyPoints = (_min, _max);
-			}
-			else
-			{
-				hs.StartingPoints = (_min, _max);
-			}
+            switch (_pointType)
+            {
+                case PointType.HighCard:
+                    hs.HighCardPoints = (_min, _max);
+                    break;
+                case PointType.Starting:
+                    hs.StartingPoints = (_min, _max);
+                    break;
+                case PointType.Dummy:
+                    hs.Suits[bid.SuitIfNot(_trumpSuit)].DummyPoints = (_min, _max);
+                    break;
+                case PointType.LongHand:
+                    hs.Suits[bid.SuitIfNot(_trumpSuit)].LongHandPoints = (_min, _max);
+                    break;
+                default:
+                    Debug.Assert(false);
+                    break;
+            }
 		}
 	}
 

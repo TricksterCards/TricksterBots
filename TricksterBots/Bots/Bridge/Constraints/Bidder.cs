@@ -138,15 +138,31 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public static Constraint Points((int min, int max) range) {
-			return new ShowsPoints(null, range.min, range.max, false); }
+		public static Constraint HighCardPoints(int min, int max)
+		{ return new ShowsPoints(null, min, max, HasPoints.PointType.HighCard);  }
+		public static Constraint HighCardPoints((int min, int max) range)
+		{
+			return HighCardPoints(range.min, range.max);
+		}
 
+		public static Constraint Points(int min, int max)
+		{
+			return new ShowsPoints(null, min, max, HasPoints.PointType.Starting);
+		}
+
+		public static Constraint Points((int min, int max) range) {
+			return Points(range.min, range.max); }
+
+		public static Constraint DummyPoints(int min, int max)
+		{
+			return new ShowsPoints(null, min, max, HasPoints.PointType.Dummy);
+		}
 		public static Constraint DummyPoints((int min, int max) range) { 
-			return new ShowsPoints(null, range.min, range.max, true); }
+			return DummyPoints(range.min, range.max); }
 
 		public static Constraint DummyPoints(Suit? trumpSuit, (int min, int max) range)
 		{
-			return new ShowsPoints(trumpSuit, range.min, range.max, true);
+			return new ShowsPoints(trumpSuit, range.min, range.max, HasPoints.PointType.Dummy);
 		}
 
 		public static Constraint Shape(int min) { return new ShowsShape(null, min, min); }
@@ -212,6 +228,18 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint Quality(Suit suit, SuitQuality min, SuitQuality max)
 		{ return new ShowsQuality(suit, min, max); }
 
+		public static Constraint And(Constraint c1, Constraint c2)
+		{
+			if (c1 is IShowsState)
+			{
+				Debug.Assert(c2 is IShowsState);
+				return new CompositeShowsState(c1, c2);
+			}
+			Debug.Assert(!(c2 is IShowsState));
+			Debug.Assert(c1.OnceAndDone == c2.OnceAndDone);
+			return new CompositeConstraint(c1, c2);
+
+		}
 
 		// Suit quality is good or better
 		public static Constraint GoodSuit(Suit? suit = null)
@@ -240,7 +268,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint DummyPoints(Suit trumpSuit, (int min, int max) range)
 		{
-			return new ShowsPoints(trumpSuit, range.min, range.max, true);
+			return new ShowsPoints(trumpSuit, range.min, range.max, HasPoints.PointType.Dummy);
 		}
 
 		public static Constraint LongestMajor(int max)

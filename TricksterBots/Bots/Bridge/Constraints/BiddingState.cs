@@ -143,7 +143,7 @@ namespace TricksterBots.Bots.Bridge
             this.Conventions[Convention.Transfer] = new NaturalOvercall(); // TODO: HACK HACK HACK HACK!
             */
             this.DefaultBidders.Add(Natural.Bidder());
-            this.DefaultBidders.Add(NoTrumpConventions.Bidder());
+            this.DefaultBidders.Add(NoTrumpConventions.Bidder(NoTrumpBidder.NTType.Open1NT));
             this.DefaultBidders.Add(Strong.Bidder());
         }
 
