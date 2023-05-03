@@ -12,7 +12,7 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
     // TODO: Line this up with trickser conventions, but re-declare for now for flexibility...
-    public enum Convention { Natural, StrongOpen, NT, Stayman, Transfer };
+    public enum Convention { Natural, StrongOpen, NT, Stayman, Transfer, TakeoutDouble };
 
 
 
@@ -236,7 +236,7 @@ namespace TricksterBots.Bots.Bridge
                         choice.Add(rule);
                     }
                     NextToAct.MakeBid(choice);
-                    NextToAct = NextToAct.LeftHandOppenent;
+                    NextToAct = NextToAct.LeftHandOpponent;
                 }
             }
             // Now we are actually ready to look at a hand and do somethihg
@@ -255,7 +255,7 @@ namespace TricksterBots.Bots.Bridge
             }
             Debug.WriteLine("");
 
-            NextToAct = NextToAct.LeftHandOppenent;
+            NextToAct = NextToAct.LeftHandOpponent;
             return bidRule.Bid;
         }
 
@@ -271,7 +271,7 @@ namespace TricksterBots.Bots.Bridge
                 while (position.UpdateBidIndex(bidIndex, out posStateChanged))
                 {
                     someStateChanged |= posStateChanged;
-                    position = position.LeftHandOppenent;
+                    position = position.LeftHandOpponent;
                     if (position == Dealer) { bidIndex++; }
                 }
                 if (!someStateChanged) { return; }

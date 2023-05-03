@@ -28,7 +28,7 @@ namespace TricksterBots.Bots.Bridge
 		private PositionState GetPosition(PositionState positionState)
 		{
 			if (_relativePosition == RelativePosition.Partner) { return positionState.Partner; }
-			if (_relativePosition == RelativePosition.LeftHandOpponent) { return positionState.LeftHandOppenent; }
+			if (_relativePosition == RelativePosition.LeftHandOpponent) { return positionState.LeftHandOpponent; }
 			Debug.Assert(_relativePosition == RelativePosition.RightHandOpponent);
 			return positionState.RightHandOpponent;
 		}

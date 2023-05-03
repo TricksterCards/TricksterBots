@@ -26,11 +26,11 @@ namespace TricksterBots.Bots.Bridge
 
 		public IEnumerable<RedirectRule> Redirects { get; protected set; } = null;
 
-        public BidderFactory NextConventionState { get; protected set; }
+		public BidderFactory NextConventionState { get; protected set; }
 
 
-        // Convention rules..
-        public ConventionRule ConventionRule(params Constraint[] constraints)
+		// Convention rules..
+		public ConventionRule ConventionRule(params Constraint[] constraints)
 		{
 			return new ConventionRule(constraints);
 		}
@@ -48,7 +48,7 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-        public Bidder(Convention convention, int defaultPriority)
+		public Bidder(Convention convention, int defaultPriority)
 		{
 			this.Convention = convention;
 			this.DefaultPriority = defaultPriority;
@@ -139,7 +139,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 		public static Constraint HighCardPoints(int min, int max)
-		{ return new ShowsPoints(null, min, max, HasPoints.PointType.HighCard);  }
+		{ return new ShowsPoints(null, min, max, HasPoints.PointType.HighCard); }
 		public static Constraint HighCardPoints((int min, int max) range)
 		{
 			return HighCardPoints(range.min, range.max);
@@ -157,7 +157,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return new ShowsPoints(null, min, max, HasPoints.PointType.Dummy);
 		}
-		public static Constraint DummyPoints((int min, int max) range) { 
+		public static Constraint DummyPoints((int min, int max) range) {
 			return DummyPoints(range.min, range.max); }
 
 		public static Constraint DummyPoints(Suit? trumpSuit, (int min, int max) range)
@@ -191,21 +191,21 @@ namespace TricksterBots.Bots.Bridge
 			return new BidHistory(CallType.Pass, 0, Suit.Unknown, desired);
 		}
 
-	//	public static Constraint PartnerBid(Suit suit, bool desired = true)
-//		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(suit, desired)); }
-//		public static Constraint PartnerBid(int level, Suit suit, bool desired = true)
-//		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(level, suit, desired)); }
+		//	public static Constraint PartnerBid(Suit suit, bool desired = true)
+		//		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(suit, desired)); }
+		//		public static Constraint PartnerBid(int level, Suit suit, bool desired = true)
+		//		{ return new PositionProxy(PositionProxy.RelativePosition.Partner, new BidHistory(level, suit, desired)); }
 
-	//	public static Constraint PartnerShape(int count)
-	//	{
-	//		return PartnerShape(null, count, count);
-	//	}
+		//	public static Constraint PartnerShape(int count)
+		//	{
+		//		return PartnerShape(null, count, count);
+		//	}
 
 
-	//	public static Constraint PartnerShape(Suit? suit, int min, int max)
-	//	{
-	//		return new PositionProxy(PositionProxy.RelativePosition.Partner, new HasShape(suit, min, max));
-	//	}
+		//	public static Constraint PartnerShape(Suit? suit, int min, int max)
+		//	{
+		//		return new PositionProxy(PositionProxy.RelativePosition.Partner, new HasShape(suit, min, max));
+		//	}
 
 		public static Constraint Partner(Constraint constraint)
 		{
@@ -219,7 +219,11 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint HasShape(int count)
 		{
-			return new HasShape(null, count, count);
+			return HasShape(count, count);
+		}
+		public static Constraint HasShape(int min, int max)
+		{
+			return new HasShape(null, min, max);
 		}
 
 		public static Constraint Quality(SuitQuality min, SuitQuality max) {
@@ -250,11 +254,11 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint Better(Suit better, Suit worse) { return new ShowsBetterSuit(better, worse, worse, false); }
 
-		public static Constraint BetterOrEqual(Suit better, Suit worse) { return new ShowsBetterSuit(better, worse, better, false);  }
+		public static Constraint BetterOrEqual(Suit better, Suit worse) { return new ShowsBetterSuit(better, worse, better, false); }
 
 		public static Constraint BetterThan(Suit worse) { return new ShowsBetterSuit(null, worse, worse, false); }
 
-		public static Constraint BetterOrEqualTo(Suit worse) { return new ShowsBetterSuit(null, worse, null, false);  }
+		public static Constraint BetterOrEqualTo(Suit worse) { return new ShowsBetterSuit(null, worse, null, false); }
 
 
 		public static Constraint LongerThan(Suit shorter) { return new ShowsBetterSuit(null, shorter, shorter, true); }
@@ -285,7 +289,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return new Role(role, round);
 		}
-		
+
 		public static Constraint BidRound(int round)
 		{
 			return new BidRound(round);
@@ -306,6 +310,35 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return new JumpBid(jumpLevels);
 		}
+
+		//	public static ConventionRule ConventionRule(params Constraint[] constraints)
+		//	{
+		//		return new ConventionRule(constraints);
+		//		}
+
+		//	TODO: Need to implement this one...
+		public Constraint CueBid(bool desiredValue = true)
+		{
+			return CueBid(null, desiredValue);
+		}
+
+		public Constraint CueBid(Suit? suit, bool desiredValue = true)
+		{
+			return new CueBid(suit, desiredValue);
+		}
+
+		public Constraint BestSuit(Suit? suit = null)
+		{
+			// TODO: NEED CODE!!!
+			throw new NotImplementedException();
+		}
+
+		// For this to be true, the partner must have shown the suit, AND this position must have 
+		// at least minSupport cards in support
+	//	public Constraint CanSupport(bool desiredValue = true, int minSupport = 3)
+//		{ 
+//			throw new NotImplementedException(); 
+	//	}
 
 	}
 };

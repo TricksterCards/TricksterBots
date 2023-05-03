@@ -144,7 +144,7 @@ namespace TricksterBots.Bots.Bridge
 			if (this.CallType == CallType.Double)
 			{
 				if (!contract.Bid.IsBid || contract.Doubled) { return (false, 0); }
-				return ((position.LeftHandOppenent == contract.By || position.RightHandOpponent == contract.By), 0);
+				return ((position.LeftHandOpponent == contract.By || position.RightHandOpponent == contract.By), 0);
 			}
 			if (this.CallType == CallType.Redouble)
 			{

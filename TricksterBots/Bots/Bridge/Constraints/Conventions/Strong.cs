@@ -54,6 +54,7 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Clubs, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(3, Suit.Diamonds, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
             };
+            this.NextConventionState = () => new StrongRebid();
         }
     }
    
@@ -61,11 +62,10 @@ namespace TricksterBots.Bots.Bridge
     {
         public StrongRebid() : base()
         {
-            this.Redirects = new RedirectRule[]
-            {
-                // TODO: Change this to static function in Bidder evenentually...
-                new RedirectRule(() => new StrongRebidPositiveResponse(), LastBid(2, Suit.Diamonds, false))
-            };
+     //       this.Redirects = new RedirectRule[]
+      //      {
+          //        new RedirectRule(() => new StrongRebidPositiveResponse(), LastBid(2, Suit.Diamonds, false))
+        //    };
             this.BidRules = new BidRule[]
             {
                 Forcing(2, Suit.Hearts, Shape(5, 11)),

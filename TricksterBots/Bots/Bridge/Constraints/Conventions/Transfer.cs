@@ -35,10 +35,8 @@ namespace TricksterBots.Bots.Bridge
 
 				// TODO: Solid long minors are lots of tricks.  Need logic for those....
 
-				Forcing(2, Suit.Spades, Points(ResponderRange.LessThanInvite), Shape(Suit.Clubs, 6), GoodSuit(Suit.Clubs)),
-				Forcing(2, Suit.Spades, Points(ResponderRange.LessThanInvite), Shape(Suit.Clubs, 7, 11)),
-				Forcing(2, Suit.Spades, Points(ResponderRange.LessThanInvite), Shape(Suit.Diamonds, 6), GoodSuit(Suit.Diamonds)),
-				Forcing(2, Suit.Spades, Points(ResponderRange.LessThanInvite), Shape(Suit.Diamonds, 7, 11)),
+				Forcing(2, Suit.Spades, Points(ResponderRange.LessThanInvite), Shape(Suit.Clubs, 6, 11)),
+				Forcing(2, Suit.Spades, Points(ResponderRange.LessThanInvite), Shape(Suit.Diamonds, 6, 11)),
 
 			};
 			this.NextConventionState = () => new AcceptTransfer(type);

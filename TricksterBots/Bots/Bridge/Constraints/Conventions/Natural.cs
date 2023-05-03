@@ -40,6 +40,13 @@ namespace TricksterBots.Bots.Bridge
         public (int, int) OvercallWeak2Level = (7, 11);
         public (int, int) OvercallWeak3Level = (7, 11);
 
+        public (int, int) AdvanceNewSuit1Level = (6, 40); // TODO: Highest level for this?
+        public (int, int) AdvanceNewSuit2Level = (11, 40); // Same here...
+        public (int, int) AdvanceTo1NT = (6, 10);
+        public (int, int) AdvanceWeakJumpRaise = (0, 9);
+        public (int, int) AdvanceRaise = (6, 9);
+        public (int, int) AdvanceCuebid = (10, 40);
+
         public BidRule[] HighLevelHugeHands()
         {
             BidRule[] bids =

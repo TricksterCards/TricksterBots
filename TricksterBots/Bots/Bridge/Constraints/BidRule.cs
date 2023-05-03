@@ -16,7 +16,7 @@ namespace TricksterBots.Bots.Bridge
 		public Bid Bid { get; }
 		public int Priority { get; }
 
-		private Constraint[] _constraints;
+		private IEnumerable<Constraint> _constraints;
 		public BidRule(Bid bid, int priority, params Constraint[] constraints)
 		{
 			this.Bid = bid;
@@ -24,6 +24,11 @@ namespace TricksterBots.Bots.Bridge
 			this._constraints = constraints;
 		}
 
+
+		public void AddConstraint(Constraint constraint)
+		{
+			this._constraints = this._constraints.Append(constraint);
+		}
 
 		public bool Conforms(bool firstInvocation, PositionState ps, HandSummary hs, PairAgreements pa)
 		{

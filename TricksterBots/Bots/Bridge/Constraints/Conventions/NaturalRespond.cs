@@ -202,8 +202,7 @@ namespace TricksterBots.Bots.Bridge
 
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11)),
 			};
-			bids.Concat(NewMinorSuit2Level(Suit.Hearts));
-			this.BidRules = bids;
+			this.BidRules = bids.Concat(NewMinorSuit2Level(Suit.Hearts));
 
         }
 	}
@@ -234,8 +233,7 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(4, Suit.Spades, DummyPoints(Weak4Level), Shape(5, 8))
             };
-			bids.Concat(NewMinorSuit2Level(Suit.Spades));
-			this.BidRules = bids;
+			this.BidRules = bids.Concat(NewMinorSuit2Level(Suit.Spades));			this.BidRules = bids;
 			// TODO: Next state here...
 		}
 

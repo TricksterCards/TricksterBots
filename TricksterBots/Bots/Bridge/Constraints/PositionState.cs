@@ -61,7 +61,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public PositionState Partner => BiddingState.Positions[BasicBidding.Partner(Direction)];
 		public PositionState RightHandOpponent => BiddingState.Positions[BasicBidding.RightHandOpponent(Direction)];
-		public PositionState LeftHandOppenent => BiddingState.Positions[BasicBidding.LeftHandOpponent(Direction)];
+		public PositionState LeftHandOpponent => BiddingState.Positions[BasicBidding.LeftHandOpponent(Direction)];
 
 
 		// TODO: Potentially LHO Interferred...  Maybe just in 
@@ -117,7 +117,7 @@ namespace TricksterBots.Bots.Bridge
 					AssignRole(PositionRole.Opener);
 					Partner.AssignRole(PositionRole.Responder);
 					// The opponenents are now 
-					LeftHandOppenent.Role = PositionRole.Overcaller;
+					LeftHandOpponent.Role = PositionRole.Overcaller;
 					RightHandOpponent.Role = PositionRole.Overcaller;
 				}
 				else if (this.Role == PositionRole.Overcaller)
