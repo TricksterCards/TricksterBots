@@ -235,6 +235,20 @@ namespace Trickster.Bots
                     return lowestValuableCard;
             }
 
+            //  if this is the first trick and we're defending in call-for-partner, play our lowest, least valuable card
+            if (IsCallPartner && !IsPitching(player) && !IsCalledPartner(player) && new Hand(player.Hand).Count == 6)
+            {
+                var lowestLeastValuableCard = legalCards
+                    .Where(c => !IsCardHigh(c, legalCards))
+                    .OrderBy(c => !options.lowGoesToTaker && c.rank == Rank.Two ? 0 : CardPoints(c))
+                    .ThenBy(RankSort)
+                    .FirstOrDefault();
+
+                //  if all of our cards are boss, just fall through to normal logic (doesn't matter what we play)
+                if (lowestLeastValuableCard != null)
+                    return lowestLeastValuableCard;
+            }
+
             //  leading
             if (trick.Count == 0)
             {
