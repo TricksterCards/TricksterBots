@@ -215,9 +215,8 @@ namespace Trickster.Bots
                 if (sortedTrump.Count > 0 && partnerIsMaker && cardsPlayed.Count(IsTrump) < 3)
                 {
                     //  we have a trump to play, our partner is the maker, and not much trump has been played thus far:
-                    //  lead our high trump if it's good or our low trump if not
-                    var highTrump = sortedTrump.Last();
-                    return IsCardHigh(highTrump, cardsPlayed) ? highTrump : sortedTrump.First();
+                    //  lead our highest trump to help partner
+                    return sortedTrump.Last();
                 }
 
                 //  Lead trump if you called it and have three or more trump

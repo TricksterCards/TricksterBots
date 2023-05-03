@@ -149,6 +149,23 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void LeadLeftToPartnerIfTheyCalled()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "ACTC9CJHQD"),
+                new TestPlayer(140),
+                new TestPlayer(102),
+                new TestPlayer(140),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("JH", $"{suggestion}");
+        }
+
+        [TestMethod]
         public void TestAvoidBid()
         {
             Assert.AreEqual("Pass", GetSuggestedBid(" 9C 9S 9HAHJD", "QH"), "Should pass if three-suited and weak, even with three trump");
