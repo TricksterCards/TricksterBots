@@ -80,9 +80,9 @@ namespace TestBots
             var players = new[]
             {
                 new TestPlayer(FiveHundredBid.NotContractorBid, "ACKD3DTH9H8H7S4S3S2S"),
-                new TestPlayer(FiveHundredBid.Misere250Before8SBid, "0?0?0?0?8?0?0?0?0?"),
-                new TestPlayer(FiveHundredBid.NotContractorBid, "0?0?0?0?8?0?0?0?0?"),
-                new TestPlayer(BidBase.NotPlaying, "0?0?0?0?8?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.Misere250Before8SBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.NotContractorBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(BidBase.NotPlaying, "0?0?0?0?0?0?0?0?0?"),
             };
             var bot = GetBot(Suit.Unknown, defaultOptions);
             var cardState = new TestCardState<FiveHundredOptions>(
@@ -100,9 +100,9 @@ namespace TestBots
             var players = new[]
             {
                 new TestPlayer(FiveHundredBid.NotContractorBid, "ACKD3DTH9H8H7S4S3S2S"),
-                new TestPlayer(FiveHundredBid.Misere250Before8SBid, "0?0?0?0?8?0?0?0?0?"),
-                new TestPlayer(FiveHundredBid.NotContractorBid, "0?0?0?0?8?0?0?0?0?"),
-                new TestPlayer(BidBase.NotPlaying, "0?0?0?0?8?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.Misere250Before8SBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.NotContractorBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(BidBase.NotPlaying, "0?0?0?0?0?0?0?0?0?"),
             };
             var bot = GetBot(Suit.Unknown, defaultOptions);
             var cardState = new TestCardState<FiveHundredOptions>(
