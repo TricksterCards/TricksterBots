@@ -370,7 +370,7 @@ namespace Trickster.Bots
 
             //  if a nullo player is taking the trick, try to get under them (but go high if we can't)
             if (nulloPlayers.Any(p => p.Seat == trickTaker.Seat))
-                return TryDumpEm(trick, legalCards, players.Count, true);
+                return TryDumpEm(trick, legalCards, players.Count, takeWithHigh: true);
 
             //  play our highest card, preferring trump; this improves our ability to duck under nullo players later
             return legalCards.Where(IsTrump).OrderByDescending(RankSort).FirstOrDefault() ?? legalCards.OrderByDescending(RankSort).First();
