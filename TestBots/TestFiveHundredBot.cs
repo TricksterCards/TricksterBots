@@ -9,6 +9,8 @@ namespace TestBots
     {
         private static readonly Suit defaultTrump = Suit.Diamonds;
 
+        private static readonly FiveHundredOptions defaultOptions = new FiveHundredOptions();
+
         private static readonly FiveHundredOptions threePlayerOptions = new FiveHundredOptions
         {
             isPartnership = false,
@@ -70,6 +72,46 @@ namespace TestBots
             );
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("KD", suggestion.ToString(), "Takes trick because declarer is losing");
+        }
+
+        [TestMethod]
+        public void PlayHighIn3rdIfMisereIsUnder()
+        {
+            var players = new[]
+            {
+                new TestPlayer(FiveHundredBid.NotContractorBid, "ACKD3DTH9H8H7S4S3S2S"),
+                new TestPlayer(FiveHundredBid.Misere250Before8SBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.NotContractorBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(BidBase.NotPlaying, "0?0?0?0?0?0?0?0?0?"),
+            };
+            var bot = GetBot(Suit.Unknown, defaultOptions);
+            var cardState = new TestCardState<FiveHundredOptions>(
+                bot,
+                players,
+                trick: "8DTD"
+            );
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("KD", $"{suggestion}");
+        }
+
+        [TestMethod]
+        public void PlayUnderMisereIfPossible()
+        {
+            var players = new[]
+            {
+                new TestPlayer(FiveHundredBid.NotContractorBid, "ACKD3DTH9H8H7S4S3S2S"),
+                new TestPlayer(FiveHundredBid.Misere250Before8SBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.NotContractorBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(BidBase.NotPlaying, "0?0?0?0?0?0?0?0?0?"),
+            };
+            var bot = GetBot(Suit.Unknown, defaultOptions);
+            var cardState = new TestCardState<FiveHundredOptions>(
+                bot,
+                players,
+                trick: "TD8D"
+            );
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("3D", $"{suggestion}");
         }
 
         private static FiveHundredBot GetBot(Suit trumpSuit, FiveHundredOptions options)

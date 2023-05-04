@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Trickster.Bots;
 using Trickster.cloud;
@@ -112,7 +113,7 @@ namespace TestBots
         }
 
         [TestMethod]
-        public void DontTrumpWinningPartnerWhenOpppontsGoAlone()
+        public void DontTrumpWinningPartnerWhenOpponentsGoAlone()
         {
             var players = new[]
             {
@@ -148,6 +149,91 @@ namespace TestBots
             Assert.AreEqual("KS", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected KS");
         }
 
+        [TestMethod]
+        public void ProtectTheLeftOnDefense()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "ACTC9CJHQD"),
+                new TestPlayer(102),
+                new TestPlayer(140),
+                new TestPlayer(140),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9SQS");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("9C", $"{suggestion}");
+        }
+
+        [TestMethod]
+        public void DontProtectTheLeftWhenLastToPlay()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "ACTC9CJHQD"),
+                new TestPlayer(102),
+                new TestPlayer(140),
+                new TestPlayer(140),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9STSQS");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QD", $"{suggestion}");
+        }
+
+        [TestMethod]
+        public void DontProtectTheLeftWhenNextPlayerIsVoidInTrump()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "AC9CJHQD"),
+                new TestPlayer(140) { VoidSuits = new List<Suit> { Suit.Diamonds } },
+                new TestPlayer(140),
+                new TestPlayer(102),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9SQS");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QD", $"{suggestion}");
+        }
+
+        [TestMethod]
+        public void DontProtectTheLeftWith3PlusTrump()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "ACTCJHQD9D"),
+                new TestPlayer(102),
+                new TestPlayer(140),
+                new TestPlayer(140),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9SQS");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("9D", $"{suggestion}");
+        }
+        
+        [TestMethod]
+        public void DontProtectTheLeftIfHigh()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "ACTC9CJHQD"),
+                new TestPlayer(140),
+                new TestPlayer(140),
+                new TestPlayer(102, cardsTaken: "JDQHTH9H"),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9S");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QD", $"{suggestion}");
+        }
+        
         [TestMethod]
         public void LeadLeftToPartnerIfTheyCalled()
         {

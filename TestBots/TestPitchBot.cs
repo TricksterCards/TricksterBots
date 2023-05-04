@@ -54,6 +54,46 @@ namespace TestBots
             Assert.AreEqual((int)PitchBid.Base + 3, GetSuggestedBid("AHQH6H5DJC5C", out var hand, options), $"Expect bid of 3 for hand {Util.PrettyHand(hand)}");
         }
 
+        [TestMethod]
+        public void PlayLowFirstTrickInCallPartner()
+        {
+            var players = new[]
+            {
+                new TestPlayer((int)PitchBid.NotPitching, "KH4HTS9STC9C"),
+                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer(GetBid(5, Suit.Hearts)),
+            };
+
+            var bot = new PitchBot(GetCallForBestOptions(callPartnerSeat: 2), Suit.Hearts);
+            var cardState = new TestCardState<PitchOptions>(bot, players, "3H");
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            Assert.AreEqual("4H", $"{suggestion}");
+        }
+
+        private static PitchOptions GetCallForBestOptions(int? callPartnerSeat = null)
+        {
+            return new PitchOptions()
+            {
+                _callPartnerSeat = callPartnerSeat,
+                gameOverScore = 32,
+                isPartnership = false,
+                minBid = 5,
+                pitcherLeadsTrump = true,
+                players = 5,
+                playTrump = PitchPlayTrump.Only,
+                tenOfTrumpReplacesGamePoint = true,
+                variation = PitchVariation.TenPoint,
+            };
+        }
+
+        private static int GetBid(int level, Suit suit)
+        {
+            return (int)PitchBid.Pitching + (10 * level) + (int)suit;
+        }
+
         private static PitchBot GetBot(PitchVariation variation)
         {
             return GetBot(new PitchOptions() { variation = variation });

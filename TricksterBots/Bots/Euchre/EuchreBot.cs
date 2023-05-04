@@ -203,6 +203,7 @@ namespace Trickster.Bots
             var playerBid = BidBid(player);
             var partnerIsMaker = players.PartnersOf(player).Any(p => BidBid(p) == EuchreBid.Make);
             var weAreMaker = playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone || partnerIsMaker;
+            var isDefending = !weAreMaker && !partnerIsMaker;
 
             var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).First();
 
@@ -299,8 +300,11 @@ namespace Trickster.Bots
                 return lowestCard;
             }
 
-            //  we can't follow suit but we have trump
-            if (legalCards.Any(IsTrump))
+            //  we can't follow suit but we have trump (and don't need to protect the off jack)
+            var offJack = legalCards.FirstOrDefault(c => IsTrump(c) && c.rank == Rank.Jack && c.suit != trump);
+            var isLHOVoidInTrump = players.LhoIsVoidInSuit(player, trump, cardsPlayed);
+            var needToProtectOffJack = isDefending && !isLastToPlay && !isLHOVoidInTrump && offJack != null && !IsCardHigh(offJack, cardsPlayed) && legalCards.Count(IsTrump) == 2;
+            if (legalCards.Any(IsTrump) && !needToProtectOffJack)
             {
                 //  the trick already contains trump
                 if (trick.Any(IsTrump))
