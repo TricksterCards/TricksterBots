@@ -201,7 +201,8 @@ namespace Trickster.Bots
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
 
             var playerBid = BidBid(player);
-            var partnerIsMaker = players.PartnersOf(player).Any(p => BidBid(p) == EuchreBid.Make);
+            var partners = players.PartnersOf(player);
+            var partnerIsMaker = partners.Any(p => BidBid(p) == EuchreBid.Make);
             var weAreMaker = playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone || partnerIsMaker;
             var isDefending = !weAreMaker && !partnerIsMaker;
 
@@ -226,6 +227,15 @@ namespace Trickster.Bots
                     //  we have three or more trump and we're the maker: lead our high trump if it's good or our low trump if not
                     var highTrump = sortedTrump.Last();
                     return IsCardHigh(highTrump, cardsPlayed) ? highTrump : sortedTrump.First();
+                }
+
+                //  Lead last trump if you called it, have already taken 3 tricks, and partner is void or not playing.
+                //  Increases chances of taking all 5 tricks by forcing opponents to discard a high off-suit card.
+                var alreadyMadeBid = weAreMaker && 3 <= player.HandScore + partners.Sum(p => p.HandScore);
+                var partnersAreNotPlayingOrVoid = partners.All(p => p.Bid == BidBase.NotPlaying || players.TargetIsVoidInSuit(player, p, trump, cardsPlayed));
+                if (sortedTrump.Count == 1 && alreadyMadeBid && partnersAreNotPlayingOrVoid)
+                {
+                    return sortedTrump.Last();
                 }
 
                 //  Never lead your last trump unless you have the high remaining card in an off suit

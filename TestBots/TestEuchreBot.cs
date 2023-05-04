@@ -252,6 +252,23 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void LeadLastTrumpIfAlreadyMadeBidAndPartnerIsVoid()
+        {
+            var players = new[]
+            {
+                new TestPlayer(102, "9CQD", 3),
+                new TestPlayer(140),
+                new TestPlayer(140) { VoidSuits = new List<Suit> { Suit.Diamonds }},
+                new TestPlayer(140),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QD", $"{suggestion}");
+        }
+
+        [TestMethod]
         public void TestAvoidBid()
         {
             Assert.AreEqual("Pass", GetSuggestedBid(" 9C 9S 9HAHJD", "QH"), "Should pass if three-suited and weak, even with three trump");
