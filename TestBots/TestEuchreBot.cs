@@ -216,7 +216,7 @@ namespace TestBots
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("9D", $"{suggestion}");
         }
-
+        
         [TestMethod]
         public void DontProtectTheLeftIfHigh()
         {
@@ -232,6 +232,23 @@ namespace TestBots
             var cardState = new TestCardState<EuchreOptions>(bot, players, "9S");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("QD", $"{suggestion}");
+        }
+        
+        [TestMethod]
+        public void LeadLeftToPartnerIfTheyCalled()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "ACTC9CJHQD"),
+                new TestPlayer(140),
+                new TestPlayer(102),
+                new TestPlayer(140),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("JH", $"{suggestion}");
         }
 
         [TestMethod]
