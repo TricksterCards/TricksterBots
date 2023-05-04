@@ -144,12 +144,11 @@ namespace Trickster.Bots
             if (trump == Suit.Unknown && trick.Count == 0 && legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))
                 legalCards = legalCards.Where(c => c.suit != Suit.Joker).ToList();
 
-            var bid = new FiveHundredBid(player.Bid);
-            if (bid.IsLikeNullo || options.nulloPlaysPartner && players.PartnersOf(player).Any(p => new FiveHundredBid(p.Bid).IsLikeNullo && player.HandScore + p.HandScore == 0))
+            if (IsNulloPlayer(player))
                 return TryDumpEm(trick, legalCards, players.Count);
 
-            if (players.Opponents(player).Any(p => new FiveHundredBid(p.Bid).IsLikeNullo && p.HandScore == 0))
-                return TryBustNullo(player, trick, legalCards, cardsPlayed, players, cardTakingTrick);
+            if (players.Opponents(player).Any(p => new FiveHundredBid(p.Bid).IsLikeNullo))
+                return TryBustNullo(player, trick, legalCards, cardsPlayed, players, trickTaker);
 
             // 3-player only: team up with the other opponent if declarer is in the lead (unless we're the declarer)
             var effectivePlayers = players;
@@ -165,6 +164,7 @@ namespace Trickster.Bots
                 }
             }
 
+            var bid = new FiveHundredBid(player.Bid);
             return TryTakeEm(player, trick, legalCards, cardsPlayed, effectivePlayers, isEffectivePartnerTakingTrick, cardTakingTrick, !bid.IsContractor && !bid.IsContractorPartner);
         }
 
@@ -333,27 +333,29 @@ namespace Trickster.Bots
             return tricks;
         }
 
-        private Card TryBustNullo(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, Card cardTakingTrick)
+        private static bool IsNulloPlayer(PlayerBase player)
         {
-            //  we'll target the first nullo-bidder counter-clockwise from us (so RHO, then across, then LHO)
-            var targetNulloBidder = players.Opponents(player).Where(p => new FiveHundredBid(p.Bid).IsLikeNullo && p.HandScore == 0).OrderBy(p => player.Seat - p.Seat).First();
-            var targetsPartners = players.PartnersOf(targetNulloBidder); // will be empty in non-partnership games
+            if (!player.IsActivelyPlaying)
+                return false;
+
+            //  active nullo players are those that either bid nullo (can be multiple if playing solo)
+            //  OR partners of nullo bidders who are still in the game (will be face-up dummy hands played by the nullo bidder)
+            return player.Bid == BidBase.Dummy || new FiveHundredBid(player.Bid).IsLikeNullo;
+        }
+
+        private Card TryBustNullo(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, PlayerBase trickTaker)
+        {
+            var nulloPlayers = players.Where(IsNulloPlayer).ToList();
 
             if (trick.Count == 0)
             {
                 //  we're leading: try to pick something intelligent
                 var avoidSuits = new List<Suit>();
 
-                var isTargetsPartnerVoidInTrump = targetsPartners.All(target => players.TargetIsVoidInSuit(player, target, new Card(trump, Rank.Ace), cardsPlayed));
-
                 foreach (var suit in SuitRank.stdSuits)
                 {
-                    //  avoid leading a suit the nullo bidder is void in
-                    if (players.TargetIsVoidInSuit(player, targetNulloBidder, new Card(suit, Rank.Ace), cardsPlayed))
-                        avoidSuits.Add(suit);
-
-                    //  also avoid suits the nullo bidder's partner is void in unless the partner is also void in trump
-                    if (!isTargetsPartnerVoidInTrump && targetsPartners.All(target => players.TargetIsVoidInSuit(player, target, new Card(suit, Rank.Ace), cardsPlayed)))
+                    //  avoid leading a suit any nullo player is void in
+                    if (nulloPlayers.Any(p => players.TargetIsVoidInSuit(player, p, suit, cardsPlayed)))
                         avoidSuits.Add(suit);
                 }
 
@@ -362,21 +364,16 @@ namespace Trickster.Bots
                 return TryDumpEm(trick, preferredLegalCards.Count > 0 ? preferredLegalCards : legalCards, players.Count);
             }
 
-            //  we're not leading: check the trick to determine what to do
-            var targetOffset = (player.Seat - targetNulloBidder.Seat + options.players) % options.players;
-            if (trick.Count > targetOffset)
-            {
-                //  nullo bidder has played and is taking the trick:
-                //  try to get under them, but go high if we can't
-                if (trick[trick.Count - targetOffset].SameAs(cardTakingTrick))
-                    return TryDumpEm(trick, legalCards, players.Count, true);
+            //  if we're not leading, but a nullo player has yet to play, play low
+            if (nulloPlayers.Any(p => p.Hand.Length == player.Hand.Length))
+                TryDumpEm(trick, legalCards, players.Count);
 
-                //  play our highest card, preferring trump; this improves our ability to duck under the nullo bidder later
-                return legalCards.Where(IsTrump).OrderByDescending(RankSort).FirstOrDefault() ?? legalCards.OrderByDescending(RankSort).First();
-            }
+            //  if a nullo player is taking the trick, try to get under them (but go high if we can't)
+            if (nulloPlayers.Any(p => p.Seat == trickTaker.Seat))
+                return TryDumpEm(trick, legalCards, players.Count, takeWithHigh: true);
 
-            //  nullo bidder has not played: try to end up under them
-            return TryDumpEm(trick, legalCards, players.Count);
+            //  play our highest card, preferring trump; this improves our ability to duck under nullo players later
+            return legalCards.Where(IsTrump).OrderByDescending(RankSort).FirstOrDefault() ?? legalCards.OrderByDescending(RankSort).First();
         }
 
         private class EffectivePartnerPlayersCollection : PlayersCollectionBase
