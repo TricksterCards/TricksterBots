@@ -31,6 +31,9 @@ namespace TricksterBots.Bots.Bridge
         public (int, int) Open3NT = (25, 27);
         public (int, int) OpenStrong = (22, int.MaxValue);
         public (int, int) LessThanOpen = (0, 12);
+        public (int, int) OpenerRebid1NT = (13, 14);
+        public (int, int) MinimumOpener = (13, 16);
+    
 
 
         // TODO: This is not a great name.  Not exactly right.  Fix later.....

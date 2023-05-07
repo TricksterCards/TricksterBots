@@ -34,7 +34,7 @@ namespace TricksterBots.Bots.Bridge
 
 				Nonforcing(1, Suit.Spades, Points(Open1Suit), Shape(5, 11), LongerOrEqualTo(Suit.Hearts)),
 
-				Nonforcing(1, Suit.Unknown, DefaultPriority + 100, Points(Open1NT), Balanced()),
+				// 1NT rule(s) in NoTrump class.
 
 				// NOTE: Strong open will override this - 2C Conventional will always be possible so
 				// this rule would be silly.
@@ -46,15 +46,15 @@ namespace TricksterBots.Bots.Bridge
 
 				Nonforcing(2, Suit.Spades, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-				Nonforcing(2, Suit.Unknown, DefaultPriority + 100, Points(Open2NT), Balanced()),
-
+				// 2NT rule(s) in NoTrump class.
+			
 				Nonforcing(3, Suit.Clubs, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
 				Nonforcing(3, Suit.Diamonds, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
 				Nonforcing(3, Suit.Hearts, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
 				Nonforcing(3, Suit.Spades, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-				Nonforcing(2, Suit.Unknown, Points(Open3NT), Balanced()),
-
+				// 3NT rule(s) in NoTrump class.
+				
                 Nonforcing(4, Suit.Clubs, Points(LessThanOpen), Shape(8), Quality(SuitQuality.Decent, SuitQuality.Solid)),
                 Nonforcing(4, Suit.Diamonds, Points(LessThanOpen), Shape(8), Quality(SuitQuality.Decent, SuitQuality.Solid)),
                 Nonforcing(4, Suit.Hearts, Points(LessThanOpen), Shape(8), Quality(SuitQuality.Decent, SuitQuality.Solid)),
@@ -74,14 +74,32 @@ namespace TricksterBots.Bots.Bridge
 			this.NextConventionState = () => new NaturalRespond();
         }
 
-		public BidRule[] Opener2ndBid()
-		{
-			return new BidRule[] 
-			{
-				
-			};
-		}
+
 
 
 	}
+    public class NaturalOpenerRebid : Natural
+    {
+        public NaturalOpenerRebid() : base()
+        {
+			this.BidRules = new List<BidRule>()
+			{
+				Nonforcing(1, Suit.Diamonds, Shape(4, 11)),
+				Nonforcing(1, Suit.Hearts, Shape(4, 11)),
+				Nonforcing(1, Suit.Spades, Shape(4, 11)),
+
+				Nonforcing(1, Suit.Unknown, DefaultPriority - 10, Balanced(), Points(OpenerRebid1NT)),
+
+				// All the possible rebids of a suit.
+				Nonforcing(2, Suit.Clubs, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Diamonds, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Hearts, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Spades, LastBid(1), Shape(6, 11), Points(MinimumOpener))
+
+
+
+			};
+        }
+
+    }
 }

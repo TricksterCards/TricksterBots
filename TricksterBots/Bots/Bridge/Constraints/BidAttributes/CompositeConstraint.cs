@@ -9,35 +9,74 @@ namespace TricksterBots.Bots.Bridge
 {
 	public class CompositeConstraint : Constraint
 	{
-		protected Constraint _c1;
-		protected Constraint _c2;
-		public CompositeConstraint(Constraint c1, Constraint c2)
+		public enum Operation { And, Or };
+
+		protected Operation _operation;
+		protected Constraint[] _constraints;
+		public CompositeConstraint(Operation opertaion, params Constraint[] constraints)
 		{
-			this._c1 = c1;
-			this._c2 = c2;
-			Debug.Assert(c1.OnceAndDone == c2.OnceAndDone);
-			this.OnceAndDone = c1.OnceAndDone;
+			Debug.Assert(constraints != null);
+			this._operation = opertaion;
+			this._constraints = constraints;
+			// Note that an empty set of contraints is allowed.  In this case it will
+			// always returns false from Conforms method no matter which logical opertation.
+			if (constraints.Length == 0)
+			{
+				this.OnceAndDone = true;
+			}
+			else
+			{
+				this.OnceAndDone = constraints[0].OnceAndDone;
+#if DEBUG
+				int cShowsState = 0;
+				foreach (Constraint c in constraints)
+				{
+					Debug.Assert(c.OnceAndDone == this.OnceAndDone);
+					if (c is IShowsState _)
+					{
+						Debug.Assert(opertaion == Operation.And);
+						cShowsState += 1;
+					}
+				}
+				Debug.Assert(cShowsState == 0 || cShowsState == _constraints.Length);
+#endif
+			}
+
 		}
 
 		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
-			return _c1.Conforms(bid, ps, hs, pa) && _c2.Conforms(bid, ps, hs, pa);
+			if (_constraints.Length == 0) { return false; }
+			foreach (Constraint c in _constraints)
+			{
+				if (c.Conforms(bid, ps, hs, pa))
+				{
+					if (_operation == Operation.Or) { return true; }
+				}
+				else
+				{
+					if (_operation == Operation.And) { return false; }
+				}
+			}
+			return (_operation == Operation.And);
 		}
 	}
 
 	public class CompositeShowsState : CompositeConstraint, IShowsState
 	{
-		public CompositeShowsState(Constraint c1, Constraint c2) : base (c1, c2)
-		{ }
+		public CompositeShowsState(Operation operation, params Constraint[] constraints) : base (operation, constraints)
+		{
+			// TODO: Perhaps this should throw.  Using OR and showing state is a bad bad bad idea....
+			Debug.Assert(operation == Operation.And);
+		}
 		public void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
 		{
-			if (_c1 is IShowsState c1)
+			foreach (Constraint c in _constraints)
 			{
-				c1.Update(bid, ps, hs, pa);
-			}
-			if (_c2 is IShowsState c2)
-			{
-				c2.Update(bid, ps, hs, pa);
+				if (c is IShowsState cShowsState)
+				{ 
+					cShowsState.Update(bid, ps, hs, pa);
+				}
 			}
 		}
 	}

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -47,6 +49,29 @@ namespace TricksterBots.Bots.Bridge
 
         public PositionState NextToAct { get; private set; }
 
+        public bool PassEndsAuction()
+        {
+            var position = NextToAct;
+            int countPasses = 0;
+            while (countPasses < 3)
+            {
+                position = position.RightHandOpponent;
+                var bid = position.GetBidHistory(0);
+                if (bid.CallType != CallType.Pass)
+                {
+                    // If there has been a bid (or X or XX) followed by two passes then next pass ends auction
+                    if (bid.CallType == CallType.NotActed) { 
+                        return false;
+                    }
+                    return countPasses == 2;
+                }
+                countPasses++;
+            }
+            // 3 passes in a row, so next one will end auction with pass-out.
+            return true;
+
+        }
+
         public Contract GetContract()
         {
             Contract contract = new Contract();
@@ -70,10 +95,10 @@ namespace TricksterBots.Bots.Bridge
                         contract.Bid = bid;
                         break;
                     }
-                    else
-                    {
-                        countPasses = 0;
-                    }
+                }
+                else
+                { 
+                    countPasses = 0;
                 }
                 if (bid.CallType == CallType.Bid)
                 {
@@ -143,8 +168,9 @@ namespace TricksterBots.Bots.Bridge
             this.Conventions[Convention.Transfer] = new NaturalOvercall(); // TODO: HACK HACK HACK HACK!
             */
             this.DefaultBidders.Add(Natural.Bidder());
-            this.DefaultBidders.Add(NoTrumpConventions.Bidder(NoTrumpBidder.NTType.Open1NT));
+            this.DefaultBidders.Add(OpenAndOvercallNoTrump.Bidder());
             this.DefaultBidders.Add(Strong.Bidder());
+            this.DefaultBidders.Add(new Compete());
         }
 
 
@@ -203,8 +229,9 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        public Bid GetHackBid(string[] history, string expected)
+        public string GetHackBid(string[] history, string expected)
         {
+            /*
             Debug.WriteLine($"==== START TEST ==== Expect {expected}");
             if (history == null)
             {
@@ -219,18 +246,22 @@ namespace TricksterBots.Bots.Bridge
                 }
                 Debug.WriteLine("");
             }
+            */
             // If there is any history then we need to get those bids first and at the end evaluate the hand
             if (history != null)
             {
                 foreach (var b in history)
                 {
-                    Debug.WriteLine($"--- Historical: {b}");
+                   // Debug.WriteLine($"--- Historical: {b}");
                     var bid = Bid.FromString(b);
                     var o = AvailableBids(NextToAct);
                     BidRuleGroup choice;
                     if (o.TryGetValue(bid, out choice) == false)
                     {
-                        Debug.WriteLine($"*** ERROR: Did not find {b} in bid optoins.  Constructing a bid with state information");
+                        // TODO: THIS IS SUPER IMPORTANT TO GET BUT NEED TO IGNORE IT FOR A WHILE.
+
+                        // TURN THIS BACK ON AT SOME POINT!  
+                       // Debug.WriteLine($"*** ERROR: Did not find {b} in bid optoins.  Constructing a bid with state information");
                         var rule = new BidRule(bid, 1, new Constraint[0]);
                         choice = new BidRuleGroup(bid, Convention.Natural, null);
                         choice.Add(rule);
@@ -245,18 +276,18 @@ namespace TricksterBots.Bots.Bridge
             var bidRule = NextToAct.ChooseBid(options);
             NextToAct.MakeBid(bidRule);
 
-            if (bidRule.Bid.ToString() == expected)
-            {
-                Debug.WriteLine($"SUCCESS - Got expected {bidRule.Bid}");
-            }
-            else
-            {
-                Debug.WriteLine($"******** ERROR!  Expected {expected} but got {bidRule.Bid}");
-            }
-            Debug.WriteLine("");
+          //  if (bidRule.Bid.ToString() != expected)
+         //   {
+          //      Debug.WriteLine($"SUCCESS - Got expected {bidRule.Bid}");
+          //  }
+          //  else
+          //  {
+          //      Debug.WriteLine($"******** ERROR!  Expected {expected} but got {bidRule.Bid}");
+          //  }
+            //Debug.WriteLine("");
 
             NextToAct = NextToAct.LeftHandOpponent;
-            return bidRule.Bid;
+            return bidRule.Bid.ToString();
         }
 
 

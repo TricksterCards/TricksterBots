@@ -9,15 +9,13 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class TransferBidder : NoTrumpBidder
+	public class TransferBidder : OneNoTrumpBidder
 	{
 		public TransferBidder(NTType type) : base(type, Convention.Transfer, 1000) { }
 	}
 
 	public class InitiateTransfer : TransferBidder
 	{ 
-
-
 		public InitiateTransfer(NTType type) : base(type)
 		{
 			this.BidRules = new BidRule[]
@@ -111,12 +109,15 @@ namespace TricksterBots.Bots.Bridge
             {
 				// TODO: Make lower priority???  
 				Signoff(CallType.Pass, DefaultPriority - 1, Points(OpenerRange.DontAcceptInvite)),
+				Signoff(CallType.Pass, DefaultPriority + 1, LastBid(3, Suit.Clubs), Partner(LastBid(3, Suit.Diamonds))),
 
 //Signoff(3, Suit.Hearts, Points(OpenerRange.DontAcceptInvite), LastBid(2, Suit.Hearts), Flat(false), Shape(3)),
                 Signoff(3, Suit.Hearts, Points(OpenerRange.DontAcceptInvite), LastBid(2, Suit.Hearts), Shape(3, 5)),
+				Forcing(3, Suit.Hearts, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Spades), Shape(5), Shape(Suit.Spades, 2)),
 
   //              Signoff(3, Suit.Spades, Points(OpenerRange.DontAcceptInvite), LastBid(2, Suit.Spades), Flat(false), Shape(3)),
                 Signoff(3, Suit.Spades, Points(OpenerRange.DontAcceptInvite), LastBid(2, Suit.Spades), Shape(3, 5)),
+                Forcing(3, Suit.Spades, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Hearts), Shape(5), Shape(Suit.Hearts, 2)),
 
 				// TODO: Perhaps priority makes this the last choice... Maybe not.   May need lots of exclusions...
 				// TODO: Maybe if partner shows exactly 5 and we are flat then we bid to 3NT instead of accepting
@@ -133,7 +134,7 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Spades))),
                 Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Spades), Partner(LastBid(2, Suit.Unknown)), Shape(3, 5)),
 				Signoff(4, Suit.Spades, LastBid(2, Suit.Spades), Partner(LastBid(3, Suit.Unknown)), Shape(3, 5)),
-				Signoff(4, Suit.Spades, LastBid(2, Suit.Spades), Partner(LastBid(3, Suit.Spades)), Shape(3, 5), Better(Suit.Spades, Suit.Hearts))
+				Signoff(4, Suit.Spades, LastBid(2, Suit.Hearts), Partner(LastBid(3, Suit.Spades)), Shape(3, 5), Better(Suit.Spades, Suit.Hearts))
 
 				// TODO: SLAM BIDDING...
 				// I Think here we will just defer to competative bidding.  Then ranges don't matter.  We just look for 
@@ -141,7 +142,27 @@ namespace TricksterBots.Bots.Bridge
 				// fit or is it a known fit.  Perhaps competative bidding can handle this...  
 		
 			};
-
+			this.NextConventionState = () => new ResponderPlaceGameContract(type);
         }
     }
+
+    public class ResponderPlaceGameContract : TransferBidder
+    {
+        public ResponderPlaceGameContract(NTType type) : base(type)
+        {
+			this.BidRules = new BidRule[]
+			{
+				Signoff(CallType.Pass, DefaultPriority - 10),
+				// If partner has shown 5 hearts or 5 spades then this is game force contract so place
+				// it in NT or 4 of their suit.
+				Signoff(3, Suit.Unknown, Partner(HasMinShape(Suit.Hearts, 5)), Shape(Suit.Hearts, 2)),
+                Signoff(3, Suit.Unknown, Partner(HasMinShape(Suit.Spades, 5)), Shape(Suit.Spades, 2)),
+
+				Signoff(4, Suit.Hearts, Partner(HasMinShape(5)), Shape(3, 5)),
+                Signoff(4, Suit.Spades, Partner(HasMinShape(5)), Shape(3, 5)),
+
+            };
+        }
+    }
+
 }

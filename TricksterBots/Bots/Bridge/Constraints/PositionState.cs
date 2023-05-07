@@ -133,7 +133,7 @@ namespace TricksterBots.Bots.Bridge
 			{
 				BiddingState.UpdateStateFromFirstBid();
 			}
-
+			/*
 			Debug.WriteLine($"   Points shown {PublicHandSummary.StartingPoints}");
 			foreach (var suit in BasicBidding.BasicSuits)
 			{
@@ -143,6 +143,7 @@ namespace TricksterBots.Bots.Bridge
 					Debug.WriteLine($"   {suit} shape {shape.Min} -> {shape.Max}");
 				}
 			}
+			*/
 			return bidGroup.Bid;
 		}
 
@@ -215,7 +216,8 @@ namespace TricksterBots.Bots.Bridge
 
 			if (choice == null)
 			{
-                // UGLY TODO: CLEAN THIS UP!!!
+				// UGLY TODO: CLEAN THIS UP!!!
+				//Debug.WriteLine("***Generating bogus pass***");
                 var pass = new BidRule(new Bid(CallType.Pass, BidForce.Nonforcing), 0, new Constraint[0]); 
 				choice = new BidRuleGroup(pass.Bid, Convention.Natural, null);
 				choice.Add(pass);

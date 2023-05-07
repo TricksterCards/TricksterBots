@@ -1,0 +1,127 @@
+% PBN 2.1
+% EXPORT
+%Content-type: text/x-pbn; charset=ISO-8859-1
+%Creator: BridgeComposer Version 5.101.1
+%Created: Sat May  6 19:49:29 2023 -0700
+%BCOptions Center STBorder STShade
+%BidAndCardSpacing Thin
+%BoardsPerPage 1
+%CardTableColors #008000,#ffffff,#aaaaaa
+%DDAFormat 0
+%DefaultPagination 0
+%EventSpacing 0
+%Font:CardTable "Arial",11,400,0
+%Font:Commentary "Times New Roman",12,400,0
+%Font:Diagram "Times New Roman",12,400,0
+%Font:Event "Times New Roman",12,400,0
+%Font:FixedPitch "Courier New",10,400,0
+%Font:HandRecord "Arial",11,400,0
+%GutterSize 500,500
+%HRTitleDate 0
+%HRTitleEvent ""
+%HRTitleSetID ""
+%HRTitleSetIDPrefix ""
+%HRTitleSite ""
+%HtmlClubs entity,"https://bridgecomposer.com/suitimg/c.gif"
+%HtmlDiamonds entity,"https://bridgecomposer.com/suitimg/d.gif"
+%HtmlHearts entity,"https://bridgecomposer.com/suitimg/h.gif"
+%HtmlNavBar 0.75,#cfe2f3
+%HtmlSpades entity,"https://bridgecomposer.com/suitimg/s.gif"
+%Margins 1000,1000,1000,1000
+%PaperSize 1,0,0,2
+%ParaIndent 0
+%PipColors #000000,#ff0000,#ff0000,#000000
+%PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
+%ScoreTableColors #e6e6e6,#000000
+%SelectedBoard 3
+%ShowBoardLabels 2
+%ShowCardTable 2
+%TSTCustomSortOrder Default
+%TSTReport List
+%TSTReportOrder ByNumber
+%TSTReportShade Yes
+[Event "BB2 Deal 1"]
+[Site ""]
+[Date ""]
+[Board "1"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KQJT987.T5.63.86 A52.963.KQJT.K53 4.QJ84.A97.JT974 63.AK72.8542.AQ2"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "3S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+3S Pass Pass Pass
+[Play "E"]
+DK - - -
+
+[Event "BB2 Deal 2"]
+[Site ""]
+[Date ""]
+[Board "2"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "E"]
+[Vulnerable "NS"]
+[Deal "E:73.KQJT873.6.T74 QJT8.542.Q943.63 AK42.9.AJ82.A852 965.A6.KT75.KQJ9"]
+[Scoring ""]
+[Declarer "E"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "E"]
+3H Pass 4H Pass
+Pass Pass
+[Play "S"]
+SQ - - -
+
+[Event "BB2 Deal 3"]
+[Site ""]
+[Date ""]
+[Board "3"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "EW"]
+[Deal "S:KQJ986.82.63.642 32.K943.KJ9.QJT7 T4.AQ76.AT85.K93 A75.JT5.Q742.A85"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "2S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+2S Pass Pass Pass
+[Play "W"]
+CQ - - -
+
+[Event "BB2 Deal 4"]
+[Site ""]
+[Date ""]
+[Board "4"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "All"]
+[Deal "W:AKJT94.J84.94.T5 75.A9752.A5.K763 Q863.T.QJT763.J8 2.KQ63.K82.AQ942"]
+[Scoring ""]
+[Declarer "W"]
+[Contract "4S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+2S Pass 4S Pass
+Pass Pass
+[Play "N"]
+C3 - - -

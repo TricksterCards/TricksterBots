@@ -36,6 +36,16 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
+		public RedirectRule Redirect(BidderFactory redirectTo)
+		{
+			return Redirect(redirectTo, new Constraint[0]);
+		}
+
+		public RedirectRule Redirect(BidderFactory redirectTo, params Constraint[] constraints)
+		{
+			return new RedirectRule(redirectTo, constraints);
+		}
+
 		// TODO: This is a bit of a hack - where to have the logic.
 		public bool Applies(PositionState ps)
 		{
@@ -172,8 +182,15 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint Balanced(bool desired = true) { return new ShowsBalanced(desired); }
 		public static Constraint Flat(bool desired = true) { return new ShowsFlat(desired); }
 
-		public static Constraint LastBid(int level, Suit suit, bool desired = true) {
-			return new BidHistory(CallType.Bid, level, suit, desired); }
+		public static Constraint LastBid(int level, Suit suit, bool desired = true)
+		{
+			return new BidHistory(CallType.Bid, level, suit, desired); 
+		}
+
+		public static Constraint LastBid(int level, bool desired = true)
+		{
+			return new BidHistory(CallType.Bid, level, null, desired);
+		}
 
 		public static Constraint DidBid(bool desired = true)
 		{
@@ -221,7 +238,19 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return HasShape(count, count);
 		}
-		public static Constraint HasShape(int min, int max)
+
+		public static Constraint HasMinShape(int count)
+		{
+			return HasMinShape(null, count);
+		}
+
+        public static Constraint HasMinShape(Suit? suit, int count)
+        {
+            return new HasMinShape(suit, count);
+        }
+
+
+        public static Constraint HasShape(int min, int max)
 		{
 			return new HasShape(null, min, max);
 		}
@@ -232,17 +261,19 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint Quality(Suit suit, SuitQuality min, SuitQuality max)
 		{ return new ShowsQuality(suit, min, max); }
 
-		public static Constraint And(Constraint c1, Constraint c2)
+		public static Constraint And(params Constraint[] constraints)
 		{
-			if (c1 is IShowsState)
+			if (constraints.Length > 0 || constraints[0] is IShowsState)
 			{
-				Debug.Assert(c2 is IShowsState);
-				return new CompositeShowsState(c1, c2);
+				return new CompositeShowsState(CompositeConstraint.Operation.And, constraints);
 			}
-			Debug.Assert(!(c2 is IShowsState));
-			Debug.Assert(c1.OnceAndDone == c2.OnceAndDone);
-			return new CompositeConstraint(c1, c2);
+			return new CompositeConstraint(CompositeConstraint.Operation.And, constraints);
 
+		}
+
+		public static Constraint Or(params Constraint[] constraints)
+		{
+			return new CompositeConstraint(CompositeConstraint.Operation.Or, constraints);
 		}
 
 		// Suit quality is good or better
@@ -277,14 +308,10 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint LongestMajor(int max)
 		{
-			return new CompositeShowsState(new ShowsShape(Suit.Hearts, 0, max), new ShowsShape(Suit.Spades, 0, max));
+			return And(Shape(Suit.Hearts, 0, max), Shape(Suit.Spades, 0, max));
 		}
 
-		// TODO: This should probably move to Natural..  But for now, this seems fine....
 
-
-
-		// THIS IS ALL CONVENTION RULE STUFF
 		public static Constraint Role(PositionRole role, int round = 0)
 		{
 			return new Role(role, round);
@@ -294,10 +321,10 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return new BidRound(round);
 		}
-		public static Constraint OffIfRhoBid()
+
+		public static Constraint SystemOn(Convention convention, params Constraint[] constraints)
 		{
-			// TODO: Need to implement this one... 
-			// Need to improve BidHistory class...
+			// TODO: Need to do OR 
 			throw new NotImplementedException();
 		}
 
@@ -333,12 +360,40 @@ namespace TricksterBots.Bots.Bridge
 			throw new NotImplementedException();
 		}
 
+		// TOOD: These are temporary for now.  But need to think them through.  
+		public Constraint Fit(Suit? suit = null, bool desiredValue = true)
+		{
+			return new PairShowsMinShape(suit, 8, desiredValue);
+		}
+
+		public Constraint PairPoints((int Min, int Max) range)
+		{
+			return PairPoints(null, range);
+		}
+
+		public Constraint PairPoints(Suit? suit, (int Min, int Max) range)
+		{
+			return new PairShowsPoints(suit, range.Min, range.Max);
+		}
+
 		// For this to be true, the partner must have shown the suit, AND this position must have 
 		// at least minSupport cards in support
 	//	public Constraint CanSupport(bool desiredValue = true, int minSupport = 3)
 //		{ 
 //			throw new NotImplementedException(); 
 	//	}
+
+		public static Constraint OpponentsStopped()
+		{
+			throw new NotImplementedException();
+		}
+
+
+
+		public static Constraint PassEndsAuction(bool desiredValue = true)
+		{
+			return new PassEndsAuction(desiredValue);
+		}
 
 	}
 };

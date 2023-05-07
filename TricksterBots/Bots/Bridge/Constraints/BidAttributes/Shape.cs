@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,4 +44,21 @@ namespace TricksterBots.Bots.Bridge
             hs.Suits[bid.SuitIfNot(_suit)].Shape = (_min, _max);
 		}
 	}
+
+
+    public class HasMinShape: Constraint
+    {
+        protected Suit? _suit;
+        protected int _min;
+        public HasMinShape(Suit? suit, int min)
+        {
+            this._suit = suit;
+            this._min = min;
+        }
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        {
+            return hs.Suits[bid.SuitIfNot(_suit)].Shape.Min >= _min;
+        }
+    }
+
 }

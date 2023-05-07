@@ -13,13 +13,13 @@ namespace TricksterBots.Bots.Bridge
 	public class BidHistory : Constraint
 	{
 		private CallType _callType;
-		private Suit _suit;
+		private Suit? _suit;
 		private int _level;
 		private bool _desiredValue;
 
 
 		// If you just want to see if the last action was a bid then pass level = 0 and CallType.Bid
-		public BidHistory(CallType callType, int level, Suit suit, bool desiredValue)
+		public BidHistory(CallType callType, int level, Suit? suit, bool desiredValue)
 		{
 			this._callType = callType;
 			this._level = level;
@@ -35,7 +35,7 @@ namespace TricksterBots.Bots.Bridge
 			{
 				return (lastBid.CallType == _callType) ? _desiredValue : !_desiredValue;
 			}
-			if (lastBid.CallType == CallType.Bid && lastBid.Suit == _suit &&
+			if (lastBid.CallType == CallType.Bid && lastBid.Suit == bid.SuitIfNot(_suit) &&
 				_level == lastBid.Level)
 			{
 				return _desiredValue;

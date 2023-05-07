@@ -9,7 +9,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class StaymanBidder : NoTrumpBidder
+	public class StaymanBidder : OneNoTrumpBidder
 	{
 		public StaymanBidder(NTType type) : base(type, Convention.Stayman, 1000) { }
 	}
@@ -54,6 +54,10 @@ namespace TricksterBots.Bots.Bridge
 		{
             this.BidRules = new BidRule[]
             {
+				// These show invitational 5/4
+                Invitational(2, Suit.Hearts, Points(ResponderRange.Invite), Shape(5), Partner(LastBid(2, Suit.Diamonds))),
+                Invitational(2, Suit.Spades, Points(ResponderRange.Invite), Shape(5), Partner(LastBid(2, Suit.Diamonds))),
+
                 Invitational(2, Suit.Unknown, ShowsTrump(), Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Diamonds))),
                 Invitational(2, Suit.Unknown, ShowsTrump(), Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Hearts)), Shape(Suit.Hearts, 0, 3)),
                 Invitational(2, Suit.Unknown, ShowsTrump(), Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Spades)), Shape(Suit.Spades, 0, 3)),
@@ -83,21 +87,37 @@ namespace TricksterBots.Bots.Bridge
 		public PlaceContract(NTType type) : base(type)
 		{
 			this.BidRules = new BidRule[]
-            {
+			{
+				// These rules deal with a 5/4 invitational that we want to reject.  Leave contract in bid suit
+				// if we have 3.  Otherwise put in NT
+				Signoff(CallType.Pass, DefaultPriority + 10, Points(OpenerRange.DontAcceptInvite), 
+									Fit(Suit.Hearts), Partner(LastBid(2, Suit.Hearts))),
+                Signoff(CallType.Pass, DefaultPriority + 10, Points(OpenerRange.DontAcceptInvite),
+                                    Fit(Suit.Spades), Partner(LastBid(2, Suit.Spades))),
+
+                Signoff(2, Suit.Unknown, Points(OpenerRange.DontAcceptInvite)),
+
                 Nonforcing(3, Suit.Spades, Points(OpenerRange.DontAcceptInvite), Shape(4), Partner(HasShape(4))),
 
                 Signoff(3, Suit.Unknown, Points(OpenerRange.AcceptInvite), Partner(LastBid(2, Suit.Unknown))),
                 Signoff(3, Suit.Unknown, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Hearts)),
                             Shape(Suit.Hearts, 2)),
+                Signoff(3, Suit.Unknown, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Diamonds), 
+									Partner(LastBid(2, Suit.Hearts)), Shape(Suit.Hearts, 2)),
                 Signoff(3, Suit.Unknown,  LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Spades)),
                             Shape(Suit.Spades, 2)),
+				Signoff(3, Suit.Unknown, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Diamonds),
+						Partner(LastBid(2, Suit.Spades)), Shape(Suit.Spades, 2)),
+
+
 
                 Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Hearts)), Shape(4, 5)),
                 Signoff(4, Suit.Hearts, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Hearts)), Shape(3)),
 
 
                 Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Spades)), Shape(4, 5)),
-                Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Partner(HasShape(4)), Shape(4, 5)),
+                Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Fit()),
+				Signoff(4, Suit.Spades, Partner(LastBid(3, Suit.Unknown)), Fit()),
                 Signoff(4, Suit.Spades, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Spades)), Shape(3)),
             };
 			this.NextConventionState = () => new CheckSpadeGame(type);

@@ -16,7 +16,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public NaturalRespond() : base() { }
 
-
+		static protected (int, int) RespondPass = (0, 5);
 		static protected (int, int) Respond1Level = (6, 40);
 		static protected (int, int) Raise1 = (6, 10);
 		static protected (int, int) Respond1NT = (6, 10);
@@ -24,14 +24,17 @@ namespace TricksterBots.Bots.Bridge
 		static protected (int, int) RaiseTo2NT = (11, 12);
 		static protected (int, int) SlamInterest = (17, 40);
 		static protected (int, int) LimitRaise = (11, 12);
+		static protected (int, int) LimitRaiseOrBetter = (11, 40);
 		static protected (int, int) RaiseTo3NT = (13, 15);
 		static protected (int, int) Weak4Level = (0, 10);
 		static protected (int, int) GameOrBetter = (13, 40);
+		static protected (int, int) WeakJumpRaise = (0, 5);
 
         protected BidRule[] NewMinorSuit2Level(Suit openersSuit)
         {
             return new BidRule[]
-            {
+			{
+			
                 Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(4, 5), Shape(Suit.Diamonds, 0, 4)),
                 Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(6), Shape(Suit.Diamonds, 0, 5)),
                 Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(7, 11)),
@@ -63,12 +66,21 @@ namespace TricksterBots.Bots.Bridge
     {
         public NaturalRespondRedirects()
         {
+			// We may be invoked because opener Passed.  If that's the case, bail now.
+			this.ConventionRules = new ConventionRule[]
+			{
+				ConventionRule(Role(PositionRole.Responder))
+			};
+
             this.Redirects = new RedirectRule[]
             {
                 new RedirectRule(() => new RespondTo1C(), Partner(LastBid(1, Suit.Clubs)), RHO(Passed())),
                 new RedirectRule(() => new RespondTo1D(), Partner(LastBid(1, Suit.Diamonds)), RHO(Passed())),
                 new RedirectRule(() => new RespondTo1H(), Partner(LastBid(1, Suit.Hearts)), RHO(Passed())),
-                new RedirectRule(() => new RespondTo1S(), Partner(LastBid(1, Suit.Spades)), RHO(Passed()))
+                new RedirectRule(() => new RespondTo1S(), Partner(LastBid(1, Suit.Spades)), RHO(Passed())),
+
+				// TODO: First attempt at any interference.  For now only if interfere with 1S bid
+				new RedirectRule(() => new RespondWithInt(), RHO(DidBid()))
             };
         }
 
@@ -83,7 +95,9 @@ namespace TricksterBots.Bots.Bridge
 		{
 			this.BidRules = new List<BidRule>()
 			{
-				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
+				Signoff(CallType.Pass, 0, Points(RespondPass)),
+
+                Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
 				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(6), LongestMajor(5)),
 				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(7, 11), LongestMajor(6)),
 
@@ -122,7 +136,7 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
 			};
-			// TODO: Need a next convention here.....  
+			this.NextConventionState = () => new NaturalOpenerRebid();
 		}
 	}
 		
@@ -132,6 +146,8 @@ namespace TricksterBots.Bots.Bridge
 		{
 			this.BidRules = new BidRule[]
 			{
+                Signoff(CallType.Pass, 0, Points(RespondPass)),
+
 				// TODO: Only forcing if not a passed hand...
 				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
                 Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(5, 11), LongerThan(Suit.Spades)),
@@ -166,7 +182,8 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11)),
 
             };
-		}
+            this.NextConventionState = () => new NaturalOpenerRebid();
+        }
 	}
 		
 	public class RespondTo1H : NaturalRespond
@@ -175,9 +192,9 @@ namespace TricksterBots.Bots.Bridge
 		{
 			var bids = new List<BidRule>()
 			{
-				// TODO: Only if planning to raise if we ha
+				Signoff(CallType.Pass, 0, Points(RespondPass)),
 
-				Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4, 11), Shape(Suit.Hearts, 0, 2)),
+                Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4, 11), Shape(Suit.Hearts, 0, 2)),
 				Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, LimitRaise), Shape(4, 11), Shape(Suit.Hearts, 3)),
 				Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, GameOrBetter), Shape(4, 11), Shape(Suit.Hearts, 3, 8)),
 
@@ -203,7 +220,7 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11)),
 			};
 			this.BidRules = bids.Concat(NewMinorSuit2Level(Suit.Hearts));
-
+            this.NextConventionState = () => new NaturalOpenerRebid();
         }
 	}
 
@@ -213,6 +230,8 @@ namespace TricksterBots.Bots.Bridge
 		{
 			var bids = new List<BidRule>()
 			{
+			    Signoff(CallType.Pass, Points(RespondPass)),
+
                 Nonforcing(1, Suit.Unknown, Points(Respond1NT), Balanced()),
 
                 // Two level minor bids are handled by NewMinorSuit2Level...
@@ -233,11 +252,64 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(4, Suit.Spades, DummyPoints(Weak4Level), Shape(5, 8))
             };
-			this.BidRules = bids.Concat(NewMinorSuit2Level(Suit.Spades));			this.BidRules = bids;
-			// TODO: Next state here...
-		}
+			this.BidRules = bids.Concat(NewMinorSuit2Level(Suit.Spades));
+			this.BidRules = bids;
+            this.NextConventionState = () => new NaturalOpenerRebid();
+           
+        }
 
 	}
+
+	// TODO: THIS IS SUPER HACKED NOW TO JUST 
+	public class RespondWithInt : NaturalRespond
+	{
+		public RespondWithInt() : base()
+		{
+
+			this.BidRules = new List<BidRule>()
+			{
+				Signoff(CallType.Pass, 0, Points(RespondPass)),
+
+				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
+				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(5, 11), LongerThan(Suit.Spades)),
+
+				Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4), Shape(Suit.Hearts, 0, 3)),
+				Forcing(1, Suit.Spades, Points(Respond1Level), Shape(5, 11), LongerOrEqualTo(Suit.Hearts)),
+
+				// TODO: Opponents stopped!  Maybe two rules, one at lower priority that bid this in the worst case...
+				// Perhaps pass could be higher than that rule if we dont have 11 points, and dont have opps stopped
+			
+                Nonforcing(1, Suit.Unknown, DefaultPriority - 10, Points(Respond1NT), Balanced(), LongestMajor(3)),
+
+				Invitational(2, Suit.Hearts, CueBid(false), Fit(), DummyPoints(Raise1), ShowsTrump()),
+				Forcing(2, Suit.Hearts, CueBid(true), Fit(Suit.Clubs), DummyPoints(Suit.Clubs, LimitRaiseOrBetter), ShowsTrump()),
+                Forcing(2, Suit.Hearts, CueBid(true), Fit(Suit.Diamonds), DummyPoints(Suit.Diamonds, LimitRaiseOrBetter), ShowsTrump()),
+
+
+                Invitational(2, Suit.Spades, CueBid(false), Fit(), DummyPoints(Raise1), ShowsTrump()),
+                Forcing(2, Suit.Spades, CueBid(true), Fit(Suit.Clubs), DummyPoints(Suit.Clubs, LimitRaiseOrBetter), ShowsTrump()),
+                Forcing(2, Suit.Spades, CueBid(true), Fit(Suit.Diamonds), DummyPoints(Suit.Diamonds, LimitRaiseOrBetter), ShowsTrump()),
+                Forcing(2, Suit.Spades, CueBid(true), Fit(Suit.Hearts), DummyPoints(Suit.Hearts, LimitRaiseOrBetter), ShowsTrump()),
+
+				// TODO: Still need lots and lots more bid levels here.  But decent start...
+
+				// TODO: Also needs opps stopped
+				Invitational(2, Suit.Unknown, DefaultPriority - 10, Points(RaiseTo2NT), Balanced()),
+
+				Nonforcing(3, Suit.Hearts, Fit(), DummyPoints(WeakJumpRaise), Shape(4)),
+
+				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
+
+				// TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
+
+				Signoff(4, Suit.Hearts, Fit(), DummyPoints(WeakJumpRaise), Shape(5, 8)),
+			};
+            // TODO: NEED TO RESPOND WITH INTERFERENCE..
+
+            //this.NextConventionState = () => new NaturalOpenerRebid();
+        }
+	}
+
 
 }
 

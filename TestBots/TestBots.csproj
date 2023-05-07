@@ -99,6 +99,12 @@
     <Content Include="Bridge\SAYC\Defensive Opening Leads.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Bridge\SAYC\Bridge Basics 1.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Bridge\SAYC\Bridge Basics 2.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
