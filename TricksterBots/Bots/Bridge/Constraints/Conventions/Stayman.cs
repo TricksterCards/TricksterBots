@@ -27,7 +27,7 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: The following rule is "Garbage Stayman"
 				//Forcing(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
 			};
-			this.NextConventionState = () => new AnswerStayman(type);
+			SetPartnerBidder(() => new AnswerStayman(type));
 		}
 	}
 	public class AnswerStayman : StaymanBidder
@@ -44,7 +44,7 @@ namespace TricksterBots.Bots.Bridge
 
                 Forcing(2, Suit.Spades, Shape(4, 5), LongerThan(Suit.Hearts)),
             };
-            this.NextConventionState = () => new ExplainStayman(type);
+            SetPartnerBidder(() => new ExplainStayman(type));
         }
     }
 
@@ -78,7 +78,7 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(4, Suit.Spades, ShowsTrump(), DummyPoints(ResponderRange.Game), Partner(LastBid(2, Suit.Spades)), Shape(4, 5))
             };
-            this.NextConventionState = () => new PlaceContract(type);
+            SetPartnerBidder(() => new PlaceContract(type));
         }
 	}
 
@@ -120,7 +120,7 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(4, Suit.Spades, Partner(LastBid(3, Suit.Unknown)), Fit()),
                 Signoff(4, Suit.Spades, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Spades)), Shape(3)),
             };
-			this.NextConventionState = () => new CheckSpadeGame(type);
+			SetPartnerBidder(() => new CheckSpadeGame(type));
         }
 	}
 
@@ -134,5 +134,74 @@ namespace TricksterBots.Bots.Bridge
 			};
 		}
 	}
+
+    // TODO: Maybe move thse 2NT stayman...
+    public class Stayman2NT: TwoNoTrumpBidder
+    {
+        public Stayman2NT() : base(Convention.Stayman, 1000) { }
+    }
+    public class InitiateStayman2NT : Stayman2NT
+    {
+        public InitiateStayman2NT() 
+        {
+            this.BidRules = new BidRule[]
+            {
+                Forcing(3, Suit.Clubs, RespondGame, Shape(Suit.Hearts, 4), Flat(false)),
+                Forcing(3, Suit.Clubs, RespondGame, Shape(Suit.Spades, 4), Flat(false)),
+                Forcing(3, Suit.Clubs, RespondGame, Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5)),
+                Forcing(3, Suit.Clubs, RespondGame, Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4)),
+				// TODO: The following rule is "Garbage Stayman"
+				//Forcing(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
+			};
+            SetPartnerBidder(() => new AnswerStayman2NT());
+        }
+    }
+
+    public class AnswerStayman2NT : Stayman2NT
+    {
+        public AnswerStayman2NT()
+        {
+            this.BidRules = new BidRule[]
+            {
+
+                Forcing(3, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3)),
+
+				// If we are 4-4 then hearts bid before spades.  Can't be 5-5 or wouldn't be balanced.
+				Forcing(3, Suit.Hearts, Shape(4, 5), LongerOrEqualTo(Suit.Spades)),
+                Forcing(3, Suit.Spades, Shape(4, 5), LongerThan(Suit.Hearts)),
+            };
+            SetPartnerBidder(() => new ResponderRebidStayman2NT());
+        }
+    }
+
+    public class ResponderRebidStayman2NT : Stayman2NT
+    {
+        public ResponderRebidStayman2NT()
+        {
+            this.BidRules = new BidRule[]
+            {
+                Forcing(3, Suit.Hearts, DefaultPriority + 10, Shape(5), Partner(LastBid(3, Suit.Diamonds))),
+                Forcing(3, Suit.Spades, DefaultPriority + 10, Shape(5), Partner(LastBid(3, Suit.Diamonds))),
+
+                Signoff(3, Suit.Unknown, Fit(Suit.Hearts, false), Fit(Suit.Spades, false)),
+                Signoff(4, Suit.Hearts, Fit()),
+                Signoff(4, Suit.Spades, Fit()),
+            };
+            SetPartnerBidder(() => new OpenerRebidStayman2NT());
+        }
+    }
+
+    public class OpenerRebidStayman2NT: Stayman2NT
+    {
+        public OpenerRebidStayman2NT()
+        {
+            this.BidRules = new BidRule[]
+            {
+                Signoff(3, Suit.Unknown, Fit(Suit.Hearts, false), Fit(Suit.Spades, false)),
+                Signoff(4, Suit.Hearts, Fit()),
+                Signoff(4, Suit.Spades, Fit()),
+            };
+        }
+    }
 
 }

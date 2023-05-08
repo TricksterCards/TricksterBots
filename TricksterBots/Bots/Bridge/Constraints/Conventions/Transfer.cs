@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
-
+using static TricksterBots.Bots.Bridge.OneNoTrumpBidder;
 
 namespace TricksterBots.Bots.Bridge
 {
@@ -15,7 +15,7 @@ namespace TricksterBots.Bots.Bridge
 	}
 
 	public class InitiateTransfer : TransferBidder
-	{ 
+	{
 		public InitiateTransfer(NTType type) : base(type)
 		{
 			this.BidRules = new BidRule[]
@@ -37,11 +37,11 @@ namespace TricksterBots.Bots.Bridge
 				Forcing(2, Suit.Spades, Points(ResponderRange.LessThanInvite), Shape(Suit.Diamonds, 6, 11)),
 
 			};
-			this.NextConventionState = () => new AcceptTransfer(type);
+			SetPartnerBidder(() => new AcceptTransfer(type));
 		}
 	}
 
-	public class AcceptTransfer: TransferBidder
+	public class AcceptTransfer : TransferBidder
 	{
 		public AcceptTransfer(NTType type) : base(type)
 		{
@@ -59,54 +59,54 @@ namespace TricksterBots.Bots.Bridge
 
 				Nonforcing(3, Suit.Spades, ShowsTrump(), Partner(LastBid(2, Suit.Hearts)), Points(OpenerRange.SuperAccept), Shape(4, 5)),
 			};
-			this.NextConventionState = () => new ExplainTransfer(type);
-        }
+			SetPartnerBidder(() => new ExplainTransfer(type));
+		}
 	}
 
-	public class ExplainTransfer: TransferBidder
+	public class ExplainTransfer : TransferBidder
 	{
 		public ExplainTransfer(NTType type) : base(type)
 		{
 			this.BidRules = new BidRule[]
-            {
-                Signoff(CallType.Pass, DefaultPriority - 1, Points(ResponderRange.LessThanInvite)),
+			{
+				Signoff(CallType.Pass, DefaultPriority - 1, Points(ResponderRange.LessThanInvite)),
 
 				// This can happen if we are 5/5 with invitational hand. Show Spades
 				// TODDO: Higher prioiryt than other bids.  Seems reasonable...
 				Invitational(2, Suit.Spades, DefaultPriority + 1, Points(ResponderRange.LessThanInvite), Shape(5, 11)),
 
-                Invitational(2, Suit.Unknown, Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Hearts)), Shape(Suit.Hearts, 5)),
-                Invitational(2, Suit.Unknown, Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Spades)), Shape(Suit.Spades, 5)),
+				Invitational(2, Suit.Unknown, Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Hearts)), Shape(Suit.Hearts, 5)),
+				Invitational(2, Suit.Unknown, Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Spades)), Shape(Suit.Spades, 5)),
 
-                Signoff(3, Suit.Diamonds, Partner(LastBid(3, Suit.Clubs)), Shape(Suit.Diamonds, 6, 11)),
+				Signoff(3, Suit.Diamonds, Partner(LastBid(3, Suit.Clubs)), Shape(Suit.Diamonds, 6, 11)),
 
 				// Need to bid 3 hearts with 5/5 and game-going values.
 				Invitational(3, Suit.Hearts, Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Hearts)), Shape(6, 11)),
-                Forcing(3, Suit.Hearts, DefaultPriority + 1, Points(ResponderRange.GameOrBetter), Partner(LastBid(2, Suit.Spades)), Shape(5)),
+				Forcing(3, Suit.Hearts, DefaultPriority + 1, Points(ResponderRange.GameOrBetter), Partner(LastBid(2, Suit.Spades)), Shape(5)),
 
-                Invitational(3, Suit.Spades, Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Spades)), Shape(6, 11)),
+				Invitational(3, Suit.Spades, Points(ResponderRange.Invite), Partner(LastBid(2, Suit.Spades)), Shape(6, 11)),
 
-                Signoff(3, Suit.Unknown, Points(ResponderRange.Game), Partner(LastBid(2, Suit.Hearts)), Shape(Suit.Hearts, 5)),
-                Signoff(3, Suit.Unknown, Points(ResponderRange.Game), Partner(LastBid(2, Suit.Spades)), Shape(Suit.Spades, 5)),
+				Signoff(3, Suit.Unknown, Points(ResponderRange.Game), Partner(LastBid(2, Suit.Hearts)), Shape(Suit.Hearts, 5)),
+				Signoff(3, Suit.Unknown, Points(ResponderRange.Game), Partner(LastBid(2, Suit.Spades)), Shape(Suit.Spades, 5)),
 
-                Signoff(4, Suit.Hearts, Points(ResponderRange.Game), Partner(LastBid(2, Suit.Hearts)), Shape(6, 11)),
-                Signoff(4, Suit.Hearts, DefaultPriority + 1, Points(ResponderRange.GameIfSuperAccept), Partner(LastBid(3, Suit.Hearts))),
+				Signoff(4, Suit.Hearts, Points(ResponderRange.Game), Partner(LastBid(2, Suit.Hearts)), Shape(6, 11)),
+				Signoff(4, Suit.Hearts, DefaultPriority + 1, Points(ResponderRange.GameIfSuperAccept), Partner(LastBid(3, Suit.Hearts))),
 
-                Signoff(4, Suit.Spades, Points(ResponderRange.Game), Partner(LastBid(2, Suit.Spades)), Shape(6,11)),
-                Signoff(4, Suit.Spades, DefaultPriority + 1, Points(ResponderRange.GameIfSuperAccept), Partner(LastBid(3, Suit.Spades)))
+				Signoff(4, Suit.Spades, Points(ResponderRange.Game), Partner(LastBid(2, Suit.Spades)), Shape(6,11)),
+				Signoff(4, Suit.Spades, DefaultPriority + 1, Points(ResponderRange.GameIfSuperAccept), Partner(LastBid(3, Suit.Spades)))
 
 				// TODO: SLAM BIDDING.  REMEMBER RANGES NEED TO BE DIFFERENT IF SUPER ACCEPTED...
 			};
-			this.NextConventionState = () => new TransferOpenerRebid(type);
-        }
-    }
-	
-	public class TransferOpenerRebid: TransferBidder
+			SetPartnerBidder(() => new TransferOpenerRebid(type));
+		}
+	}
+
+	public class TransferOpenerRebid : TransferBidder
 	{
 		public TransferOpenerRebid(NTType type) : base(type)
 		{
 			this.BidRules = new BidRule[]
-            {
+			{
 				// TODO: Make lower priority???  
 				Signoff(CallType.Pass, DefaultPriority - 1, Points(OpenerRange.DontAcceptInvite)),
 				Signoff(CallType.Pass, DefaultPriority + 1, LastBid(3, Suit.Clubs), Partner(LastBid(3, Suit.Diamonds))),
@@ -117,7 +117,7 @@ namespace TricksterBots.Bots.Bridge
 
   //              Signoff(3, Suit.Spades, Points(OpenerRange.DontAcceptInvite), LastBid(2, Suit.Spades), Flat(false), Shape(3)),
                 Signoff(3, Suit.Spades, Points(OpenerRange.DontAcceptInvite), LastBid(2, Suit.Spades), Shape(3, 5)),
-                Forcing(3, Suit.Spades, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Hearts), Shape(5), Shape(Suit.Hearts, 2)),
+				Forcing(3, Suit.Spades, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Hearts), Shape(5), Shape(Suit.Hearts, 2)),
 
 				// TODO: Perhaps priority makes this the last choice... Maybe not.   May need lots of exclusions...
 				// TODO: Maybe if partner shows exactly 5 and we are flat then we bid to 3NT instead of accepting
@@ -126,13 +126,13 @@ namespace TricksterBots.Bots.Bridge
 
 				// TODO: Really want to work off of "Partner Shows" instead of PartnerBid...
                 Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Hearts))),
-                Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Hearts), Partner(LastBid(2, Suit.Unknown)), Shape(3, 5)),
+				Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Hearts), Partner(LastBid(2, Suit.Unknown)), Shape(3, 5)),
 				Signoff(4, Suit.Hearts, LastBid(2, Suit.Hearts), Partner(LastBid(3, Suit.Unknown)), Shape(3, 5)),
-                Signoff(4, Suit.Hearts, LastBid(2, Suit.Spades), Partner(LastBid(3, Suit.Hearts)), Shape(3, 5), BetterOrEqual(Suit.Hearts, Suit.Spades)),
+				Signoff(4, Suit.Hearts, LastBid(2, Suit.Spades), Partner(LastBid(3, Suit.Hearts)), Shape(3, 5), BetterOrEqual(Suit.Hearts, Suit.Spades)),
 
 
-                Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Spades))),
-                Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Spades), Partner(LastBid(2, Suit.Unknown)), Shape(3, 5)),
+				Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Spades))),
+				Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Spades), Partner(LastBid(2, Suit.Unknown)), Shape(3, 5)),
 				Signoff(4, Suit.Spades, LastBid(2, Suit.Spades), Partner(LastBid(3, Suit.Unknown)), Shape(3, 5)),
 				Signoff(4, Suit.Spades, LastBid(2, Suit.Hearts), Partner(LastBid(3, Suit.Spades)), Shape(3, 5), Better(Suit.Spades, Suit.Hearts))
 
@@ -142,27 +142,92 @@ namespace TricksterBots.Bots.Bridge
 				// fit or is it a known fit.  Perhaps competative bidding can handle this...  
 		
 			};
-			this.NextConventionState = () => new ResponderPlaceGameContract(type);
-        }
-    }
+			SetPartnerBidder(() => new ResponderPlaceGameContract(type));
+		}
+	}
 
-    public class ResponderPlaceGameContract : TransferBidder
-    {
-        public ResponderPlaceGameContract(NTType type) : base(type)
-        {
+	public class ResponderPlaceGameContract : TransferBidder
+	{
+		public ResponderPlaceGameContract(NTType type) : base(type)
+		{
 			this.BidRules = new BidRule[]
 			{
 				Signoff(CallType.Pass, DefaultPriority - 10),
 				// If partner has shown 5 hearts or 5 spades then this is game force contract so place
 				// it in NT or 4 of their suit.
 				Signoff(3, Suit.Unknown, Partner(HasMinShape(Suit.Hearts, 5)), Shape(Suit.Hearts, 2)),
-                Signoff(3, Suit.Unknown, Partner(HasMinShape(Suit.Spades, 5)), Shape(Suit.Spades, 2)),
+				Signoff(3, Suit.Unknown, Partner(HasMinShape(Suit.Spades, 5)), Shape(Suit.Spades, 2)),
 
 				Signoff(4, Suit.Hearts, Partner(HasMinShape(5)), Shape(3, 5)),
-                Signoff(4, Suit.Spades, Partner(HasMinShape(5)), Shape(3, 5)),
+				Signoff(4, Suit.Spades, Partner(HasMinShape(5)), Shape(3, 5)),
 
+			};
+		}
+	}
+
+    public class Transfer2NT : TwoNoTrumpBidder
+    {
+        public Transfer2NT() : base(Convention.Transfer, 1000) { }
+    }
+    public class InitiateTransfer2NT : Transfer2NT
+    {
+        public InitiateTransfer2NT()
+        {
+            BidRules = new BidRule[]
+            {
+				// TODO: Need to deal with 5/5 invite, etc.  For now just basic transfers work
+                Forcing(3, Suit.Diamonds, Shape(Suit.Hearts, 5, 11), Better(Suit.Hearts, Suit.Spades)),
+
+                Forcing(3, Suit.Hearts, Shape(Suit.Spades, 5, 11), BetterOrEqual(Suit.Spades, Suit.Hearts)),
+           
             };
+            SetPartnerBidder(() => new AcceptTransfer2NT());
         }
     }
+
+	public class AcceptTransfer2NT: Transfer2NT
+	{
+		public AcceptTransfer2NT()
+		{
+			BidRules = new BidRule[]
+			{
+                Nonforcing(3, Suit.Hearts, Partner(LastBid(3, Suit.Diamonds))),
+                Nonforcing(3, Suit.Spades, Partner(LastBid(3, Suit.Hearts)))
+            };
+			SetPartnerBidder(() => new ExplainTransfer2NT());
+		}
+	}
+
+	public class ExplainTransfer2NT: Transfer2NT
+	{
+		public ExplainTransfer2NT()
+		{
+			BidRules = new BidRule[]
+			{
+				Signoff(CallType.Pass, RespondNoGame),
+
+				Nonforcing(3, Suit.Unknown, RespondGame, Partner(LastBid(3, Suit.Hearts)), Shape(Suit.Hearts, 5)),
+				Nonforcing(3, Suit.Unknown, RespondGame, Partner(LastBid(3, Suit.Spades)), Shape(Suit.Spades, 5)),
+
+				Signoff(4, Suit.Hearts, RespondGame, Partner(LastBid(3, Suit.Hearts)), Shape(6, 11)),
+				Signoff(4, Suit.Spades, RespondGame, Partner(LastBid(3, Suit.Spades)), Shape(6, 11))
+
+            };
+			SetPartnerBidder(() => new PlaceContractTransfer2NT());
+		}
+	}
+
+	public class PlaceContractTransfer2NT: Transfer2NT
+	{
+		public PlaceContractTransfer2NT()
+		{
+			BidRules = new BidRule[]
+			{
+				Signoff(CallType.Pass, DefaultPriority - 10),
+				Signoff(4, Suit.Hearts, Fit()),
+				Signoff(4, Suit.Spades, Fit())
+			};
+		}
+	}
 
 }

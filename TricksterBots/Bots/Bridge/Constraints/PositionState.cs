@@ -42,13 +42,7 @@ namespace TricksterBots.Bots.Bridge
 		public int Seat { get; }
 		public bool Vulnerable { get; }
 
-		public Bid LastBid
-		{
-			get
-			{
-				return GetBidHistory(0);
-			}
-		}
+
 
 		public Bid GetBidHistory(int historyLevel)
 		{

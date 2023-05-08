@@ -79,6 +79,8 @@ namespace TricksterBots.Bots.Bridge
                 new RedirectRule(() => new RespondTo1H(), Partner(LastBid(1, Suit.Hearts)), RHO(Passed())),
                 new RedirectRule(() => new RespondTo1S(), Partner(LastBid(1, Suit.Spades)), RHO(Passed())),
 
+				Redirect(() => new RespondToWeakOpen(), Partner(BidAtLevel(2, 3, 4))),
+
 				// TODO: First attempt at any interference.  For now only if interfere with 1S bid
 				new RedirectRule(() => new RespondWithInt(), RHO(DidBid()))
             };
@@ -136,7 +138,7 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
 			};
-			this.NextConventionState = () => new NaturalOpenerRebid();
+			SetPartnerBidder(() => new NaturalOpenerRebid());
 		}
 	}
 		
@@ -182,7 +184,7 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11)),
 
             };
-            this.NextConventionState = () => new NaturalOpenerRebid();
+            SetPartnerBidder(() => new NaturalOpenerRebid());
         }
 	}
 		
@@ -220,7 +222,7 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11)),
 			};
 			this.BidRules = bids.Concat(NewMinorSuit2Level(Suit.Hearts));
-            this.NextConventionState = () => new NaturalOpenerRebid();
+            SetPartnerBidder(() => new NaturalOpenerRebid());
         }
 	}
 
@@ -254,10 +256,24 @@ namespace TricksterBots.Bots.Bridge
             };
 			this.BidRules = bids.Concat(NewMinorSuit2Level(Suit.Spades));
 			this.BidRules = bids;
-            this.NextConventionState = () => new NaturalOpenerRebid();
+            SetPartnerBidder(() => new NaturalOpenerRebid());
            
         }
 
+	}
+
+	public class RespondToWeakOpen: NaturalRespond
+	{
+		public RespondToWeakOpen()
+		{
+			BidRules = new BidRule[]
+			{
+				Signoff(4, Suit.Hearts, Fit(), RuleOf17()),
+				Signoff(4, Suit.Hearts, Fit(10), PassEndsAuction(false)),
+				Signoff(4, Suit.Spades, Fit(), RuleOf17()),
+                Signoff(4, Suit.Spades, Fit(10), PassEndsAuction(false)),
+            };
+		}
 	}
 
 	// TODO: THIS IS SUPER HACKED NOW TO JUST 

@@ -122,6 +122,7 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\PositionProxy.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Role.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Quality.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\RuleOf17.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Seat.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\ShowsTrump.cs" />
     <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />

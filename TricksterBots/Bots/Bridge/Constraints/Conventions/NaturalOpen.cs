@@ -40,25 +40,25 @@ namespace TricksterBots.Bots.Bridge
 				// this rule would be silly.
 				//Rule(2, Suit.Clubs, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good)),
 
-				Nonforcing(2, Suit.Diamonds, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good, SuitQuality.Solid)),
+				Nonforcing(2, Suit.Diamonds, Points(Open2Suit), Shape(6), GoodSuit()),
 
-				Nonforcing(2, Suit.Hearts, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good, SuitQuality.Solid)),
+				Nonforcing(2, Suit.Hearts, Points(Open2Suit), Shape(6), GoodSuit()),
 
-				Nonforcing(2, Suit.Spades, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good, SuitQuality.Solid)),
+				Nonforcing(2, Suit.Spades, Points(Open2Suit), Shape(6), GoodSuit()),
 
 				// 2NT rule(s) in NoTrump class.
 			
-				Nonforcing(3, Suit.Clubs, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
-				Nonforcing(3, Suit.Diamonds, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
-				Nonforcing(3, Suit.Hearts, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
-				Nonforcing(3, Suit.Spades, Points(LessThanOpen), Shape(7), Quality(SuitQuality.Good, SuitQuality.Solid)),
+				Nonforcing(3, Suit.Clubs, Points(LessThanOpen), Shape(7), GoodSuit()),
+				Nonforcing(3, Suit.Diamonds, Points(LessThanOpen), Shape(7), GoodSuit()),
+				Nonforcing(3, Suit.Hearts, Points(LessThanOpen), Shape(7), GoodSuit()),
+				Nonforcing(3, Suit.Spades, Points(LessThanOpen), Shape(7), GoodSuit()),
 
 				// 3NT rule(s) in NoTrump class.
 				
-                Nonforcing(4, Suit.Clubs, Points(LessThanOpen), Shape(8), Quality(SuitQuality.Decent, SuitQuality.Solid)),
-                Nonforcing(4, Suit.Diamonds, Points(LessThanOpen), Shape(8), Quality(SuitQuality.Decent, SuitQuality.Solid)),
-                Nonforcing(4, Suit.Hearts, Points(LessThanOpen), Shape(8), Quality(SuitQuality.Decent, SuitQuality.Solid)),
-                Nonforcing(4, Suit.Spades, Points(LessThanOpen), Shape(8), Quality(SuitQuality.Decent, SuitQuality.Solid)),
+                Nonforcing(4, Suit.Clubs, Points(LessThanOpen), Shape(8), DecentSuit()),
+                Nonforcing(4, Suit.Diamonds, Points(LessThanOpen), Shape(8), DecentSuit()),
+                Nonforcing(4, Suit.Hearts, Points(LessThanOpen), Shape(8), DecentSuit()),
+                Nonforcing(4, Suit.Spades, Points(LessThanOpen), Shape(8), DecentSuit()),
 
 
                 Nonforcing(6, Suit.Clubs, Shape(12)),
@@ -71,7 +71,7 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(7, Suit.Hearts, Shape(13)),
 				Nonforcing(7, Suit.Spades, Shape(13)),
 			};
-			this.NextConventionState = () => new NaturalRespond();
+			SetPartnerBidder(() => new NaturalRespond());
         }
 
 

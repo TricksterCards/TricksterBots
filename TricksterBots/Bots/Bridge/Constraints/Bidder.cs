@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,8 +27,12 @@ namespace TricksterBots.Bots.Bridge
 
 		public IEnumerable<RedirectRule> Redirects { get; protected set; } = null;
 
-		public BidderFactory NextConventionState { get; protected set; }
+		//	public BidderFactory NextConventionState { get; protected set; }
 
+		//	public BidderFactory NextStateIfPass { get; protected set; }
+
+		private BidderFactory _defaultPartnerBidder = null;
+		private Dictionary<Bid, BidderFactory> _partnerBidders = null;
 
 		// Convention rules..
 		public ConventionRule ConventionRule(params Constraint[] constraints)
@@ -62,7 +67,43 @@ namespace TricksterBots.Bots.Bridge
 		{
 			this.Convention = convention;
 			this.DefaultPriority = defaultPriority;
+		//	this.NextConventionState = null;
+		//	this.NextStateIfPass = null;
 		}
+
+		// This sets the default bidder for partner's next time to act.  This bidder will created and
+		// invoked so long as the current bidder selects any bid other than Pass.  For setting specific
+		// bidders for specific bids, including Pass, use SetPartnerBidder(Bid, BidderFactory).
+		public void SetPartnerBidder(BidderFactory bidderFactory)
+		{
+			this._defaultPartnerBidder = bidderFactory;
+		}
+
+		// This method is used to provide a bidder factory for a specific bid (including Pass).  If no
+		// specific bidder is specified and the current bidder does not Pass then the defualt factory
+		// will be used.  Otherwise the specific bidder will be used.  If no specific bidder and no default
+		// then no factory will used and partner will rely on default bidders.
+		public void SetPartnerBidder(Bid bid, BidderFactory bidderFactory)
+		{
+			if (_partnerBidders == null)
+			{
+				_partnerBidders = new Dictionary<Bid, BidderFactory>();
+			}
+			_partnerBidders[bid] = bidderFactory;
+		}
+
+		// This method returns a specific bidder if one was specified, otherwise it will always return null
+		// for a Pass bid, and will return the default bidder factory (which could be null also) for any
+		// other bid.
+		public BidderFactory GetPartnerBidder(Bid bid)
+		{
+			if (_partnerBidders != null && _partnerBidders.ContainsKey(bid))
+			{
+				return _partnerBidders[bid];
+			}
+			return bid.IsPass ? null : _defaultPartnerBidder;
+		}
+
 
 		public BidRule Forcing(int level, Suit suit, params Constraint[] constraints)
 		{
@@ -182,30 +223,53 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint Balanced(bool desired = true) { return new ShowsBalanced(desired); }
 		public static Constraint Flat(bool desired = true) { return new ShowsFlat(desired); }
 
-		public static Constraint LastBid(int level, Suit suit, bool desired = true)
+		public static Constraint LastBid(int level, Suit? suit, bool desired = true)
 		{
-			return new BidHistory(CallType.Bid, level, suit, desired); 
+			return new BidHistory(0, CallType.Bid, level, true, suit, desired); 
 		}
 
 		public static Constraint LastBid(int level, bool desired = true)
 		{
-			return new BidHistory(CallType.Bid, level, null, desired);
+			return LastBid(level, null, desired);
 		}
 
 		public static Constraint DidBid(bool desired = true)
 		{
-			return new BidHistory(CallType.Bid, 0, Suit.Unknown, desired);
+			return new BidHistory(0, CallType.Bid, 0, false, null, desired);
+		}
+
+		public static Constraint BidAtLevel(int level, bool desired = true)
+		{
+			return new BidHistory(0, CallType.Bid, level, false, null, desired);
+		}
+
+		public static Constraint BidAtLevel(params int[] levels)
+		{
+			Constraint constraint = null;
+			foreach (var level in levels)
+			{
+				Constraint levelConstraint = BidAtLevel(level);
+				if (constraint == null)
+				{
+					constraint = levelConstraint;
+				}
+				else
+				{
+					constraint = Or(constraint, levelConstraint);
+				}
+			}
+			return constraint;
 		}
 
 		public static Constraint DidDouble(bool desired = true)
 		{
-			return new BidHistory(CallType.Double, 0, Suit.Unknown, desired);
+			return new BidHistory(0, CallType.Double, 0, false, null, desired);
 		}
 
 
 		public static Constraint Passed(bool desired = true)
 		{
-			return new BidHistory(CallType.Pass, 0, Suit.Unknown, desired);
+			return new BidHistory(0, CallType.Pass, 0, false, null, desired);
 		}
 
 		//	public static Constraint PartnerBid(Suit suit, bool desired = true)
@@ -361,9 +425,14 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 		// TOOD: These are temporary for now.  But need to think them through.  
-		public Constraint Fit(Suit? suit = null, bool desiredValue = true)
+		public Constraint Fit(int count = 8, Suit? suit = null, bool desiredValue = true)
 		{
-			return new PairShowsMinShape(suit, 8, desiredValue);
+			return new PairShowsMinShape(suit, count, desiredValue);
+		}
+
+		public Constraint Fit(Suit suit, bool desiredValue = true)
+		{
+			return Fit(8, suit, desiredValue);
 		}
 
 		public Constraint PairPoints((int Min, int Max) range)
@@ -393,6 +462,11 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint PassEndsAuction(bool desiredValue = true)
 		{
 			return new PassEndsAuction(desiredValue);
+		}
+
+		public static Constraint RuleOf17(Suit? suit = null)
+		{
+			return new RuleOf17(suit);
 		}
 
 	}

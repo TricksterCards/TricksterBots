@@ -158,7 +158,7 @@ namespace TricksterBots.Bots.Bridge
                 // TODO: If the type is Overcall then we need to check for suit stopped... But anyway thats in the future
                 Nonforcing(1, Suit.Unknown, DefaultPriority + 10, Points(OpenerRange.Open), Balanced())
             };
-            this.NextConventionState = () => new Conventions1NT(type);
+            SetPartnerBidder(() => new Conventions1NT(type));
         }
     }
 
@@ -217,7 +217,7 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(3, Suit.Unknown, Points(ResponderRange.Game), LongestMajor(4)),
 
             };
-            this.NextConventionState = () => new Natural1NTOpenerRebid(type);
+            SetPartnerBidder(() => new Natural1NTOpenerRebid(type));
         }
     }
 
@@ -244,7 +244,7 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(4, Suit.Hearts, Partner(LastBid(3, Suit.Hearts)), Shape(3, 5)),
                 Nonforcing(4, Suit.Spades, Partner(LastBid(3, Suit.Spades)), Shape(3, 5))
             };
-            this.NextConventionState = () => new Natural1NTResponderRebid(type);
+            SetPartnerBidder(() => new Natural1NTResponderRebid(type));
         }
     }
 
@@ -296,7 +296,7 @@ namespace TricksterBots.Bots.Bridge
             {
                 Nonforcing(2, Suit.Unknown, DefaultPriority + 10, OpenPoints, Balanced())
             };
-            this.NextConventionState = () => new Conventions2NT();
+            SetPartnerBidder(() => new Conventions2NT());
         }
     }
 
@@ -313,8 +313,8 @@ namespace TricksterBots.Bots.Bridge
             this.Redirects = new RedirectRule[]
             {
                 Redirect(() => new NaturalResponseTo2NT()),
-         //       Redirect(() => new InitiateStayman2NT()),
-         //       Redirect(() => new InitiateTransfer2NT())
+                Redirect(() => new InitiateStayman2NT()),
+                Redirect(() => new InitiateTransfer2NT())
             };
         }
     }
@@ -338,7 +338,7 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Hearts, RespondGame, Shape(5, 11), BetterThan(Suit.Spades)),
                 Signoff(4, Suit.Spades, RespondGame, Shape(5, 11), BetterOrEqualTo(Suit.Hearts)),
             };
-            this.NextConventionState = () => new Natural2NTOpenerRebid();
+            SetPartnerBidder(() => new Natural2NTOpenerRebid());
         }
     }
 

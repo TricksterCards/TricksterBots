@@ -35,7 +35,7 @@ namespace TricksterBots.Bots.Bridge
             {
                 Forcing(2, Suit.Clubs, Points(StrongOpenRange)),
             };
-            this.NextConventionState = () => new StrongResponse();
+            SetPartnerBidder(() => new StrongResponse());
         }
 
     }
@@ -54,7 +54,7 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Clubs, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(3, Suit.Diamonds, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
             };
-            this.NextConventionState = () => new StrongRebid();
+            SetPartnerBidder(() => new StrongRebid());
         }
     }
    
@@ -74,7 +74,7 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Clubs, Shape(5, 11)),
                 Forcing(3, Suit.Diamonds, Shape(5, 11))
             };
-            this.NextConventionState = () => new StrongResponderRebid();
+            SetPartnerBidder(() => new StrongResponderRebid());
         }
     }
 

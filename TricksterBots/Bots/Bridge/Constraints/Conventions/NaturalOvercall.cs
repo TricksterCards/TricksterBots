@@ -42,7 +42,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 			};
-            this.NextConventionState = () => new NaturalAdvance();
+            SetPartnerBidder(() => new NaturalAdvance());
         }
     }
 

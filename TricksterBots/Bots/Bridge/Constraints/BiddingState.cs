@@ -218,7 +218,7 @@ namespace TricksterBots.Bots.Bridge
                         }
                         if (!didRedirect && bidder.BidRules != null)
                         {
-                            options.Add(bidder.Convention, bidder.NextConventionState, bidder.BidRules, NextToAct);
+                            options.Add(bidder, NextToAct);
                         }
                     }
                     // TODO: Deal with redirect.  Where?  Here, or in Applies?  Not sure. 

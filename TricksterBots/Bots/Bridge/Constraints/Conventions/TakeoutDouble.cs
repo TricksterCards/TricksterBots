@@ -43,7 +43,7 @@ namespace TricksterBots.Bots.Bridge
                 Takeout(Suit.Hearts),
                 Takeout(Suit.Spades)
             };
-            this.NextConventionState = () => new RespondToTakeout();
+            SetPartnerBidder(() => new RespondToTakeout());
                
         }
     }

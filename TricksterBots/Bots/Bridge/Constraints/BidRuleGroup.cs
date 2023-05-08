@@ -26,13 +26,13 @@ namespace TricksterBots.Bots.Bridge
             }
 
             // Unconditionally add the rule to the appropriate convention group 
-            internal void Add(Convention convention, BidderFactory nextState, BidRule rule)
+            internal void Add(Convention convention, BidderFactory partnerBidder, BidRule rule)
             {
                 if (convention == Convention.Natural)
                 {
                     if (this.Natural == null)
                     {
-                        this.Natural = new BidRuleGroup(rule.Bid, convention, nextState);
+                        this.Natural = new BidRuleGroup(rule.Bid, convention, partnerBidder);
                     }
                     this.Natural.Add(rule);
                 } 
@@ -40,7 +40,7 @@ namespace TricksterBots.Bots.Bridge
                 {
                     if (this.Conventional == null)
                     {
-                        this.Conventional = new BidRuleGroup(rule.Bid, convention, nextState);
+                        this.Conventional = new BidRuleGroup(rule.Bid, convention, partnerBidder);
                     }
                     Debug.Assert(this.Conventional.Convention == convention);
                     // TODO: Make sure bidding factory is the same...
@@ -64,10 +64,11 @@ namespace TricksterBots.Bots.Bridge
             this.Choices = new Dictionary<Bid, BidGroupChoices>();
         }
 
-        public void Add(Convention convention, BidderFactory nextState, IEnumerable<BidRule> rules, PositionState ps)
+        // Adds all the BidRules from the specified bidder.
+        public void Add(Bidder bidder, PositionState ps)
         {
             var contract = ps.BiddingState.GetContract();
-            foreach (var rule in rules)
+            foreach (var rule in bidder.BidRules)
             {
                 if (rule.Bid.IsValid(ps, contract).Valid && rule.Conforms(true, ps, ps.PublicHandSummary, ps.PairAgreements))
                 { 
@@ -75,7 +76,7 @@ namespace TricksterBots.Bots.Bridge
                     {
                         Choices[rule.Bid] = new BidGroupChoices();
                     }
-                    Choices[rule.Bid].Add(convention, nextState, rule);
+                    Choices[rule.Bid].Add(bidder.Convention, bidder.GetPartnerBidder(rule.Bid), rule);
                 }
             }
         }
