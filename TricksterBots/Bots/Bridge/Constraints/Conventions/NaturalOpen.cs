@@ -22,7 +22,7 @@ namespace TricksterBots.Bots.Bridge
 			};
 			this.BidRules = new BidRule[]
 			{
-				Nonforcing(CallType.Pass, DefaultPriority - 100, Points(LessThanOpen)),
+				Nonforcing(Call.Pass, DefaultPriority - 100, Points(LessThanOpen)),
 
 				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(3), Shape(Suit.Diamonds, 0, 3), LongestMajor(4)),
 				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(4, 11), LongerThan(Suit.Diamonds), LongestMajor(4)),

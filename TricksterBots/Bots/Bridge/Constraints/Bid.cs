@@ -17,7 +17,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public enum CallType { Pass, Bid, Double, Redouble, NotActed }
+	public enum Call { Pass, Bid, Double, Redouble, NotActed }
 
 	public enum BidForce { Nonforcing, Invitational, Forcing, Signoff }
 	public struct Bid : IEquatable<Bid>
@@ -25,30 +25,30 @@ namespace TricksterBots.Bots.Bridge
 		public int? Level { get; }
 		public Suit? Suit { get; }
 
-		public CallType CallType { get; }
+		public Call Call { get; }
 
 		public BidForce Force { get; }
 
 		public bool Is(int level, Suit suit)
 		{
-			return CallType == CallType.Bid && Level == level && Suit == suit;
+			return Call == Call.Bid && Level == level && Suit == suit;
 		}
 
 		public bool Equals(Bid other)
 		{
-			return (CallType == other.CallType && Level == other.Level && Suit == other.Suit);
+			return (Call == other.Call && Level == other.Level && Suit == other.Suit);
 		}
 
 		public bool IsBid
 		{
-			get { return CallType == CallType.Bid; }
+			get { return Call == Call.Bid; }
 		}
 		public bool IsPass
 		{
-			get { return CallType == CallType.Pass; }
+			get { return Call == Call.Pass; }
 		}
 
-		public bool HasActed => CallType != CallType.NotActed;
+		public bool HasActed => Call != Call.NotActed;
 
 		public Suit SuitIfNot(Suit? suit)
 		{
@@ -67,18 +67,18 @@ namespace TricksterBots.Bots.Bridge
 
         static public Bid FromString(string str)
 		{
-			if (str == "Pass") { return new Bid(CallType.Pass, BidForce.Nonforcing);  }
-			if (str == "X") { return new Bid(CallType.Double, BidForce.Nonforcing); }
-			if (str == "XX") { return new Bid(CallType.Redouble, BidForce.Nonforcing); }
+			if (str == "Pass") { return new Bid(Call.Pass, BidForce.Nonforcing);  }
+			if (str == "X") { return new Bid(Call.Double, BidForce.Nonforcing); }
+			if (str == "XX") { return new Bid(Call.Redouble, BidForce.Nonforcing); }
 			int level = int.Parse(str.Substring(0, 1));
 			var suit = SymbolToSuit[str.Substring(1)];
 			return new Bid(level, suit, BidForce.Nonforcing);
 		}
 
-		public Bid(CallType callType, BidForce force)
+		public Bid(Call call, BidForce force)
 		{
-			Debug.Assert(callType != CallType.Bid);
-			this.CallType = callType;
+			Debug.Assert(call != Call.Bid);
+			this.Call = call;
 			this.Level = null;
 			this.Suit = null;
 			this.Force = force;
@@ -86,7 +86,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public Bid(int level, Suit suit, BidForce force)
 		{
-			this.CallType = CallType.Bid;
+			this.Call = Call.Bid;
 			Debug.Assert(level >= 1 && level <= 7);
 			this.Level = level;
 			this.Suit = suit;
@@ -115,16 +115,16 @@ namespace TricksterBots.Bots.Bridge
 
 		public override string ToString()
 		{
-			if (CallType == CallType.Bid)
+			if (Call == Call.Bid)
 			{
 				return $"{Level}{SuitToSymbol[(Suit)this.Suit]}";
 			}
-			if (CallType == CallType.Pass)
+			if (Call == Call.Pass)
 			{
 				return "Pass";
 			}
-			if (CallType == CallType.Double) { return "X"; }
-			if (CallType == CallType.Redouble) { return "XX"; }
+			if (Call == Call.Double) { return "X"; }
+			if (Call == Call.Redouble) { return "XX"; }
 			Debug.Assert(false);
 			return "";
 		}
@@ -141,12 +141,12 @@ namespace TricksterBots.Bots.Bridge
 		public (bool Valid, int Jump) IsValid(PositionState position, Contract contract)
 		{
 			if (this.IsPass) { return (true, 0); }
-			if (this.CallType == CallType.Double)
+			if (this.Call == Call.Double)
 			{
 				if (!contract.Bid.IsBid || contract.Doubled) { return (false, 0); }
 				return ((position.LeftHandOpponent == contract.By || position.RightHandOpponent == contract.By), 0);
 			}
-			if (this.CallType == CallType.Redouble)
+			if (this.Call == Call.Redouble)
 			{
 				if (contract.Doubled && !contract.Redoubled)
 				{
@@ -154,8 +154,8 @@ namespace TricksterBots.Bots.Bridge
 				}
 				return (false, 0);
 			}
-			Debug.Assert(this.CallType == CallType.Bid);
-			if (contract.Bid.CallType == CallType.NotActed)
+			Debug.Assert(this.Call == Call.Bid);
+			if (contract.Bid.Call == Call.NotActed)
 			{
 				return (true, 1 - (int)this.Level);
 			}

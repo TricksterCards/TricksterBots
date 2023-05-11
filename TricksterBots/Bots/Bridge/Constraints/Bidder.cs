@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
@@ -15,24 +16,147 @@ using static TricksterBots.Bots.Bridge.ConventionRule;
 namespace TricksterBots.Bots.Bridge
 {
 
-	public delegate Bidder BidderFactory();
+
+    // KINDA ALONG THESE LINES
+
+
+    public delegate PrescribedBids PrescribedBidsFactory();
+    public delegate void PrescribeBidRules(PrescribedBids prescribedBids);
+	
+    public class PrescribedBids
+    {
+		private Bidder _bidder;
+
+        public IEnumerable<ConventionRule> ConventionRules { get; set; }
+
+        public IEnumerable<RedirectRule> Redirects { get; set; }
+
+        public IEnumerable<BidRule> Bids { get; set; }
+
+        private Dictionary<Bid, PrescribeBidRules> _partnerRules = null;
+
+        public PrescribedBids(Bidder bidder, PrescribeBidRules setRules)
+		{
+			this._bidder = bidder;
+			setRules(this);
+		}
+
+
+		
+        public IEnumerable<BidRuleGroup> GetBids(PositionState ps)
+        {
+			// Step 1: Make sure this set of rules applies.  If not don't redirect or return any bid rules.
+			if (ConventionRules != null)
+			{ 
+                foreach (var rule in ConventionRules)
+                {
+                    if (!rule.Conforms(ps)) { return null; }
+                }
+            }
+            // Step 2: This set of prescribed bids applies so now we either redirect to one or more other
+            // sets of prescribed bids OR we return our own set of rules.
+
+            if (Redirects != null)
+            {
+				IEnumerable<BidRuleGroup> bids = null;
+                foreach (var redirect in Redirects)
+                {
+                    var redirectedBids = redirect.RedirectedBids(ps);
+					if (redirectedBids != null)
+					{
+						// NOTE: It is acceptable to return an empty set of rules.  This means that the 
+						// redirection rule conforms (so bid rules in this set of Prescribed Bids will not be used)
+						// but that there are no bids returned.  Basically the empty set of bids is ok, but stops
+						// us from returning our bids.
+						if (bids == null)
+						{
+							bids = redirectedBids;
+						}
+						else
+						{
+							bids = bids.Concat(redirectedBids);
+						}
+					}
+                }
+				if (bids != null) { return bids; }
+            }
+
+            // Step 3: Hooray!  We conform and did not need to be redirected.  Now add all confoming bids
+            // to the result and return a list of groupled bid rules.
+            var brs = new Dictionary<Bid, BidRuleGroup>();
+			foreach (var rule in Bids)
+			{
+				if (rule.Conforms(true, ps, ps.PublicHandSummary, ps.PairAgreements))
+				{
+					var bid = rule.Bid;
+					if (!brs.ContainsKey(bid))
+					{
+						brs[bid] = new BidRuleGroup(bid, _bidder.Convention, GetPartnerBidder(bid));
+					}
+					brs[bid].Add(rule);
+				}
+			}
+			return brs.Values.ToList();
+        }
+
+        // This sets the default bidder for partner's next time to act.  This bidder will created and
+        // invoked so long as the current bidder selects any bid other than Pass.  For setting specific
+        // bidders for specific bids, including Pass, use SetPartnerBidder(Bid, BidderFactory).
+        public PrescribeBidRules PartnerRules { get; set; }
+
+
+        // This method is used to provide a bidder factory for a specific bid (including Pass).  If no
+        // specific bidder is specified and the current bidder does not Pass then the defualt factory
+        // will be used.  Otherwise the specific bidder will be used.  If no specific bidder and no default
+        // then no factory will used and partner will rely on default bidders.
+        public void SetPartnerRules(Bid bid, PrescribeBidRules partnerRules)
+        {
+            if (_partnerRules == null)
+            {
+                _partnerRules = new Dictionary<Bid, PrescribeBidRules>();
+            }
+            _partnerRules[bid] = partnerRules;
+        }
+
+        // This method returns a specific bidder if one was specified, otherwise it will always return null
+        // for a Pass bid, and will return the default bidder factory (which could be null also) for any
+        // other bid.
+        public PrescribedBidsFactory GetPartnerBidder(Bid bid)
+        {
+            if (_partnerRules != null && _partnerRules.ContainsKey(bid))
+            {
+                return () => new PrescribedBids(_bidder, _partnerRules[bid]);
+            }
+			if (bid.IsPass || PartnerRules == null)
+			{
+				return null;
+			}
+			return () => new PrescribedBids(_bidder, PartnerRules);
+        }
+
+
+    }
+
+    
+
 
 	public abstract class Bidder
 	{
 		public Convention Convention { get; }
 
 		public int DefaultPriority { get; }
-		public IEnumerable<ConventionRule> ConventionRules { get; protected set; } = null;
-		public IEnumerable<BidRule> BidRules { get; protected set; }
 
-		public IEnumerable<RedirectRule> Redirects { get; protected set; } = null;
+
+//		public IEnumerable<ConventionRule> ConventionRules { get; protected set; } = null;
+//		public IEnumerable<BidRule> BidRules { get; protected set; }
+//		public IEnumerable<RedirectRule> Redirects { get; protected set; } = null;
 
 		//	public BidderFactory NextConventionState { get; protected set; }
 
 		//	public BidderFactory NextStateIfPass { get; protected set; }
 
-		private BidderFactory _defaultPartnerBidder = null;
-		private Dictionary<Bid, BidderFactory> _partnerBidders = null;
+//		private BidderFactory _defaultPartnerBidder = null;
+//		private Dictionary<Bid, BidderFactory> _partnerBidders = null;
 
 		// Convention rules..
 		public ConventionRule ConventionRule(params Constraint[] constraints)
@@ -41,17 +165,23 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public RedirectRule Redirect(BidderFactory redirectTo)
+		public RedirectRule Redirect(PrescribeBidRules redirectTo)
 		{
 			return Redirect(redirectTo, new Constraint[0]);
 		}
 
-		public RedirectRule Redirect(BidderFactory redirectTo, params Constraint[] constraints)
+		public RedirectRule Redirect(PrescribeBidRules redirectTo, params Constraint[] constraints)
 		{
-			return new RedirectRule(redirectTo, constraints);
+			return new RedirectRule(this, redirectTo, constraints);
+		}
+
+		public RedirectRule Redirect(PrescribedBidsFactory factory, params Constraint[] constraints)
+		{
+			return new RedirectRule(factory, constraints);
 		}
 
 		// TODO: This is a bit of a hack - where to have the logic.
+		/*
 		public bool Applies(PositionState ps)
 		{
 			if (ConventionRules == null) { return true; }
@@ -61,7 +191,7 @@ namespace TricksterBots.Bots.Bridge
 			}
 			return false;
 		}
-
+		*/
 
 		public Bidder(Convention convention, int defaultPriority)
 		{
@@ -74,35 +204,35 @@ namespace TricksterBots.Bots.Bridge
 		// This sets the default bidder for partner's next time to act.  This bidder will created and
 		// invoked so long as the current bidder selects any bid other than Pass.  For setting specific
 		// bidders for specific bids, including Pass, use SetPartnerBidder(Bid, BidderFactory).
-		public void SetPartnerBidder(BidderFactory bidderFactory)
-		{
-			this._defaultPartnerBidder = bidderFactory;
-		}
+	//	public void SetPartnerBidder(BidderFactory bidderFactory)
+//		{
+//			this._defaultPartnerBidder = bidderFactory;
+	//	}
 
 		// This method is used to provide a bidder factory for a specific bid (including Pass).  If no
 		// specific bidder is specified and the current bidder does not Pass then the defualt factory
 		// will be used.  Otherwise the specific bidder will be used.  If no specific bidder and no default
 		// then no factory will used and partner will rely on default bidders.
-		public void SetPartnerBidder(Bid bid, BidderFactory bidderFactory)
-		{
-			if (_partnerBidders == null)
-			{
-				_partnerBidders = new Dictionary<Bid, BidderFactory>();
-			}
-			_partnerBidders[bid] = bidderFactory;
-		}
+//		public void SetPartnerBidder(Bid bid, BidderFactory bidderFactory)
+//		{
+//			if (_partnerBidders == null)
+//			{
+//				_partnerBidders = new Dictionary<Bid, BidderFactory>();
+//			}
+//			_partnerBidders[bid] = bidderFactory;
+//		}
 
 		// This method returns a specific bidder if one was specified, otherwise it will always return null
 		// for a Pass bid, and will return the default bidder factory (which could be null also) for any
 		// other bid.
-		public BidderFactory GetPartnerBidder(Bid bid)
-		{
-			if (_partnerBidders != null && _partnerBidders.ContainsKey(bid))
-			{
-				return _partnerBidders[bid];
-			}
-			return bid.IsPass ? null : _defaultPartnerBidder;
-		}
+//		public BidderFactory GetPartnerBidder(Bid bid)
+//		{
+//			if (_partnerBidders != null && _partnerBidders.ContainsKey(bid))
+//			{
+//				return _partnerBidders[bid];
+//			}
+//			return bid.IsPass ? null : _defaultPartnerBidder;
+//		}
 
 
 		public BidRule Forcing(int level, Suit suit, params Constraint[] constraints)
@@ -113,13 +243,13 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return Rule(level, suit, BidForce.Forcing, priority, constraints);
 		}
-		public BidRule Forcing(CallType callType, params Constraint[] constraints)
+		public BidRule Forcing(Call call, params Constraint[] constraints)
 		{
-			return Rule(callType, BidForce.Forcing, DefaultPriority, constraints);
+			return Rule(call, BidForce.Forcing, DefaultPriority, constraints);
 		}
-		public BidRule Forcing(CallType callType, int priority, params Constraint[] constraints)
+		public BidRule Forcing(Call call, int priority, params Constraint[] constraints)
 		{
-			return Rule(callType, BidForce.Forcing, priority, constraints);
+			return Rule(call, BidForce.Forcing, priority, constraints);
 		}
 
 		// TODO: Need a non-forcing BidMessage...
@@ -131,13 +261,13 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return Rule(level, suit, BidForce.Nonforcing, priority, constraints);
 		}
-		public BidRule Nonforcing(CallType callType, params Constraint[] constraints)
+		public BidRule Nonforcing(Call call, params Constraint[] constraints)
 		{
-			return Rule(callType, BidForce.Nonforcing, DefaultPriority, constraints);
+			return Rule(call, BidForce.Nonforcing, DefaultPriority, constraints);
 		}
-		public BidRule Nonforcing(CallType callType, int priority, params Constraint[] constraints)
+		public BidRule Nonforcing(Call call, int priority, params Constraint[] constraints)
 		{
-			return Rule(callType, BidForce.Nonforcing, priority, constraints);
+			return Rule(call, BidForce.Nonforcing, priority, constraints);
 		}
 
 
@@ -149,13 +279,13 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return Rule(level, suit, BidForce.Invitational, priority, constraints);
 		}
-		public BidRule Invitational(CallType callType, params Constraint[] constraints)
+		public BidRule Invitational(Call call, params Constraint[] constraints)
 		{
-			return Rule(callType, BidForce.Invitational, DefaultPriority, constraints);
+			return Rule(call, BidForce.Invitational, DefaultPriority, constraints);
 		}
-		public BidRule Invitational(CallType callType, int priority, params Constraint[] constraints)
+		public BidRule Invitational(Call call, int priority, params Constraint[] constraints)
 		{
-			return Rule(callType, BidForce.Invitational, priority, constraints);
+			return Rule(call, BidForce.Invitational, priority, constraints);
 		}
 
 
@@ -167,13 +297,13 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return Rule(level, suit, BidForce.Signoff, priority, constraints);
 		}
-		public BidRule Signoff(CallType callType, params Constraint[] constraints)
+		public BidRule Signoff(Call call, params Constraint[] constraints)
 		{
-			return Rule(callType, BidForce.Signoff, DefaultPriority, constraints);
+			return Rule(call, BidForce.Signoff, DefaultPriority, constraints);
 		}
-		public BidRule Signoff(CallType callType, int priority, params Constraint[] constraints)
+		public BidRule Signoff(Call call, int priority, params Constraint[] constraints)
 		{
-			return Rule(callType, BidForce.Signoff, priority, constraints);
+			return Rule(call, BidForce.Signoff, priority, constraints);
 		}
 
 
@@ -183,9 +313,9 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public BidRule Rule(CallType callType, BidForce force, int priority, params Constraint[] constraints)
+		public BidRule Rule(Call call, BidForce force, int priority, params Constraint[] constraints)
 		{
-			return new BidRule(new Bid(callType, force), priority, constraints);
+			return new BidRule(new Bid(call, force), priority, constraints);
 		}
 
 
@@ -225,7 +355,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint LastBid(int level, Suit? suit, bool desired = true)
 		{
-			return new BidHistory(0, CallType.Bid, level, true, suit, desired); 
+			return new BidHistory(0, Call.Bid, level, true, suit, desired); 
 		}
 
 		public static Constraint LastBid(int level, bool desired = true)
@@ -235,12 +365,12 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint DidBid(bool desired = true)
 		{
-			return new BidHistory(0, CallType.Bid, 0, false, null, desired);
+			return new BidHistory(0, Call.Bid, 0, false, null, desired);
 		}
 
 		public static Constraint BidAtLevel(int level, bool desired = true)
 		{
-			return new BidHistory(0, CallType.Bid, level, false, null, desired);
+			return new BidHistory(0, Call.Bid, level, false, null, desired);
 		}
 
 		public static Constraint BidAtLevel(params int[] levels)
@@ -263,13 +393,13 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint DidDouble(bool desired = true)
 		{
-			return new BidHistory(0, CallType.Double, 0, false, null, desired);
+			return new BidHistory(0, Call.Double, 0, false, null, desired);
 		}
 
 
 		public static Constraint Passed(bool desired = true)
 		{
-			return new BidHistory(0, CallType.Pass, 0, false, null, desired);
+			return new BidHistory(0, Call.Pass, 0, false, null, desired);
 		}
 
 		//	public static Constraint PartnerBid(Suit suit, bool desired = true)

@@ -12,17 +12,21 @@ namespace TricksterBots.Bots.Bridge
 	public class TransferBidder : OneNoTrumpBidder
 	{
 		public TransferBidder(NTType type) : base(type, Convention.Transfer, 1000) { }
-	}
 
-	public class InitiateTransfer : TransferBidder
-	{
-		public InitiateTransfer(NTType type) : base(type)
+
+		public static PrescribedBids InitiateConvention(NTType type)
 		{
-			this.BidRules = new BidRule[]
+			var bidder = new TransferBidder(type);
+			return new PrescribedBids(bidder, bidder.Initiate);
+	    }
+
+		private void Initiate(PrescribedBids pb)
+		{
+			pb.Bids = new BidRule[]
 			{
-                // For weak hands, transfer to longest major.
-                // For invitational hands, 5/5 transfer to hearts then bid spades
-                // For game-going hands 5/5 transfer to spades then bid 3H
+				// For weak hands, transfer to longest major.
+				// For invitational hands, 5/5 transfer to hearts then bid spades
+				// For game-going hands 5/5 transfer to spades then bid 3H
 				Forcing(2, Suit.Diamonds, Points(ResponderRange.LessThanInvite), Shape(Suit.Hearts, 5, 11), Better(Suit.Hearts, Suit.Spades)),
 				Forcing(2, Suit.Diamonds, Points(ResponderRange.Invite), Shape(Suit.Hearts, 5, 11), Shape(Suit.Spades, 0, 5)),
 				Forcing(2, Suit.Diamonds, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 5, 11), Shape(Suit.Spades, 0, 4)),
@@ -37,15 +41,12 @@ namespace TricksterBots.Bots.Bridge
 				Forcing(2, Suit.Spades, Points(ResponderRange.LessThanInvite), Shape(Suit.Diamonds, 6, 11)),
 
 			};
-			SetPartnerBidder(() => new AcceptTransfer(type));
+			pb.PartnerRules = AcceptTransfer;
 		}
-	}
 
-	public class AcceptTransfer : TransferBidder
-	{
-		public AcceptTransfer(NTType type) : base(type)
+		private void AcceptTransfer(PrescribedBids pb)
 		{
-			this.BidRules = new BidRule[]
+			pb.Bids = new BidRule[]
 			{
 				Nonforcing(2, Suit.Hearts, Partner(LastBid(2, Suit.Diamonds)), Points(OpenerRange.LessThanSuperAccept)),
 				Nonforcing(2, Suit.Hearts, Partner(LastBid(2, Suit.Diamonds)), Points(OpenerRange.SuperAccept), Shape(0, 3)),
@@ -59,17 +60,14 @@ namespace TricksterBots.Bots.Bridge
 
 				Nonforcing(3, Suit.Spades, ShowsTrump(), Partner(LastBid(2, Suit.Hearts)), Points(OpenerRange.SuperAccept), Shape(4, 5)),
 			};
-			SetPartnerBidder(() => new ExplainTransfer(type));
+			pb.PartnerRules = ExplainTransfer;
 		}
-	}
 
-	public class ExplainTransfer : TransferBidder
-	{
-		public ExplainTransfer(NTType type) : base(type)
+		private void ExplainTransfer(PrescribedBids pb)
 		{
-			this.BidRules = new BidRule[]
+			pb.Bids = new BidRule[]
 			{
-				Signoff(CallType.Pass, DefaultPriority - 1, Points(ResponderRange.LessThanInvite)),
+				Signoff(Call.Pass, DefaultPriority - 1, Points(ResponderRange.LessThanInvite)),
 
 				// This can happen if we are 5/5 with invitational hand. Show Spades
 				// TODDO: Higher prioiryt than other bids.  Seems reasonable...
@@ -97,19 +95,17 @@ namespace TricksterBots.Bots.Bridge
 
 				// TODO: SLAM BIDDING.  REMEMBER RANGES NEED TO BE DIFFERENT IF SUPER ACCEPTED...
 			};
-			SetPartnerBidder(() => new TransferOpenerRebid(type));
+			pb.PartnerRules = OpenerRebid;
 		}
-	}
+	
 
-	public class TransferOpenerRebid : TransferBidder
-	{
-		public TransferOpenerRebid(NTType type) : base(type)
+		private void OpenerRebid(PrescribedBids pb)
 		{
-			this.BidRules = new BidRule[]
+			pb.Bids = new BidRule[]
 			{
 				// TODO: Make lower priority???  
-				Signoff(CallType.Pass, DefaultPriority - 1, Points(OpenerRange.DontAcceptInvite)),
-				Signoff(CallType.Pass, DefaultPriority + 1, LastBid(3, Suit.Clubs), Partner(LastBid(3, Suit.Diamonds))),
+				Signoff(Call.Pass, DefaultPriority - 1, Points(OpenerRange.DontAcceptInvite)),
+				Signoff(Call.Pass, DefaultPriority + 1, LastBid(3, Suit.Clubs), Partner(LastBid(3, Suit.Diamonds))),
 
 //Signoff(3, Suit.Hearts, Points(OpenerRange.DontAcceptInvite), LastBid(2, Suit.Hearts), Flat(false), Shape(3)),
                 Signoff(3, Suit.Hearts, Points(OpenerRange.DontAcceptInvite), LastBid(2, Suit.Hearts), Shape(3, 5)),
@@ -142,17 +138,14 @@ namespace TricksterBots.Bots.Bridge
 				// fit or is it a known fit.  Perhaps competative bidding can handle this...  
 		
 			};
-			SetPartnerBidder(() => new ResponderPlaceGameContract(type));
+			pb.PartnerRules = PlaceGameContract;
 		}
-	}
 
-	public class ResponderPlaceGameContract : TransferBidder
-	{
-		public ResponderPlaceGameContract(NTType type) : base(type)
+		private void PlaceGameContract(PrescribedBids pb)
 		{
-			this.BidRules = new BidRule[]
+			pb.Bids = new BidRule[]
 			{
-				Signoff(CallType.Pass, DefaultPriority - 10),
+				Signoff(Call.Pass, DefaultPriority - 10),
 				// If partner has shown 5 hearts or 5 spades then this is game force contract so place
 				// it in NT or 4 of their suit.
 				Signoff(3, Suit.Unknown, Partner(HasMinShape(Suit.Hearts, 5)), Shape(Suit.Hearts, 2)),
@@ -167,13 +160,16 @@ namespace TricksterBots.Bots.Bridge
 
     public class Transfer2NT : TwoNoTrumpBidder
     {
-        public Transfer2NT() : base(Convention.Transfer, 1000) { }
-    }
-    public class InitiateTransfer2NT : Transfer2NT
-    {
-        public InitiateTransfer2NT()
+        private Transfer2NT() : base(Convention.Transfer, 1000) { }
+
+		public static PrescribedBids InitiateConvention()
         {
-            BidRules = new BidRule[]
+            var bidder = new Transfer2NT();
+            return new PrescribedBids(bidder, bidder.Initiate);
+        }
+	    private void Initiate(PrescribedBids pb)
+        {
+            pb.Bids = new BidRule[]
             {
 				// TODO: Need to deal with 5/5 invite, etc.  For now just basic transfers work
                 Forcing(3, Suit.Diamonds, Shape(Suit.Hearts, 5, 11), Better(Suit.Hearts, Suit.Spades)),
@@ -181,30 +177,24 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Hearts, Shape(Suit.Spades, 5, 11), BetterOrEqual(Suit.Spades, Suit.Hearts)),
            
             };
-            SetPartnerBidder(() => new AcceptTransfer2NT());
-        }
-    }
+			pb.PartnerRules = AcceptTransfer;
 
-	public class AcceptTransfer2NT: Transfer2NT
-	{
-		public AcceptTransfer2NT()
-		{
-			BidRules = new BidRule[]
+        }
+		private void AcceptTransfer(PrescribedBids pb)
+		{		
+			pb.Bids = new BidRule[]
 			{
                 Nonforcing(3, Suit.Hearts, Partner(LastBid(3, Suit.Diamonds))),
                 Nonforcing(3, Suit.Spades, Partner(LastBid(3, Suit.Hearts)))
             };
-			SetPartnerBidder(() => new ExplainTransfer2NT());
+			pb.PartnerRules = ExplainTransfer;
 		}
-	}
 
-	public class ExplainTransfer2NT: Transfer2NT
-	{
-		public ExplainTransfer2NT()
+		private void ExplainTransfer(PrescribedBids pb)
 		{
-			BidRules = new BidRule[]
+			pb.Bids = new BidRule[]
 			{
-				Signoff(CallType.Pass, RespondNoGame),
+				Signoff(Call.Pass, RespondNoGame),
 
 				Nonforcing(3, Suit.Unknown, RespondGame, Partner(LastBid(3, Suit.Hearts)), Shape(Suit.Hearts, 5)),
 				Nonforcing(3, Suit.Unknown, RespondGame, Partner(LastBid(3, Suit.Spades)), Shape(Suit.Spades, 5)),
@@ -213,21 +203,17 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(4, Suit.Spades, RespondGame, Partner(LastBid(3, Suit.Spades)), Shape(6, 11))
 
             };
-			SetPartnerBidder(() => new PlaceContractTransfer2NT());
+			pb.PartnerRules = PlaceContract;
 		}
-	}
 
-	public class PlaceContractTransfer2NT: Transfer2NT
-	{
-		public PlaceContractTransfer2NT()
+		private void PlaceContract(PrescribedBids pb)
 		{
-			BidRules = new BidRule[]
+			pb.Bids = new BidRule[]
 			{
-				Signoff(CallType.Pass, DefaultPriority - 10),
+				Signoff(Call.Pass, DefaultPriority - 10),
 				Signoff(4, Suit.Hearts, Fit()),
 				Signoff(4, Suit.Spades, Fit())
 			};
 		}
 	}
-
 }

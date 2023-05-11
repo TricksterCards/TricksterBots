@@ -14,21 +14,21 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
     // TODO: Line this up with trickser conventions, but re-declare for now for flexibility...
-    public enum Convention { Natural, StrongOpen, NT, Stayman, Transfer, TakeoutDouble };
+    public enum Convention { Natural, Competative, StrongOpen, NT, Stayman, Transfer, TakeoutDouble };
 
 
 
     
 	public class Contract
 	{
-		public Bid Bid;    // Bid must be either CallType.NotActed or .Pass or .Bid
+		public Bid Bid;    // Bid must be either Call.NotActed or .Pass or .Bid
 		public PositionState By;
 		public bool Doubled;
 		public bool Redoubled;
 
         public Contract()
         {
-            this.Bid = new Bid(CallType.NotActed, BidForce.Nonforcing);
+            this.Bid = new Bid(Call.NotActed, BidForce.Nonforcing);
             this.By = null;
             this.Doubled = false;
             this.Redoubled = false;
@@ -57,10 +57,10 @@ namespace TricksterBots.Bots.Bridge
             {
                 position = position.RightHandOpponent;
                 var bid = position.GetBidHistory(0);
-                if (bid.CallType != CallType.Pass)
+                if (bid.Call != Call.Pass)
                 {
                     // If there has been a bid (or X or XX) followed by two passes then next pass ends auction
-                    if (bid.CallType == CallType.NotActed) { 
+                    if (bid.Call == Call.NotActed) { 
                         return false;
                     }
                     return countPasses == 2;
@@ -82,12 +82,12 @@ namespace TricksterBots.Bots.Bridge
             {
                 position = position.RightHandOpponent;
                 var bid = position.GetBidHistory(historyLevel);
-                if (bid.CallType == CallType.NotActed)
+                if (bid.Call == Call.NotActed)
                 {
-                    Debug.Assert(contract.Bid.CallType == CallType.NotActed);
+                    Debug.Assert(contract.Bid.Call == Call.NotActed);
                     break;
                 }
-                if (bid.CallType == CallType.Pass)
+                if (bid.Call == Call.Pass)
                 {
                     countPasses++;
                     if (countPasses == 4)
@@ -100,17 +100,17 @@ namespace TricksterBots.Bots.Bridge
                 { 
                     countPasses = 0;
                 }
-                if (bid.CallType == CallType.Bid)
+                if (bid.Call == Call.Bid)
                 {
                     contract.Bid = bid;
                     contract.By = position;
                     break;
                 }
-                if (bid.CallType == CallType.Double)
+                if (bid.Call == Call.Double)
                 {
                     contract.Doubled = true;
                 }
-                if (bid.CallType == CallType.Redouble)
+                if (bid.Call == Call.Redouble)
                 {
                     contract.Redoubled = true;
                 }

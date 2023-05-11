@@ -13,11 +13,37 @@ namespace TricksterBots.Bots.Bridge
     {
         private static (int, int) TakeoutRange = (11, 17);
 
-        public static Bidder Bidder() => new TakeoutDouble();
+        public static PrescribedBids InitiateConvention()
+        {
+            var bidder = new TakeoutDouble();
+            return new PrescribedBids(bidder, bidder.Initiate);
+        }
+
+        private TakeoutDouble() : base(Convention.TakeoutDouble, 1000)
+        {
+        }
+
+        private void Initiate(PrescribedBids pb)
+        {
+            pb.ConventionRules = new ConventionRule[]
+            {
+                // TODO: Need takeout doubles after first round, but for now this works...
+                ConventionRule(Role(PositionRole.Responder, 1))
+            };
+            pb.Bids = new BidRule[]
+            {
+                Takeout(Suit.Clubs),
+                Takeout(Suit.Diamonds),
+                Takeout(Suit.Hearts),
+                Takeout(Suit.Spades)
+            };
+            pb.PartnerRules = Respond;
+        }
+
 
         private BidRule Takeout(Suit suit)
         {
-            var rule = Forcing(CallType.Double, CueBid(suit), Points(TakeoutRange), Shape(suit, 0, 4));
+            var rule = Forcing(Call.Double, CueBid(suit), Points(TakeoutRange), Shape(suit, 0, 4));
             foreach (var otherSuit in BasicBidding.BasicSuits)
             {
                 if (otherSuit != suit)
@@ -29,40 +55,19 @@ namespace TricksterBots.Bots.Bridge
             return rule;
         }
 
-        public TakeoutDouble() : base(Convention.TakeoutDouble, 1000)
-        {
-            this.ConventionRules = new ConventionRule[]
-            {
-                // TODO: Need takeout doubles after first round, but for now this works...
-                ConventionRule(Role(PositionRole.Responder, 1))
-            };
-            this.BidRules = new BidRule[]
-            {
-                Takeout(Suit.Clubs),
-                Takeout(Suit.Diamonds),
-                Takeout(Suit.Hearts),
-                Takeout(Suit.Spades)
-            };
-            SetPartnerBidder(() => new RespondToTakeout());
-               
-        }
-    }
-
-    public class RespondToTakeout: Bidder
-    {
         public static (int, int) MinLevel = (0, 8);
         public static (int, int) NoTrump1 = (6, 10);
         public static (int, int) InviteLevel = (9, 11);
         public static (int, int) GameLevel = (12, 40);
 
-        public RespondToTakeout() : base(Convention.TakeoutDouble, 1000)
-        {
-            this.ConventionRules = new ConventionRule[]
+        private void Respond(PrescribedBids pb)
+        { 
+            pb.ConventionRules = new ConventionRule[]
             {
                 // TODO: For now we will just do the takeout if RHO has passed...
                 ConventionRule(RHO(Passed()))         
             };
-            this.BidRules = new BidRule[]
+            pb.Bids = new BidRule[]
             {
                 // TODO: FOR NOW WE WILL JUST BID AT THE NEXT LEVEL REGARDLESS OF POINTS...
                 // TODO: Need LongestSuit()...
@@ -78,8 +83,6 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(2, Suit.Hearts, BestSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
                 Nonforcing(2, Suit.Spades, BestSuit(), Jump(0), CueBid(false), Points(MinLevel)),
                 Nonforcing(2, Suit.Spades, BestSuit(), Jump(1), CueBid(false), Points(InviteLevel))
-
-
 
             };
         }

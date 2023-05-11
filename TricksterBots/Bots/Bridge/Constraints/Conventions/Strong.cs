@@ -9,9 +9,13 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class Strong : Bidder
+    public class StrongBidder : Bidder
     {
-        public static Bidder Bidder() => new StrongOpen();
+        public static PrescribedBids InitiateConvention()
+        {
+            var bidder = new StrongBidder();
+            return new PrescribedBids(bidder, bidder.Initiate);
+        }
 
         protected static (int, int) StrongOpenRange = (22, 40);
         protected static (int, int) PositiveResponse = (8, 18);
@@ -19,32 +23,24 @@ namespace TricksterBots.Bots.Bridge
         protected static (int, int) Rebid2NT = (22, 24);
 
 
-        public Strong() : base(Convention.StrongOpen, 5000) { }
+        private StrongBidder() : base(Convention.StrongOpen, 5000) { }
 
-    }
+        private void Initiate(PrescribedBids pb)
 
-    public class StrongOpen : Strong
-    {
-        public StrongOpen() : base()
         {
-            this.ConventionRules = new ConventionRule[]
+            pb.ConventionRules = new ConventionRule[]
             {
                 ConventionRule(Role(PositionRole.Opener, 1))
             };
-            this.BidRules = new BidRule[]
+            pb.Bids = new BidRule[]
             {
                 Forcing(2, Suit.Clubs, Points(StrongOpenRange)),
             };
-            SetPartnerBidder(() => new StrongResponse());
+            pb.PartnerRules = Response;
         }
-
-    }
-
-    public class StrongResponse : Strong
-    {
-        public StrongResponse() : base()
+        private void Response(PrescribedBids pb)
         {
-            this.BidRules = new BidRule[]
+            pb.Bids = new BidRule[]
             {
                 // TODO: Priorities for the positive bids, especially if balanced AND have a good suit...
                 Forcing(2, Suit.Diamonds, Points(Waiting)),
@@ -54,19 +50,12 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Clubs, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(3, Suit.Diamonds, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
             };
-            SetPartnerBidder(() => new StrongRebid());
+            pb.PartnerRules = OpenerRebid;
         }
-    }
-   
-    public class StrongRebid : Strong
-    {
-        public StrongRebid() : base()
+
+        private void OpenerRebid(PrescribedBids pb)
         {
-     //       this.Redirects = new RedirectRule[]
-      //      {
-          //        new RedirectRule(() => new StrongRebidPositiveResponse(), LastBid(2, Suit.Diamonds, false))
-        //    };
-            this.BidRules = new BidRule[]
+            pb.Bids = new BidRule[]
             {
                 Forcing(2, Suit.Hearts, Shape(5, 11)),
                 Forcing(2, Suit.Spades, Shape(5, 11)),
@@ -74,18 +63,8 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Clubs, Shape(5, 11)),
                 Forcing(3, Suit.Diamonds, Shape(5, 11))
             };
-            SetPartnerBidder(() => new StrongResponderRebid());
+            // TODO: Next state, more bids, et.....
         }
-    }
-
-    public class StrongResponderRebid: Strong
-    {
-
-    }
-
-    public class StrongRebidPositiveResponse: Strong
-    {
-
     }
 
 }

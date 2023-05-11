@@ -20,7 +20,7 @@ namespace TricksterBots.Bots.Bridge
 
         public bool Conforms(PositionState ps)
         {
-            var nullBid = new Bid(CallType.NotActed, BidForce.Nonforcing);
+            var nullBid = new Bid(Call.NotActed, BidForce.Nonforcing);
             foreach (var constraint in _constraints)
             {
                 if (!constraint.Conforms(nullBid, ps, ps.PublicHandSummary, ps.PairAgreements)) { return false; }
@@ -32,14 +32,30 @@ namespace TricksterBots.Bots.Bridge
 
     public class RedirectRule : ConventionRule
     {
-        private BidderFactory _redirectTo;
-        public RedirectRule(BidderFactory redirectTo, params Constraint[] constraints) : base(constraints)
+        private Bidder _bidder;
+        private PrescribeBidRules _setRules;
+        private PrescribedBidsFactory _factory;
+        public RedirectRule(Bidder bidder, PrescribeBidRules setRules, params Constraint[] constraints) : base(constraints)
         {
-            this._redirectTo = redirectTo;
+            this._bidder = bidder;
+            this._setRules = setRules;
+            this._factory = null;
         }
-        public Bidder Redirect(PositionState ps)
+        public RedirectRule(PrescribedBidsFactory factory, params Constraint[] constraints)
         {
-            return (this.Conforms(ps)) ? this._redirectTo() : null;
+            this._bidder = null;
+            this._setRules = null;
+            this._factory= factory;
+        }
+
+        public IEnumerable<BidRuleGroup> RedirectedBids(PositionState ps)
+        {
+            if (this.Conforms(ps))
+            {
+                PrescribedBids pb = (_factory != null) ? _factory() : new PrescribedBids(_bidder, _setRules);
+                return pb.GetBids(ps);
+            }
+            return null;
         }
     }
 }

@@ -97,7 +97,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			this.BidRules = new List<BidRule>()
 			{
-				Signoff(CallType.Pass, 0, Points(RespondPass)),
+				Signoff(Call.Pass, 0, Points(RespondPass)),
 
                 Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
 				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(6), LongestMajor(5)),
@@ -148,7 +148,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			this.BidRules = new BidRule[]
 			{
-                Signoff(CallType.Pass, 0, Points(RespondPass)),
+                Signoff(Call.Pass, 0, Points(RespondPass)),
 
 				// TODO: Only forcing if not a passed hand...
 				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
@@ -194,7 +194,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			var bids = new List<BidRule>()
 			{
-				Signoff(CallType.Pass, 0, Points(RespondPass)),
+				Signoff(Call.Pass, 0, Points(RespondPass)),
 
                 Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4, 11), Shape(Suit.Hearts, 0, 2)),
 				Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, LimitRaise), Shape(4, 11), Shape(Suit.Hearts, 3)),
@@ -232,7 +232,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			var bids = new List<BidRule>()
 			{
-			    Signoff(CallType.Pass, Points(RespondPass)),
+			    Signoff(Call.Pass, Points(RespondPass)),
 
                 Nonforcing(1, Suit.Unknown, Points(Respond1NT), Balanced()),
 
@@ -284,7 +284,7 @@ namespace TricksterBots.Bots.Bridge
 
 			this.BidRules = new List<BidRule>()
 			{
-				Signoff(CallType.Pass, 0, Points(RespondPass)),
+				Signoff(Call.Pass, 0, Points(RespondPass)),
 
 				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
 				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(5, 11), LongerThan(Suit.Spades)),

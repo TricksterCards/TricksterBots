@@ -19,6 +19,7 @@ namespace TricksterBots.Bots.Bridge
         {
             public BidRuleGroup Natural;
             public BidRuleGroup Conventional;
+            public BidRuleGroup Competative;
             public BidGroupChoices()
             {
                 Natural = null;
@@ -53,6 +54,7 @@ namespace TricksterBots.Bots.Bridge
                 { 
                     if (Conventional != null && Conventional.HasRules) { return Conventional; }
                     if (Natural != null && Natural.HasRules) { return Natural;  }
+                    if (Competative != null && Competative.HasRules) { return Competative; }
                     return null;
                 }
             }
@@ -103,18 +105,18 @@ namespace TricksterBots.Bots.Bridge
 
         public Convention Convention { get; }
 
-        public BidderFactory NextBidder { get; }
+        public PrescribedBidsFactory PartnerRules { get; }
         public int Priority { get; private set; }
 
         public bool HasRules {  get {  return _rules.Count > 0; } }
 
         private List<BidRule> _rules;
-        public BidRuleGroup(Bid bid, Convention convention, BidderFactory bidderFactory) 
+        public BidRuleGroup(Bid bid, Convention convention, PrescribedBidsFactory partnerRules) 
         {
             this.Bid = bid;
             this._rules = new List<BidRule>();
             this.Priority = int.MinValue;        // TODO: Is this right???
-            this.NextBidder = bidderFactory;
+            this.PartnerRules = partnerRules;
             this.Convention = convention;
         }
 

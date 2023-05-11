@@ -23,7 +23,7 @@ namespace TricksterBots.Bots.Bridge
 
             this.BidRules = new BidRule[]
             {
-                Nonforcing(CallType.Pass, DefaultPriority - 100),   // TODO: What points?  What shape?
+                Nonforcing(Call.Pass, DefaultPriority - 100),   // TODO: What points?  What shape?
 
            
                 Nonforcing(1, Suit.Hearts, DefaultPriority - 20, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),

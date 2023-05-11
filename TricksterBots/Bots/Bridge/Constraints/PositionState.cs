@@ -48,7 +48,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			if (_bids.Count <= historyLevel)
 			{
-				return new Bid(CallType.NotActed, BidForce.Nonforcing);
+				return new Bid(Call.NotActed, BidForce.Nonforcing);
 			}
 			return _bids[_bids.Count - 1 - historyLevel].Bid;
 		}
@@ -212,7 +212,7 @@ namespace TricksterBots.Bots.Bridge
 			{
 				// UGLY TODO: CLEAN THIS UP!!!
 				//Debug.WriteLine("***Generating bogus pass***");
-                var pass = new BidRule(new Bid(CallType.Pass, BidForce.Nonforcing), 0, new Constraint[0]); 
+                var pass = new BidRule(new Bid(Call.Pass, BidForce.Nonforcing), 0, new Constraint[0]); 
 				choice = new BidRuleGroup(pass.Bid, Convention.Natural, null);
 				choice.Add(pass);
 			}
