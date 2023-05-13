@@ -9,19 +9,21 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
 
+ 
+
     public class NaturalAdvance : Natural
     {
-        
-        public NaturalAdvance() : base()
-        {
-            // The Overcaller always specifies this class as the next state, but if they pass then it no longer applies
-            // Bail if we are not the Advancer.
-            this.ConventionRules = new ConventionRule[]
-            {
-                ConventionRule(Role(PositionRole.Advancer))
-            };
 
-            this.BidRules = new BidRule[]
+		public static new PrescribedBids DefaultBidderXXX()
+        {
+    		var bidder = new NaturalAdvance();
+			return new PrescribedBids(bidder, bidder.Initiate);
+		}
+
+
+        private void Initiate(PrescribedBids pb)
+        {
+            pb.Bids = new BidRule[]
             {
                 Nonforcing(Call.Pass, DefaultPriority - 100),   // TODO: What points?  What shape?
 

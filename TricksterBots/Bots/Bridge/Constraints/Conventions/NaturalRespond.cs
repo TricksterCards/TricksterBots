@@ -8,13 +8,11 @@ using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
 
+/*
 namespace TricksterBots.Bots.Bridge
 {
     public class NaturalRespond : Natural
 	{
-		public static Bidder Respond() { return new NaturalRespondRedirects(); }
-
-		public NaturalRespond() : base() { }
 
 		static protected (int, int) RespondPass = (0, 5);
 		static protected (int, int) Respond1Level = (6, 40);
@@ -30,72 +28,67 @@ namespace TricksterBots.Bots.Bridge
 		static protected (int, int) GameOrBetter = (13, 40);
 		static protected (int, int) WeakJumpRaise = (0, 5);
 
-        protected BidRule[] NewMinorSuit2Level(Suit openersSuit)
-        {
-            return new BidRule[]
+		protected BidRule[] NewMinorSuit2Level(Suit openersSuit)
+		{
+			return new BidRule[]
 			{
-			
-                Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(4, 5), Shape(Suit.Diamonds, 0, 4)),
-                Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(6), Shape(Suit.Diamonds, 0, 5)),
-                Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(7, 11)),
-                Forcing(2, Suit.Clubs, DummyPoints(openersSuit, LimitRaise), Shape(3), Shape(openersSuit, 3), Shape(Suit.Diamonds, 0, 3)),
-                Forcing(2, Suit.Clubs, DummyPoints(openersSuit, LimitRaise), Shape(4, 5), Shape(openersSuit, 3), Shape(Suit.Diamonds, 0, 4)),
-                Forcing(2, Suit.Clubs, DummyPoints(openersSuit, LimitRaise), Shape(6), Shape(openersSuit, 3)),
-                Forcing(2, Suit.Clubs, DummyPoints(openersSuit, GameOrBetter), Shape(3), Shape(openersSuit, 3, 11), Shape(Suit.Diamonds, 0, 3)),
-                Forcing(2, Suit.Clubs, DummyPoints(openersSuit, GameOrBetter), Shape(4, 5), Shape(openersSuit, 3, 11), Shape(Suit.Diamonds, 0, 4)),
-                Forcing(2, Suit.Clubs, DummyPoints(openersSuit, GameOrBetter), Shape(6, 11), Shape(openersSuit, 3, 11)),
+
+				Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(4, 5), Shape(Suit.Diamonds, 0, 4)),
+				Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(6), Shape(Suit.Diamonds, 0, 5)),
+				Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(7, 11)),
+				Forcing(2, Suit.Clubs, DummyPoints(openersSuit, LimitRaise), Shape(3), Shape(openersSuit, 3), Shape(Suit.Diamonds, 0, 3)),
+				Forcing(2, Suit.Clubs, DummyPoints(openersSuit, LimitRaise), Shape(4, 5), Shape(openersSuit, 3), Shape(Suit.Diamonds, 0, 4)),
+				Forcing(2, Suit.Clubs, DummyPoints(openersSuit, LimitRaise), Shape(6), Shape(openersSuit, 3)),
+				Forcing(2, Suit.Clubs, DummyPoints(openersSuit, GameOrBetter), Shape(3), Shape(openersSuit, 3, 11), Shape(Suit.Diamonds, 0, 3)),
+				Forcing(2, Suit.Clubs, DummyPoints(openersSuit, GameOrBetter), Shape(4, 5), Shape(openersSuit, 3, 11), Shape(Suit.Diamonds, 0, 4)),
+				Forcing(2, Suit.Clubs, DummyPoints(openersSuit, GameOrBetter), Shape(6, 11), Shape(openersSuit, 3, 11)),
 
 
-                Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(4), Shape(Suit.Clubs, 0, 3)),
-                Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(5), Shape(Suit.Clubs, 0, 5)),
-                Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(6), Shape(Suit.Clubs, 0, 6)),
-                Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(7, 11)),
-                Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(3), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 2)),
-                Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(4), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 3)),
-                Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(5), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 5)),
-                Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(6, 11), Shape(openersSuit, 3)),
-                Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(3), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 2)),
-                Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(4), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 3)),
-                Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(5), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 5)),
-                Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(6, 11), Shape(openersSuit, 3, 11)),
+				Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(4), Shape(Suit.Clubs, 0, 3)),
+				Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(5), Shape(Suit.Clubs, 0, 5)),
+				Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(6), Shape(Suit.Clubs, 0, 6)),
+				Forcing(2, Suit.Diamonds, Points(NewSuit2Level), Shape(7, 11)),
+				Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(3), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 2)),
+				Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(4), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 3)),
+				Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(5), Shape(openersSuit, 3), Shape(Suit.Clubs, 0, 5)),
+				Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, LimitRaise), Shape(6, 11), Shape(openersSuit, 3)),
+				Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(3), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 2)),
+				Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(4), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 3)),
+				Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(5), Shape(openersSuit, 3, 11), Shape(Suit.Clubs, 0, 5)),
+				Forcing(2, Suit.Diamonds, DummyPoints(openersSuit, GameOrBetter), Shape(6, 11), Shape(openersSuit, 3, 11)),
 			};
-        }
-    }
+		}
 
-    public class NaturalRespondRedirects : NaturalRespond
-    {
-        public NaturalRespondRedirects()
+		public static PrescribedBids InitialResponse()
+		{
+			var b = new NaturalRespond();
+			return new PrescribedBids(b, b.InitialResponse);
+		}
+
+		private void InitialResponse(PrescribedBids pb)
         {
 			// We may be invoked because opener Passed.  If that's the case, bail now.
-			this.ConventionRules = new ConventionRule[]
+			pb.ConventionRules = new ConventionRule[]
 			{
-				ConventionRule(Role(PositionRole.Responder))
+				ConventionRule(Role(PositionRole.Responder, 1))
 			};
-
-            this.Redirects = new RedirectRule[]
+            pb.Redirects = new RedirectRule[]
             {
-                new RedirectRule(() => new RespondTo1C(), Partner(LastBid(1, Suit.Clubs)), RHO(Passed())),
-                new RedirectRule(() => new RespondTo1D(), Partner(LastBid(1, Suit.Diamonds)), RHO(Passed())),
-                new RedirectRule(() => new RespondTo1H(), Partner(LastBid(1, Suit.Hearts)), RHO(Passed())),
-                new RedirectRule(() => new RespondTo1S(), Partner(LastBid(1, Suit.Spades)), RHO(Passed())),
+                Redirect(RespondTo1C, Partner(LastBid(1, Suit.Clubs)), RHO(Passed())),
+                Redirect(RespondTo1D, Partner(LastBid(1, Suit.Diamonds)), RHO(Passed())),
+                Redirect(RespondTo1H, Partner(LastBid(1, Suit.Hearts)), RHO(Passed())),
+                Redirect(RespondTo1S, Partner(LastBid(1, Suit.Spades)), RHO(Passed())),
 
-				Redirect(() => new RespondToWeakOpen(), Partner(BidAtLevel(2, 3, 4))),
+				Redirect(RespondToWeakOpen, Partner(BidAtLevel(2, 3, 4))),
 
 				// TODO: First attempt at any interference.  For now only if interfere with 1S bid
-				new RedirectRule(() => new RespondWithInt(), RHO(DidBid()))
+				Redirect(RespondWithInt, RHO(DidBid()))
             };
         }
 
-    }
-
-
-
-    public class RespondTo1C : NaturalRespond
-	{
-
-		public RespondTo1C() : base()
+		public void RespondTo1C(PrescribedBids pb)
 		{
-			this.BidRules = new List<BidRule>()
+			pb.Bids = new List<BidRule>()
 			{
 				Signoff(Call.Pass, 0, Points(RespondPass)),
 
@@ -138,15 +131,11 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
 			};
-			SetPartnerBidder(() => new NaturalOpenerRebid());
+			pb.Partner(NaturalOpen.Rebid);
 		}
-	}
-		
-	public class RespondTo1D: NaturalRespond
-	{
-		public RespondTo1D() : base()
+		private void RespondTo1D(PrescribedBids pb)
 		{
-			this.BidRules = new BidRule[]
+			pb.Bids = new BidRule[]
 			{
                 Signoff(Call.Pass, 0, Points(RespondPass)),
 
@@ -184,13 +173,9 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11)),
 
             };
-            SetPartnerBidder(() => new NaturalOpenerRebid());
+			pb.Partner(NaturalOpen.Rebid);
         }
-	}
-		
-	public class RespondTo1H : NaturalRespond
-	{
-		public RespondTo1H() : base()
+		private void RespondTo1H(PrescribedBids pb)	
 		{
 			var bids = new List<BidRule>()
 			{
@@ -221,14 +206,12 @@ namespace TricksterBots.Bots.Bridge
 
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11)),
 			};
-			this.BidRules = bids.Concat(NewMinorSuit2Level(Suit.Hearts));
-            SetPartnerBidder(() => new NaturalOpenerRebid());
-        }
-	}
 
-	public class RespondTo1S : NaturalRespond
-	{
-		public RespondTo1S() : base() 
+			pb.Bids = bids.Concat(NewMinorSuit2Level(Suit.Hearts));
+            pb.Partner(NaturalOpen.Rebid);
+        }
+	
+		private void RespondTo1S(PrescribedBids pb)
 		{
 			var bids = new List<BidRule>()
 			{
@@ -254,19 +237,13 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(4, Suit.Spades, DummyPoints(Weak4Level), Shape(5, 8))
             };
-			this.BidRules = bids.Concat(NewMinorSuit2Level(Suit.Spades));
-			this.BidRules = bids;
-            SetPartnerBidder(() => new NaturalOpenerRebid());
-           
+			pb.Bids = bids.Concat(NewMinorSuit2Level(Suit.Spades));
+            pb.Partner(NaturalOpen.Rebid);
         }
 
-	}
-
-	public class RespondToWeakOpen: NaturalRespond
-	{
-		public RespondToWeakOpen()
+		private void  RespondToWeakOpen(PrescribedBids pb)
 		{
-			BidRules = new BidRule[]
+			pb.Bids = new BidRule[]
 			{
 				Signoff(4, Suit.Hearts, Fit(), RuleOf17()),
 				Signoff(4, Suit.Hearts, Fit(10), PassEndsAuction(false)),
@@ -274,15 +251,13 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Spades, Fit(10), PassEndsAuction(false)),
             };
 		}
-	}
 
-	// TODO: THIS IS SUPER HACKED NOW TO JUST 
-	public class RespondWithInt : NaturalRespond
-	{
-		public RespondWithInt() : base()
+
+		// TODO: THIS IS SUPER HACKED NOW TO JUST 
+		private void RespondWithInt(PrescribedBids pb)
 		{
 
-			this.BidRules = new List<BidRule>()
+			pb.Bids = new List<BidRule>()
 			{
 				Signoff(Call.Pass, 0, Points(RespondPass)),
 
@@ -328,5 +303,5 @@ namespace TricksterBots.Bots.Bridge
 
 
 }
-
+*/
 

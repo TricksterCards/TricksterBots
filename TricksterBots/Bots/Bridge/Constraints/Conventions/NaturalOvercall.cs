@@ -11,10 +11,14 @@ namespace TricksterBots.Bots.Bridge
 {
     public class NaturalOvercall : Natural
     {
-        public static Bidder Overcall() { return new NaturalOvercall(); }
-        public NaturalOvercall() : base()
+		public static new PrescribedBids DefaultBidderXXX()
+		{
+			var bidder = new NaturalOvercall();
+			return new PrescribedBids(bidder, bidder.Initiate);
+		}
+		private void Initiate(PrescribedBids pb)
         {
-            this.BidRules = new BidRule[]
+            pb.Bids = new BidRule[]
             {
                 Nonforcing(Call.Pass, DefaultPriority - 100, Points(LessThanOvercall)),
 
@@ -42,7 +46,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 			};
-            SetPartnerBidder(() => new NaturalAdvance());
+            pb.Partner(NaturalAdvance.DefaultBidderXXX);
         }
     }
 

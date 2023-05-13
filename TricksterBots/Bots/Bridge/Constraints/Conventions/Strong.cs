@@ -36,7 +36,7 @@ namespace TricksterBots.Bots.Bridge
             {
                 Forcing(2, Suit.Clubs, Points(StrongOpenRange)),
             };
-            pb.PartnerRules = Response;
+            pb.Partner(Response);
         }
         private void Response(PrescribedBids pb)
         {
@@ -50,7 +50,7 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Clubs, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(3, Suit.Diamonds, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
             };
-            pb.PartnerRules = OpenerRebid;
+            pb.Partner(OpenerRebid);
         }
 
         private void OpenerRebid(PrescribedBids pb)

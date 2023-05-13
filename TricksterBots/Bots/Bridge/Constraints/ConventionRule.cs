@@ -48,12 +48,11 @@ namespace TricksterBots.Bots.Bridge
             this._factory= factory;
         }
 
-        public IEnumerable<BidRuleGroup> RedirectedBids(PositionState ps)
+        public PrescribedBids RedirectedBidder(PositionState ps)
         {
             if (this.Conforms(ps))
             {
-                PrescribedBids pb = (_factory != null) ? _factory() : new PrescribedBids(_bidder, _setRules);
-                return pb.GetBids(ps);
+                return (_factory != null) ? _factory() : new PrescribedBids(_bidder, _setRules);
             }
             return null;
         }

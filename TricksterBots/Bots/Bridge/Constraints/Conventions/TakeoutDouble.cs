@@ -37,7 +37,7 @@ namespace TricksterBots.Bots.Bridge
                 Takeout(Suit.Hearts),
                 Takeout(Suit.Spades)
             };
-            pb.PartnerRules = Respond;
+            pb.Partner(Respond);
         }
 
 

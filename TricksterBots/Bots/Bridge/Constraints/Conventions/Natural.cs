@@ -25,7 +25,6 @@ namespace TricksterBots.Bots.Bridge
 
         protected Natural() : base(Convention.Natural, 100)
         {
-
         }
 
         public (int, int) Open1Suit = (13, 21);
@@ -76,9 +75,8 @@ namespace TricksterBots.Bots.Bridge
             pb.Redirects = new RedirectRule[]
             {
                 // TODO: DO NOT CALL ALL STATIC METHODS INITIATECONVENTION OR ELSE WILL CALL BASE CLASS... NAMING IS IMPORTANT.
-                Redirect(NaturalOpen.xxx, Role(PositionRole.Opener, 1)),
-                Redirect(NaturalOvercall.xxx, Role(PositionRole.Overcaller, 1)),
-                Redirect(NaturalRespond.xxx, Role(PositionRole.Responder, 1))
+                Redirect(StandardAmericanOpenRespond.DefaultBidderXXX, Role(PositionRole.Opener, 1)),
+                Redirect(NaturalOvercall.DefaultBidderXXX, Role(PositionRole.Overcaller, 1)),
             };
         }
     }

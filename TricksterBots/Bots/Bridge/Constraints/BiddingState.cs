@@ -35,12 +35,54 @@ namespace TricksterBots.Bots.Bridge
         }
 	}
 
+
+    public class RedirectGroupXXX
+    {
+        private List<PrescribedBids> _bidders = new List<PrescribedBids>();
+
+        public void Add(PrescribedBids bid)
+        {
+            _bidders.Add(bid);
+        }
+
+        // TODO: Is this the best way to do this?  Seems kind of inefficient but OK fo now
+        // always adding base biddders to partner bidder group...  
+        public void Add(RedirectGroupXXX other)
+        {
+            foreach (var bidder in other._bidders)
+            {
+                Add(bidder);
+            }
+        }
+
+        public Dictionary<Bid, BidRuleGroup> GetBids(PositionState ps)
+        {
+            Dictionary<Bid, BidRuleGroup> bids = new Dictionary<Bid, BidRuleGroup>();
+            foreach (var bidder in _bidders)
+            {
+                var newBids = bidder.GetBids(ps);
+                if (newBids != null)    // TODO: Why ever getting null?? Is this acceptable?
+                {
+                    foreach (var newBid in newBids)
+                    {
+                        if (!bids.ContainsKey(newBid.Key))
+                        {
+                            bids[newBid.Key] = newBid.Value;
+                        }
+                    }
+                }
+            }
+            return bids;
+        }
+    }
+
     public class BiddingState
     {
 
         //   public Dictionary<Convention, Bidder> Conventions { get; protected set; }
 
-        public List<Bidder> DefaultBidders = new List<Bidder>();
+
+        private RedirectGroupXXX _baseBiddingXXX = new RedirectGroupXXX();
 
         public Dictionary<Direction, PositionState> Positions { get; }
 
@@ -167,69 +209,100 @@ namespace TricksterBots.Bots.Bridge
 
             this.Conventions[Convention.Transfer] = new NaturalOvercall(); // TODO: HACK HACK HACK HACK!
             */
-            this.DefaultBidders.Add(Natural.Bidder());
-            this.DefaultBidders.Add(OpenAndOvercallNoTrump.Bidder());
-            this.DefaultBidders.Add(Strong.Bidder());
-            this.DefaultBidders.Add(new Compete());
+            this._baseBiddingXXX.Add(Natural.DefaultBidderXXX());
+            this._baseBiddingXXX.Add(OpenAndOvercallNoTrump.DefaultBidderXXX());
+            this._baseBiddingXXX.Add(StrongBidder.InitiateConvention());
+            this._baseBiddingXXX.Add(Compete.DefatulBidderXXX());
+            
         }
+
 
 
         internal Dictionary<Bid, BidRuleGroup> AvailableBids(PositionState ps)
         {
-            var options = new BidOptions();
-            var bidRules = new List<BidRule>();
-
-            var bidders = new List<Bidder>();
-
-
-            if (ps.Partner.PartnerNextState != null)
+            // TODO: Always creating a new object and then copying all the default bidders into
+            // that group so not the best implementation, but whatever...
+            var bidders = new RedirectGroupXXX();
+            // TODO: Clean this up.  Not the prettiest code but whatever...
+            PrescribedBidsFactory nextState = ps.GetPartnerNextState();
+            if (nextState != null)
             {
-                bidders.Add(ps.Partner.PartnerNextState());
+                bidders.Add(nextState());
             }
-            bidders.AddRange(DefaultBidders);
+           
+            bidders.Add(_baseBiddingXXX);
+            var bids = bidders.GetBids(ps);
 
-            // Now we look at every bidder.  For each one:
-            //    1. If they don't conform then skip to next one
-            //    2. If they do conform then see if is a redirect.  If so ignore rules
-            //    3. Otherwise, if they conform and there is not a redirect then append the bid rules.
+			if (!bids.ContainsKey(Bid.Pass))
+			{
+				// TODO: How bad is this?  Is this an emergency?
+				// TODO: Always add a pass at the end of this function no matter what?  
+				// If forcing then isn't really on optoin.  Is this the right place anyway?
+				Debug.WriteLine("** CREATING PASS SINCE NONE SPECIFIED **");
+				var ruleGroup = new BidRuleGroup(Bid.Pass, Convention.Natural, null);
+				ruleGroup.Add(new BidRule(Bid.Pass, 0, new Constraint[0]));
+				bids[Bid.Pass] = ruleGroup;
+			}
+            return bids;
 
-            // Look at the Partner's previous bid (if there is one) and if there
-            // is a bidder specified, then do that first --- Need to redirect, etc here too but not yet...
+		}
+		/*
+		internal Dictionary<Bid, BidRuleGroup> AvailableBids(PositionState ps)
+		{
+			var options = new BidOptions();
+			var bidRules = new List<BidRule>();
 
-            while (bidders.Count > 0)
-            {
-                var redirect = new List<Bidder>();
-                foreach (var bidder in bidders)
-                {
-                    if (bidder.Applies(NextToAct))
-                    {
-                        bool didRedirect = false;
-                        if (bidder.Redirects != null)
-                        {
-                            foreach (var r in bidder.Redirects)
-                            {
-                                var redirectBidder = r.Redirect(NextToAct);
-                                if (redirectBidder != null)
-                                {
-                                    redirect.Add(redirectBidder);
-                                    didRedirect = true;
-                                }
-                            }
-                        }
-                        if (!didRedirect && bidder.BidRules != null)
-                        {
-                            options.Add(bidder, NextToAct);
-                        }
-                    }
-                    // TODO: Deal with redirect.  Where?  Here, or in Applies?  Not sure. 
-                }
-                bidders = redirect;
-            }
-            return options.GetChoices();
-        }
+			var bidders = new List<PrescribedBids>();
 
 
-        public string GetHackBid(string[] history, string expected)
+			if (ps.Partner.PartnerNextState != null)
+			{
+				bidders.Add(ps.Partner.PartnerNextState());
+			}
+			bidders.AddRange(DefaultBidders);
+
+			// Now we look at every bidder.  For each one:
+			//    1. If they don't conform then skip to next one
+			//    2. If they do conform then see if is a redirect.  If so ignore rules
+			//    3. Otherwise, if they conform and there is not a redirect then append the bid rules.
+
+			// Look at the Partner's previous bid (if there is one) and if there
+			// is a bidder specified, then do that first --- Need to redirect, etc here too but not yet...
+
+			while (bidders.Count > 0)
+			{
+				var redirect = new List<Bidder>();
+				foreach (var bidder in bidders)
+				{
+					if (bidder.Applies(NextToAct))
+					{
+						bool didRedirect = false;
+						if (bidder.Redirects != null)
+						{
+							foreach (var r in bidder.Redirects)
+							{
+								var redirectBidder = r.Redirect(NextToAct);
+								if (redirectBidder != null)
+								{
+									redirect.Add(redirectBidder);
+									didRedirect = true;
+								}
+							}
+						}
+						if (!didRedirect && bidder.BidRules != null)
+						{
+							options.Add(bidder, NextToAct);
+						}
+					}
+					// TODO: Deal with redirect.  Where?  Here, or in Applies?  Not sure. 
+				}
+				bidders = redirect;
+			}
+			return options.GetChoices();
+		}
+		*/
+
+		public string GetHackBid(string[] history, string expected)
         {
             /*
             Debug.WriteLine($"==== START TEST ==== Expect {expected}");
@@ -261,7 +334,7 @@ namespace TricksterBots.Bots.Bridge
                         // TODO: THIS IS SUPER IMPORTANT TO GET BUT NEED TO IGNORE IT FOR A WHILE.
 
                         // TURN THIS BACK ON AT SOME POINT!  
-                       // Debug.WriteLine($"*** ERROR: Did not find {b} in bid optoins.  Constructing a bid with state information");
+                        Debug.WriteLine($"*** ERROR: Did not find {b} in bid optoins.  Constructing a bid with state information");
                         var rule = new BidRule(bid, 1, new Constraint[0]);
                         choice = new BidRuleGroup(bid, Convention.Natural, null);
                         choice.Add(rule);

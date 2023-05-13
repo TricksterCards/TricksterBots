@@ -11,10 +11,10 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-
+    /*
     public class BidOptions
     {
-
+        
         internal class BidGroupChoices
         {
             public BidRuleGroup Natural;
@@ -25,7 +25,7 @@ namespace TricksterBots.Bots.Bridge
                 Natural = null;
                 Conventional = null;
             }
-
+            
             // Unconditionally add the rule to the appropriate convention group 
             internal void Add(Convention convention, BidderFactory partnerBidder, BidRule rule)
             {
@@ -48,6 +48,7 @@ namespace TricksterBots.Bots.Bridge
                     this.Conventional.Add(rule);
                 }
             }
+            
 
             internal BidRuleGroup BidRules {
                 get 
@@ -67,10 +68,11 @@ namespace TricksterBots.Bots.Bridge
         }
 
         // Adds all the BidRules from the specified bidder.
-        public void Add(Bidder bidder, PositionState ps)
+        
+        public void Add(PrescribedBids pb, PositionState ps)
         {
             var contract = ps.BiddingState.GetContract();
-            foreach (var rule in bidder.BidRules)
+            foreach (var rule in pb.BidRules)
             {
                 if (rule.Bid.IsValid(ps, contract).Valid && rule.Conforms(true, ps, ps.PublicHandSummary, ps.PairAgreements))
                 { 
@@ -82,7 +84,7 @@ namespace TricksterBots.Bots.Bridge
                 }
             }
         }
-
+        
         public Dictionary<Bid, BidRuleGroup> GetChoices()
         {
             var choices = new Dictionary<Bid, BidRuleGroup>();
@@ -97,6 +99,7 @@ namespace TricksterBots.Bots.Bridge
             return choices;
         }
     }
+*/
 
 
     public class BidRuleGroup

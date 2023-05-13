@@ -32,7 +32,7 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: The following rule is "Garbage Stayman"
 				//Forcing(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
 			};
-            pb.PartnerRules = Answer;
+            pb.Partner(Answer);
 
 		}
         public void Answer(PrescribedBids pb)
@@ -47,7 +47,7 @@ namespace TricksterBots.Bots.Bridge
 
                 Forcing(2, Suit.Spades, Shape(4, 5), LongerThan(Suit.Hearts)),
             };
-            pb.PartnerRules = Explain;
+            pb.Partner(Explain);
         }
 
         public void Explain(PrescribedBids pb)
@@ -80,7 +80,7 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(4, Suit.Spades, ShowsTrump(), DummyPoints(ResponderRange.Game), Partner(LastBid(2, Suit.Spades)), Shape(4, 5))
             };
-            pb.PartnerRules = PlaceContract;
+            pb.Partner(PlaceContract);
         }
 
 
@@ -120,7 +120,7 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(4, Suit.Spades, Partner(LastBid(3, Suit.Unknown)), Fit()),
                 Signoff(4, Suit.Spades, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Spades)), Shape(3)),
             };
-            pb.SetPartnerRules(new Bid(3, Suit.Spades, BidForce.Nonforcing), CheckSpadeGame);
+            pb.Partner(new Bid(3, Suit.Spades, BidForce.Nonforcing), CheckSpadeGame);
         }
     	public void CheckSpadeGame(PrescribedBids pb)
         { 
@@ -156,9 +156,9 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: The following rule is "Garbage Stayman"
 				//Forcing(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
 			};
-            pb.PartnerRules = Answer;
+            pb.Partner(Answer);
         }
-        public void AnswerStayman2NT(PrescribedBids pb)
+        public void Answer(PrescribedBids pb)
         {
             pb.Bids = new BidRule[]
             {
@@ -169,7 +169,7 @@ namespace TricksterBots.Bots.Bridge
 				Forcing(3, Suit.Hearts, Shape(4, 5), LongerOrEqualTo(Suit.Spades)),
                 Forcing(3, Suit.Spades, Shape(4, 5), LongerThan(Suit.Hearts)),
             };
-            pb.PartnerRules = ResponderRebid;
+            pb.Partner(ResponderRebid);
         }
         public void ResponderRebid(PrescribedBids pb)
         {
@@ -182,7 +182,7 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Hearts, Fit()),
                 Signoff(4, Suit.Spades, Fit()),
             };
-            pb.PartnerRules = OpenerRebid;
+            pb.Partner(OpenerRebid);
         }
     
         public void OpenerRebid(PrescribedBids pb)

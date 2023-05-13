@@ -44,7 +44,7 @@ namespace TricksterBots.Bots.Bridge
 			var previousBid = ps.GetBidHistory(_bidIndex);
 			if (_call != Call.Bid)
 			{
-				return ((previousBid.Call == _Call) == _desiredValue);
+				return ((previousBid.Call == _call) == _desiredValue);
 			}
 			if (previousBid.Call == Call.Bid && 
 				(_compareSuit == false || previousBid.Suit == bid.SuitIfNot(_suit)) &&

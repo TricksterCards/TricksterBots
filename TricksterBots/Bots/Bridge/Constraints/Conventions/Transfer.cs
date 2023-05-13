@@ -41,7 +41,7 @@ namespace TricksterBots.Bots.Bridge
 				Forcing(2, Suit.Spades, Points(ResponderRange.LessThanInvite), Shape(Suit.Diamonds, 6, 11)),
 
 			};
-			pb.PartnerRules = AcceptTransfer;
+			pb.Partner(AcceptTransfer);
 		}
 
 		private void AcceptTransfer(PrescribedBids pb)
@@ -60,7 +60,7 @@ namespace TricksterBots.Bots.Bridge
 
 				Nonforcing(3, Suit.Spades, ShowsTrump(), Partner(LastBid(2, Suit.Hearts)), Points(OpenerRange.SuperAccept), Shape(4, 5)),
 			};
-			pb.PartnerRules = ExplainTransfer;
+			pb.Partner(ExplainTransfer);
 		}
 
 		private void ExplainTransfer(PrescribedBids pb)
@@ -95,7 +95,7 @@ namespace TricksterBots.Bots.Bridge
 
 				// TODO: SLAM BIDDING.  REMEMBER RANGES NEED TO BE DIFFERENT IF SUPER ACCEPTED...
 			};
-			pb.PartnerRules = OpenerRebid;
+			pb.Partner(OpenerRebid);
 		}
 	
 
@@ -138,7 +138,7 @@ namespace TricksterBots.Bots.Bridge
 				// fit or is it a known fit.  Perhaps competative bidding can handle this...  
 		
 			};
-			pb.PartnerRules = PlaceGameContract;
+			pb.Partner(PlaceGameContract);
 		}
 
 		private void PlaceGameContract(PrescribedBids pb)
@@ -177,7 +177,7 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Hearts, Shape(Suit.Spades, 5, 11), BetterOrEqual(Suit.Spades, Suit.Hearts)),
            
             };
-			pb.PartnerRules = AcceptTransfer;
+			pb.Partner(AcceptTransfer);
 
         }
 		private void AcceptTransfer(PrescribedBids pb)
@@ -187,7 +187,7 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(3, Suit.Hearts, Partner(LastBid(3, Suit.Diamonds))),
                 Nonforcing(3, Suit.Spades, Partner(LastBid(3, Suit.Hearts)))
             };
-			pb.PartnerRules = ExplainTransfer;
+			pb.Partner(ExplainTransfer);
 		}
 
 		private void ExplainTransfer(PrescribedBids pb)
@@ -203,7 +203,7 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(4, Suit.Spades, RespondGame, Partner(LastBid(3, Suit.Spades)), Shape(6, 11))
 
             };
-			pb.PartnerRules = PlaceContract;
+			pb.Partner(PlaceContract);
 		}
 
 		private void PlaceContract(PrescribedBids pb)

@@ -96,9 +96,9 @@ namespace TricksterBots.Bots.Bridge
 			get { return BidRound - _roleAssignedOffset;  }
 		}
 
-		public BidderFactory PartnerNextState
+		public PrescribedBidsFactory GetPartnerNextState()
 		{
-			get { return this._bids.Count > 0 ? this._bids.Last().NextBidder : null; }
+			return Partner._bids.Count > 0 ? Partner._bids.Last().PartnerRules : null;
 		}
 
 		// THIS IS AN INTERNAL FUNCITON:

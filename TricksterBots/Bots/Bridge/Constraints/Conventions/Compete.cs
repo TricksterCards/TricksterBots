@@ -11,7 +11,7 @@ namespace TricksterBots.Bots.Bridge
     {
 
         // TODO: Terrible name - not really initiate, 
-        public static PrescribedBids InitiateConvention()
+        public static PrescribedBids DefatulBidderXXX()
         {
             var bidder = new Compete();
             return new PrescribedBids(bidder, bidder.Initiate);

@@ -75,6 +75,8 @@ namespace TricksterBots.Bots.Bridge
 			return new Bid(level, suit, BidForce.Nonforcing);
 		}
 
+		public static Bid Pass = new Bid(Call.Pass, BidForce.Signoff);
+
 		public Bid(Call call, BidForce force)
 		{
 			Debug.Assert(call != Call.Bid);

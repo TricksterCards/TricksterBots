@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
@@ -138,10 +139,10 @@ namespace TricksterBots.Bots.Bridge
         {
             pb.Redirects = new RedirectRule[]
             {
-                Redirect(Natural1NT.Bidder(OneNoTrumpBidder.NTType.Open1NT), Role(PositionRole.Opener, 1)),
-                Redirect(Natural1NT.Bidder(OneNoTrumpBidder.NTType.Overcall1NT),
+                Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Open1NT), Role(PositionRole.Opener, 1)),
+                Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Overcall1NT),
                          Role(PositionRole.Overcaller, 1), PassEndsAuction(false)),
-                Redirect(Natural1NT.Bidder(OneNoTrumpBidder.NTType.Balancing1NT),
+                Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Balancing1NT),
                          Role(PositionRole.Overcaller, 1), PassEndsAuction(true)),
                 Redirect(Natural2NT.DefaultBidderXXX, Role(PositionRole.Opener,1)),
                 // TODO: NEED NATURAL 3NT TOO BUT FOR NOW JUST 2NT
@@ -151,31 +152,26 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-    public class Natural1NTBidder : OneNoTrumpBidder
+    public class Natural1NT : OneNoTrumpBidder
     {
-        public Natural1NTBidder(NTType type) : base(type, Convention.Natural, 100) { }
-    }
-
-
-
-    public class Natural1NT : Natural1NTBidder
-    {
-        public static BidderFactory Bidder(NTType type) { return () => new Natural1NT(type); }
-
-        private Natural1NT(NTType type) : base(type)
+        public static PrescribedBids Bidder(NTType type)
         {
-            this.BidRules = new BidRule[]
+            var b = new Natural1NT(type);
+            return new PrescribedBids(b, b.InitialBid);
+        }
+        private Natural1NT(NTType type) : base(type, Convention.Natural, 100) { }
+   
+        private void InitialBid(PrescribedBids pb)
+        {
+            pb.Bids = new BidRule[]
             {
                 // TODO: If the type is Overcall then we need to check for suit stopped... But anyway thats in the future
                 Nonforcing(1, Suit.Unknown, DefaultPriority + 10, Points(OpenerRange.Open), Balanced())
             };
-            SetPartnerBidder(() => new Conventions1NT(type));
+            pb.Partner(Conventions);
         }
-    }
 
-    public class Conventions1NT : OneNoTrumpBidder
-    { 
-        public Conventions1NT(NTType type) : base(type, Convention.NT, 1000)
+        private void Conventions(PrescribedBids pb)
         {
             // TODO: Make these redirect rules conditional on some global state.  Conditions can be:
             //  Off
@@ -183,38 +179,33 @@ namespace TricksterBots.Bots.Bridge
             //  X
             //  2C
             // So basically just a condition based on the RHO bid and a global somewhere that has these bid options...
-            switch (type)
+            switch (OpenType)
             {
                 case NTType.Open1NT:
-                    this.Redirects = new RedirectRule[]
+                    pb.Redirects = new RedirectRule[]
                     {
-                        Redirect(() => new NaturalResponseTo1NT(type)),
-                        Redirect(StaymanBidder.InitiateConvention()),
-                        Redirect(() => new InitiateTransfer(type))
-                    };
+                        Redirect(() => StaymanBidder.InitiateConvention(OpenType)),
+                        Redirect(() => TransferBidder.InitiateConvention(OpenType)),
+						Redirect(NaturalResponse),
+					};
                     break;
 
                 case NTType.Overcall1NT:
                 case NTType.Balancing1NT:
-                    this.Redirects = new RedirectRule[]
+                    pb.Redirects = new RedirectRule[]
                     {
                         // TODO: This is SAYC SPECIFIC.  ONLY STAYAN WITH OVERCALL.
-                        Redirect(() => new NaturalResponseTo1NT(type)),
-                        Redirect(() => new InitiateStayman(type)),
-                    };
+                        Redirect(() => StaymanBidder.InitiateConvention(OpenType)),
+						Redirect(NaturalResponse),
+					};
                     break;
             }
         }
-    }
-
- 
-    public class NaturalResponseTo1NT: Natural1NTBidder
-    {
-        public NaturalResponseTo1NT(NTType type) : base(type)
+        private void NaturalResponse(PrescribedBids pb)
         {
-            this.BidRules = new BidRule[]
+            pb.Bids = new BidRule[]
             {
-                Signoff(Call.Pass, Points(ResponderRange.LessThanInvite)),
+                Signoff(Call.Pass, 0, Points(ResponderRange.LessThanInvite)),
 
                 Signoff(2, Suit.Clubs, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
                 Signoff(2, Suit.Diamonds, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
@@ -228,16 +219,12 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(3, Suit.Unknown, Points(ResponderRange.Game), LongestMajor(4)),
 
             };
-            SetPartnerBidder(() => new Natural1NTOpenerRebid(type));
+            pb.Partner(OpenerRebid);
         }
-    }
 
-    public class Natural1NTOpenerRebid: Natural1NTBidder
-    {
-
-        public Natural1NTOpenerRebid(NTType type): base(type)
+        private void OpenerRebid(PrescribedBids pb)
         {
-            this.BidRules = new BidRule[]
+            pb.Bids = new BidRule[]
             {
                 Signoff(Call.Pass, Points(OpenerRange.DontAcceptInvite), Partner(LastBid(2, Suit.Unknown))),
                 Signoff(Call.Pass, Partner(LastBid(2, Suit.Clubs))),
@@ -255,15 +242,12 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(4, Suit.Hearts, Partner(LastBid(3, Suit.Hearts)), Shape(3, 5)),
                 Nonforcing(4, Suit.Spades, Partner(LastBid(3, Suit.Spades)), Shape(3, 5))
             };
-            SetPartnerBidder(() => new Natural1NTResponderRebid(type));
-        }
-    }
+            pb.Partner(ResponderRebid);
 
-    public class Natural1NTResponderRebid: Natural1NTBidder
-    {
-        public Natural1NTResponderRebid(NTType type) : base(type)
+        }
+        private void ResponderRebid(PrescribedBids pb)
         {
-            this.BidRules = new BidRule[]
+            pb.Bids = new BidRule[]
             {
                 // TODO: Ideally this would be "Parther(ShowsShape(Hearts, 5)" Better than lastbid...
                 Signoff(3, Suit.Unknown, Partner(LastBid(3, Suit.Hearts)), Shape(Suit.Hearts, 0, 2)),
@@ -306,7 +290,7 @@ namespace TricksterBots.Bots.Bridge
             {
                 Nonforcing(2, Suit.Unknown, DefaultPriority + 10, OpenPoints, Balanced())
             };
-            pb.PartnerRules = Conventions;
+            pb.Partner(Conventions);
         }
 
 
