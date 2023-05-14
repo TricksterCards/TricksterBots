@@ -38,9 +38,9 @@ namespace TricksterBots.Bots.Bridge
 
     public class RedirectGroupXXX
     {
-        private List<PrescribedBids> _bidders = new List<PrescribedBids>();
+        private List<PrescribedBidsFactory> _bidders = new List<PrescribedBidsFactory>();
 
-        public void Add(PrescribedBids bid)
+        public void Add(PrescribedBidsFactory bid)
         {
             _bidders.Add(bid);
         }
@@ -60,7 +60,7 @@ namespace TricksterBots.Bots.Bridge
             Dictionary<Bid, BidRuleGroup> bids = new Dictionary<Bid, BidRuleGroup>();
             foreach (var bidder in _bidders)
             {
-                var newBids = bidder.GetBids(ps);
+                var newBids = bidder().GetBids(ps);
                 if (newBids != null)    // TODO: Why ever getting null?? Is this acceptable?
                 {
                     foreach (var newBid in newBids)
@@ -209,10 +209,11 @@ namespace TricksterBots.Bots.Bridge
 
             this.Conventions[Convention.Transfer] = new NaturalOvercall(); // TODO: HACK HACK HACK HACK!
             */
-            this._baseBiddingXXX.Add(Natural.DefaultBidderXXX());
-            this._baseBiddingXXX.Add(OpenAndOvercallNoTrump.DefaultBidderXXX());
-            this._baseBiddingXXX.Add(StrongBidder.InitiateConvention());
-            this._baseBiddingXXX.Add(Compete.DefatulBidderXXX());
+            this._baseBiddingXXX.Add(Natural.DefaultBidderXXX);
+            this._baseBiddingXXX.Add(OpenAndOvercallNoTrump.DefaultBidderXXX);
+            this._baseBiddingXXX.Add(StrongBidder.InitiateConvention);
+            this._baseBiddingXXX.Add(TakeoutDouble.InitiateConvention);
+            this._baseBiddingXXX.Add(Compete.DefatulBidderXXX);
             
         }
 
@@ -227,7 +228,7 @@ namespace TricksterBots.Bots.Bridge
             PrescribedBidsFactory nextState = ps.GetPartnerNextState();
             if (nextState != null)
             {
-                bidders.Add(nextState());
+                bidders.Add(nextState);
             }
            
             bidders.Add(_baseBiddingXXX);
@@ -238,7 +239,7 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: How bad is this?  Is this an emergency?
 				// TODO: Always add a pass at the end of this function no matter what?  
 				// If forcing then isn't really on optoin.  Is this the right place anyway?
-				Debug.WriteLine("** CREATING PASS SINCE NONE SPECIFIED **");
+				//Debug.WriteLine("** CREATING PASS SINCE NONE SPECIFIED **");
 				var ruleGroup = new BidRuleGroup(Bid.Pass, Convention.Natural, null);
 				ruleGroup.Add(new BidRule(Bid.Pass, 0, new Constraint[0]));
 				bids[Bid.Pass] = ruleGroup;

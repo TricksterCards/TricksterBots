@@ -63,8 +63,8 @@ namespace TricksterBots.Bots.Bridge
 				RedirectGroupXXX rXXX = null;
 				foreach (var redirect in Redirects)
 				{
-					var redirectedBids = redirect.RedirectedBidder(ps);
-					if (redirectedBids != null)
+					PrescribedBidsFactory bidFactory = redirect.RedirectedBidder(ps);
+					if (bidFactory != null)
 					{
 						// NOTE: It is acceptable to return an empty set of rules.  This means that the 
 						// redirection rule conforms (so bid rules in this set of Prescribed Bids will not be used)
@@ -74,7 +74,7 @@ namespace TricksterBots.Bots.Bridge
 						{
 							rXXX = new RedirectGroupXXX();;
 						}
-						rXXX.Add(redirectedBids);
+						rXXX.Add(bidFactory);
 					}
 				}
 				if (rXXX != null) { return rXXX.GetBids(ps); }

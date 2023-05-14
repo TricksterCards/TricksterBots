@@ -139,11 +139,16 @@ namespace TricksterBots.Bots.Bridge
         {
             pb.Redirects = new RedirectRule[]
             {
-                Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Open1NT), Role(PositionRole.Opener, 1)),
-                Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Overcall1NT),
+
+				Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Balancing1NT),
+						 Role(PositionRole.Overcaller, 1), PassEndsAuction(true)),
+
+				Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Open1NT), Role(PositionRole.Opener, 1)),
+
+
+				Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Overcall1NT),
                          Role(PositionRole.Overcaller, 1), PassEndsAuction(false)),
-                Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Balancing1NT),
-                         Role(PositionRole.Overcaller, 1), PassEndsAuction(true)),
+
                 Redirect(Natural2NT.DefaultBidderXXX, Role(PositionRole.Opener,1)),
                 // TODO: NEED NATURAL 3NT TOO BUT FOR NOW JUST 2NT
             };

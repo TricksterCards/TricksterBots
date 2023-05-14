@@ -41,18 +41,18 @@ namespace TricksterBots.Bots.Bridge
             this._setRules = setRules;
             this._factory = null;
         }
-        public RedirectRule(PrescribedBidsFactory factory, params Constraint[] constraints)
+        public RedirectRule(PrescribedBidsFactory factory, params Constraint[] constraints) : base(constraints)
         {
             this._bidder = null;
             this._setRules = null;
             this._factory= factory;
         }
 
-        public PrescribedBids RedirectedBidder(PositionState ps)
+        public PrescribedBidsFactory RedirectedBidder(PositionState ps)
         {
             if (this.Conforms(ps))
             {
-                return (_factory != null) ? _factory() : new PrescribedBids(_bidder, _setRules);
+                return (_factory != null) ? _factory : () => new PrescribedBids(_bidder, _setRules);
             }
             return null;
         }
