@@ -205,6 +205,7 @@ namespace Trickster.Bots
             var partnerIsMaker = partners.Any(p => BidBid(p) == EuchreBid.Make);
             var weAreMaker = playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone || partnerIsMaker;
             var isDefending = !weAreMaker && !partnerIsMaker;
+            var cardsPlayedPlusHand = cardsPlayed.Concat(new Hand(player.Hand));
 
             var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).First();
 
@@ -289,7 +290,7 @@ namespace Trickster.Bots
                             //  we're last to play; let our partner have it
                             return lowestCard;
 
-                        if (!IsCardHigh(cardTakingTrick, cardsPlayed.Concat(new Hand(player.Hand))) && IsCardHigh(highFollow, cardsPlayed))
+                        if (!IsCardHigh(cardTakingTrick, cardsPlayedPlusHand) && IsCardHigh(highFollow, cardsPlayed))
                             //  partner might lose the trick, but we have the highest card; play it
                             return highFollow;
                     }
@@ -312,8 +313,9 @@ namespace Trickster.Bots
 
             //  we can't follow suit but we have trump (and don't need to protect the off jack)
             var offJack = legalCards.FirstOrDefault(c => IsTrump(c) && c.rank == Rank.Jack && c.suit != trump);
-            var isLHOVoidInTrump = players.LhoIsVoidInSuit(player, trump, cardsPlayed);
-            var needToProtectOffJack = isDefending && !isLastToPlay && !isLHOVoidInTrump && offJack != null && !IsCardHigh(offJack, cardsPlayed) && legalCards.Count(IsTrump) == 2;
+            var isLhoVoidInTrump = players.LhoIsVoidInSuit(player, trump, cardsPlayed);
+            var isOffJackNotHigh = offJack != null && !IsCardHigh(offJack, cardsPlayedPlusHand);
+            var needToProtectOffJack = isDefending && !isLastToPlay && !isLhoVoidInTrump && isOffJackNotHigh && legalCards.Count(IsTrump) == 2;
             if (legalCards.Any(IsTrump) && !needToProtectOffJack)
             {
                 //  the trick already contains trump

@@ -233,7 +233,24 @@ namespace TestBots
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("QD", $"{suggestion}");
         }
-        
+
+        [TestMethod]
+        public void DontProtectTheLeftIfHoldingTheRight()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "ACTC9CJHJD"),
+                new TestPlayer(140),
+                new TestPlayer(140),
+                new TestPlayer(102, cardsTaken: "QDQHTH9H"),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9S");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("JH", $"{suggestion}");
+        }
+
         [TestMethod]
         public void LeadLeftToPartnerIfTheyCalled()
         {
