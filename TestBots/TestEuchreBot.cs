@@ -233,7 +233,58 @@ namespace TestBots
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("QD", $"{suggestion}");
         }
-        
+
+        [TestMethod]
+        public void DontProtectTheLeftIfHoldingTheRight()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, "ACTC9CJHJD"),
+                new TestPlayer(140),
+                new TestPlayer(140),
+                new TestPlayer(102, cardsTaken: "QDQHTH9H"),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9S");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("JH", $"{suggestion}");
+        }
+
+        [TestMethod]
+        public void DontProtectTheLeftIfTookOneTrick()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, handScore: 1, hand: "ACTC9CJHQD"),
+                new TestPlayer(140),
+                new TestPlayer(140, handScore: 1, cardsTaken: "AHQHTH9H"),
+                new TestPlayer(102),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "TS9S");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QD", $"{suggestion}");
+        }
+
+        [TestMethod]
+        public void ProtectTheLeftIfTookTwoTricks()
+        {
+            var players = new[]
+            {
+                new TestPlayer(140, handScore: 2, hand: "ACTC9CJHQD"),
+                new TestPlayer(140),
+                new TestPlayer(140, handScore: 2, cardsTaken: "AHQHTH9HKCQCJCQS"),
+                new TestPlayer(102),
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9STS");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("9C", $"{suggestion}");
+        }
+
         [TestMethod]
         public void LeadLeftToPartnerIfTheyCalled()
         {
