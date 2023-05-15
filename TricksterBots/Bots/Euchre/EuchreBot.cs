@@ -315,7 +315,7 @@ namespace Trickster.Bots
             var offJack = legalCards.FirstOrDefault(c => IsTrump(c) && c.rank == Rank.Jack && c.suit != trump);
             var isLhoVoidInTrump = players.LhoIsVoidInSuit(player, trump, cardsPlayed);
             var isOffJackNotHigh = offJack != null && !IsCardHigh(offJack, cardsPlayedPlusHand);
-            var needToProtectOffJack = isDefending && !isLastToPlay && !isLhoVoidInTrump && isOffJackNotHigh && legalCards.Count(IsTrump) == 2;
+            var needToProtectOffJack = isDefending && !isLastToPlay && !isLhoVoidInTrump && isOffJackNotHigh && legalCards.Count(IsTrump) == 2 && (player.HandScore == 0 || player.HandScore == 2);
             if (legalCards.Any(IsTrump) && !needToProtectOffJack)
             {
                 //  the trick already contains trump
