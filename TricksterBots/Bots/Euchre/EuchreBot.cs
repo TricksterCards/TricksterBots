@@ -311,12 +311,33 @@ namespace Trickster.Bots
                 return lowestCard;
             }
 
+            bool NeedToProtectOffJack()
+            {
+                if (!isDefending || isLastToPlay)
+                    return false;
+
+                // no need to protect if we don't have exactly two trump (more and we can still protect, less and we can't protect anyway)
+                if (legalCards.Count(IsTrump) != 2)
+                    return false;
+
+                // it's only worth protecting the left if a guaranteed trick would be a stopper or the last trick to Euchre
+                if (player.HandScore != 0 && player.HandScore != 2)
+                    return false;
+
+                // if we don't have the left or it's already high, there's nothing to protect
+                var offJack = legalCards.FirstOrDefault(c => IsTrump(c) && c.rank == Rank.Jack && c.suit != trump);
+                if (offJack == null || IsCardHigh(offJack, cardsPlayedPlusHand))
+                    return false;
+
+                // protect the left unless we know LHO is void in trump (so they can't over-trump us)
+                if (players.LhoIsVoidInSuit(player, trump, cardsPlayed))
+                    return false;
+
+                return true;
+            }
+
             //  we can't follow suit but we have trump (and don't need to protect the off jack)
-            var offJack = legalCards.FirstOrDefault(c => IsTrump(c) && c.rank == Rank.Jack && c.suit != trump);
-            var isLhoVoidInTrump = players.LhoIsVoidInSuit(player, trump, cardsPlayed);
-            var isOffJackNotHigh = offJack != null && !IsCardHigh(offJack, cardsPlayedPlusHand);
-            var needToProtectOffJack = isDefending && !isLastToPlay && !isLhoVoidInTrump && isOffJackNotHigh && legalCards.Count(IsTrump) == 2 && (player.HandScore == 0 || player.HandScore == 2);
-            if (legalCards.Any(IsTrump) && !needToProtectOffJack)
+            if (legalCards.Any(IsTrump) && !NeedToProtectOffJack())
             {
                 //  the trick already contains trump
                 if (trick.Any(IsTrump))
