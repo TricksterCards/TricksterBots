@@ -114,6 +114,27 @@ namespace TestBots
             Assert.AreEqual("3D", $"{suggestion}");
         }
 
+
+        [TestMethod]
+        public void PlayUnderMisereIfPossibleWithJoker()
+        {
+            var players = new[]
+            {
+                new TestPlayer(FiveHundredBid.NotContractorBid, "HJKC3CTH9H8H7S4S3S2S"),
+                new TestPlayer(FiveHundredBid.Misere250Before8SBid, "0?0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.NotContractorBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(BidBase.NotPlaying, "0?0?0?0?0?0?0?0?0?0?"),
+            };
+            var bot = GetBot(Suit.Unknown, defaultOptions);
+            var cardState = new TestCardState<FiveHundredOptions>(
+                bot,
+                players,
+                trick: "8D"
+            );
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("KC", $"{suggestion}");
+        }
+
         private static FiveHundredBot GetBot(Suit trumpSuit, FiveHundredOptions options)
         {
             return new FiveHundredBot(options, trumpSuit);

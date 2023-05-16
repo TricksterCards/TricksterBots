@@ -366,7 +366,7 @@ namespace Trickster.Bots
 
             //  if we're not leading, but a nullo player has yet to play, play low
             if (nulloPlayers.Any(p => p.Hand.Length == player.Hand.Length))
-                TryDumpEm(trick, legalCards, players.Count);
+                return TryDumpEm(trick, legalCards, players.Count);
 
             //  if a nullo player is taking the trick, try to get under them (but go high if we can't)
             if (nulloPlayers.Any(p => p.Seat == trickTaker.Seat))
