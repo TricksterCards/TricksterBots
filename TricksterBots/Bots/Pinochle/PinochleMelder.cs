@@ -160,6 +160,21 @@ namespace Trickster.Bots
             return taken;
         }
 
+        private static bool IsJackOfDiamonds(Card card)
+        {
+            return card.rank == Rank.Jack && card.suit == Suit.Diamonds;
+        }
+
+        private static bool IsQueenOfSpades(Card card)
+        {
+            return card.rank == Rank.Queen && card.suit == Suit.Spades;
+        }
+
+        private static bool IsPinochleLeg(Card card)
+        {
+            return IsJackOfDiamonds(card) || IsQueenOfSpades(card);
+        }
+
         public static bool IsMarriageOrBetter(PinochleMeld m)
         {
             return MarriageOrBetter.Contains(m);
@@ -253,29 +268,28 @@ namespace Trickster.Bots
                 pass.AddRange(hand.RemoveAndReturn(hand.Where(IsTrumpAboveNine).OrderByDescending(_bot.RankSort).Take(passCount - pass.Count)));
 
             //  add pinochle helpers if trump is one of the Pinochle suits
-            if (pass.Count < passCount)
-            {
-                if (_trump == Suit.Spades)
-                    pass.AddRange(hand.RemoveAndReturn(hand.Where(c => c.suit == Suit.Diamonds && c.rank == Rank.Jack).Take(passCount - pass.Count)));
-                else if (_trump == Suit.Diamonds)
-                    pass.AddRange(hand.RemoveAndReturn(hand.Where(c => c.suit == Suit.Spades && c.rank == Rank.Queen).Take(passCount - pass.Count)));
-            }
+            if (pass.Count < passCount && (_trump == Suit.Spades || _trump == Suit.Diamonds))
+                pass.AddRange(hand.RemoveAndReturn(hand.Where(IsPinochleLeg).Take(passCount - pass.Count)));
 
             //  add off-suit aces
             if (pass.Count < passCount)
                 pass.AddRange(hand.RemoveAndReturn(hand.Where(c => NotTrump(c) && c.rank == Rank.Ace).Take(passCount - pass.Count)));
 
-            //  pass parts of a pinochle regardless of trump if we can pass all of them (but don't pass any if we have 3 parts)
+            //  if we still need more, take from the remaining cards:
             if (pass.Count < passCount)
-            {
-                var pinochleParts = hand.Where(c => c.suit == Suit.Diamonds && c.rank == Rank.Jack || c.suit == Suit.Spades && c.rank == Rank.Queen).ToList();
-                if (pinochleParts.Count == 1 || pinochleParts.Count == 2 && passCount - pass.Count >= 2)
-                    pass.AddRange(hand.RemoveAndReturn(pinochleParts));
-            }
-
-            //  if we still need more, take from the remaining cards favoring trump and low points
-            if (pass.Count < passCount)
-                pass.AddRange(hand.OrderByDescending(IsTrump).ThenBy(c => CardPoints(_pinochleOptions, c)).Take(passCount - pass.Count));
+                pass.AddRange(hand
+                    // favoring trump
+                    // (includes 9s of trump if skipped before)
+                    .OrderByDescending(IsTrump)
+                    // favoring cards worth fewer points
+                    // (avoids losing tricks with points to opponents)
+                    .ThenBy(c => CardPoints(_pinochleOptions, c))
+                    // favoring cards that are NOT parts of a Pinochle
+                    // (already passed above if trump was Spades/Diamonds)
+                    // (in Clubs/Hearts declarer will pass Pinochle parts to us instead)
+                    .ThenBy(IsPinochleLeg)
+                    .Take(passCount - pass.Count)
+                );
 
             return pass;
         }

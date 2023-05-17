@@ -65,11 +65,11 @@
     <Compile Include="Bridge\Test_Sayc_Results.cs" />
     <Compile Include="TestHeartsBot.cs" />
     <Compile Include="TestOhHellBot.cs" />
+    <Compile Include="TestPinochleBot.cs" />
     <Compile Include="TestPitchBot.cs" />
     <Compile Include="TestSpadesBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestEuchreBot.cs" />
-    <Compile Include="TestFiveHundredBot.cs" />
     <Compile Include="TestWhistBot.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
