@@ -12,7 +12,10 @@ namespace TricksterBots.Bots.Bridge
 {
 	class StandardHandEvaluator
 	{
-
+		private static bool Stopped(Hand hand, Suit suit, int countSuit)
+		{
+			return BasicBidding.ComputeHighCardPoints(hand, suit) + countSuit >= 5;
+		}
 
 		private static SuitQuality Quality(Hand hand, Suit suit)
 		{
@@ -66,6 +69,7 @@ namespace TricksterBots.Bots.Bridge
 				}
 				hs.Suits[suit].Keycards = (keyCards, keyCards);
 				hs.Suits[suit].HaveQueen = hand.Contains(new Card(suit, Rank.Queen));
+				hs.Suits[suit].Stopped = Stopped(hand, suit, c);
 			}
 			hs.Suits[Suit.Unknown].Shape = (0, 0);
 			hs.Suits[Suit.Unknown].DummyPoints = (p, p);

@@ -18,25 +18,7 @@ namespace TricksterBots.Bots.Bridge
 		protected bool _lengthOnly;
 
 
-		// TODO: Move this to BasicBidding after massive merge
-		public Suit HigherRanking(Suit s1, Suit s2)
-		{
-			Debug.Assert(s1 != s2);
-			Debug.Assert(s1 == Suit.Clubs || s1 == Suit.Diamonds || s1 == Suit.Hearts || s1 == Suit.Spades);
-			Debug.Assert(s2 == Suit.Clubs || s2 == Suit.Diamonds || s2 == Suit.Hearts || s2 == Suit.Spades);
-			switch (s1)
-			{
-				case Suit.Clubs:
-					return s2;
-				case Suit.Diamonds:
-					return (s2 == Suit.Clubs) ? s1 : s2;
-				case Suit.Hearts:
-					return (s2 == Suit.Spades) ? s2 : s1;
-				case Suit.Spades:
-					return s1;
-			}
-			throw new ArgumentException();  // TODO: Is this OK?  Is it right?
-		}
+
 
 		// Suit "better" must be better than suit "worse".  If lengthOnly is true then length is the only consideration
 		// and the default value will be returned

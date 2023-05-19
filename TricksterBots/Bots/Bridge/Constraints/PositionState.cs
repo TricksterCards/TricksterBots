@@ -26,7 +26,7 @@ namespace TricksterBots.Bots.Bridge
 
 		private HandSummary _privateHandSummary;
 
-		private List<BidRuleGroup> _bids;
+		private List<BidRuleSet> _bids;
 
 		public PairAgreements PairAgreements { get; private set; }
 
@@ -71,7 +71,7 @@ namespace TricksterBots.Bots.Bridge
 			this.Vulnerable = vulnerable;
 			this.PublicHandSummary = new HandSummary();
 			this.PairAgreements = new PairAgreements();
-			this._bids = new List<BidRuleGroup>();
+			this._bids = new List<BidRuleSet>();
 
 			if (hand != null)
 			{
@@ -102,7 +102,7 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 		// THIS IS AN INTERNAL FUNCITON:
-		public Bid MakeBid(BidRuleGroup bidGroup)
+		public Bid MakeBid(BidRuleSet bidGroup)
 		{
             if (!bidGroup.Bid.IsPass && !this._roleAssigned)
 			{
@@ -160,7 +160,7 @@ namespace TricksterBots.Bots.Bridge
 			return true;
 		}
 
-		internal bool RepeatUpdatesUntilStable(BidRuleGroup bidGroup)
+		internal bool RepeatUpdatesUntilStable(BidRuleSet bidGroup)
 		{
 			bool stateChanged = false;
 			for (int i = 0; i < 1000; i++)
@@ -193,10 +193,10 @@ namespace TricksterBots.Bots.Bridge
 
         // TODO: Just a start of taking a group of rules and returning a subest
         // TODO: NEED TO ADD -PRIORITY BIDS FOR FALL-BACK. THESE SHOULD BE IGNORED IN THE FIRST ROUND
-        public BidRuleGroup ChooseBid(Dictionary<Bid, BidRuleGroup> rules)
+        public BidRuleSet ChooseBid(Dictionary<Bid, BidRuleSet> rules)
 		{
 			Debug.Assert(_privateHandSummary != null);
-			BidRuleGroup choice = null;
+			BidRuleSet choice = null;
 			var priority = int.MinValue;
 			foreach (var ruleGroup in rules.Values)
 			{
@@ -213,7 +213,7 @@ namespace TricksterBots.Bots.Bridge
 				// UGLY TODO: CLEAN THIS UP!!!
 				//Debug.WriteLine("***Generating bogus pass***");
                 var pass = new BidRule(new Bid(Call.Pass, BidForce.Nonforcing), 0, new Constraint[0]); 
-				choice = new BidRuleGroup(pass.Bid, Convention.Natural, null);
+				choice = new BidRuleSet(pass.Bid, Convention.Natural, null);
 				choice.Add(pass);
 			}
             return choice;

@@ -66,15 +66,6 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(4, Suit.Spades, Points(LessThanOpen), Shape(8), DecentSuit()),
 
 
-                Nonforcing(6, Suit.Clubs, Shape(12)),
-				Nonforcing(6, Suit.Diamonds, Shape(12)),
-				Nonforcing(6, Suit.Hearts, Shape(12)),
-				Nonforcing(6, Suit.Spades, Shape(12)),
-
-				Nonforcing(7, Suit.Clubs, Shape(13)),
-				Nonforcing(7, Suit.Diamonds, Shape(13)),
-				Nonforcing(7, Suit.Hearts, Shape(13)),
-				Nonforcing(7, Suit.Spades, Shape(13)),
 			};
 			pb.Partner(InitialResponse); 
         }
@@ -109,7 +100,7 @@ namespace TricksterBots.Bots.Bridge
 		static protected (int, int) SlamInterest = (17, 40);
 		static protected (int, int) LimitRaise = (11, 12);
 		static protected (int, int) LimitRaiseOrBetter = (11, 40);
-		static protected (int, int) RaiseTo3NT = (13, 15);
+		static protected (int, int) RaiseTo3NT = (13, 16);
 		static protected (int, int) Weak4Level = (0, 10);
 		static protected (int, int) GameOrBetter = (13, 40);
 		static protected (int, int) WeakJumpRaise = (0, 5);
@@ -371,7 +362,8 @@ namespace TricksterBots.Bots.Bridge
 
 				Nonforcing(3, Suit.Hearts, Fit(), DummyPoints(WeakJumpRaise), Shape(4)),
 
-				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
+				// TODO: What is not balanced but do have opponents stopped.  Maybe remove balanced.....
+				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), OppsStopped(), Balanced()),
 
 				// TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 

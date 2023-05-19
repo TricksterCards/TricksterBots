@@ -19,7 +19,7 @@ namespace TricksterBots.Bots.Bridge
             return new PrescribedBids(bidder, bidder.Initiate);
         }
 
-        private TakeoutDouble() : base(Convention.TakeoutDouble, 1000)
+        private TakeoutDouble() : base(Convention.TakeoutDouble, 100)
         {
         }
 
@@ -28,7 +28,7 @@ namespace TricksterBots.Bots.Bridge
             pb.ConventionRules = new ConventionRule[]
             {
                 // TODO: Need takeout doubles after first round, but for now this works...
-                ConventionRule(Role(PositionRole.Responder, 1))
+                ConventionRule(Role(PositionRole.Overcaller, 1))
             };
             pb.Bids = new BidRule[]
             {
@@ -43,13 +43,14 @@ namespace TricksterBots.Bots.Bridge
 
         private BidRule Takeout(Suit suit)
         {
-            var rule = Forcing(Call.Double, CueBid(suit), Points(TakeoutRange), Shape(suit, 0, 4));
+            // TODO: Should this be 2 or 1 for MinBidLevel?  Or is this really based on opponent bids?
+            var rule = Forcing(Call.Double, CueBid(suit), Points(TakeoutRange), Shape(suit, 0, 4), BidAvailable(2, Suit.Clubs));
             foreach (var otherSuit in BasicBidding.BasicSuits)
             {
                 if (otherSuit != suit)
                 {
                     // TODO: Is this reasonable?  6+ card suit needs to be bid.  Not takeout.   
-                    rule.AddConstraint(Shape(otherSuit, 3, 5));
+                    rule.AddConstraint(Shape(otherSuit, 3, 4));
                 }
             }
             return rule;
@@ -71,18 +72,18 @@ namespace TricksterBots.Bots.Bridge
             {
                 // TODO: FOR NOW WE WILL JUST BID AT THE NEXT LEVEL REGARDLESS OF POINTS...
                 // TODO: Need LongestSuit()...
-                // TODO: Should this be BestSuit()...
-                Nonforcing(1, Suit.Diamonds, BestSuit(), Points(MinLevel)),
-                Nonforcing(1, Suit.Hearts, BestSuit(), Points(MinLevel)),
-                Nonforcing(1, Suit.Spades, BestSuit(), Points(MinLevel)),
+                // TODO: Should this be TakeoutSuit()...
+                Nonforcing(1, Suit.Diamonds, TakeoutSuit(), Points(MinLevel)),
+                Nonforcing(1, Suit.Hearts, TakeoutSuit(), Points(MinLevel)),
+                Nonforcing(1, Suit.Spades, TakeoutSuit(), Points(MinLevel)),
            // TODO - ADD OPPS STOPPED     Nonforcing(1, Suit.Unknown, Balanced(), Stopped(OPPS), Points(NoTrump1)),
-                Nonforcing(2, Suit.Clubs, BestSuit(), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Diamonds, BestSuit(), Jump(0), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Diamonds, BestSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
-                Nonforcing(2, Suit.Hearts, BestSuit(), Jump(0), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Hearts, BestSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
-                Nonforcing(2, Suit.Spades, BestSuit(), Jump(0), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Spades, BestSuit(), Jump(1), CueBid(false), Points(InviteLevel))
+                Nonforcing(2, Suit.Clubs, TakeoutSuit(), CueBid(false), Points(MinLevel)),
+                Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
+                Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
+                Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
+                Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
+                Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
+                Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel))
 
             };
         }

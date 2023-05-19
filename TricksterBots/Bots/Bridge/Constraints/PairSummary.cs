@@ -34,13 +34,20 @@ namespace TricksterBots.Bots.Bridge
 
             public bool? HaveQueen { get; set; }
 
+            public bool? Stopped { get; set; }
+
 
 
             public SuitSummary(HandSummary.SuitSummary ss1, HandSummary.SuitSummary ss2)
             {
                 this.Shape = AddRange(ss1.Shape, ss2.Shape, 13);
                 // TODO: Think about this - intersect range?  Not sure...
-                this._quality = IntersectRange(ss1._quality, ss2._quality); 
+                this._quality = IntersectRange(ss1._quality, ss2._quality);
+                this.Stopped = null;
+                if (ss1.Stopped == true || ss2.Stopped == true)
+                {
+                    this.Stopped = true;
+                }
               //  this.Quality = (SuitQuality.Poor, SuitQuality.Solid);
               //  this.Keycards = null;
             }
@@ -76,9 +83,11 @@ namespace TricksterBots.Bots.Bridge
             }
         }
 
+        public PairSummary(PositionState ps) : this(ps.PublicHandSummary, ps.Partner.PublicHandSummary) { }
+
         public static PairSummary Opponents(PositionState ps)
         {
-            return new PairSummary(ps.LeftHandOpponent.PublicHandSummary, ps.RightHandOpponent.PublicHandSummary);
+            return new PairSummary(ps.LeftHandOpponent);
         }
     }
 }

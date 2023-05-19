@@ -112,6 +112,8 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BetterSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BidHistory.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BidRound.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\MinBidLevel.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\OppsStopped.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\PassEndsAuction.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\CompositeConstraint.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\CueBid.cs" />
@@ -125,16 +127,17 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\RuleOf17.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Seat.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\ShowsTrump.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\TakeoutSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Compete.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalAdvance.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\TakeoutDouble.cs" />
     <Compile Include="Bots\Bridge\Constraints\PairAgreements.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidRule.cs" />
-    <Compile Include="Bots\Bridge\Constraints\BidRuleGroup.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidRuleSet.cs" />
     <Compile Include="Bots\Bridge\Constraints\BiddingState.cs" />
     <Compile Include="Bots\Bridge\Constraints\ConventionRule.cs" />
-    <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalOpen.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Conventions\SuitOpenRespond.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalOvercall.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalRespond.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NoTrump.cs" />
@@ -149,6 +152,7 @@
     <Compile Include="Bots\Bridge\Constraints\PairSummary.cs" />
     <Compile Include="Bots\Bridge\Constraints\PositionState.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Shape.cs" />
+    <Compile Include="Bots\Bridge\Constraints\PrescribedBids.cs" />
     <Compile Include="Bots\Euchre\EuchreBot.cs" />
     <Compile Include="Bots\FiveHundred\FiveHundredBot.cs" />
     <Compile Include="Bots\Hearts\HeartsBot.cs" />

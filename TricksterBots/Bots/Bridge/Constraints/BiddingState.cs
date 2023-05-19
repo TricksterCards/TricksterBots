@@ -55,9 +55,9 @@ namespace TricksterBots.Bots.Bridge
             }
         }
 
-        public Dictionary<Bid, BidRuleGroup> GetBids(PositionState ps)
+        public Dictionary<Bid, BidRuleSet> GetBids(PositionState ps)
         {
-            Dictionary<Bid, BidRuleGroup> bids = new Dictionary<Bid, BidRuleGroup>();
+            Dictionary<Bid, BidRuleSet> bids = new Dictionary<Bid, BidRuleSet>();
             foreach (var bidder in _bidders)
             {
                 var newBids = bidder().GetBids(ps);
@@ -219,7 +219,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-        internal Dictionary<Bid, BidRuleGroup> AvailableBids(PositionState ps)
+        internal Dictionary<Bid, BidRuleSet> AvailableBids(PositionState ps)
         {
             // TODO: Always creating a new object and then copying all the default bidders into
             // that group so not the best implementation, but whatever...
@@ -240,7 +240,7 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: Always add a pass at the end of this function no matter what?  
 				// If forcing then isn't really on optoin.  Is this the right place anyway?
 				//Debug.WriteLine("** CREATING PASS SINCE NONE SPECIFIED **");
-				var ruleGroup = new BidRuleGroup(Bid.Pass, Convention.Natural, null);
+				var ruleGroup = new BidRuleSet(Bid.Pass, Convention.Natural, null);
 				ruleGroup.Add(new BidRule(Bid.Pass, 0, new Constraint[0]));
 				bids[Bid.Pass] = ruleGroup;
 			}
@@ -329,7 +329,7 @@ namespace TricksterBots.Bots.Bridge
                    // Debug.WriteLine($"--- Historical: {b}");
                     var bid = Bid.FromString(b);
                     var o = AvailableBids(NextToAct);
-                    BidRuleGroup choice;
+                    BidRuleSet choice;
                     if (o.TryGetValue(bid, out choice) == false)
                     {
                         // TODO: THIS IS SUPER IMPORTANT TO GET BUT NEED TO IGNORE IT FOR A WHILE.
@@ -337,7 +337,7 @@ namespace TricksterBots.Bots.Bridge
                         // TURN THIS BACK ON AT SOME POINT!  
                         Debug.WriteLine($"*** ERROR: Did not find {b} in bid optoins.  Constructing a bid with state information");
                         var rule = new BidRule(bid, 1, new Constraint[0]);
-                        choice = new BidRuleGroup(bid, Convention.Natural, null);
+                        choice = new BidRuleSet(bid, Convention.Natural, null);
                         choice.Add(rule);
                     }
                     NextToAct.MakeBid(choice);

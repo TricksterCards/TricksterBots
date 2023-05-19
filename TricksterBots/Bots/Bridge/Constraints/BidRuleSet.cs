@@ -11,98 +11,8 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    /*
-    public class BidOptions
-    {
-        
-        internal class BidGroupChoices
-        {
-            public BidRuleGroup Natural;
-            public BidRuleGroup Conventional;
-            public BidRuleGroup Competative;
-            public BidGroupChoices()
-            {
-                Natural = null;
-                Conventional = null;
-            }
-            
-            // Unconditionally add the rule to the appropriate convention group 
-            internal void Add(Convention convention, BidderFactory partnerBidder, BidRule rule)
-            {
-                if (convention == Convention.Natural)
-                {
-                    if (this.Natural == null)
-                    {
-                        this.Natural = new BidRuleGroup(rule.Bid, convention, partnerBidder);
-                    }
-                    this.Natural.Add(rule);
-                } 
-                else
-                {
-                    if (this.Conventional == null)
-                    {
-                        this.Conventional = new BidRuleGroup(rule.Bid, convention, partnerBidder);
-                    }
-                    Debug.Assert(this.Conventional.Convention == convention);
-                    // TODO: Make sure bidding factory is the same...
-                    this.Conventional.Add(rule);
-                }
-            }
-            
 
-            internal BidRuleGroup BidRules {
-                get 
-                { 
-                    if (Conventional != null && Conventional.HasRules) { return Conventional; }
-                    if (Natural != null && Natural.HasRules) { return Natural;  }
-                    if (Competative != null && Competative.HasRules) { return Competative; }
-                    return null;
-                }
-            }
-        }
-
-
-        private Dictionary<Bid, BidGroupChoices> Choices { get; }
-        public BidOptions() { 
-            this.Choices = new Dictionary<Bid, BidGroupChoices>();
-        }
-
-        // Adds all the BidRules from the specified bidder.
-        
-        public void Add(PrescribedBids pb, PositionState ps)
-        {
-            var contract = ps.BiddingState.GetContract();
-            foreach (var rule in pb.BidRules)
-            {
-                if (rule.Bid.IsValid(ps, contract).Valid && rule.Conforms(true, ps, ps.PublicHandSummary, ps.PairAgreements))
-                { 
-                    if (Choices.ContainsKey(rule.Bid) == false)
-                    {
-                        Choices[rule.Bid] = new BidGroupChoices();
-                    }
-                    Choices[rule.Bid].Add(bidder.Convention, bidder.GetPartnerBidder(rule.Bid), rule);
-                }
-            }
-        }
-        
-        public Dictionary<Bid, BidRuleGroup> GetChoices()
-        {
-            var choices = new Dictionary<Bid, BidRuleGroup>();
-            foreach (var convChoice in Choices)
-            {
-                var rules = convChoice.Value.BidRules;
-                if (rules != null) 
-                {
-                    choices[convChoice.Key] = rules;
-                }
-            }
-            return choices;
-        }
-    }
-*/
-
-
-    public class BidRuleGroup
+    public class BidRuleSet
     {
         public Bid Bid { get; }
 
@@ -114,7 +24,7 @@ namespace TricksterBots.Bots.Bridge
         public bool HasRules {  get {  return _rules.Count > 0; } }
 
         private List<BidRule> _rules;
-        public BidRuleGroup(Bid bid, Convention convention, PrescribedBidsFactory partnerRules) 
+        public BidRuleSet(Bid bid, Convention convention, PrescribedBidsFactory partnerRules) 
         {
             this.Bid = bid;
             this._rules = new List<BidRule>();
@@ -122,12 +32,6 @@ namespace TricksterBots.Bots.Bridge
             this.PartnerRules = partnerRules;
             this.Convention = convention;
         }
-
-        public bool IsConformingChoice
-        {
-            get { return Priority > int.MinValue; }
-        }
-
 
 
 

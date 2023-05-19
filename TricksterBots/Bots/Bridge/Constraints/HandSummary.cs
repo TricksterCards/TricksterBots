@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
@@ -37,6 +38,8 @@ namespace TricksterBots.Bots.Bridge
 
             public bool? HaveQueen { get; set; }
 
+			public bool? Stopped { get; set; }
+
             public SuitSummary()
             {
                 this.Shape = (0, 13);
@@ -44,6 +47,8 @@ namespace TricksterBots.Bots.Bridge
                 this.LongHandPoints = (0, 40);
                 this.Quality = (SuitQuality.Poor, SuitQuality.Solid);
                 this.Keycards = null;
+				this.HaveQueen = null;
+				this.Stopped = null;
             }
             // TODO: There are other properties like "Stopped", "Has Ace", that can go here...
 
@@ -53,6 +58,9 @@ namespace TricksterBots.Bots.Bridge
                 this.DummyPoints = other.DummyPoints;
                 this.LongHandPoints = other.LongHandPoints;
                 this.Quality = other.Quality;
+				this.Keycards= other.Keycards;
+				this.HaveQueen= other.HaveQueen;
+				this.Stopped = other.Stopped;
             }
 		
             internal void Union(SuitSummary other)
@@ -62,6 +70,7 @@ namespace TricksterBots.Bots.Bridge
                 this.LongHandPoints = UnionRange(this.LongHandPoints, other.LongHandPoints);
                 this._quality = UnionRange(this._quality, other._quality);
                 this.HaveQueen = UnionBool(this.HaveQueen, other.HaveQueen);
+				this.Stopped = UnionBool(this.Stopped, other.Stopped);
                 if (this.Keycards == null || other.Keycards == null)
                 {
                     this.Keycards = null;
@@ -79,6 +88,8 @@ namespace TricksterBots.Bots.Bridge
                 this.DummyPoints = IntersectRange(this.DummyPoints, other.DummyPoints);
                 this.LongHandPoints = IntersectRange(this.LongHandPoints, other.LongHandPoints);
                 this._quality = IntersectRange(this._quality, other._quality);
+				this.HaveQueen = IntersectBool(this.HaveQueen, other.HaveQueen);
+				this.Stopped = IntersectBool(this.Stopped, other.Stopped);
             }
 
             public bool Equals(SuitSummary other)
@@ -87,6 +98,7 @@ namespace TricksterBots.Bots.Bridge
 					    this.DummyPoints == other.DummyPoints &&
 						this.LongHandPoints == other.LongHandPoints &&
 						this._quality == other._quality);
+				// TODO: HaveQueen??? Stopped???
             }
         }
 
