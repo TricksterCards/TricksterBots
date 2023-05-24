@@ -30,13 +30,13 @@ namespace TricksterBots.Bots.Bridge
 			this._constraints = this._constraints.Append(constraint);
 		}
 
-		public bool Conforms(bool firstInvocation, PositionState ps, HandSummary hs, PairAgreements pa)
+		public bool Conforms(bool firstInvocation, PositionState ps, HandSummary hs)
 		{
 			foreach (Constraint constraint in _constraints)
 			{
 				if (firstInvocation || constraint.OnceAndDone == false)
 				{
-					if (!constraint.Conforms(Bid, ps, hs, pa)) { return false; }
+					if (!constraint.Conforms(Bid, ps, hs)) { return false; }
 				}
 			}
 			return true;
@@ -45,21 +45,16 @@ namespace TricksterBots.Bots.Bridge
 
 		public (HandSummary, PairAgreements) ShowState(PositionState ps)
 		{
-			var handSummary = new HandSummary(ps.PublicHandSummary);
-			var PairAgreements = new PairAgreements(ps.PairAgreements);
+			var showHand = new HandSummary.ShowState();
+			var showAgreements = new PairAgreements.ShowState();
 			foreach (Constraint constraint in _constraints)
 			{
 				if (constraint is IShowsState showsState)
 				{
-					var hs = new HandSummary(ps.PublicHandSummary);
-					var bs = new PairAgreements(ps.PairAgreements);
-					showsState.Update(Bid, ps, hs, bs);
-					handSummary.Intersect(hs);
-					PairAgreements.Intersect(bs);
-
+					showsState.ShowState(Bid, ps, showHand, showAgreements);
 				}
 			}
-			return (handSummary, PairAgreements);
+			return (showHand.HandSummary, showAgreements.PairAgreements);
 		}
 	}
 

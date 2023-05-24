@@ -14,14 +14,14 @@ namespace TricksterBots.Bots.Bridge
         {
             this._trumpSuit = trumpSuit;
         }
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
             return true;
         }
 
-        void IShowsState.Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
-            pa.TrumpSuit = _trumpSuit;
+            showAgreements.ShowTrump(bid.SuitIfNot(_trumpSuit));
         }
     }
 }

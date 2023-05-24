@@ -18,7 +18,7 @@ namespace TricksterBots.Bots.Bridge
             this._desiredValue = desiredValue;
             this.OnceAndDone = true;
         }
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
             var pairSummary = PairSummary.Opponents(ps);
             if (pairSummary.ShownSuits.Contains(bid.SuitIfNot(_suit)))

@@ -2,7 +2,7 @@
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
 %Creator: BridgeComposer Version 5.101.2
-%Created: Mon May  8 21:47:44 2023 -0700
+%Created: Thu May 18 17:11:54 2023 -0700
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -126,7 +126,7 @@ Pass Pass
 [Play "N"]
 C3 - - -
 
-[Event "BB1 Deal 5"]
+[Event "BB2 Deal 5"]
 [Site ""]
 [Date ""]
 [Board "5"]
@@ -168,7 +168,7 @@ H5 - - -
 1D 1H 3NT Pass
 Pass Pass
 [Play "N"]
-H7 - - -
+SQ - - -
 
 [Event "BB2 Deal 7"]
 [Site ""]

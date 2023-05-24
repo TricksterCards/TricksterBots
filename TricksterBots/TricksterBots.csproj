@@ -112,6 +112,7 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BetterSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BidHistory.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BidRound.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\Break.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\MinBidLevel.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\OppsStopped.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\PassEndsAuction.cs" />
@@ -138,7 +139,7 @@
     <Compile Include="Bots\Bridge\Constraints\BiddingState.cs" />
     <Compile Include="Bots\Bridge\Constraints\ConventionRule.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\SuitOpenRespond.cs" />
-    <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalOvercall.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Conventions\SuitOvercallAdvance.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalRespond.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NoTrump.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Stayman.cs" />

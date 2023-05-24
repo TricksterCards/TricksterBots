@@ -25,14 +25,17 @@ namespace TricksterBots.Bots.Bridge
     public abstract class Constraint
     {
         public bool OnceAndDone = false;
-        public abstract bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa);
+        public abstract bool Conforms(Bid bid, PositionState ps, HandSummary hs);
 
+       
 	}
 
     public interface IShowsState 
     {
-        void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa);
-	}  
+        void ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements);
+    }
+
+    
 }
 
 

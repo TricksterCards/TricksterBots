@@ -16,7 +16,7 @@ namespace TricksterBots.Bots.Bridge
 			this._desiredValue = desiredValue;
 		}
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
 		{
 			return hs.IsBalanced == null || hs.IsBalanced == _desiredValue;
 		}
@@ -25,9 +25,18 @@ namespace TricksterBots.Bots.Bridge
 	public class ShowsBalanced : IsBalanced, IShowsState
 	{
 		public ShowsBalanced(bool desiredValue) : base(desiredValue) { }
-		public void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+	    void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
 		{
-			hs.IsBalanced = _desiredValue;
+			showHand.ShowIsBalanced(_desiredValue);
+			/*
+			if (_desiredValue == true)
+			{
+				foreach (var suit in BasicBidding.BasicSuits)
+				{
+					showHand.Suits[suit].ShowShape(2, 5);
+				}
+			}
+			*/
 		}
 	}
 

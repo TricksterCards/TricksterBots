@@ -26,16 +26,16 @@ namespace TricksterBots.Bots.Bridge
 		public int DefaultPriority { get; }
 
 
-        public Bidder(Convention convention, int defaultPriority)
-        {
-            this.Convention = convention;
-            this.DefaultPriority = defaultPriority;
-        }
+		public Bidder(Convention convention, int defaultPriority)
+		{
+			this.Convention = convention;
+			this.DefaultPriority = defaultPriority;
+		}
 
 
 
-        // Convention rules..
-        public ConventionRule ConventionRule(params Constraint[] constraints)
+		// Convention rules..
+		public ConventionRule ConventionRule(params Constraint[] constraints)
 		{
 			return new ConventionRule(constraints);
 		}
@@ -183,7 +183,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint LastBid(int level, Suit? suit, bool desired = true)
 		{
-			return new BidHistory(0, Call.Bid, level, true, suit, desired); 
+			return new BidHistory(0, Call.Bid, level, true, suit, desired);
 		}
 
 		public static Constraint LastBid(int level, bool desired = true)
@@ -266,13 +266,13 @@ namespace TricksterBots.Bots.Bridge
 			return HasMinShape(null, count);
 		}
 
-        public static Constraint HasMinShape(Suit? suit, int count)
-        {
-            return new HasMinShape(suit, count);
-        }
+		public static Constraint HasMinShape(Suit? suit, int count)
+		{
+			return new HasMinShape(suit, count);
+		}
 
 
-        public static Constraint HasShape(int min, int max)
+		public static Constraint HasShape(int min, int max)
 		{
 			return new HasShape(null, min, max);
 		}
@@ -400,10 +400,10 @@ namespace TricksterBots.Bots.Bridge
 
 		// For this to be true, the partner must have shown the suit, AND this position must have 
 		// at least minSupport cards in support
-	//	public Constraint CanSupport(bool desiredValue = true, int minSupport = 3)
-//		{ 
-//			throw new NotImplementedException(); 
-	//	}
+		//	public Constraint CanSupport(bool desiredValue = true, int minSupport = 3)
+		//		{ 
+		//			throw new NotImplementedException(); 
+		//	}
 
 		public static Constraint OppsStopped(bool desired = true)
 		{
@@ -419,12 +419,17 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 		public static Constraint BidAvailable(int level, Suit suit)
-		{ return new BidAvailable(level, suit); }	
+		{ return new BidAvailable(level, suit); }
 
 
 		public static Constraint RuleOf17(Suit? suit = null)
 		{
 			return new RuleOf17(suit);
+		}
+
+		public static Constraint Break(string name)
+		{
+			return new Break(name);
 		}
 
 	}

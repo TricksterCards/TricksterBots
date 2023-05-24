@@ -19,7 +19,7 @@ namespace TricksterBots.Bots.Bridge
             this.OnceAndDone = true;
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
             return (_role == ps.Role && (_round == 0 || ps.RoleRound == _round));
         }

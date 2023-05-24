@@ -40,9 +40,9 @@ namespace TricksterBots.Bots.Bridge
 
             public SuitSummary(HandSummary.SuitSummary ss1, HandSummary.SuitSummary ss2)
             {
-                this.Shape = AddRange(ss1.Shape, ss2.Shape, 13);
+                this.Shape = AddRange(ss1.GetShape(), ss2.GetShape(), 13);
                 // TODO: Think about this - intersect range?  Not sure...
-                this._quality = IntersectRange(ss1._quality, ss2._quality);
+              // TODO: FIX THIS.  TOTALLY BUSTED  this._quality = IntersectRange(ss1._quality, ss2._quality);
                 this.Stopped = null;
                 if (ss1.Stopped == true || ss2.Stopped == true)
                 {
@@ -71,8 +71,8 @@ namespace TricksterBots.Bots.Bridge
 
         public PairSummary(HandSummary hs1, HandSummary hs2)
         {
-            this.HighCardPoints = AddRange(hs1.HighCardPoints, hs2.HighCardPoints, 40);
-            this.StartingPoints = AddRange(hs1.StartingPoints, hs2.StartingPoints, int.MaxValue);
+            this.HighCardPoints = AddRange(hs1.GetHighCardPoints(), hs2.GetHighCardPoints(), 40);
+            this.StartingPoints = AddRange(hs1.GetStartingPoints(), hs2.GetStartingPoints(), int.MaxValue);
      //       this.CountAces = other.CountAces;
       //      this.CountKings = other.CountKings;
             this.Suits = new Dictionary<Suit, SuitSummary>();

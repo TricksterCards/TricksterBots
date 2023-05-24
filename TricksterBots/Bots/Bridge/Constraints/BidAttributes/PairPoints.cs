@@ -21,11 +21,12 @@ namespace TricksterBots.Bots.Bridge
             Debug.Assert(max >= min);
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
+            // TODO: PRIORITY!!!
             // TODO: NEED TO DO SUIT POINTS.  STARTING ONLY FOR NOW...
-            (int Min, int Max) points = hs.StartingPoints;
-            (int Min, int Max) partnerPoints = ps.Partner.PublicHandSummary.StartingPoints;
+            (int Min, int Max) points = hs.GetStartingPoints();
+            (int Min, int Max) partnerPoints = ps.Partner.PublicHandSummary.GetStartingPoints();
             return (points.Max + partnerPoints.Min >= _min && points.Min + partnerPoints.Min <= _max);
         }
     }
@@ -34,10 +35,10 @@ namespace TricksterBots.Bots.Bridge
     {
         public PairShowsPoints(Suit? suit, int min, int max) : base(suit, min, max) { }
 
-        void IShowsState.Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
-            (int Min, int Max) partnerPoints = ps.Partner.PublicHandSummary.StartingPoints;
-            hs.StartingPoints = (Math.Max(_min - partnerPoints.Min, 0), Math.Max(_max - partnerPoints.Min, 0)); 
+            (int Min, int Max) partnerPoints = ps.Partner.PublicHandSummary.GetStartingPoints();
+            showHand.ShowStartingPoints(Math.Max(_min - partnerPoints.Min, 0), Math.Max(_max - partnerPoints.Min, 0)); 
         }
     }
 }

@@ -34,10 +34,10 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
 		{
 			var pos = GetPosition(ps);
-			return _constraint.Conforms(bid, pos, pos.PublicHandSummary, pos.PairAgreements);
+			return _constraint.Conforms(bid, pos, pos.PublicHandSummary);
 		}
 	}
 }

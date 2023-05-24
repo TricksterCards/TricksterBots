@@ -21,7 +21,7 @@ namespace TricksterBots.Bots.Bridge
             this._suit = suit;
             this.OnceAndDone = true;
         }
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
             var contract = ps.BiddingState.GetContract();
             (bool Valid, int Jump) v = new Bid(_level, _suit, BidForce.Nonforcing).IsValid(ps, contract);

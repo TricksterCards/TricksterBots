@@ -76,11 +76,11 @@ namespace TricksterBots.Bots.Bridge
 
 
         // Returns true if at least one rule conforms in this group.
-        public bool Conforms(PositionState ps, HandSummary hs, PairAgreements pa)
+        public bool Conforms(PositionState ps, HandSummary hs)
         {
             foreach (var rule in _rules)
             {
-                if (rule.Conforms(false, ps, hs, pa)) { return true; }
+                if (rule.Conforms(false, ps, hs)) { return true; }
             }
             return false;
         }
@@ -91,25 +91,19 @@ namespace TricksterBots.Bots.Bridge
             // just return the current state...
             if (_rules.Count == 0) { return (ps.PublicHandSummary, ps.PairAgreements); }
 
-            HandSummary handSummary = null;
-            PairAgreements PairAgreements = null;
+            var showHand = new HandSummary.ShowState();
+            var showAgreements = new PairAgreements.ShowState();
+            bool firstRule = true;
             foreach (var rule in _rules)
             {
                 (HandSummary hs, PairAgreements pa) newState = rule.ShowState(ps);
-                if (handSummary == null)
-                {
-                    handSummary = newState.hs;
-                    PairAgreements = newState.pa;
-                }
-                else
-                {
-                    handSummary.Union(newState.hs);
-                    PairAgreements.Union(newState.pa);
-                }
+                showHand.Combine(newState.hs, firstRule ? State.CombineRule.Show : State.CombineRule.CommonOnly);
+                showAgreements.Combine(newState.pa, firstRule ? State.CombineRule.Show : State.CombineRule.CommonOnly);
+                firstRule = false;
             }
             // After all of the possible shapes of suits have been unioned we can trim the max length of suits
-            handSummary.TrimShape();
-            return (handSummary, PairAgreements);
+           // TODO: NEED TO CALL ON HAND EVEALUATOR HERE... handSummary.TrimShape();
+            return (showHand.HandSummary, showAgreements.PairAgreements);
         }
 
 
@@ -118,7 +112,7 @@ namespace TricksterBots.Bots.Bridge
 			var rules = new List<BidRule>();
 			foreach (BidRule rule in _rules)
 			{
-				if (rule.Conforms(false, ps, ps.PublicHandSummary, ps.PairAgreements))
+				if (rule.Conforms(false, ps, ps.PublicHandSummary))
 				{
 					rules.Add(rule);
 				}

@@ -12,7 +12,7 @@ namespace TricksterBots.Bots.Bridge
     public class TakeoutSuit : Constraint
     {
         private Suit? _suit;
-        private bool _desiredValue;
+  
         public TakeoutSuit(Suit? suit)
         {
             this._suit = suit;
@@ -41,7 +41,7 @@ namespace TricksterBots.Bots.Bridge
             throw new ArgumentException();  // TODO: Is this OK?  Is it right?
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
             var suit = bid.SuitIfNot(_suit);
             var oppsSuits = PairSummary.Opponents(ps).ShownSuits;
@@ -54,7 +54,7 @@ namespace TricksterBots.Bots.Bridge
                     // suit if all other things are equal.  Perhaps if low point range we would
                     // want to prefer lower suit.  
                     var betterSuit = new IsBetterSuit(suit, other, HigherRanking(suit, other), false);
-                    if (!betterSuit.Conforms(bid, ps, hs, pa)) { return false; }
+                    if (!betterSuit.Conforms(bid, ps, hs)) { return false; }
                 }
             }
             return true;

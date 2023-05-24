@@ -75,10 +75,10 @@ namespace TricksterBots.Bots.Bridge
 
 			if (hand != null)
 			{
-				var hs = new HandSummary();
+				var showHand = new HandSummary.ShowState();
 				// TODO: This is where we would need to use a differnet implementation of HandSummary evaluator...
-				StandardHandEvaluator.Evaluate(hand, hs);
-				this._privateHandSummary = hs;
+				StandardHandEvaluator.Evaluate(hand, showHand);
+				this._privateHandSummary = showHand.HandSummary;
 			} 
 			else
 			{ 
@@ -168,18 +168,28 @@ namespace TricksterBots.Bots.Bridge
                 stateChanged |= bidGroup.PruneRules(this);
 
                 (HandSummary hs, PairAgreements pa) newState = bidGroup.ShowState(this);
-				if (this.PublicHandSummary.Equals(newState.hs) && this.PairAgreements.Equals(newState.pa)) 
+
+				var showHand = new HandSummary.ShowState(PublicHandSummary);
+				var showAgreements = new PairAgreements.ShowState(PairAgreements);
+
+				showHand.Combine(newState.hs, State.CombineRule.Merge);
+				showAgreements.Combine(newState.pa, State.CombineRule.Merge);
+
+				if (this.PublicHandSummary.Equals(showHand.HandSummary) &&
+					this.PairAgreements.Equals(showAgreements.PairAgreements)) 
 				{ 
 					return stateChanged;
 				}
 				stateChanged = true;
-				this.PublicHandSummary = newState.hs;
-				this.PairAgreements = newState.pa;
+				this.PublicHandSummary = showHand.HandSummary;
+				this.PairAgreements = showAgreements.PairAgreements;
 			}
 			Debug.Assert(false); // This is bad - we had over 1000 state changes.  Infinite loop time...
 			return false;	// Seems the best thing to do to avoid repeated
 		}
 
+	
+		/* -- TODO: Seems unused...
 		internal (HandSummary, PairAgreements) Update(IShowsState showsState, Bid bid)
 		{
 			var hs = new HandSummary(this.PublicHandSummary);
@@ -187,7 +197,7 @@ namespace TricksterBots.Bots.Bridge
 			showsState.Update(bid, this, hs, bs);
 			return (hs, bs);
 		}
-
+		*/
 
 
 
@@ -201,7 +211,7 @@ namespace TricksterBots.Bots.Bridge
 			foreach (var ruleGroup in rules.Values)
 			{
 				if ((choice == null || ruleGroup.Priority > priority) &&
-					ruleGroup.Conforms(this, _privateHandSummary, PairAgreements))
+					ruleGroup.Conforms(this, _privateHandSummary))
 				{
 					choice = ruleGroup;
 					priority = ruleGroup.Priority;

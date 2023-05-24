@@ -27,9 +27,9 @@ namespace TricksterBots.Bots.Bridge
             this._max = max;
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
-            (int Min, int Max) shape = hs.Suits[bid.SuitIfNot(_suit)].Shape;
+            (int Min, int Max) shape = hs.Suits[bid.SuitIfNot(_suit)].GetShape();
 			return (shape.Max >= _min && shape.Min <= _max);
 		}
 
@@ -39,11 +39,13 @@ namespace TricksterBots.Bots.Bridge
 	{
         public ShowsShape(Suit? suit, int min, int max) : base(suit, min, max) { }
 
-		public void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+	    void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showArgeements)
 		{
-            hs.Suits[bid.SuitIfNot(_suit)].Shape = (_min, _max);
+            showHand.Suits[bid.SuitIfNot(_suit)].ShowShape(_min, _max);
 		}
-	}
+
+    }
+
 
 
     public class HasMinShape: Constraint
@@ -55,9 +57,9 @@ namespace TricksterBots.Bots.Bridge
             this._suit = suit;
             this._min = min;
         }
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
-            return hs.Suits[bid.SuitIfNot(_suit)].Shape.Min >= _min;
+            return hs.Suits[bid.SuitIfNot(_suit)].GetShape().Min >= _min;
         }
     }
 

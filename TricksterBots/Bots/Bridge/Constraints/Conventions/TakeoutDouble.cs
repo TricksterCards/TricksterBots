@@ -28,7 +28,9 @@ namespace TricksterBots.Bots.Bridge
             pb.ConventionRules = new ConventionRule[]
             {
                 // TODO: Need takeout doubles after first round, but for now this works...
-                ConventionRule(Role(PositionRole.Overcaller, 1))
+                // This is ugly way to avoid bidding over 1NT too. Hack but works for now.  Don't really need to check
+                // that 2C is available in subsueqnet rules, but whatever...  Hack works for now.
+                ConventionRule(Role(PositionRole.Overcaller, 1), BidAvailable(1, Suit.Unknown))
             };
             pb.Bids = new BidRule[]
             {
@@ -44,6 +46,7 @@ namespace TricksterBots.Bots.Bridge
         private BidRule Takeout(Suit suit)
         {
             // TODO: Should this be 2 or 1 for MinBidLevel?  Or is this really based on opponent bids?
+            // TODO: Ugly way to avoid bidding this over NT...
             var rule = Forcing(Call.Double, CueBid(suit), Points(TakeoutRange), Shape(suit, 0, 4), BidAvailable(2, Suit.Clubs));
             foreach (var otherSuit in BasicBidding.BasicSuits)
             {

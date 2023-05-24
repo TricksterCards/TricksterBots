@@ -79,7 +79,7 @@ namespace TricksterBots.Bots.Bridge
                     // TODO: Perhaps when we pass in "TRUE" to first-time we want to ONLY look at first time bids...
 
                     if (rule.Bid.IsValid(ps, contract).Valid &&
-                        rule.Conforms(true, ps, ps.PublicHandSummary, ps.PairAgreements))
+                        rule.Conforms(true, ps, ps.PublicHandSummary))
                     {
                         var bid = rule.Bid;
                         if (!brs.ContainsKey(bid))

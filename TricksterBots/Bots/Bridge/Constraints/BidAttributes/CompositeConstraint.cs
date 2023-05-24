@@ -34,7 +34,7 @@ namespace TricksterBots.Bots.Bridge
 					Debug.Assert(c.OnceAndDone == this.OnceAndDone);
 					if (c is IShowsState _)
 					{
-						Debug.Assert(opertaion == Operation.And);
+						//Debug.Assert(opertaion == Operation.And);
 						cShowsState += 1;
 					}
 				}
@@ -44,12 +44,12 @@ namespace TricksterBots.Bots.Bridge
 
 		}
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
 		{
 			if (_constraints.Length == 0) { return false; }
 			foreach (Constraint c in _constraints)
 			{
-				if (c.Conforms(bid, ps, hs, pa))
+				if (c.Conforms(bid, ps, hs))
 				{
 					if (_operation == Operation.Or) { return true; }
 				}
@@ -67,17 +67,58 @@ namespace TricksterBots.Bots.Bridge
 		public CompositeShowsState(Operation operation, params Constraint[] constraints) : base (operation, constraints)
 		{
 			// TODO: Perhaps this should throw.  Using OR and showing state is a bad bad bad idea....
-			Debug.Assert(operation == Operation.And);
+			//Debug.Assert(operation == Operation.And);
 		}
-		public void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+		void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
 		{
-			foreach (Constraint c in _constraints)
+			if (_operation == Operation.And)
 			{
-				if (c is IShowsState cShowsState)
-				{ 
-					cShowsState.Update(bid, ps, hs, pa);
+				foreach (Constraint c in _constraints)
+				{
+					if (c is IShowsState cShowsState)
+					{
+						cShowsState.ShowState(bid, ps, showHand, showAgreements);
+					}
 				}
 			}
+			else
+			{
+				Debug.Assert(_operation == Operation.Or);
+                // In the case of OR, only one of the contraints might have conformed so we need to check it out once
+                // more before calling Update *AND* we want to union the states and only show common properties of the
+                // shown states.
+                HandSummary.ShowState combinedHand = null;
+                PairAgreements.ShowState combinedAgreements = null;
+                foreach (Constraint c in _constraints)
+                {
+                    if (c is IShowsState cShowsState)
+                    {
+						if (c.Conforms(bid, ps, ps.PublicHandSummary))
+						{
+							var showThisHand = new HandSummary.ShowState();
+							var showThisAgreements = new PairAgreements.ShowState();
+							cShowsState.ShowState(bid, ps, showThisHand, showThisAgreements);
+							if (combinedHand == null)
+							{
+								combinedHand = showThisHand;
+								combinedAgreements = showThisAgreements;
+							} 
+							else
+							{
+								combinedHand.Combine(showThisHand.HandSummary, State.CombineRule.CommonOnly);
+								combinedAgreements.Combine(showThisAgreements.PairAgreements, State.CombineRule.CommonOnly);
+							}
+							// TODO: Now what?  Merge?  Merge with other "ORs"?  Then "Show"....
+						}
+                    }
+                }
+				if (combinedHand != null)
+				{
+					Debug.Assert(combinedAgreements != null);
+					showHand.Combine(combinedHand.HandSummary, State.CombineRule.Show);
+					showAgreements.Combine(combinedAgreements.PairAgreements, State.CombineRule.Show);
+				}
+            }
 		}
 	}
 

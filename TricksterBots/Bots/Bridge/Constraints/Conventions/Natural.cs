@@ -49,34 +49,17 @@ namespace TricksterBots.Bots.Bridge
         public (int, int) AdvanceNewSuit1Level = (6, 40); // TODO: Highest level for this?
         public (int, int) AdvanceNewSuit2Level = (11, 40); // Same here...
         public (int, int) AdvanceTo1NT = (6, 10);
-        public (int, int) AdvanceWeakJumpRaise = (0, 9);
+        public (int, int) AdvanceWeakJumpRaise = (0, 11);   // TODO: What is the high end of jump raise weak
         public (int, int) AdvanceRaise = (6, 9);
         public (int, int) AdvanceCuebid = (10, 40);
 
-        public BidRule[] HighLevelHugeHands()
-        {
-            BidRule[] bids =
-
-            {
-                Signoff(6, Suit.Clubs, Shape(12)),
-                Signoff(6, Suit.Diamonds, Shape(12)),
-                Signoff(6, Suit.Hearts, Shape(12)),
-                Signoff(6, Suit.Spades, Shape(12)),
-
-                Signoff(7, Suit.Clubs, Shape(13)),
-                Signoff(7, Suit.Diamonds, Shape(13)),
-                Signoff(7, Suit.Hearts, Shape(13)),
-                Signoff(7, Suit.Spades, Shape(13))
-            };
-            return bids;
-        }
         private void Initiate(PrescribedBids pb)
         { 
             pb.Redirects = new RedirectRule[]
             {
                 // TODO: DO NOT CALL ALL STATIC METHODS INITIATECONVENTION OR ELSE WILL CALL BASE CLASS... NAMING IS IMPORTANT.
                 Redirect(StandardAmericanOpenRespond.DefaultBidderXXX, Role(PositionRole.Opener, 1)),
-                Redirect(NaturalOvercall.DefaultBidderXXX, Role(PositionRole.Overcaller, 1)),
+                Redirect(StandardAmericanOvercallAdvance.DefaultBidderXXX, Role(PositionRole.Overcaller, 1)),
             };
         }
     }

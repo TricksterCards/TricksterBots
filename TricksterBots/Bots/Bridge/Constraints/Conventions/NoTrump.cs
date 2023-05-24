@@ -27,16 +27,28 @@ namespace TricksterBots.Bots.Bridge
             { OpenerRange.SuperAccept, And(HighCardPoints(17, 17), Points(17, 18)) }
         };
 
+ 
         private static Dictionary<ResponderRange, Constraint> Respond1NTPoints = new Dictionary<ResponderRange, Constraint>
         {
             { ResponderRange.LessThanInvite, And(HighCardPoints(0, 7), Points(0, 8)) },
             { ResponderRange.Invite, And(HighCardPoints(8, 9), Points(8, 10)) },
             { ResponderRange.InviteOrBetter, And(HighCardPoints(8, 40), Points(8, int.MaxValue)) },
-            { ResponderRange.Game, And(HighCardPoints(10, 15), Points(10, 15)) },
-            { ResponderRange.GameOrBetter, And(HighCardPoints(10, 40), Points(10, 40)) },  
+            { ResponderRange.Game, Or(And(HighCardPoints(10, 15), Points(10, 15)), And(HighCardPoints(8,15), Points(11, 17))) },
+            { ResponderRange.GameOrBetter, Or(And(HighCardPoints(10, 40), Points(10, 40)), And(HighCardPoints(8, 40), Points(11, 40))) },  
             { ResponderRange.GameIfSuperAccept, And(HighCardPoints(6, 20), Points(6, 20)) }
         };
-
+        // TODO: Need to incorporate the "OR" thingie...
+        /*
+        private static Dictionary<ResponderRange, Constraint> Respond1NTPoints = new Dictionary<ResponderRange, Constraint>
+        {
+            { ResponderRange.LessThanInvite, Points(0, 7) },
+            { ResponderRange.Invite, Points(8, 9) },
+            { ResponderRange.InviteOrBetter, Points(8, 40) },
+            { ResponderRange.Game, Points(10, 15) },
+            { ResponderRange.GameOrBetter, Points(10, 40) },
+            { ResponderRange.GameIfSuperAccept, Points(6, 20) }
+        };
+        */
         private static Dictionary<OpenerRange, Constraint> Overcall1NTPoints = new Dictionary<OpenerRange, Constraint>
         {
             { OpenerRange.Open, And(HighCardPoints(15, 18), Points(15, 19)) },

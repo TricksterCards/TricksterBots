@@ -13,9 +13,32 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
 
-
-    public class PairAgreements: IEquatable<PairAgreements>
+   
+    public class PairAgreements: State, IEquatable<PairAgreements>
     {
+        public class ShowState
+        {
+            public PairAgreements PairAgreements { get; protected set; }
+
+            public ShowState(PairAgreements startState = null)
+            {
+                PairAgreements = startState == null ? new PairAgreements() : new PairAgreements(startState);
+            }
+
+            public void ShowTrump(Suit trumpSuit)
+            {
+                // TODO: Need to think this out carefully.  What is someone chagnes it?
+
+                //PairAgreements.TrumpSuit = CombineBool(PairAgreements.TrumpSuit, trumpSuit, CombineRule.Show);
+                PairAgreements.TrumpSuit = trumpSuit;   // TODO: THIS IS NOT RIGHT!!!  CANT JUST OVERWRITE IT...
+            }
+            public void Combine(PairAgreements other, CombineRule combineRule)
+            {
+                PairAgreements.Combine(other, combineRule);
+            }
+            // TODO: Need to actually do something here.....
+        }
+
         // TODO: Add conventions here...
         // Anything else about global agreements that are not specific to the hand.
         public class SuitAgreements: IEquatable<SuitAgreements>
@@ -77,20 +100,18 @@ namespace TricksterBots.Bots.Bridge
             }
         }
 
-        public void Union(PairAgreements other)
+        protected void Combine(PairAgreements other, CombineRule cr)
         {
-            // TODO: Do full blown thing eventually, but for now just this...
-            if (other.TrumpSuit != null) { this.TrumpSuit = other.TrumpSuit;  }
-        }
-
-        public void Intersect(PairAgreements other)
-        {
-            if (this.TrumpSuit == null || other.TrumpSuit == null || this.TrumpSuit != other.TrumpSuit)
+            // TODO: Need to actually do something here. 
+            // For now this works...
+            if (this.TrumpSuit == null && cr != CombineRule.CommonOnly)
             {
-                this.TrumpSuit = null;
+                this.TrumpSuit = other.TrumpSuit;
             }
-        }
+            // TODO: What to do if trump overridden?  Seems possible, but we really need the idea of "LAST ONE DECIDED"
 
+        }
+   
         public bool Equals(PairAgreements other)
         {
             if (this.TrumpSuit != other.TrumpSuit) return false;

@@ -39,41 +39,38 @@ namespace TricksterBots.Bots.Bridge
 			}
 			return q;
 		}
-		public static void Evaluate(Hand hand, HandSummary hs)
+		public static void Evaluate(Hand hand, HandSummary.ShowState hs)
 		{
-			// TODO: This is a hack but trying to get NT opening to work properly.  If balanced and in NT
-			// opening range then don't add length points
-			var balanced = BasicBidding.IsBalanced(hand);
 			var p = BasicBidding.ComputeHighCardPoints(hand);
-			hs.HighCardPoints = (p, p);
+			hs.ShowHighCardPoints(p, p);
 			p += BasicBidding.ComputeDistributionPoints(hand); 
-			hs.StartingPoints = (p, p);
+			hs.ShowStartingPoints(p, p);
 			var counts = BasicBidding.CountsBySuit(hand);
-			hs.IsBalanced = balanced;
-			hs.IsFlat = BasicBidding.Is4333(counts);
-            hs.CountAces = hand.Count(c => c.rank == Rank.Ace);
-			hs.CountKings = hand.Count(c => c.rank == Rank.King);
+			hs.ShowIsBalanced(BasicBidding.IsBalanced(hand));
+			hs.ShowIsFlat(BasicBidding.Is4333(counts));
+			int countAces = hand.Count(c => c.rank == Rank.Ace);
+            hs.ShowCountAces(countAces);
+			hs.ShowCountKings(hand.Count(c => c.rank == Rank.King));
             foreach (Suit suit in BasicBidding.BasicSuits)
 			{
 				var dp = p + BasicBidding.DummyPoints(hand, suit);
 				var c = counts[suit];
 				var q = Quality(hand, suit);
-				hs.Suits[suit].Shape = (c, c);
-				hs.Suits[suit].DummyPoints = (dp, dp);
-				hs.Suits[suit].LongHandPoints = (p, p);
-				hs.Suits[suit].Quality = (q, q);
-				var keyCards = (int)hs.CountAces;
+				hs.Suits[suit].ShowShape(c, c);
+				hs.Suits[suit].ShowDummyPoints(dp, dp);
+				hs.Suits[suit].ShowLongHandPoints(p, p);
+				hs.Suits[suit].ShowQuality(q, q);
+				var keyCards = countAces;
 				if (hand.Contains(new Card(suit, Rank.King)))
 				{
 					keyCards += 1;
 				}
-				hs.Suits[suit].Keycards = (keyCards, keyCards);
-				hs.Suits[suit].HaveQueen = hand.Contains(new Card(suit, Rank.Queen));
-				hs.Suits[suit].Stopped = Stopped(hand, suit, c);
+				hs.Suits[suit].ShowKeycards(keyCards, keyCards);
+				hs.Suits[suit].ShowHaveQueen(hand.Contains(new Card(suit, Rank.Queen)));
+				hs.Suits[suit].ShowStopped(Stopped(hand, suit, c));
 			}
-			hs.Suits[Suit.Unknown].Shape = (0, 0);
-			hs.Suits[Suit.Unknown].DummyPoints = (p, p);
-			hs.Suits[Suit.Unknown].LongHandPoints = (p, p);
+			hs.Suits[Suit.Unknown].ShowDummyPoints(p, p);
+			hs.Suits[Suit.Unknown].ShowLongHandPoints(p, p);
 		}
 	}
 }

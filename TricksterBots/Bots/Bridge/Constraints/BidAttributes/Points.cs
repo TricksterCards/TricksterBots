@@ -36,53 +36,58 @@ namespace TricksterBots.Bots.Bridge
             switch (_pointType)
             {
                 case PointType.HighCard:
-                    return handSummary.HighCardPoints;
+                    return handSummary.GetHighCardPoints();
                 case PointType.Starting:
-                    return handSummary.StartingPoints;
+                    return handSummary.GetStartingPoints();
+                    
                 case PointType.Dummy:
-                    return handSummary.Suits[bid.SuitIfNot(_trumpSuit)].DummyPoints;
+                    return handSummary.Suits[bid.SuitIfNot(_trumpSuit)].GetDummyPoints();
+                    
                 case PointType.LongHand:
-                    return handSummary.Suits[bid.SuitIfNot(_trumpSuit)].LongHandPoints;
-                default:
-                    Debug.Assert(false);
-                    return (0, 0);
+                    return handSummary.Suits[bid.SuitIfNot(_trumpSuit)].GetLongHandPoints();
+                   
             }
+            Debug.Fail("Unknown point type");
+            return (0, int.MaxValue);
         }
 
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
             (int Min, int Max) points = GetPoints(bid, hs);
             return (_min <= points.Max && _max >= points.Min);
         }
+
+        
     }
 
     class ShowsPoints : HasPoints, IShowsState
     {
 		public ShowsPoints(Suit? trumpSuit, int min, int max, PointType pointType) : base(trumpSuit, min, max, pointType) { }
 
-		void IShowsState.Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+
+        void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
 		{
             switch (_pointType)
             {
                 case PointType.HighCard:
-                    hs.HighCardPoints = (_min, _max);
+                    showHand.ShowHighCardPoints(_min, _max);
                     break;
                 case PointType.Starting:
-                    hs.StartingPoints = (_min, _max);
+                    showHand.ShowStartingPoints(_min, _max);
                     break;
                 case PointType.Dummy:
-                    hs.Suits[bid.SuitIfNot(_trumpSuit)].DummyPoints = (_min, _max);
+                    showHand.Suits[bid.SuitIfNot(_trumpSuit)].ShowDummyPoints(_min, _max);
                     break;
                 case PointType.LongHand:
-                    hs.Suits[bid.SuitIfNot(_trumpSuit)].LongHandPoints = (_min, _max);
+                    showHand.Suits[bid.SuitIfNot(_trumpSuit)].ShowLongHandPoints(_min, _max);
                     break;
                 default:
                     Debug.Assert(false);
                     break;
             }
 		}
-	}
+    }
 
     /*
     public class PairPoints : Points, IHandConstraint, IPublicConstraint, IShowsState

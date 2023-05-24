@@ -39,7 +39,7 @@ namespace TricksterBots.Bots.Bridge
 			this.OnceAndDone = true;
 		}
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa) 
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs) 
 		{
 			var previousBid = ps.GetBidHistory(_bidIndex);
 			if (_call != Call.Bid)

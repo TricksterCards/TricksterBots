@@ -35,12 +35,12 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
 		{
 			var better = bid.SuitIfNot(_better);
 			var worse = bid.SuitIfNot(_worse);
-			var betterShape = hs.Suits[better].Shape;
-			var worseShape = hs.Suits[worse].Shape;
+			var betterShape = hs.Suits[better].GetShape();
+			var worseShape = hs.Suits[worse].GetShape();
 			var defaultIfEqual = bid.SuitIfNot(_defaultIfEqual);
 
 			
@@ -48,8 +48,8 @@ namespace TricksterBots.Bots.Bridge
 			if (betterShape.Max == worseShape.Min && worse == defaultIfEqual) { return false; }
 			if (!_lengthOnly && betterShape == worseShape)
 			{
-				int bq = (int)(hs.Suits[better].Quality.Min);
-				int wq = (int)(hs.Suits[worse].Quality.Min);
+				int bq = (int)(hs.Suits[better].GetQuality().Min);
+				int wq = (int)(hs.Suits[worse].GetQuality().Min);
 				if (bq > wq) { return true; }
 				if (wq > bq) { return false;}
 			}
@@ -66,19 +66,21 @@ namespace TricksterBots.Bots.Bridge
 
 		// The worse suit can not be longer than thw better one, and the quality can not be higher, so all we can
 		// do here is simply restrict the maximums for both shape and quality.
-		public void Update(Bid bid, PositionState ps, HandSummary hs, PairAgreements pa)
+		void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
 		{
 			var better = bid.SuitIfNot(_better);
-			var worse = bid.SuitIfNot(_worse);
-			var betterShape = hs.Suits[better].Shape;
-			var worseShape = hs.Suits[worse].Shape;
-			hs.Suits[worse].Shape = (worseShape.Min, Math.Min(worseShape.Max, betterShape.Max));
-			if (!_lengthOnly)
+			// If there has been no shape defined for the better suit then we can't really do anything useful...
+			if (ps.PublicHandSummary.Suits[better].Shape != null)
 			{
-				var betterQuality = hs.Suits[better].Quality;
-				var worseQuality = hs.Suits[worse].Quality;
-				SuitQuality maxWorse = (SuitQuality)(Math.Min((int)betterQuality.Max, (int)worseQuality.Max));
-				hs.Suits[worse].Quality = (worseQuality.Min, maxWorse);
+				var worse = bid.SuitIfNot(_worse);
+				var betterShape = ps.PublicHandSummary.Suits[better].GetShape();
+				var worseShape = ps.PublicHandSummary.Suits[worse].GetShape();
+				showHand.Suits[worse].ShowShape(worseShape.Min, Math.Min(worseShape.Max, betterShape.Max));
+				// TODO: Do fancy thing maxing out worse suit based on all other suit mins.  If Spades min = 5
+				// then Hearts max is 6 if Spades > Hearts...
+
+				// NOTE!  YOU CAN NOT DETERMINE ANYTHING ABOUT QUALITY UNLESS YOU ***KNOW*** THAT BOTH SUITS ARE EQUAL LENGTH
+
 			}
 		}
 	}
