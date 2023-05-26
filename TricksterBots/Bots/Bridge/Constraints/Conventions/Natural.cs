@@ -32,7 +32,7 @@ namespace TricksterBots.Bots.Bridge
         public (int, int) Open2Suit = (5, 12);  // AG Bid card says 5-10 but when you count length you get 11 or 12
         public (int, int) Open2NT = (20, 21);
         public (int, int) Open3NT = (25, 27);
-        public (int, int) OpenStrong = (22, int.MaxValue);
+        public (int, int) OpenStrong = (22, 100);
         public (int, int) LessThanOpen = (0, 12);
         public (int, int) OpenerRebid1NT = (13, 14);
         public (int, int) MinimumOpener = (13, 16);

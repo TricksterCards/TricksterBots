@@ -7,7 +7,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class ShowsTrump: Constraint, IShowsState
+    public class ShowsTrump : Constraint, IShowsState
     {
         private Suit? _trumpSuit;
         public ShowsTrump(Suit? trumpSuit)

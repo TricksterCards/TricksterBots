@@ -19,10 +19,16 @@ namespace TricksterBots.Bots.Bridge
         public class ShowState
         {
             public PairAgreements PairAgreements { get; protected set; }
+            public Dictionary<Suit, SuitAgreements.ShowState> Suits { get; protected set; }
 
             public ShowState(PairAgreements startState = null)
             {
                 PairAgreements = startState == null ? new PairAgreements() : new PairAgreements(startState);
+                this.Suits = new Dictionary<Suit, SuitAgreements.ShowState>();
+                foreach (var strain in BasicBidding.Strains)
+                {
+                    this.Suits[strain] = new SuitAgreements.ShowState(PairAgreements.Suits[strain]);
+                }
             }
 
             public void ShowTrump(Suit trumpSuit)
@@ -43,24 +49,30 @@ namespace TricksterBots.Bots.Bridge
         // Anything else about global agreements that are not specific to the hand.
         public class SuitAgreements: IEquatable<SuitAgreements>
         {
-            public PositionState LongHand { get; set; }
+            public class ShowState
+            {
+                public SuitAgreements SuitAgreements { get; protected set; }
+
+                public ShowState(SuitAgreements suitAgreements)
+                {
+                    this.SuitAgreements = suitAgreements;          
+                }
+
+                // TODO.  What's up here?  Merge? etc?
+                public void ShowLongHand(PositionState longHand)
+                {
+                    SuitAgreements.LongHand = longHand;
+                }
+
+
+            }
+            public PositionState LongHand { get; protected set; }
             public PositionState Dummy
             {
                 get
                 {
                     if (LongHand == null) { return null; }
                     return LongHand.Partner;
-                }
-                set
-                {
-                    if (value == null)
-                    {
-                        LongHand = null;
-                    }
-                    else
-                    {
-                        LongHand = value.Partner;
-                    }
                 }
             }
             public SuitAgreements()
@@ -76,6 +88,24 @@ namespace TricksterBots.Bots.Bridge
             {
                 return (this.LongHand == other.LongHand);
             }
+
+            public void Combine(SuitAgreements other, CombineRule combineRule)
+            {
+                if (combineRule == CombineRule.CommonOnly)
+                {
+                    if (this.LongHand == null || other.LongHand == null)
+                    {
+                        this.LongHand = null;
+                    }
+
+                }
+                else if (this.LongHand == null)
+                {
+                    // Is this right?  If other.LongHand exists it will over
+                    this.LongHand = other.LongHand;
+                }
+            }
+
         }
         public Suit? TrumpSuit { get; set; }
         public Dictionary<Suit, SuitAgreements> Suits { get; }
@@ -107,6 +137,10 @@ namespace TricksterBots.Bots.Bridge
             if (this.TrumpSuit == null && cr != CombineRule.CommonOnly)
             {
                 this.TrumpSuit = other.TrumpSuit;
+            }
+            foreach (var suit in BasicBidding.Strains)
+            {
+                Suits[suit].Combine(other.Suits[suit], cr);
             }
             // TODO: What to do if trump overridden?  Seems possible, but we really need the idea of "LAST ONE DECIDED"
 

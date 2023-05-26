@@ -32,7 +32,7 @@ namespace TricksterBots.Bots.Bridge
         {
             { ResponderRange.LessThanInvite, And(HighCardPoints(0, 7), Points(0, 8)) },
             { ResponderRange.Invite, And(HighCardPoints(8, 9), Points(8, 10)) },
-            { ResponderRange.InviteOrBetter, And(HighCardPoints(8, 40), Points(8, int.MaxValue)) },
+            { ResponderRange.InviteOrBetter, And(HighCardPoints(8, 40), Points(8, 100)) },
             { ResponderRange.Game, Or(And(HighCardPoints(10, 15), Points(10, 15)), And(HighCardPoints(8,15), Points(11, 17))) },
             { ResponderRange.GameOrBetter, Or(And(HighCardPoints(10, 40), Points(10, 40)), And(HighCardPoints(8, 40), Points(11, 40))) },  
             { ResponderRange.GameIfSuperAccept, And(HighCardPoints(6, 20), Points(6, 20)) }
@@ -62,7 +62,7 @@ namespace TricksterBots.Bots.Bridge
         {
             { ResponderRange.LessThanInvite, And(HighCardPoints(0, 7), Points(0, 8)) },
             { ResponderRange.Invite, And(HighCardPoints(8, 9), Points(8, 10)) },
-            { ResponderRange.InviteOrBetter, And(HighCardPoints(8, 40), Points(8, int.MaxValue)) },
+            { ResponderRange.InviteOrBetter, And(HighCardPoints(8, 40), Points(8, 100)) },
             { ResponderRange.Game, And(HighCardPoints(10, 15), Points(10, 15)) },
             { ResponderRange.GameOrBetter, And(HighCardPoints(10, 40), Points(10, 40)) },
             { ResponderRange.GameIfSuperAccept, And(HighCardPoints(6, 20), Points(6, 20)) }
@@ -84,7 +84,7 @@ namespace TricksterBots.Bots.Bridge
         {
             { ResponderRange.LessThanInvite, And(HighCardPoints(0, 9), Points(0, 10)) },
             { ResponderRange.Invite, And(HighCardPoints(10, 11), Points(10, 12)) },
-            { ResponderRange.InviteOrBetter, And(HighCardPoints(10, 40), Points(10, int.MaxValue)) },
+            { ResponderRange.InviteOrBetter, And(HighCardPoints(10, 40), Points(10, 100)) },
             { ResponderRange.Game, And(HighCardPoints(12, 15), Points(12, 15)) },
             { ResponderRange.GameOrBetter, And(HighCardPoints(12, 40), Points(12, 40)) },
             // Balancing 1NT does not super accept so make these values impossible
@@ -129,7 +129,7 @@ namespace TricksterBots.Bots.Bridge
             // TODO: Clean up.  Make a table
             if (range == ResponderRange.Invite) return DummyPoints(8, 9);
             if (range == ResponderRange.InviteOrBetter) return DummyPoints(8, 15);
-            if (range == ResponderRange.Game) return DummyPoints(10,  int.MaxValue);
+            if (range == ResponderRange.Game) return DummyPoints(10,  100);
             Debug.Fail("Should never get to here - Range not supported");
             return DummyPoints(0, 0);
         }

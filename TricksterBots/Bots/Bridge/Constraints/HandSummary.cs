@@ -199,14 +199,14 @@ namespace TricksterBots.Bots.Bridge
 
 			public (int Min, int Max) GetDummyPoints()
 			{
-				if (DummyPoints == null) return (0, int.MaxValue);
+				if (DummyPoints == null) return (0, 100);
 				return ((int Min, int Max))DummyPoints;
 			}
 
 
 			public (int Min, int Max) GetLongHandPoints()
 			{
-				if (LongHandPoints == null) return (0, int.MaxValue);
+				if (LongHandPoints == null) return (0, 100);
 				return ((int, int))LongHandPoints;
 			}
 			public (SuitQuality Min, SuitQuality Max) GetQuality()
@@ -310,13 +310,13 @@ namespace TricksterBots.Bots.Bridge
 
 		public (int Min, int Max) GetHighCardPoints()
 		{
-			if (HighCardPoints == null) { return (0, int.MaxValue); }
+			if (HighCardPoints == null) { return (0, 100); }
 			return ((int, int))HighCardPoints;
 		}
 
 		public (int Min, int Max) GetStartingPoints()
         {
-            if (StartingPoints == null) { return (0, int.MaxValue); }
+            if (StartingPoints == null) { return (0, 100); }
             return ((int, int))StartingPoints;
         }
 
@@ -333,8 +333,8 @@ namespace TricksterBots.Bots.Bridge
 
 		public HandSummary()
 		{
-			this.HighCardPoints = null; //(0, 40);
-			this.StartingPoints = null; // (0, int.MaxValue);
+			this.HighCardPoints = null; 
+			this.StartingPoints = null; 
 			this.IsBalanced = null;
 			this.IsFlat = null;
 			this.CountAces = null;

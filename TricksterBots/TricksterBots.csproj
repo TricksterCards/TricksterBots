@@ -127,11 +127,11 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Quality.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\RuleOf17.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Seat.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\ShowsSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\ShowsTrump.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\TakeoutSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Compete.cs" />
-    <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalAdvance.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\TakeoutDouble.cs" />
     <Compile Include="Bots\Bridge\Constraints\PairAgreements.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidRule.cs" />
@@ -140,7 +140,6 @@
     <Compile Include="Bots\Bridge\Constraints\ConventionRule.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\SuitOpenRespond.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\SuitOvercallAdvance.cs" />
-    <Compile Include="Bots\Bridge\Constraints\Conventions\NaturalRespond.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NoTrump.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Stayman.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Strong.cs" />

@@ -262,13 +262,13 @@ namespace TricksterBots.Bots.Bridge
 
                 // Two level minor bids are handled by NewMinorSuit2Level...
 
-                Invitational(2, Suit.Hearts, DummyPoints(Raise1), Shape(3, 8)),
+                Invitational(2, Suit.Hearts, DefaultPriority + 100, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
 
 				Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
 
 				Invitational(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
 
-				Invitational(3, Suit.Hearts, DummyPoints(LimitRaise), Shape(4, 8)),
+				Invitational(3, Suit.Hearts, DefaultPriority + 100,DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
 
 				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
@@ -290,17 +290,18 @@ namespace TricksterBots.Bots.Bridge
 			{
 				Signoff(Call.Pass, Points(RespondPass)),
 
+				// TODO: Should Respond 1NT be lower priority or should raises be higher?
 				Nonforcing(1, Suit.Unknown, Points(Respond1NT), Balanced()),
 
                 // Two level minor bids are handled by NewMinorSuit2Level...
                 // THIS IS HIGHER PRIORITY THAN SHOWING MINORS NO MATTER WHAT THE LENGTH...
 				Forcing(2, Suit.Hearts, Points(NewSuit2Level), Shape(5, 11)),
 
-				Invitational(2, Suit.Spades, DummyPoints(Raise1), Shape(3, 8)),
+				Invitational(2, Suit.Spades, DefaultPriority + 100, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
 
 				Invitational(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
 
-				Invitational(3, Suit.Spades, DummyPoints(LimitRaise), Shape(4, 8)),
+				Invitational(3, Suit.Spades, DefaultPriority + 100, DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
 
 				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 

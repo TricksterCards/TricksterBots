@@ -175,6 +175,7 @@ namespace TricksterBots.Bots.Bridge
 				showHand.Combine(newState.hs, State.CombineRule.Merge);
 				showAgreements.Combine(newState.pa, State.CombineRule.Merge);
 
+
 				if (this.PublicHandSummary.Equals(showHand.HandSummary) &&
 					this.PairAgreements.Equals(showAgreements.PairAgreements)) 
 				{ 
@@ -183,6 +184,7 @@ namespace TricksterBots.Bots.Bridge
 				stateChanged = true;
 				this.PublicHandSummary = showHand.HandSummary;
 				this.PairAgreements = showAgreements.PairAgreements;
+				this.Partner.PairAgreements = this.PairAgreements;
 			}
 			Debug.Assert(false); // This is bad - we had over 1000 state changes.  Infinite loop time...
 			return false;	// Seems the best thing to do to avoid repeated

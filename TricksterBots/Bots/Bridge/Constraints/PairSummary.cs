@@ -69,21 +69,24 @@ namespace TricksterBots.Bots.Bridge
         public Dictionary<Suit, SuitSummary> Suits;
         public List<Suit> ShownSuits = new List<Suit>();
 
-        public PairSummary(HandSummary hs1, HandSummary hs2)
+        public PairSummary(HandSummary hs1, HandSummary hs2, PairAgreements pa)
         {
             this.HighCardPoints = AddRange(hs1.GetHighCardPoints(), hs2.GetHighCardPoints(), 40);
-            this.StartingPoints = AddRange(hs1.GetStartingPoints(), hs2.GetStartingPoints(), int.MaxValue);
+            this.StartingPoints = AddRange(hs1.GetStartingPoints(), hs2.GetStartingPoints(), 100);
      //       this.CountAces = other.CountAces;
       //      this.CountKings = other.CountKings;
             this.Suits = new Dictionary<Suit, SuitSummary>();
             foreach (Suit suit in BasicBidding.Strains)
             {
                 Suits[suit] = new SuitSummary(hs1.Suits[suit], hs2.Suits[suit]);
-                if (Suits[suit].Shape.Min > 0) { ShownSuits.Add(suit); }
+                if (suit != Suit.Unknown && pa.Suits[suit].LongHand != null)
+                { 
+                    ShownSuits.Add(suit);
+                }
             }
         }
 
-        public PairSummary(PositionState ps) : this(ps.PublicHandSummary, ps.Partner.PublicHandSummary) { }
+        public PairSummary(PositionState ps) : this(ps.PublicHandSummary, ps.Partner.PublicHandSummary, ps.PairAgreements) { }
 
         public static PairSummary Opponents(PositionState ps)
         {

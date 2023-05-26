@@ -48,7 +48,7 @@ namespace TricksterBots.Bots.Bridge
                    
             }
             Debug.Fail("Unknown point type");
-            return (0, int.MaxValue);
+            return (0, 100);
         }
 
 

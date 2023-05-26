@@ -16,7 +16,7 @@ namespace TricksterBots.Bots.Bridge
         public TakeoutSuit(Suit? suit)
         {
             this._suit = suit;
-            this.OnceAndDone = true;
+            this.OnceAndDone = false;
         }
 
 

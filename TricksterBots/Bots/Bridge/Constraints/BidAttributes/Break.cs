@@ -17,6 +17,8 @@ namespace TricksterBots.Bots.Bridge
         }
         public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
+            var pairSummary = new PairSummary(ps);
+            var oppsSummary = new PairSummary(ps.LeftHandOpponent);
             if (hs == ps.PublicHandSummary)
             {
                 CountPublic++;

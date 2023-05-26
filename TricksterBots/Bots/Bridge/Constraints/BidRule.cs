@@ -45,6 +45,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public (HandSummary, PairAgreements) ShowState(PositionState ps)
 		{
+			bool showedSuit = false;
 			var showHand = new HandSummary.ShowState();
 			var showAgreements = new PairAgreements.ShowState();
 			foreach (Constraint constraint in _constraints)
@@ -53,6 +54,12 @@ namespace TricksterBots.Bots.Bridge
 				{
 					showsState.ShowState(Bid, ps, showHand, showAgreements);
 				}
+				if (constraint is ShowsSuit) { showedSuit = true; }
+			}
+			if (!showedSuit && Bid.Suit != null)		// TODO: Should this be the case for Suit.Unknown too?  Think this through.  Right now I think yes.
+			{
+				var showSuit = new ShowsSuit(true) as IShowsState;
+				showSuit.ShowState(Bid, ps, showHand, showAgreements);
 			}
 			return (showHand.HandSummary, showAgreements.PairAgreements);
 		}

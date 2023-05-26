@@ -1,8 +1,8 @@
 % PBN 2.1
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
-%Creator: BridgeComposer Version 5.101.1
-%Created: Tue Jan 31 17:19:01 2023 -0800
+%Creator: BridgeComposer Version 5.101.2
+%Created: Wed May 24 15:22:48 2023 -0700
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -73,11 +73,11 @@ Pass Pass Pass
 [Deal "N:KT84.A42.J83.KQJ A652.T6.AK6.7653 J93.J875.T42.T82 Q7.KQ93.Q975.A94"]
 [Scoring ""]
 [Declarer "W"]
-[Contract "3NT"]
+[Contract "2NT"]
 [Result ""]
 [BCFlags "1f"]
 [Auction "N"]
 1C Pass Pass 1NT
 Pass 2C Pass 2H
-Pass 2NT Pass 3NT
+Pass 2NT Pass Pass
 Pass
