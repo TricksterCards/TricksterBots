@@ -34,7 +34,7 @@ namespace TricksterBots.Bots.Bridge
             };
             pb.Bids = new BidRule[]
             {
-                Forcing(2, Suit.Clubs, Points(StrongOpenRange)),
+                Forcing(2, Suit.Clubs, Points(StrongOpenRange), ShowsNoSuit()),
             };
             pb.Partner(Response);
         }
@@ -43,7 +43,7 @@ namespace TricksterBots.Bots.Bridge
             pb.Bids = new BidRule[]
             {
                 // TODO: Priorities for the positive bids, especially if balanced AND have a good suit...
-                Forcing(2, Suit.Diamonds, Points(Waiting)),
+                Forcing(2, Suit.Diamonds, Points(Waiting), ShowsNoSuit()),
                 Forcing(2, Suit.Hearts, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(2, Suit.Spades, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(2, Suit.Unknown, Points(PositiveResponse), Balanced()),

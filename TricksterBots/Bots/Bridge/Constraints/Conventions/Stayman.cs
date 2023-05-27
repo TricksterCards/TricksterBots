@@ -25,10 +25,10 @@ namespace TricksterBots.Bots.Bridge
 		{
 	        pb.Bids = new BidRule[]
 			{
-                Forcing(2, Suit.Clubs, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Flat(false)),
-                Forcing(2, Suit.Clubs, Points(ResponderRange.InviteOrBetter), Shape(Suit.Spades, 4), Flat(false)),
-                Forcing(2, Suit.Clubs, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5)),
-                Forcing(2, Suit.Clubs, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4)),
+                Forcing(2, Suit.Clubs, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Flat(false), ShowsNoSuit()),
+                Forcing(2, Suit.Clubs, Points(ResponderRange.InviteOrBetter), Shape(Suit.Spades, 4), Flat(false), ShowsNoSuit()),
+                Forcing(2, Suit.Clubs, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5), ShowsNoSuit()),
+                Forcing(2, Suit.Clubs, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4), ShowsNoSuit()),
 				// TODO: The following rule is "Garbage Stayman"
 				//Forcing(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
 			};
@@ -40,7 +40,7 @@ namespace TricksterBots.Bots.Bridge
             pb.Bids = new BidRule[]
             {
 				// TODO: Are these bids truly forcing?  Not if garbage stayman...
-				Forcing(2, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3)),
+				Forcing(2, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3), ShowsNoSuit()),
 
 				// If we are 4-4 then hearts bid before spades.  Can't be 5-5 or wouldn't be balanced.
 				Forcing(2, Suit.Hearts, Shape(4, 5), LongerOrEqualTo(Suit.Spades)),

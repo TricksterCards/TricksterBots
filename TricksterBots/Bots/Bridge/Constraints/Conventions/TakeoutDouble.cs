@@ -81,7 +81,7 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(1, Suit.Spades, TakeoutSuit(), Points(MinLevel)),
            // TODO - ADD OPPS STOPPED     Nonforcing(1, Suit.Unknown, Balanced(), Stopped(OPPS), Points(NoTrump1)),
                 Nonforcing(2, Suit.Clubs, TakeoutSuit(), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Diamonds, Break("2DTO"), TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
+                Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
                 Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
                 Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
                 Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),

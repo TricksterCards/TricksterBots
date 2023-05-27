@@ -28,9 +28,12 @@ namespace TricksterBots.Bots.Bridge
             {
                 showAgreements.Suits[bid.SuitIfNot(null)].ShowLongHand(ps);
             }
-            foreach (var suit in _suits)
+            if (_suits != null)
             {
-                showAgreements.Suits[suit].ShowLongHand(ps);
+                foreach (var suit in _suits)
+                {
+                    showAgreements.Suits[suit].ShowLongHand(ps);
+                }
             }
         }
     }

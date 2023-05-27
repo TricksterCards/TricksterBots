@@ -104,15 +104,34 @@ namespace TricksterBots.Bots.Bridge
             pb.Bids = new BidRule[]
             {
                 // TODO: NEED TO FORMALIZE THE POINT RANGES... FOR NOW JUST LOOK AT 3-LEVEL BIDS
-                Nonforcing(3, Suit.Clubs, Fit(), PairPoints((20, 25)), ShowsTrump()),
-                Nonforcing(3, Suit.Diamonds, Fit(), PairPoints((20, 25)), ShowsTrump()),
-                Nonforcing(3, Suit.Hearts, Fit(), PairPoints((20, 25)), ShowsTrump()),
-                Nonforcing(3, Suit.Spades, Fit(), PairPoints((20, 25)), ShowsTrump()),
+                Nonforcing(3, Suit.Clubs, Fit(), PairPoints((24, 25)), ShowsTrump()),
+                Nonforcing(3, Suit.Diamonds, Fit(), PairPoints((24, 25)), ShowsTrump()),
+                Nonforcing(3, Suit.Hearts, Break("3H"), Fit(), PairPoints((24, 25)), ShowsTrump()),
+                Nonforcing(3, Suit.Spades, Fit(), PairPoints((24, 25)), ShowsTrump()),
 
                 Signoff(3, Suit.Unknown, DefaultPriority - 100, OppsStopped(), PairPoints((25, 30)) )
 
             };
+            pb.Partner(AdvancerRebid);
+
         }
+
+
+        private void AdvancerRebid(PrescribedBids pb)
+        {
+
+            // TODO: Need to do more than this, but for now this seems reasonable.  
+            pb.Bids = new BidRule[]
+            {
+                // TODO: ONly bid these if they are necessary.  Minors don't need to go the 4-level unless forced there...
+                Signoff(4, Suit.Clubs, Fit(), PairPoints((26, 28)), ShowsTrump()),
+                Signoff(4, Suit.Diamonds, Fit(), PairPoints((26, 28)), ShowsTrump()),
+                Signoff(4, Suit.Hearts, Break("4H"), Fit(), PairPoints((26, 31)), ShowsTrump()),
+                Signoff(4, Suit.Spades, Fit(), PairPoints((26, 31)), ShowsTrump())
+            };
+
+        }
+    
     }
 
 }
