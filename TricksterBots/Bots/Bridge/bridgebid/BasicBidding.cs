@@ -106,15 +106,13 @@ namespace Trickster.Bots
                     bonus[0] = 5;
                     bonus[1] = 3;
                 }
-                // Compute bonuses for shortness BUT don't count any HCPs in the suits.
-                // TODO: How about aces singletons? AK doubletons?  Seem valuable even as shortness.  For now
-                // just use the max of the shortness or the bonus...
+                // This is the Audrey Grant version of counting as dummy.  Don't care about shortness of honors...
                 foreach (Suit suit in BasicBidding.BasicSuits)
                 {
                     var count = hand.Count(c => c.suit == suit);
                     if (count < 3)
                     {
-                        adjust += System.Math.Max(0, bonus[count] - ComputeHighCardPoints(hand, suit));
+                        adjust += bonus[count];
                     }
                 }
             }

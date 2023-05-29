@@ -190,6 +190,11 @@ namespace TricksterBots.Bots.Bridge
 			return false;	// Seems the best thing to do to avoid repeated
 		}
 
+
+		public bool IsOpponent(PositionState other)
+		{
+			return (other == this.LeftHandOpponent || other == this.RightHandOpponent);
+		}
 	
 		/* -- TODO: Seems unused...
 		internal (HandSummary, PairAgreements) Update(IShowsState showsState, Bid bid)

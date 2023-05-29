@@ -111,11 +111,11 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-                Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Hearts)), Shape(4, 5)),
-                Signoff(4, Suit.Hearts, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Hearts)), Shape(3)),
+                Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), Fit()),
+               //TODO: I think above rule ocvers itl.. Signoff(4, Suit.Hearts, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Hearts)), Shape(3)),
 
 
-                Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Spades)), Shape(4, 5)),
+                Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Spades)), Fit()),
                 Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Fit()),
 				Signoff(4, Suit.Spades, Partner(LastBid(3, Suit.Unknown)), Fit()),
                 Signoff(4, Suit.Spades, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Spades)), Shape(3)),

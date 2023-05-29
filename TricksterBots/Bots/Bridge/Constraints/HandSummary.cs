@@ -93,17 +93,20 @@ namespace TricksterBots.Bots.Bridge
 				this.Suits = new Dictionary<Suit, SuitSummary.ShowState>();
 				foreach (var strain in BasicBidding.Strains)
 				{
-					this.Suits[strain] = new SuitSummary.ShowState(HandSummary.Suits[strain]);
+					this.Suits[strain] = new SuitSummary.ShowState(HandSummary, HandSummary.Suits[strain]);
 				}
 			}
 
+	
 			public void ShowStartingPoints(int min, int max)
 			{
 				HandSummary.StartingPoints = CombineRange(HandSummary.StartingPoints, (min, max), CombineRule.Show);
+				HandSummary.ShowPoints(min, max);
 			}
 			public void ShowHighCardPoints(int min, int max)
 			{
 				HandSummary.HighCardPoints = CombineRange(HandSummary.HighCardPoints, (min, max), CombineRule.Show);
+				HandSummary.ShowPoints(min, max);
 			}
 			public void ShowIsBalanced(bool isBalanced)
 			{
@@ -137,11 +140,14 @@ namespace TricksterBots.Bots.Bridge
         public class SuitSummary: IEquatable<SuitSummary>
         {
             public class ShowState
-            {
+			{ 
+
+				private HandSummary _handSummary;
 				private SuitSummary _suitSummary;
 
-				internal ShowState(SuitSummary suitSummary)
+				internal ShowState(HandSummary handSummary, SuitSummary suitSummary)
                 {
+					_handSummary = handSummary;
                     _suitSummary = suitSummary;
                 }
 
@@ -152,12 +158,14 @@ namespace TricksterBots.Bots.Bridge
 
                 public void ShowDummyPoints(int min, int max)
                 {
-                    _suitSummary.DummyPoints = CombineRange(_suitSummary.DummyPoints, (min, max), CombineRule.Show);
+					_suitSummary.DummyPoints = CombineRange(_suitSummary.DummyPoints, (min, max), CombineRule.Show);
+					_handSummary.ShowPoints(min, max);
                 }
 
                 public void ShowLongHandPoints(int min, int max)
                 {
                     _suitSummary.LongHandPoints = CombineRange(_suitSummary.LongHandPoints, (min, max), CombineRule.Show);
+					_handSummary.ShowPoints(min, max);
                 }
 
                 public void ShowQuality(SuitQuality min, SuitQuality max)
@@ -196,7 +204,7 @@ namespace TricksterBots.Bots.Bridge
 				if (Shape == null) return (0, 13);
 				return ((int Min, int Max))Shape;
 			}
-
+/*
 			public (int Min, int Max) GetDummyPoints()
 			{
 				if (DummyPoints == null) return (0, 100);
@@ -209,6 +217,7 @@ namespace TricksterBots.Bots.Bridge
 				if (LongHandPoints == null) return (0, 100);
 				return ((int, int))LongHandPoints;
 			}
+*/
 			public (SuitQuality Min, SuitQuality Max) GetQuality()
 			{
 				if (_quality == null) { return (SuitQuality.Poor, SuitQuality.Solid); }
@@ -308,17 +317,19 @@ namespace TricksterBots.Bots.Bridge
 		public (int Min, int Max)? HighCardPoints { get; protected set; }
 		public (int Min, int Max)? StartingPoints { get; protected set; }
 
-		public (int Min, int Max) GetHighCardPoints()
-		{
-			if (HighCardPoints == null) { return (0, 100); }
-			return ((int, int))HighCardPoints;
-		}
+		public (int Min, int Max)? Points { get; protected set; }
 
-		public (int Min, int Max) GetStartingPoints()
-        {
-            if (StartingPoints == null) { return (0, 100); }
-            return ((int, int))StartingPoints;
-        }
+	//	public (int Min, int Max) GetPoints()
+	//	{
+//			if (Points == null) { return (0, 100); }
+	//		return ((int, int))Points;
+	//	}
+
+//		public (int Min, int Max) GetStartingPoints()
+//        {
+//            if (StartingPoints == null) { return (0, 100); }
+//            return ((int, int))StartingPoints;
+ //       }
 
         public bool? IsBalanced { get; protected set; }
 
@@ -333,6 +344,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public HandSummary()
 		{
+			this.Points = null;
 			this.HighCardPoints = null; 
 			this.StartingPoints = null; 
 			this.IsBalanced = null;
@@ -348,6 +360,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public HandSummary(HandSummary other)
 		{
+			this.Points = other.Points;
 			this.HighCardPoints = other.HighCardPoints;
 			this.StartingPoints = other.StartingPoints;
 			this.IsBalanced = other.IsBalanced;
@@ -373,11 +386,16 @@ namespace TricksterBots.Bots.Bridge
 			*/
 
 
-
+		// This is called by the ShowState methods whenever any "Points" is modified.  
+		protected void ShowPoints(int min, int max)
+		{
+			this.Points = CombineRange(this.Points, (min, max), CombineRule.Show);
+		}
 
 
 		protected void Combine(HandSummary other, CombineRule cr)
 		{
+			this.Points = CombineRange(this.Points, other.Points, cr);
 			this.HighCardPoints = CombineRange(this.HighCardPoints, other.HighCardPoints, cr);
 			this.StartingPoints = CombineRange(this.StartingPoints, other.StartingPoints, cr);
 			this.IsBalanced = CombineBool(this.IsBalanced, other.IsBalanced, cr);
@@ -439,7 +457,8 @@ namespace TricksterBots.Bots.Bridge
 */
         public bool Equals(HandSummary other)
         {
-			if (this.HighCardPoints != other.HighCardPoints ||
+			if (this.Points != other.Points ||
+				this.HighCardPoints != other.HighCardPoints ||
 				this.StartingPoints != other.StartingPoints ||
 				this.IsBalanced != other.IsBalanced ||
 				this.IsFlat != other.IsFlat ||

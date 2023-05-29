@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.cloud;
@@ -31,6 +32,29 @@ namespace TricksterBots.Bots.Bridge
             this._max = max;    
         }
 
+
+        protected (int Min, int Max) GetPoints(Bid bid, PositionState ps, HandSummary hs)
+        {
+            var points = hs.StartingPoints;
+            if (!_useStartingPoints)
+            {
+                var suit = bid.SuitIfNot(_suit);
+                if (ps.PairAgreements.Suits[suit].LongHand == ps)
+                {
+                    points = hs.Suits[suit].LongHandPoints;
+                }
+                else if (ps.PairAgreements.Suits[suit].Dummy == ps)
+                {
+                    points = hs.Suits[suit].DummyPoints;
+                }
+            }
+            if (points == null)
+            {
+                points = hs.Points;
+            }
+            return (points == null) ? (0, 100) : ((int, int))points;
+        }
+        /*
         protected (int MinThis, int MaxThis, int MinPartner, int MaxPartner) GetPoints(Bid bid, PositionState ps, HandSummary hs)
         {
             // Assume we will have to use starting points.  Override if appropriate
@@ -59,11 +83,12 @@ namespace TricksterBots.Bots.Bridge
             }
             return (thisPoints.Min, thisPoints.Max, partnerPoints.Min, partnerPoints.Max);
         }
-
+        */
         public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
-            var points = GetPoints(bid, ps, hs);
-            return (points.MaxThis + points.MinPartner >= _min && points.MinThis + points.MinPartner <= _max);
+            var pointsThis = GetPoints(bid, ps, hs);
+            var pointsPartner = GetPoints(bid, ps.Partner, ps.Partner.PublicHandSummary);
+            return (pointsThis.Max + pointsPartner.Min >= _min && pointsThis.Min + pointsPartner.Min <= _max);
         }
     }
 
@@ -73,11 +98,12 @@ namespace TricksterBots.Bots.Bridge
 
         void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
-            var points = GetPoints(bid, ps, ps.PublicHandSummary);
+            var pointsThis = GetPoints(bid, ps, ps.PublicHandSummary);
+            var pointsPartner = GetPoints(bid, ps.Partner, ps.Partner.PublicHandSummary);
             var suit = bid.SuitIfNot(_suit);
-            int showMin = Math.Max(_min - points.MinPartner, 0);
-            int showMax = Math.Max(_max - points.MinPartner, 0);
-            if (!this._useStartingPoints || ps.PairAgreements.Suits[suit].LongHand == null)
+            int showMin = Math.Max(_min - pointsPartner.Min, 0);
+            int showMax = Math.Max(_max - pointsPartner.Min, 0);
+            if (this._useStartingPoints || ps.PairAgreements.Suits[suit].LongHand == null)
             {
                 showHand.ShowStartingPoints(showMin, showMax);
             }

@@ -38,8 +38,8 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(2, Suit.Hearts, Fit(), PairPoints(CompeteTo2), ShowsTrump()),
                 Nonforcing(2, Suit.Spades, Fit(), PairPoints(CompeteTo2), ShowsTrump()),
 
-                Nonforcing(3, Suit.Clubs, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
-                Nonforcing(3, Suit.Diamonds, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
+                Nonforcing(3, Suit.Clubs,  Fit(), PairPoints(CompeteTo3), ShowsTrump()),
+                Nonforcing(3, Suit.Diamonds,  Fit(), PairPoints(CompeteTo3), ShowsTrump()),
                 Nonforcing(3, Suit.Hearts, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
                 Nonforcing(3, Suit.Spades, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
 
@@ -47,8 +47,8 @@ namespace TricksterBots.Bots.Bridge
 
                 Nonforcing(4, Suit.Clubs, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
                 Nonforcing(4, Suit.Diamonds, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
-                Nonforcing(4, Suit.Hearts, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
-                Nonforcing(4, Suit.Spades, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
+                Nonforcing(4, Suit.Hearts, DefaultPriority + 10, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
+                Nonforcing(4, Suit.Spades, DefaultPriority + 10, Break("COMP 4 S"), Fit(), PairPoints(CompeteTo4), ShowsTrump()),
 
 
                 Nonforcing(5, Suit.Clubs, Fit(), PairPoints(CompeteTo5), ShowsTrump()),

@@ -85,8 +85,16 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(2, Suit.Clubs, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
 				Nonforcing(2, Suit.Diamonds, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
 				Nonforcing(2, Suit.Hearts, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
-				Nonforcing(2, Suit.Spades, LastBid(1), Shape(6, 11), Points(MinimumOpener))
-			};
+				Nonforcing(2, Suit.Spades, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
+
+
+                Nonforcing(2, Suit.Clubs, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+                Nonforcing(2, Suit.Diamonds, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Hearts, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Spades, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+
+
+            };
         }
 
 		// ***** RESPONSES

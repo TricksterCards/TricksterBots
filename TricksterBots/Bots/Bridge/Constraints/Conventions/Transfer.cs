@@ -121,9 +121,9 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(3, Suit.Unknown, DefaultPriority - 10, Points(OpenerRange.AcceptInvite)),
 
 				// TODO: Really want to work off of "Partner Shows" instead of PartnerBid...
-                Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), Partner(LastBid(3, Suit.Hearts))),
-				Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Hearts), Partner(LastBid(2, Suit.Unknown)), Shape(3, 5)),
-				Signoff(4, Suit.Hearts, LastBid(2, Suit.Hearts), Partner(LastBid(3, Suit.Unknown)), Shape(3, 5)),
+                Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), Fit()),
+				//Signoff(4, Suit.Hearts, Points(OpenerRange.AcceptInvite), LastBid(2, Suit.Hearts), Partner(LastBid(2, Suit.Unknown)), Shape(3, 5)),
+				//Signoff(4, Suit.Hearts, LastBid(2, Suit.Hearts), Partner(LastBid(3, Suit.Unknown)), Shape(3, 5)),
 				Signoff(4, Suit.Hearts, LastBid(2, Suit.Spades), Partner(LastBid(3, Suit.Hearts)), Shape(3, 5), BetterOrEqual(Suit.Hearts, Suit.Spades)),
 
 

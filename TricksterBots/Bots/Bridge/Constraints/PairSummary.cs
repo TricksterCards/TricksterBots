@@ -64,15 +64,18 @@ namespace TricksterBots.Bots.Bridge
             return (Math.Max(r1.Min, r2.Min), Math.Min(r1.Max, r2.Max));
         }
 
-        public (int Min, int Max) HighCardPoints;
-        public (int Min, int Max) StartingPoints;
+    //    public (int Min, int Max) Points;
+        // TODO: What about these points?  Are they really necessay
+       // public (int Min, int Max) HighCardPoints;
+        //public (int Min, int Max) StartingPoints;
         public Dictionary<Suit, SuitSummary> Suits;
         public List<Suit> ShownSuits = new List<Suit>();
 
         public PairSummary(HandSummary hs1, HandSummary hs2, PairAgreements pa)
         {
-            this.HighCardPoints = AddRange(hs1.GetHighCardPoints(), hs2.GetHighCardPoints(), 40);
-            this.StartingPoints = AddRange(hs1.GetStartingPoints(), hs2.GetStartingPoints(), 100);
+         //   this.Points = AddRange(hs1.GetPoints(), hs2.GetPoints(), 100);
+          //  this.HighCardPoints = AddRange(hs1.GetHighCardPoints(), hs2.GetHighCardPoints(), 40);
+           // this.StartingPoints = AddRange(hs1.GetStartingPoints(), hs2.GetStartingPoints(), 100);
      //       this.CountAces = other.CountAces;
       //      this.CountKings = other.CountKings;
             this.Suits = new Dictionary<Suit, SuitSummary>();

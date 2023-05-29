@@ -114,6 +114,7 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BidRound.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Break.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\MinBidLevel.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\OppsContract.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\OppsStopped.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\PassEndsAuction.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\CompositeConstraint.cs" />

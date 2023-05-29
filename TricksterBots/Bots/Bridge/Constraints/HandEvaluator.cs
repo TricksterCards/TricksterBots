@@ -17,7 +17,32 @@ namespace TricksterBots.Bots.Bridge
 			return BasicBidding.ComputeHighCardPoints(hand, suit) + countSuit >= 5;
 		}
 
-		private static SuitQuality Quality(Hand hand, Suit suit)
+
+
+		// This is the Audrey Grant defined way of looking at dummy points.  It is not
+		// ideal or advanced in any way.  
+        public static int AudreyDummyPoints(Hand hand, Suit trumpSuit)
+        {
+            var trumpCount = hand.Count(c => c.suit == trumpSuit);
+            int adjust = 0;
+            if (trumpCount >= 3)
+            {
+                int[] bonus = { 5, 3, 1 };
+                // This is the Audrey Grant version of counting as dummy.  Don't care about shortness of honors...
+                foreach (Suit suit in BasicBidding.BasicSuits)
+                {
+                    var count = hand.Count(c => c.suit == suit);
+                    if (count < 3)
+                    {
+                        adjust += bonus[count];
+                    }
+                }
+            }
+            return adjust;
+        }
+
+
+        private static SuitQuality Quality(Hand hand, Suit suit)
 		{
 			var q = SuitQuality.Poor;
 			switch (BasicBidding.ComputeHighCardPoints(hand, suit))
@@ -53,7 +78,7 @@ namespace TricksterBots.Bots.Bridge
 			hs.ShowCountKings(hand.Count(c => c.rank == Rank.King));
             foreach (Suit suit in BasicBidding.BasicSuits)
 			{
-				var dp = hcp + BasicBidding.DummyPoints(hand, suit);
+				var dp = hcp + AudreyDummyPoints(hand, suit);
 				var c = counts[suit];
 				var q = Quality(hand, suit);
 				hs.Suits[suit].ShowShape(c, c);

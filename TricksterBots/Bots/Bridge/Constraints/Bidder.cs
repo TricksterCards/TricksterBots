@@ -164,14 +164,18 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint DummyPoints(int min, int max)
 		{
-			return new ShowsPoints(null, min, max, HasPoints.PointType.Dummy);
+			// TODO: Rename this??? SuitPoints???  
+			return new ShowsPoints(null, min, max, HasPoints.PointType.Suit);
 		}
-		public static Constraint DummyPoints((int min, int max) range) {
-			return DummyPoints(range.min, range.max); }
+		public static Constraint DummyPoints((int min, int max) range)
+		{
+			return DummyPoints(range.min, range.max); 
+		}
 
 		public static Constraint DummyPoints(Suit? trumpSuit, (int min, int max) range)
 		{
-			return new ShowsPoints(trumpSuit, range.min, range.max, HasPoints.PointType.Dummy);
+			// TODO: Rename this too????  SuitPoints
+			return new ShowsPoints(trumpSuit, range.min, range.max, HasPoints.PointType.Suit);
 		}
 
 		public static Constraint Shape(int min) { return new ShowsShape(null, min, min); }
@@ -325,7 +329,8 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint DummyPoints(Suit trumpSuit, (int min, int max) range)
 		{
-			return new ShowsPoints(trumpSuit, range.min, range.max, HasPoints.PointType.Dummy);
+			// TODO: Perhaps rename this to SuitPoints?  Maybe not?  Really should determine long hand or not.  Think this through
+			return new ShowsPoints(trumpSuit, range.min, range.max, HasPoints.PointType.Suit);
 		}
 
 		public static Constraint LongestMajor(int max)
@@ -444,6 +449,11 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint ShowsNoSuit()
 		{
 			return new ShowsSuit(false, null);
+		}
+
+		public static Constraint OppsContract(bool desired = true)
+		{ 
+			return new OppsContract(desired); 
 		}
 
 	}
