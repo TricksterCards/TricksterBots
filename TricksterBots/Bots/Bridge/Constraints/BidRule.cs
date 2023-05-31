@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
@@ -30,13 +31,18 @@ namespace TricksterBots.Bots.Bridge
 			this._constraints = this._constraints.Append(constraint);
 		}
 
-		public bool Conforms(bool firstInvocation, PositionState ps, HandSummary hs)
+		public bool Conforms(bool onceAndDoneOnly, PositionState ps, HandSummary hs)
 		{
 			foreach (Constraint constraint in _constraints)
 			{
-				if (firstInvocation || constraint.OnceAndDone == false)
+				if (onceAndDoneOnly)
 				{
-					if (!constraint.Conforms(Bid, ps, hs)) { return false; }
+					Debug.Assert(hs == null);	// Once and done rules can not rely on hand summary
+					if (constraint.OnceAndDone && !constraint.Conforms(Bid, ps, hs)) { return false; }
+				}
+				else
+				{ 
+					if (!constraint.OnceAndDone && !constraint.Conforms(Bid, ps, hs)) { return false; }
 				}
 			}
 			return true;

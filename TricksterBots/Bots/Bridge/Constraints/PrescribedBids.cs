@@ -70,6 +70,15 @@ namespace TricksterBots.Bots.Bridge
 
             // Step 3: Hooray!  We conform and did not need to be redirected.  Now add all confoming bids
             // to the result and return a list of groupled bid rules.
+            //
+            // This step involves more than just adding all the rules.  Any rule that does not conform based on 
+            // "OnceAndDone" will be eleminated before being added to the set of choices.  This means that if ALL
+            // rules for a particular bidder are eleminated due to things that are not hand related then any subsequent
+            // rules by other bidders will apply.  If ANY rule applies for a given bid then NO SUBSEQUENT RULES will be
+            // considered even if further constraints eleminate them.  So, for example, if a particular bid only exists
+            // in 3rd seat, and the current position state is not 3rd seat then that bid (say 2C) would be defer to 
+            // subsequent bidders.  If that bid passes the "OnceAndDone" test (is in 3rd seat) then 2C will be reserved
+            // only for bids made by the first bidder.
             var brs = new Dictionary<Bid, BidRuleSet>();
             var contract = ps.BiddingState.GetContract();
             if (Bids != null)   // TODO: Why is this ever null when redirect doesnt happen?
@@ -79,14 +88,22 @@ namespace TricksterBots.Bots.Bridge
                     // TODO: Perhaps when we pass in "TRUE" to first-time we want to ONLY look at first time bids...
 
                     if (rule.Bid.IsValid(ps, contract).Valid &&
-                        rule.Conforms(true, ps, ps.PublicHandSummary))
+                        rule.Conforms(true, ps, null))
                     {
                         var bid = rule.Bid;
                         if (!brs.ContainsKey(bid))
                         {
                             brs[bid] = new BidRuleSet(bid, _bidder.Convention, GetPartnerBidFactory(bid));
                         }
-                        brs[bid].Add(rule);
+                        // Now we know that the rule conforms to the "Once and Done".  By creating a BidRuleSet
+                        // we have "claimed" this bid.  Now we may eleminate it based on the hand summary.  Note
+                        // that if there is a private hand summary and the rule conforms to that, it is a valid
+                        // candidate even if it does not conform to the public
+                        // TODO: Make sure this is the case everwhere - Prune, etc...
+                        if (rule.Conforms(false, ps, ps.PublicHandSummary) || ps.PrivateHandConforms(rule))
+                        {
+                            brs[bid].Add(rule);
+                        }
                     }
                 }
             }

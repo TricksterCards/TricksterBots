@@ -195,7 +195,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return (other == this.LeftHandOpponent || other == this.RightHandOpponent);
 		}
-	
+
 		/* -- TODO: Seems unused...
 		internal (HandSummary, PairAgreements) Update(IShowsState showsState, Bid bid)
 		{
@@ -206,6 +206,11 @@ namespace TricksterBots.Bots.Bridge
 		}
 		*/
 
+
+		public bool PrivateHandConforms(BidRule rule)
+		{
+			return (this._privateHandSummary == null) ? false : rule.Conforms(false, this, this._privateHandSummary);
+		}
 
 
         // TODO: Just a start of taking a group of rules and returning a subest
