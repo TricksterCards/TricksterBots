@@ -75,23 +75,60 @@ namespace TricksterBots.Bots.Bridge
         {
 			pb.Bids = new List<BidRule>()
 			{
+				// TODO: These seem silly.  Especially diamonds...
 				Nonforcing(1, Suit.Diamonds, Shape(4, 11)),
 				Nonforcing(1, Suit.Hearts, Shape(4, 11)),
 				Nonforcing(1, Suit.Spades, Shape(4, 11)),
 
-				Nonforcing(1, Suit.Unknown, DefaultPriority - 10, Balanced(), Points(OpenerRebid1NT)),
 
-				// All the possible rebids of a suit.
+
+				// Opener changed suits and we have a fit.  Support at appropriate level.
+                Nonforcing(2, Suit.Clubs, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+                Nonforcing(2, Suit.Diamonds, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+                Nonforcing(2, Suit.Hearts, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+                Nonforcing(2, Suit.Spades, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+
+
+                Nonforcing(3, Suit.Clubs, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
+                Nonforcing(3, Suit.Diamonds, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
+                Nonforcing(3, Suit.Hearts, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
+                Nonforcing(3, Suit.Spades, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
+
+				// TODO: What about minors.  This is bad. Think we want to fall through to 3NT...
+                //Nonforcing(4, Suit.Clubs, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
+                //Nonforcing(4, Suit.Diamonds, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
+                Nonforcing(4, Suit.Hearts, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MaximumOpener)),
+                Nonforcing(4, Suit.Spades, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MaximumOpener)),
+
+
+				// Show a new suit at an appropriate level...
+	//			Nonforcing(2, Suit.Clubs, Balanced(false), Points(MinimumOpener), LongestUnbidSuit()),
+    //            Nonforcing(2, Suit.Clubs, Balanced(false), Points(MinimumOpener), LongestUnbidSuit()),
+                Nonforcing(2, Suit.Hearts, LastBid(1, Suit.Hearts, false), Balanced(false), Points(MinimumOpener), Shape(4, 6)),
+        
+
+
+				// Rebid a 6 card suit
 				Nonforcing(2, Suit.Clubs, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
 				Nonforcing(2, Suit.Diamonds, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
 				Nonforcing(2, Suit.Hearts, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
 				Nonforcing(2, Suit.Spades, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
 
 
-                Nonforcing(2, Suit.Clubs, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
-                Nonforcing(2, Suit.Diamonds, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
-				Nonforcing(2, Suit.Hearts, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
-				Nonforcing(2, Suit.Spades, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+
+
+				Nonforcing(3, Suit.Clubs, LastBid(1), Shape(6, 11), Points(MediumOpener)),
+                Nonforcing(3, Suit.Diamonds, LastBid(1), Shape(6, 11), Points(MediumOpener)),
+                Nonforcing(3, Suit.Hearts, LastBid(1), Shape(6, 11), Points(MediumOpener)),
+                Nonforcing(3, Suit.Spades, LastBid(1), Shape(6, 11), Points(MediumOpener)),
+
+
+
+								// TODO: Make bids ordered and then move this to the bottom...
+				Nonforcing(1, Suit.Unknown, DefaultPriority - 10, Balanced(), Points(OpenerRebid1NT)),
+                Nonforcing(2, Suit.Unknown, DefaultPriority - 10, Balanced(), Points(OpenerRebid2NT)),
+
+
 
 
             };

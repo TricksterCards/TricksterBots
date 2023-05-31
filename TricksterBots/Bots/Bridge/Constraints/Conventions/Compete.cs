@@ -20,6 +20,7 @@ namespace TricksterBots.Bots.Bridge
 
         private (int, int) CompeteTo2 = (20, 22);
         private (int, int) CompeteTo3 = (23, 25);
+        private (int, int) CompeteTo2NT = (20, 24);
         private (int, int) CompeteTo3NT = (25, 31); // TODO: Add more...
         private (int, int) CompeteTo4 = (26, 28);
         private (int, int) CompeteTo5 = (29, 32);
@@ -43,7 +44,8 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(3, Suit.Hearts, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
                 Nonforcing(3, Suit.Spades, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
 
-                Signoff(2, Suit.Unknown, OppsStopped(), PairPoints(CompeteTo3NT)),
+                Signoff(2, Suit.Unknown, OppsStopped(), PairPoints(CompeteTo2NT)),
+                Signoff(3, Suit.Unknown, OppsStopped(), PairPoints(CompeteTo3NT)),
 
                 Nonforcing(4, Suit.Clubs, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
                 Nonforcing(4, Suit.Diamonds, Fit(), PairPoints(CompeteTo4), ShowsTrump()),

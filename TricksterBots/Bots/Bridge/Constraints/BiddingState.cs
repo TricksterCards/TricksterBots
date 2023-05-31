@@ -18,22 +18,6 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-    
-	public class Contract
-	{
-		public Bid Bid;    // Bid must be either Call.NotActed or .Pass or .Bid
-		public PositionState By;
-		public bool Doubled;
-		public bool Redoubled;
-
-        public Contract()
-        {
-            this.Bid = new Bid(Call.NotActed, BidForce.Nonforcing);
-            this.By = null;
-            this.Doubled = false;
-            this.Redoubled = false;
-        }
-	}
 
 
     public class RedirectGroupXXX
@@ -90,6 +74,8 @@ namespace TricksterBots.Bots.Bridge
         public PositionState Dealer { get; private set; }
 
         public PositionState NextToAct { get; private set; }
+
+        public Dictionary<string, Bid> Conventions { get; private set; }
 
         public bool PassEndsAuction()
         {
@@ -188,9 +174,26 @@ namespace TricksterBots.Bots.Bridge
 
         }
 
-        public BiddingState(Hand[] hands, Direction dealer, string vul)
+        private static Dictionary<string, string> HACK_Conventions = new Dictionary<string, string>()
+        {
+            { "Stayman1NTOpen", "X" },
+            { "Transfer1NTOpen", "X" },
+            { "Stayman1NTOvercall", "X" },
+            { "Transfer1NTOvercall", null },
+            { "Stayman1NTBalancing", null },
+            { "Transfer1NTBalancing", null },
+            { "Stayman2NTOpen", "X" },
+            { "Transfer2NTOpen", "X" },
+            { "Stayman3NTOpen", "X" },
+            { "Transfer3NTOpen", "X" },
+            { "MichaelsCuebid", "1♠" }, // TODO: Only 1 level opening bids?
+            { "UnusualNT", "1♠" }       // TODO: Same question here...  Only 1 of a suit?
+        };
+
+        public BiddingState(Hand[] hands, Direction dealer, string vul /* Dictionary<string, string> conventions = null TODO: Add as parameter*/)
         {
             this.Positions = new Dictionary<Direction, PositionState>();
+            this.Conventions = new Dictionary<string, Bid>();
             Debug.Assert(hands.Length == 4);
             var d = dealer;
             for (int i = 0; i < hands.Length; i++)
@@ -201,14 +204,22 @@ namespace TricksterBots.Bots.Bridge
             this.Dealer = Positions[dealer];
             this.NextToAct = Dealer;
 
-            /*
-            this.Conventions = new Dictionary<Convention, Bidder>();
-            this.Conventions[Convention.Natural] = new NaturalOpen();
-            this.Conventions[Convention.StrongOpen] = new StrongOpen();
-            this.Conventions[Convention.Stayman] = new InitiateStayman();
+     
+            foreach (var convention in HACK_Conventions)
+            {
+                if (convention.Value == null)
+                {
+                    // TODO: Is this appropriate?  Seems a bit of a hack.  
+                    this.Conventions[convention.Key] = new Bid(Call.NotActed, BidForce.Nonforcing);
+                }
+                else
+                {
+                    // TODO: What to do on failure?
+                    this.Conventions[convention.Key] = Bid.FromString(convention.Value);
+                }
+                    
+            }
 
-            this.Conventions[Convention.Transfer] = new NaturalOvercall(); // TODO: HACK HACK HACK HACK!
-            */
             this._baseBiddingXXX.Add(Natural.DefaultBidderXXX);
             this._baseBiddingXXX.Add(OpenAndOvercallNoTrump.DefaultBidderXXX);
             this._baseBiddingXXX.Add(StrongBidder.InitiateConvention);

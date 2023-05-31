@@ -393,6 +393,11 @@ namespace TricksterBots.Bots.Bridge
 			return Fit(8, suit, desiredValue);
 		}
 
+		public Constraint Fit(bool desiredValue)
+		{
+			return Fit(8, null, desiredValue);
+		}
+
 		public Constraint PairPoints((int Min, int Max) range)
 		{
 			return PairPoints(null, range);
@@ -454,6 +459,11 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint OppsContract(bool desired = true)
 		{ 
 			return new OppsContract(desired); 
+		}
+
+		public static Constraint ConventionOn(string convention)
+		{
+			return new ConventionOn(convention);
 		}
 
 	}

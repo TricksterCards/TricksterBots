@@ -201,8 +201,8 @@ namespace TricksterBots.Bots.Bridge
                 case NTType.Open1NT:
                     pb.Redirects = new RedirectRule[]
                     {
-                        Redirect(() => StaymanBidder.InitiateConvention(OpenType)),
-                        Redirect(() => TransferBidder.InitiateConvention(OpenType)),
+                        Redirect(() => StaymanBidder.InitiateConvention(OpenType), ConventionOn("Stayman1NTOpen")),
+                        Redirect(() => TransferBidder.InitiateConvention(OpenType), ConventionOn("Transfer1NTOpen")),
 						Redirect(NaturalResponse),
 					};
                     break;

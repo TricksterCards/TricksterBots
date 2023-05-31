@@ -35,7 +35,10 @@ namespace TricksterBots.Bots.Bridge
         public (int, int) OpenStrong = (22, 100);
         public (int, int) LessThanOpen = (0, 12);
         public (int, int) OpenerRebid1NT = (13, 14);
+        public (int, int) OpenerRebid2NT = (18, 19);
         public (int, int) MinimumOpener = (13, 16);
+        public (int, int) MediumOpener = (17, 18);
+        public (int, int) MaximumOpener = (19, 21);
     
 
 
