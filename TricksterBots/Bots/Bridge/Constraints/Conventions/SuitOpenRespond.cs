@@ -132,6 +132,7 @@ namespace TricksterBots.Bots.Bridge
 
 
             };
+			pb.Partner(ResponderRebid);
         }
 
 		// ***** RESPONSES
@@ -149,6 +150,8 @@ namespace TricksterBots.Bots.Bridge
 		static protected (int, int) Weak4Level = (0, 10);
 		static protected (int, int) GameOrBetter = (13, 40);
 		static protected (int, int) WeakJumpRaise = (0, 5);
+		static protected (int, int) ResponderMinimumHand = (6, 10);
+		static protected (int, int) ResponderMediumHand = (11, 13);
 
 		protected BidRule[] NewMinorSuit2Level(Suit openersSuit)
 		{
@@ -278,7 +281,7 @@ namespace TricksterBots.Bots.Bridge
                 // TODO: Really balanced?  This would only be the case for 4333 given current rules.  Maybe so...
                 Invitational(2, Suit.Unknown, Points(RaiseTo2NT), LongestMajor(3), Balanced()),
 
-				Invitational(3, Suit.Diamonds, Points(LimitRaise), Shape(5, 11), LongestMajor(3)),
+				Invitational(3, Suit.Diamonds, DefaultPriority + 10, DummyPoints(LimitRaise), Shape(5, 11), LongestMajor(3)),
 
 				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
@@ -420,7 +423,27 @@ namespace TricksterBots.Bots.Bridge
 			//this.NextConventionState = () => new NaturalOpenerRebid();
 		}
 
+		public void ResponderRebid(PrescribedBids pb)
+		{
+			var bids = new List<BidRule>()
+			{
 
+                Nonforcing(2, Suit.Clubs, Shape(6, 11), Points(ResponderMinimumHand)),
+                Nonforcing(2, Suit.Diamonds, Shape(6, 11), Points(ResponderMinimumHand)),
+                Nonforcing(2, Suit.Hearts, Shape(6, 11), Points(ResponderMinimumHand)),
+                Nonforcing(2, Suit.Spades, Shape(6, 11), Points(ResponderMinimumHand)),
+
+
+				// TODO: Make these dependent on pair points.
+                Invitational(3, Suit.Clubs, Shape(6, 11), Points(ResponderMediumHand)),
+                Invitational(3, Suit.Diamonds, Shape(6, 11), Points(ResponderMediumHand)),
+                Invitational(3, Suit.Hearts, Shape(6, 11), Points(ResponderMediumHand)),
+                Invitational(3, Suit.Spades, Shape(6, 11), Points(ResponderMediumHand))
+
+			};
+			bids.AddRange(Compete.HackXXXGetBids());
+			pb.Bids = bids;
+		}
 
 	}
 }

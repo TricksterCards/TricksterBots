@@ -418,7 +418,7 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint OppsStopped(bool desired = true)
 		{
 			// TODO: THIS SHOULD REALLY SHOW OPPS STOPPED TOO......
-			return new IsOppsStopped(desired);
+			return new ShowsOppsStopped(desired);
 		}
 
 

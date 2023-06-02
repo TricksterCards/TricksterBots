@@ -48,6 +48,13 @@ namespace TricksterBots.Bots.Bridge
                 {
                     this.Stopped = true;
                 }
+                else
+                {
+                    if (ss1.Stopped == false || ss2.Stopped == false)
+                    {
+                        this.Stopped = false;
+                    }
+                }
               //  this.Quality = (SuitQuality.Poor, SuitQuality.Solid);
               //  this.Keycards = null;
             }

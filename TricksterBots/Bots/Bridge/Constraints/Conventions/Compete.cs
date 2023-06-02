@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,9 +29,20 @@ namespace TricksterBots.Bots.Bridge
         {
         }
 
-        private void Initiate(PrescribedBids pb)
-        { 
-            pb.Bids = new BidRule[]
+
+
+        // TODO: This is super ugly.  Need to think through how bids work / fall-through or get them like this
+        // throug a static function.  These are all duplicated.  Can be appended to the end of another list.  
+        // right now used by ResponderRebid.  
+        public static List<BidRule> HackXXXGetBids()
+        {
+            var c = new Compete();
+            return c.HackGetBids();
+        }
+
+        private List<BidRule> HackGetBids()
+        {
+            return new List<BidRule>()
             {
              //   Nonforcing(Call.Pass, 0),    // TOD   aO: What points?  This is the last gasp attempt here...
                 
@@ -44,13 +56,13 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(3, Suit.Hearts, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
                 Nonforcing(3, Suit.Spades, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
 
-                Signoff(2, Suit.Unknown, OppsStopped(), PairPoints(CompeteTo2NT)),
+                Signoff(2, Suit.Unknown, OppsContract(), OppsStopped(), PairPoints(CompeteTo2NT)),
                 Signoff(3, Suit.Unknown, OppsStopped(), PairPoints(CompeteTo3NT)),
 
                 Nonforcing(4, Suit.Clubs, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
                 Nonforcing(4, Suit.Diamonds, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
                 Nonforcing(4, Suit.Hearts, DefaultPriority + 10, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
-                Nonforcing(4, Suit.Spades, DefaultPriority + 10, Break("COMP 4 S"), Fit(), PairPoints(CompeteTo4), ShowsTrump()),
+                Nonforcing(4, Suit.Spades, DefaultPriority + 10, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
 
 
                 Nonforcing(5, Suit.Clubs, Fit(), PairPoints(CompeteTo5), ShowsTrump()),
@@ -68,7 +80,13 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(7, Suit.Hearts,   5000, Shape(13)),
                 Nonforcing(7, Suit.Spades,   5000, Shape(13)),
             };
-            
+
+        }
+
+
+        private void Initiate(PrescribedBids pb)
+        {
+            pb.Bids = HackGetBids();
         }
     }
 }

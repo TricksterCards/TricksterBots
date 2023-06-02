@@ -22,9 +22,15 @@ namespace TricksterBots.Bots.Bridge
             {
                 Nonforcing(Call.Pass, DefaultPriority - 100, Points(LessThanOvercall)),
 
-                Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(5, 11)),
-                Nonforcing(1, Suit.Hearts, Points(Overcall1Level), Shape(5, 11)),
-                Nonforcing(1, Suit.Spades, Points(Overcall1Level), Shape(5, 11)),
+                Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(6, 11)),
+                Nonforcing(1, Suit.Hearts, Points(Overcall1Level), Shape(6, 11)),
+                Nonforcing(1, Suit.Spades, Points(Overcall1Level), Shape(6, 11)),
+
+                // TODO: May want to consider more rules for 1-level overcall.  If you have 10 points an a crummy suit for example...
+                Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(5), GoodSuit()),
+                Nonforcing(1, Suit.Hearts, Points(Overcall1Level), Shape(5), GoodSuit()),
+                Nonforcing(1, Suit.Spades, Points(Overcall1Level), Shape(5), GoodSuit()),
+
 
                 // TODO: NT Overcall needs to have suit stopped...
 
@@ -106,7 +112,7 @@ namespace TricksterBots.Bots.Bridge
                 // TODO: NEED TO FORMALIZE THE POINT RANGES... FOR NOW JUST LOOK AT 3-LEVEL BIDS
                 Nonforcing(3, Suit.Clubs, Fit(), PairPoints((24, 25)), ShowsTrump()),
                 Nonforcing(3, Suit.Diamonds, Fit(), PairPoints((24, 25)), ShowsTrump()),
-                Nonforcing(3, Suit.Hearts, Break("3H"), Fit(), PairPoints((24, 25)), ShowsTrump()),
+                Nonforcing(3, Suit.Hearts, Fit(), PairPoints((24, 25)), ShowsTrump()),
                 Nonforcing(3, Suit.Spades, Fit(), PairPoints((24, 25)), ShowsTrump()),
 
                 Signoff(3, Suit.Unknown, DefaultPriority - 100, OppsStopped(), PairPoints((25, 30)) )
@@ -126,7 +132,7 @@ namespace TricksterBots.Bots.Bridge
                 // TODO: ONly bid these if they are necessary.  Minors don't need to go the 4-level unless forced there...
                 Signoff(4, Suit.Clubs, Fit(), PairPoints((26, 28)), ShowsTrump()),
                 Signoff(4, Suit.Diamonds, Fit(), PairPoints((26, 28)), ShowsTrump()),
-                Signoff(4, Suit.Hearts, Break("4H"), Fit(), PairPoints((26, 31)), ShowsTrump()),
+                Signoff(4, Suit.Hearts, Fit(), PairPoints((26, 31)), ShowsTrump()),
                 Signoff(4, Suit.Spades, Fit(), PairPoints((26, 31)), ShowsTrump())
             };
 
