@@ -25,12 +25,13 @@ namespace TricksterBots.Bots.Bridge
 		{
 	        pb.Bids = new BidRule[]
 			{
+               
                 Forcing(2, Suit.Clubs, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Flat(false), ShowsNoSuit()),
                 Forcing(2, Suit.Clubs, Points(ResponderRange.InviteOrBetter), Shape(Suit.Spades, 4), Flat(false), ShowsNoSuit()),
                 Forcing(2, Suit.Clubs, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5), ShowsNoSuit()),
                 Forcing(2, Suit.Clubs, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4), ShowsNoSuit()),
 				// TODO: The following rule is "Garbage Stayman"
-				//Forcing(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
+			///	Forcing(2, Suit.Clubs, Points((0, 7)), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
 			};
             pb.Partner(Answer);
 

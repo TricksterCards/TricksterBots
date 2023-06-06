@@ -56,8 +56,10 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(3, Suit.Hearts, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
                 Nonforcing(3, Suit.Spades, Fit(), PairPoints(CompeteTo3), ShowsTrump()),
 
-                Signoff(2, Suit.Unknown, OppsContract(), OppsStopped(), PairPoints(CompeteTo2NT)),
                 Signoff(3, Suit.Unknown, OppsStopped(), PairPoints(CompeteTo3NT)),
+
+                Signoff(2, Suit.Unknown, OppsContract(), OppsStopped(), PairPoints(CompeteTo2NT)),
+
 
                 Nonforcing(4, Suit.Clubs, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
                 Nonforcing(4, Suit.Diamonds, Fit(), PairPoints(CompeteTo4), ShowsTrump()),

@@ -32,7 +32,7 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(3), Shape(Suit.Diamonds, 0, 3), LongestMajor(4)),
 				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(4, 11), LongerThan(Suit.Diamonds), LongestMajor(4)),
 
-				Nonforcing(1, Suit.Diamonds, Points(Open1Suit),Shape(3), Shape(Suit.Clubs, 0, 2), LongestMajor(4)),
+				Nonforcing(1, Suit.Diamonds, Points(Open1Suit), Shape(3), Shape(Suit.Clubs, 0, 2), LongestMajor(4)),
 				Nonforcing(1, Suit.Diamonds, Points(Open1Suit), Shape(4, 11), LongerOrEqualTo(Suit.Clubs), LongestMajor(4)),
 
 				Nonforcing(1, Suit.Hearts, Points(Open1Suit), Shape(5, 11), LongerThan(Suit.Spades)),
@@ -54,6 +54,8 @@ namespace TricksterBots.Bots.Bridge
 				// 2NT rule(s) in NoTrump class.
 			
 				Nonforcing(3, Suit.Clubs, Points(LessThanOpen), Shape(7), GoodSuit()),
+				Nonforcing(3, Suit.Clubs, Points(LessThanOpen), Shape(8)),
+
 				Nonforcing(3, Suit.Diamonds, Points(LessThanOpen), Shape(7), GoodSuit()),
 				Nonforcing(3, Suit.Hearts, Points(LessThanOpen), Shape(7), GoodSuit()),
 				Nonforcing(3, Suit.Spades, Points(LessThanOpen), Shape(7), GoodSuit()),

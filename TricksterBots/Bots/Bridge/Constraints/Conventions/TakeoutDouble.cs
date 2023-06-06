@@ -61,8 +61,10 @@ namespace TricksterBots.Bots.Bridge
 
         public static (int, int) MinLevel = (0, 8);
         public static (int, int) NoTrump1 = (6, 10);
+        public static (int, int) NoTrump2 = (11, 12);
         public static (int, int) InviteLevel = (9, 11);
         public static (int, int) GameLevel = (12, 40);
+        public static (int, int) Game3NT = (13, 40);
 
         private void Respond(PrescribedBids pb)
         { 
@@ -79,14 +81,24 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(1, Suit.Diamonds, TakeoutSuit(), Points(MinLevel)),
                 Nonforcing(1, Suit.Hearts, TakeoutSuit(), Points(MinLevel)),
                 Nonforcing(1, Suit.Spades, TakeoutSuit(), Points(MinLevel)),
-           // TODO - ADD OPPS STOPPED     Nonforcing(1, Suit.Unknown, Balanced(), Stopped(OPPS), Points(NoTrump1)),
+
+
+                Nonforcing(1, Suit.Unknown, Balanced(), OppsStopped(), Points(NoTrump1)),
+
                 Nonforcing(2, Suit.Clubs, TakeoutSuit(), CueBid(false), Points(MinLevel)),
                 Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
                 Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
                 Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
                 Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
                 Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel))
+                Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
+
+
+                Nonforcing(2, Suit.Unknown, Balanced(), OppsStopped(), Points(NoTrump2)),
+
+
+
+               // Signoff(3, Suit.Unknown, )
 
             };
         }

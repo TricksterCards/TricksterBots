@@ -65,6 +65,7 @@ namespace TricksterBots.Bots.Bridge
 
 		private void ExplainTransfer(PrescribedBids pb)
 		{
+		
 			pb.Bids = new BidRule[]
 			{
 				Signoff(Call.Pass, DefaultPriority - 1, Points(ResponderRange.LessThanInvite)),

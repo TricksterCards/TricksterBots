@@ -135,6 +135,7 @@
     <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />
     <Compile Include="Bots\Bridge\Constraints\Contract.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Compete.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Conventions\Michaels.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\TakeoutDouble.cs" />
     <Compile Include="Bots\Bridge\Constraints\PairAgreements.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidRule.cs" />
