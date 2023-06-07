@@ -2,7 +2,7 @@
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
 %Creator: BridgeComposer Version 5.101.2
-%Created: Tue Jun  6 12:03:41 2023 -0700
+%Created: Tue Jun  6 16:15:28 2023 -0700
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -33,7 +33,7 @@
 %PipColors #000000,#ff0000,#ff0000,#000000
 %PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
 %ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 15
+%SelectedBoard 19
 %ShowBoardLabels 2
 %ShowCardTable 2
 %TSTCustomSortOrder Default
@@ -376,3 +376,83 @@ Pass Pass Pass
 Pass 1S Pass 3S
 Pass 4S X Pass
 Pass Pass
+
+[Event "BB2 - Deal 17"]
+[Site ""]
+[Date ""]
+[Board "17"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:4.T5.KQJT632.JT8 AQT5.A962.7.K753 862.QJ843.95.AQ2 KJ973.K7.A84.964"]
+[Scoring ""]
+[Declarer "W"]
+[Contract "4S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+3D X Pass 4S
+Pass Pass Pass
+
+[Event "BB2 - Deal 18"]
+[Site ""]
+[Date ""]
+[Board "18"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "E"]
+[Vulnerable "NS"]
+[Deal "E:A73.9843.AQJ6.K5 KQJ82.AQ.T42.JT3 964.J752.K7.A962 T5.KT6.9853.Q874"]
+[Scoring ""]
+[Declarer "E"]
+[Contract "2H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "E"]
+1D 1S X Pass
+2H Pass Pass Pass
+
+[Event "BB2 - Deal 19"]
+[Site ""]
+[Date ""]
+[Board "19"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "EW"]
+[Deal "S:AK753.AT6.Q963.J 92.KQ93.AJT.A643 QJT6.4.854.T9852 84.J8752.K72.KQ7"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "3S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+1S X 3S Pass
+Pass Pass
+
+[Event "BB2 - Deal 20"]
+[Site ""]
+[Date ""]
+[Board "20"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "All"]
+[Deal "W:93.AKT75.K832.A8 AKQ82.43.J7.Q963 T75.QJ86.A964.KJ J64.92.QT5.T7542"]
+[Scoring ""]
+[Declarer "W"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+1H 1S 2S Pass
+4H Pass Pass Pass
