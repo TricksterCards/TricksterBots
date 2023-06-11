@@ -14,41 +14,48 @@ namespace TricksterBots.Bots.Bridge
 
     public class BidRuleSet
     {
+		protected class RuleInfo
+		{
+			public RuleInfo(int index)
+			{
+				this.RuleIndex = index;
+				this.HandSummary = null;
+				this.PairAgreements = null;
+			}
+			public int		RuleIndex;
+			public HandSummary HandSummary;
+			public PairAgreements PairAgreements;
+		}
         public Bid Bid { get; }
 
-        public Convention Convention { get; }
+        public PrescribedBids PrescribedBids { get; private set; } 
 
-        public PrescribedBidsFactory PartnerRules { get; }
-        public int Priority { get; private set; }
+        private List<RuleInfo> _ruleInfo = new List<RuleInfo>();
 
-        public bool HasRules {  get {  return _rules.Count > 0; } }
+        public bool HasRules {  get {  return _ruleInfo.Count > 0; } }
 
-        private List<BidRule> _rules;
-        public BidRuleSet(Bid bid, Convention convention, PrescribedBidsFactory partnerRules) 
+       
+        public BidRuleSet(Bid bid, PrescribedBids pb) 
         {
             this.Bid = bid;
-            this._rules = new List<BidRule>();
-            this.Priority = int.MinValue;        // TODO: Is this right???
-            this.PartnerRules = partnerRules;
-            this.Convention = convention;
+            this.PrescribedBids = pb;
+            this._ruleInfo = new List<RuleInfo>();
         }
 
+		public void AddRuleIndex(int i)
+		{
+			_ruleInfo.Add(new RuleInfo(i));
+			// TODO: All bids should have the same force...
+			// Error if they don't since "once and done" should have
+			// parred them down to the approriate set of all same force...
+		}
 
 
-        public void Add(BidRule rule)
-        {
-            // TODO: Think about this a lot -- different conventions, different forcing, etc.  Seems like basic
-            // rules of equality are just the basic stuff.  I think that is what Equals does...
-            if (rule.Bid.Equals(Bid))
-            {
-                _rules.Add(rule);
-                if (rule.Priority > this.Priority) { this.Priority = rule.Priority; }
-            }
-            else
-            {
-                throw new ArgumentException("Bid must match group bid");
-            }
-        }
+		protected BidRule RuleFor(RuleInfo ri)
+		{
+			return PrescribedBids.Bids[ri.RuleIndex];
+		}
+
         //
         // This method makes sure that any rules that do not apply are removed.  If there are no rules that could apply
         // then the priority.
@@ -78,25 +85,28 @@ namespace TricksterBots.Bots.Bridge
         // Returns true if at least one rule conforms in this group.
         public bool Conforms(PositionState ps, HandSummary hs)
         {
-            foreach (var rule in _rules)
+            foreach (var ri in _ruleInfo)
             {
-                if (rule.Conforms(false, ps, hs)) { return true; }
+                if (RuleFor(ri).Conforms(false, ps, hs)) { return true; }
             }
             return false;
         }
 
         public (HandSummary, PairAgreements) ShowState(PositionState ps)
         {
-            // TODO: This is a hack. Need to understand what's going on here.  But for now if empty rules
-            // just return the current state...
-            if (_rules.Count == 0) { return (ps.PublicHandSummary, ps.PairAgreements); }
+			// TODO: This is a hack. Need to understand what's going on here.  But for now if empty rules
+			// just return the current state...
+			if (!HasRules) { return (ps.PublicHandSummary, ps.PairAgreements); }
 
             var showHand = new HandSummary.ShowState();
             var showAgreements = new PairAgreements.ShowState();
             bool firstRule = true;
-            foreach (var rule in _rules)
+            foreach (var ri in _ruleInfo)
             {
-                (HandSummary hs, PairAgreements pa) newState = rule.ShowState(ps);
+                (HandSummary hs, PairAgreements pa) newState = RuleFor(ri).ShowState(ps);
+				ri.HandSummary = newState.hs;
+				ri.PairAgreements = newState.pa;	
+				// TODO: This is right to save the state, but needs to be used later WITHOUT calling show.
                 showHand.Combine(newState.hs, firstRule ? State.CombineRule.Show : State.CombineRule.CommonOnly);
                 showAgreements.Combine(newState.pa, firstRule ? State.CombineRule.Show : State.CombineRule.CommonOnly);
                 firstRule = false;
@@ -110,9 +120,9 @@ namespace TricksterBots.Bots.Bridge
 		public bool PruneRules(PositionState ps)
 		{
 			var rules = new List<BidRule>();
-			foreach (BidRule rule in _rules)
+			foreach (var ri in _ruleInfo)
 			{
-				if (rule.Conforms(false, ps, ps.PublicHandSummary))
+				if (RuleFor(ri).Conforms(false, ps, ps.PublicHandSummary))
 				{
 					rules.Add(rule);
 				}

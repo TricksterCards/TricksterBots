@@ -19,7 +19,7 @@ namespace TricksterBots.Bots.Bridge
 {
 	public enum Call { Pass, Bid, Double, Redouble, NotActed }
 
-	public enum BidForce { Nonforcing, Invitational, Forcing, Signoff }
+
 	public struct Bid : IEquatable<Bid>
 	{
 		public int? Level { get; }
@@ -27,7 +27,6 @@ namespace TricksterBots.Bots.Bridge
 
 		public Call Call { get; }
 
-		public BidForce Force { get; }
 
 		public bool Is(int level, Suit suit)
 		{
@@ -67,32 +66,30 @@ namespace TricksterBots.Bots.Bridge
 
         static public Bid FromString(string str)
 		{
-			if (str == "Pass") { return new Bid(Call.Pass, BidForce.Nonforcing);  }
-			if (str == "X") { return new Bid(Call.Double, BidForce.Nonforcing); }
-			if (str == "XX") { return new Bid(Call.Redouble, BidForce.Nonforcing); }
+			if (str == "Pass") { return new Bid(Call.Pass);  }
+			if (str == "X") { return new Bid(Call.Double); }
+			if (str == "XX") { return new Bid(Call.Redouble); }
 			int level = int.Parse(str.Substring(0, 1));
 			var suit = SymbolToSuit[str.Substring(1)];
-			return new Bid(level, suit, BidForce.Nonforcing);
+			return new Bid(level, suit);
 		}
 
-		public static Bid Pass = new Bid(Call.Pass, BidForce.Signoff);
+		public static Bid Pass = new Bid(Call.Pass);
 
-		public Bid(Call call, BidForce force)
+		public Bid(Call call)
 		{
 			Debug.Assert(call != Call.Bid);
 			this.Call = call;
 			this.Level = null;
 			this.Suit = null;
-			this.Force = force;
 		}
 
-		public Bid(int level, Suit suit, BidForce force)
+		public Bid(int level, Suit suit)
 		{
 			this.Call = Call.Bid;
 			Debug.Assert(level >= 1 && level <= 7);
 			this.Level = level;
 			this.Suit = suit;
-			this.Force = force;
 		}
 
 		// TODO: I am sure this exists somewhere else...  Find it

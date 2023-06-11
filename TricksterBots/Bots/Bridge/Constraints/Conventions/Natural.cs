@@ -17,15 +17,13 @@ namespace TricksterBots.Bots.Bridge
     public class Natural : Bidder
     {
 
-        public static PrescribedBids DefaultBidderXXX()
-        {
-            var bidder = new Natural();
-            return new PrescribedBids(bidder, bidder.Initiate);
-        }
+   //     public static PrescribedBids DefaultBidderXXX()
+   //     {
+   //         var bidder = new Natural();
+   //         return new PrescribedBids(bidder, bidder.Initiate);
+   //     }
 
-        protected Natural() : base(Convention.Natural, 100)
-        {
-        }
+    
 
         public (int, int) Open1Suit = (13, 21);
         public (int, int) Open1NT = (15, 17);
@@ -56,14 +54,12 @@ namespace TricksterBots.Bots.Bridge
         public (int, int) AdvanceRaise = (6, 9);
         public (int, int) AdvanceCuebid = (10, 40);
 
-        private void Initiate(PrescribedBids pb)
-        { 
-            pb.Redirects = new RedirectRule[]
-            {
-                // TODO: DO NOT CALL ALL STATIC METHODS INITIATECONVENTION OR ELSE WILL CALL BASE CLASS... NAMING IS IMPORTANT.
-                Redirect(StandardAmericanOpenRespond.DefaultBidderXXX, Role(PositionRole.Opener, 1)),
-                Redirect(StandardAmericanOvercallAdvance.DefaultBidderXXX, Role(PositionRole.Overcaller, 1)),
-            };
+        private PrescribedBids GetBids()
+        {
+            var pb = new PrescribedBids();
+            pb.Redirect(StandardAmericanOpenRespond.Open, Role(PositionRole.Opener, 1));
+            pb.Redirect(StandardAmericanOvercallAdvance.GetBids, Role(PositionRole.Overcaller, 1));
+            return pb;
         }
     }
 }

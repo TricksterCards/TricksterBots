@@ -210,7 +210,7 @@ namespace TricksterBots.Bots.Bridge
                 if (convention.Value == null)
                 {
                     // TODO: Is this appropriate?  Seems a bit of a hack.  
-                    this.Conventions[convention.Key] = new Bid(Call.NotActed, BidForce.Nonforcing);
+                    this.Conventions[convention.Key] = new Bid(Call.NotActed);
                 }
                 else
                 {
@@ -347,7 +347,7 @@ namespace TricksterBots.Bots.Bridge
 
                         // TURN THIS BACK ON AT SOME POINT!  
                         Debug.WriteLine($"*** ERROR: Did not find {b} in bid optoins.  Constructing a bid with state information");
-                        var rule = new BidRule(bid, 1, new Constraint[0]);
+                        var rule = new BidRule(bid, BidRule.BidForce.Nonforcing, new Constraint[0]);
                         choice = new BidRuleSet(bid, Convention.Natural, null);
                         choice.Add(rule);
                     }

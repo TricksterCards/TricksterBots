@@ -13,33 +13,21 @@ namespace TricksterBots.Bots.Bridge
     {
         private static (int, int) TakeoutRange = (11, 17);
 
-        public static PrescribedBids InitiateConvention()
-        {
-            var bidder = new TakeoutDouble();
-            return new PrescribedBids(bidder, bidder.Initiate);
-        }
 
-        private TakeoutDouble() : base(Convention.TakeoutDouble, 100)
-        {
-        }
 
-        private void Initiate(PrescribedBids pb)
+        private PrescribedBids Initiate()
         {
-            pb.ConventionRules = new ConventionRule[]
+            var pb = new PrescribedBids();
+            pb.Redirect(null, Role(PositionRole.Overcaller, 1, false), BidAvailable(1, Suit.Unknown, false));
+            // TODO: Need takeout doubles after first round, but for now this works...
+            // This is ugly way to avoid bidding over 1NT too. Hack but works for now.  Don't really need to check
+            // that 2C is available in subsueqnet rules, but whatever...  Hack works for now.
+            foreach (var suit in BasicBidding.BasicSuits)
             {
-                // TODO: Need takeout doubles after first round, but for now this works...
-                // This is ugly way to avoid bidding over 1NT too. Hack but works for now.  Don't really need to check
-                // that 2C is available in subsueqnet rules, but whatever...  Hack works for now.
-                ConventionRule(Role(PositionRole.Overcaller, 1), BidAvailable(1, Suit.Unknown))
-            };
-            pb.Bids = new BidRule[]
-            {
-                Takeout(Suit.Clubs),
-                Takeout(Suit.Diamonds),
-                Takeout(Suit.Hearts),
-                Takeout(Suit.Spades)
-            };
+                pb.Bids.Add(Takeout(suit));
+            }
             pb.Partner(Respond);
+            return pb;
         }
 
 
@@ -66,14 +54,13 @@ namespace TricksterBots.Bots.Bridge
         public static (int, int) GameLevel = (12, 40);
         public static (int, int) Game3NT = (13, 40);
 
-        private void Respond(PrescribedBids pb)
-        { 
-            pb.ConventionRules = new ConventionRule[]
-            {
-                // TODO: For now we will just do the takeout if RHO has passed...
-                ConventionRule(RHO(Passed()))         
-            };
-            pb.Bids = new BidRule[]
+        private PrescribedBids Respond()
+        {
+            var pb = new PrescribedBids();
+
+            pb.RedirectIfRhoBid(RespondWithInterference);
+
+            pb.Bids = new List<BidRule>
             {
                 // TODO: FOR NOW WE WILL JUST BID AT THE NEXT LEVEL REGARDLESS OF POINTS...
                 // TODO: Need LongestSuit()...
@@ -101,6 +88,14 @@ namespace TricksterBots.Bots.Bridge
                // Signoff(3, Suit.Unknown, )
 
             };
+            return pb;
+        }
+
+        private PrescribedBids RespondWithInterference()
+        {
+            var pb = new PrescribedBids();
+            pb.Bids.Add(Signoff(Call.Pass, new Constraint[0]));   // TODO: Do something here
+            return pb;
         }
     }
 }

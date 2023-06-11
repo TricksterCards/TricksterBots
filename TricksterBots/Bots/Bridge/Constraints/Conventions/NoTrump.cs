@@ -220,7 +220,7 @@ namespace TricksterBots.Bots.Bridge
         }
         private void NaturalResponse(PrescribedBids pb)
         {
-            pb.Bids = new BidRule[]
+            pb.Bids.AddRange(new BidRule[]
             {
                 Signoff(Call.Pass, 0, Points(ResponderRange.LessThanInvite)),
 
@@ -235,7 +235,7 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Spades, Points(ResponderRange.GameOrBetter), Shape(5, 11)),
                 Signoff(3, Suit.Unknown, Points(ResponderRange.Game), LongestMajor(4)),
 
-            };
+            });
             pb.Partner(OpenerRebid);
         }
 

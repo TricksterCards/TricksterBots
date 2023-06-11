@@ -13,19 +13,21 @@ namespace TricksterBots.Bots.Bridge
     {
         private int _level;
         private Suit _suit;
+        private bool _desiredValue;
 
-        public BidAvailable(int level, Suit suit)
+        public BidAvailable(int level, Suit suit, bool desiredValue)
         {
             Debug.Assert(level >= 1 && level <= 7);
             this._level = level;
             this._suit = suit;
             this.OnceAndDone = true;
+            _desiredValue = desiredValue;   
         }
         public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
             var contract = ps.BiddingState.GetContract();
-            (bool Valid, int Jump) v = new Bid(_level, _suit, BidForce.Nonforcing).IsValid(ps, contract);
-            return v.Valid;
+            (bool Valid, int Jump) v = new Bid(_level, _suit).IsValid(ps, contract);
+            return _desiredValue == v.Valid;
         }
     }
 }

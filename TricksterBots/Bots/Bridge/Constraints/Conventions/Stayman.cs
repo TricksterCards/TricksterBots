@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,9 +22,10 @@ namespace TricksterBots.Bots.Bridge
             return new PrescribedBids(staymanBidder, staymanBidder.Initiate);
         }
 
-		public void Initiate(PrescribedBids pb)
+		public PrescribedBids Initiate()
 		{
-	        pb.Bids = new BidRule[]
+            var pb = new PrescribedBids();
+	        pb.Bids = new List<BidRule>
 			{
                
                 Forcing(2, Suit.Clubs, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Flat(false), ShowsNoSuit()),
@@ -34,11 +36,12 @@ namespace TricksterBots.Bots.Bridge
 			///	Forcing(2, Suit.Clubs, Points((0, 7)), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
 			};
             pb.Partner(Answer);
-
+            return pb;
 		}
-        public void Answer(PrescribedBids pb)
-		{ 
-            pb.Bids = new BidRule[]
+        public PrescribedBids Answer()
+		{
+            var pb = new PrescribedBids();
+            pb.Bids = new List<BidRule>
             {
 				// TODO: Are these bids truly forcing?  Not if garbage stayman...
 				Forcing(2, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3), ShowsNoSuit()),
@@ -49,6 +52,7 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(2, Suit.Spades, Shape(4, 5), LongerThan(Suit.Hearts)),
             };
             pb.Partner(Explain);
+            return pb;
         }
 
         public void Explain(PrescribedBids pb)

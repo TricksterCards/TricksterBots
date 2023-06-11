@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using TricksterBots.Bots.Bridge;
+using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
@@ -10,46 +13,100 @@ namespace TricksterBots.Bots.Bridge
 
 
     public delegate PrescribedBids PrescribedBidsFactory();
-    public delegate void PrescribeBidRules(PrescribedBids prescribedBids);
+    //  public delegate void PrescribeBidRules(PrescribedBids prescribedBids);
 
-    public class PrescribedBids
+    public class PrescribedBids 
     {
-        private Bidder _bidder;
+        // private Bidder _bidder;
 
-        public IEnumerable<ConventionRule> ConventionRules { get; set; }
+        // public List<ConventionRule> ConventionRules { get; set; }
 
-        public IEnumerable<RedirectRule> Redirects { get; set; }
 
-        public IEnumerable<BidRule> Bids { get; set; }
+        public List<BidRule> Bids { get; private set; }
+        public String Convention { get; private set; }
 
+
+        private List<RedirectRule> _redirectRules = null;
         private PrescribedBidsFactory _defaultPartnerBids;
         private Dictionary<Bid, PrescribedBidsFactory> _partnerBids = null;
 
-        public PrescribedBids(Bidder bidder, PrescribeBidRules setRules)
+        public PrescribedBids()
         {
-            this._bidder = bidder;
-            setRules(this);
+            this.Bids = new List<BidRule>();
+            this.Convention = null;
         }
 
 
+        public void Redirect(PrescribedBidsFactory factory, params Constraint[] constraints)
+        {
+            if (_redirectRules == null)
+            {
+                _redirectRules = new List<RedirectRule>();
+            }
+            _redirectRules.Add(new RedirectRule(factory, constraints));
+        }
+
+        public void Redirect(PrescribedBidsFactory factory)
+        {
+            Redirect(factory, new Constraint[0]);
+        }
+
+
+        public void RedirectIfRhoInterfered(PrescribedBidsFactory factory)
+        {
+            Redirect(factory, Bidder.RHO(Bidder.Passed(false)));
+        }
+
+        public void RedirectIfRhoBid(PrescribedBidsFactory factory)
+        {
+            Redirect(factory, Bidder.RHO(Bidder.DidBid(false)));
+        }
+
+
+        public List<PrescribedBidsFactory> GetRedirects(PositionState ps)
+        {
+            List<PrescribedBidsFactory> redirects = null;
+            if (_redirectRules != null)
+            {
+                foreach (var rule in _redirectRules)
+                {
+                    if (rule.Conforms(ps))
+                    {
+                        if (redirects == null)
+                        {
+                            redirects = new List<PrescribedBidsFactory>();
+                        }
+                        // If we hit a rule that has a null factory then we are done.  Return
+                        // the list without any further redirects (may be an empty list!)
+                        if (rule.PrescribedBidsFactory == null)
+                        {
+                            break;
+                        }
+                        redirects.Add(rule.PrescribedBidsFactory);
+                    }
+                }
+            }
+            return redirects;
+
+        }
 
         public Dictionary<Bid, BidRuleSet> GetBids(PositionState ps)
         {
             // Step 1: Make sure this set of rules applies.  If not don't redirect or return any bid rules.
-            if (ConventionRules != null)
-            {
-                foreach (var rule in ConventionRules)
-                {
-                    if (!rule.Conforms(ps)) { return null; }
-                }
-            }
+//            if (ConventionRules != null)
+ //           {
+  //              foreach (var rule in ConventionRules)
+  //              {
+  //                  if (!rule.Conforms(ps)) { return null; }
+  //              }
+  //          }
             // Step 2: This set of prescribed bids applies so now we either redirect to one or more other
             // sets of prescribed bids OR we return our own set of rules.
-
-            if (Redirects != null)
+/*
+            if (_redirects != null)
             {
                 RedirectGroupXXX rXXX = null;
-                foreach (var redirect in Redirects)
+                foreach (var redirect in _redirectRules)
                 {
                     PrescribedBidsFactory bidFactory = redirect.RedirectedBidder(ps);
                     if (bidFactory != null)
@@ -67,7 +124,7 @@ namespace TricksterBots.Bots.Bridge
                 }
                 if (rXXX != null) { return rXXX.GetBids(ps); }
             }
-
+*/
             // Step 3: Hooray!  We conform and did not need to be redirected.  Now add all confoming bids
             // to the result and return a list of groupled bid rules.
             //
@@ -83,8 +140,9 @@ namespace TricksterBots.Bots.Bridge
             var contract = ps.BiddingState.GetContract();
             if (Bids != null)   // TODO: Why is this ever null when redirect doesnt happen?
             {
-                foreach (var rule in Bids)
+                for  (int i = 0; i < Bids.Count; i++)
                 {
+                    var rule = Bids[i];
                     // TODO: Perhaps when we pass in "TRUE" to first-time we want to ONLY look at first time bids...
 
                     if (rule.Bid.IsValid(ps, contract).Valid &&
@@ -93,7 +151,7 @@ namespace TricksterBots.Bots.Bridge
                         var bid = rule.Bid;
                         if (!brs.ContainsKey(bid))
                         {
-                            brs[bid] = new BidRuleSet(bid, _bidder.Convention, GetPartnerBidFactory(bid));
+                            brs[bid] = new BidRuleSet(bid, this);
                         }
                         // Now we know that the rule conforms to the "Once and Done".  By creating a BidRuleSet
                         // we have "claimed" this bid.  Now we may eleminate it based on the hand summary.  Note
@@ -102,7 +160,7 @@ namespace TricksterBots.Bots.Bridge
                         // TODO: Make sure this is the case everwhere - Prune, etc...
                         if (rule.Conforms(false, ps, ps.PublicHandSummary) || ps.PrivateHandConforms(rule))
                         {
-                            brs[bid].Add(rule);
+                            brs[bid].AddRuleIndex(i);
                         }
                     }
                 }
@@ -113,10 +171,10 @@ namespace TricksterBots.Bots.Bridge
         // This sets the default bidder for partner's next time to act.  This bidder will created and
         // invoked so long as the current bidder selects any bid other than Pass.  For setting specific
         // bidders for specific bids, including Pass, use SetPartnerBidder(Bid, BidderFactory).
-        public void Partner(PrescribeBidRules partnerRules)
-        {
-            Partner(() => new PrescribedBids(_bidder, partnerRules));
-        }
+  //      public void Partner(PrescribeBidRules partnerRules)
+   //     {
+   //         Partner(() => new PrescribedBids(_bidder, partnerRules));
+    //    }
 
         public void Partner(PrescribedBidsFactory partnerBids)
         {
@@ -127,10 +185,10 @@ namespace TricksterBots.Bots.Bridge
         // specific bidder is specified and the current bidder does not Pass then the defualt factory
         // will be used.  Otherwise the specific bidder will be used.  If no specific bidder and no default
         // then no factory will used and partner will rely on default bidders.
-        public void Partner(Bid bid, PrescribeBidRules partnerRules)
-        {
-            Partner(bid, () => new PrescribedBids(_bidder, partnerRules));
-        }
+       // public void Partner(Bid bid, PrescribeBidRules partnerRules)
+       // {
+       //     Partner(bid, partnerRules));
+       // }
         public void Partner(Bid bid, PrescribedBidsFactory partnerBids)
         {
             if (_partnerBids == null)
@@ -138,6 +196,11 @@ namespace TricksterBots.Bots.Bridge
                 _partnerBids = new Dictionary<Bid, PrescribedBidsFactory>();
             }
             _partnerBids[bid] = partnerBids;
+        }
+
+        public void Partner(int level, Suit suit, PrescribedBidsFactory partnerBids)
+        {
+            Partner(new Bid(level, suit), partnerBids);
         }
 
         // This method returns a specific bidder if one was specified, otherwise it will always return null
@@ -157,7 +220,4 @@ namespace TricksterBots.Bots.Bridge
         }
 
     }
-
-
-
 }

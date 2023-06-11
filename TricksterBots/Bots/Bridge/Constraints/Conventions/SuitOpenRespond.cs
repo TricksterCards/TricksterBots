@@ -12,22 +12,17 @@ namespace TricksterBots.Bots.Bridge
 {
 	public class StandardAmericanOpenRespond : Natural
 	{
-		public static new PrescribedBids DefaultBidderXXX()
-		{
-			var bidder = new StandardAmericanOpenRespond();
-			return new PrescribedBids(bidder, bidder.Open);
-		}
+		//	public static new PrescribedBids DefaultBidderXXX()
+		//	{
+		//			var bidder = new StandardAmericanOpenRespond();
+		//		return new PrescribedBids(bidder, bidder.Open);
+		//	}
 
-		private void Open(PrescribedBids pb)
+		public static PrescribedBids Open()
 		{
-			pb.ConventionRules = new ConventionRule[]
+			var pb = new PrescribedBids();
+			pb.Bids.AddRange(new List<BidRule>
 			{
-				ConventionRule(Role(PositionRole.Opener, 1))
-			};
- 
-			pb.Bids = new BidRule[]
-			{
-				Nonforcing(Call.Pass, DefaultPriority - 100, Points(LessThanOpen)),
 
 				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(3), Shape(Suit.Diamonds, 0, 3), LongestMajor(4)),
 				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(4, 11), LongerThan(Suit.Diamonds), LongestMajor(4)),
@@ -63,19 +58,26 @@ namespace TricksterBots.Bots.Bridge
 				// 3NT rule(s) in NoTrump class.
 				
                 Nonforcing(4, Suit.Clubs, Points(LessThanOpen), Shape(8), DecentSuit()),
-                Nonforcing(4, Suit.Diamonds, Points(LessThanOpen), Shape(8), DecentSuit()),
-                Nonforcing(4, Suit.Hearts, Points(LessThanOpen), Shape(8), DecentSuit()),
-                Nonforcing(4, Suit.Spades, Points(LessThanOpen), Shape(8), DecentSuit()),
+				Nonforcing(4, Suit.Diamonds, Points(LessThanOpen), Shape(8), DecentSuit()),
+				Nonforcing(4, Suit.Hearts, Points(LessThanOpen), Shape(8), DecentSuit()),
+				Nonforcing(4, Suit.Spades, Points(LessThanOpen), Shape(8), DecentSuit()),
+
+				Nonforcing(Call.Pass, Points(LessThanOpen)),
+
+			});
+            pb.Partner(1, Suit.Clubs, RespondTo1C);
+            pb.Partner(1, Suit.Diamonds, RespondTo1D);
+            pb.Partner(1, Suit.Hearts, RespondTo1H);
+            pb.Partner(1, Suit.Spades, RespondTo1S);
+            pb.Partner(RespondToWeakOpen);
+            return pb;
+		}
 
 
-			};
-			pb.Partner(InitialResponse); 
-        }
-
-
-		private void OpenerRebid(PrescribedBids pb)
-        {
-			pb.Bids = new List<BidRule>()
+		private PrescribedBids OpenerRebid()
+		{
+			var pb = new PrescribedBids();
+			pb.Bids.AddRange(new List<BidRule>()
 			{
 				// TODO: These seem silly.  Especially diamonds...
 				Nonforcing(1, Suit.Diamonds, Shape(4, 11)),
@@ -84,23 +86,23 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-				// Opener changed suits and we have a fit.  Support at appropriate level.
-                Nonforcing(2, Suit.Clubs, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
-                Nonforcing(2, Suit.Diamonds, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
-                Nonforcing(2, Suit.Hearts, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
-                Nonforcing(2, Suit.Spades, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MinimumOpener)),
+				// Responder changed suits and we have a fit.  Support at appropriate level.
+                Nonforcing(2, Suit.Clubs,  Fit(), ShowsTrump(), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Diamonds, Fit(), ShowsTrump(), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Hearts, Fit(), ShowsTrump(), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Spades, Fit(), ShowsTrump(), Points(MinimumOpener)),
 
 
-                Nonforcing(3, Suit.Clubs, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
-                Nonforcing(3, Suit.Diamonds, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
-                Nonforcing(3, Suit.Hearts, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
-                Nonforcing(3, Suit.Spades, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
+				Nonforcing(3, Suit.Clubs, Fit(), ShowsTrump(), Points(MediumOpener)),
+				Nonforcing(3, Suit.Diamonds, Fit(), ShowsTrump(), Points(MediumOpener)),
+				Nonforcing(3, Suit.Hearts, Fit(), ShowsTrump(), Points(MediumOpener)),
+				Nonforcing(3, Suit.Spades, Fit(), ShowsTrump(), Points(MediumOpener)),
 
 				// TODO: What about minors.  This is bad. Think we want to fall through to 3NT...
                 //Nonforcing(4, Suit.Clubs, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
                 //Nonforcing(4, Suit.Diamonds, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MediumOpener)),
-                Nonforcing(4, Suit.Hearts, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MaximumOpener)),
-                Nonforcing(4, Suit.Spades, DefaultPriority + 10, Fit(), ShowsTrump(), Points(MaximumOpener)),
+                Nonforcing(4, Suit.Hearts, Fit(), ShowsTrump(), Points(MaximumOpener)),
+				Nonforcing(4, Suit.Spades, Fit(), ShowsTrump(), Points(MaximumOpener)),
 
 
 				// Show a new suit at an appropriate level...
@@ -120,22 +122,22 @@ namespace TricksterBots.Bots.Bridge
 
 
 				Nonforcing(3, Suit.Clubs, LastBid(1), Shape(6, 11), Points(MediumOpener)),
-                Nonforcing(3, Suit.Diamonds, LastBid(1), Shape(6, 11), Points(MediumOpener)),
-                Nonforcing(3, Suit.Hearts, LastBid(1), Shape(6, 11), Points(MediumOpener)),
-                Nonforcing(3, Suit.Spades, LastBid(1), Shape(6, 11), Points(MediumOpener)),
+				Nonforcing(3, Suit.Diamonds, LastBid(1), Shape(6, 11), Points(MediumOpener)),
+				Nonforcing(3, Suit.Hearts, LastBid(1), Shape(6, 11), Points(MediumOpener)),
+				Nonforcing(3, Suit.Spades, LastBid(1), Shape(6, 11), Points(MediumOpener)),
 
 
 
-								// TODO: Make bids ordered and then move this to the bottom...
-				Nonforcing(1, Suit.Unknown, DefaultPriority - 10, Balanced(), Points(OpenerRebid1NT)),
-                Nonforcing(2, Suit.Unknown, DefaultPriority - 10, Balanced(), Points(OpenerRebid2NT)),
+				// Lowest priority if nothing else fits is bid NT
+				Nonforcing(1, Suit.Unknown, Balanced(), Points(OpenerRebid1NT)),
+				Nonforcing(2, Suit.Unknown, Balanced(), Points(OpenerRebid2NT)),
+				// TODO: What about 3NT...
 
-
-
-
-            };
+            });
 			pb.Partner(ResponderRebid);
-        }
+	
+			return pb;
+		}
 
 		// ***** RESPONSES
 
@@ -154,6 +156,8 @@ namespace TricksterBots.Bots.Bridge
 		static protected (int, int) WeakJumpRaise = (0, 5);
 		static protected (int, int) ResponderMinimumHand = (6, 10);
 		static protected (int, int) ResponderMediumHand = (11, 13);
+		static protected (int, int) ResponderRedouble = (10, 40);
+		static protected (int, int) ResponderRedoubleHCP = (10, 40);
 
 		protected BidRule[] NewMinorSuit2Level(Suit openersSuit)
 		{
@@ -186,16 +190,23 @@ namespace TricksterBots.Bots.Bridge
 			};
 		}
 
+		protected BidRule[] NoTrumpResponses()
+		{
+			return new BidRule[]
+			{
+				Nonforcing(1, Suit.Unknown, Points(Respond1NT)),
+				Nonforcing(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
+				Nonforcing(3, Suit.Unknown, Points(RaiseTo3NT), Balanced())
+			};
+        }
 
-
-		private void InitialResponse(PrescribedBids pb)
+		/*
+		private PrescribedBids InitialResponse()
 		{
 			// We may be invoked because opener Passed.  If that's the case, bail now.
-			pb.ConventionRules = new ConventionRule[]
-			{
-				ConventionRule(Role(PositionRole.Responder, 1))
-			};
-			pb.Redirects = new RedirectRule[]
+			var pb = new PrescribedBids();
+	
+			pb.Redirects = new List<RedirectRule>
 			{
 				Redirect(RespondTo1C, Partner(LastBid(1, Suit.Clubs)), RHO(Passed())),
 				Redirect(RespondTo1D, Partner(LastBid(1, Suit.Diamonds)), RHO(Passed())),
@@ -207,14 +218,29 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: First attempt at any interference.  For now only if interfere with 1S bid
 				Redirect(RespondWithInt, RHO(DidBid()))
 			};
+			return pb;
+		}
+		*/
+
+		private void AddInterferenceRules(PrescribedBids pb)
+		{
+			pb.RedirectIfRhoBid(RespondWithInt);
+			pb.Partner(new Bid(Call.Redouble), ResponseAfterRedouble);
+			pb.Bids.Add(Forcing(Call.Redouble, Points(ResponderRedouble), HighCardPoints(ResponderRedoubleHCP)));
 		}
 
-		public void RespondTo1C(PrescribedBids pb)
-		{
-			pb.Bids = new List<BidRule>()
-			{
-				Signoff(Call.Pass, 0, Points(RespondPass)),
 
+		private PrescribedBids ResponseAfterRedouble()
+		{
+			return new PrescribedBids();	// TODO: For now we just fall-back to competative bids.  
+		}
+
+		public PrescribedBids RespondTo1C()
+		{
+			var pb = new PrescribedBids();
+			AddInterferenceRules(pb);
+			pb.Bids.AddRange(new BidRule[]
+			{
 				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
 				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(6), LongestMajor(5)),
 				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(7, 11), LongestMajor(6)),
@@ -228,7 +254,6 @@ namespace TricksterBots.Bots.Bridge
 				Forcing(1, Suit.Spades, Points(Respond1Level), Shape(5), Shape(Suit.Diamonds, 0, 5), Shape(Suit.Hearts, 0, 5)),
 				Forcing(1, Suit.Spades, Points(Respond1Level), Shape(6, 11), Shape(Suit.Diamonds, 0, 6), Shape(Suit.Hearts, 0, 6)),
 
-				Nonforcing(1, Suit.Unknown, Points(Respond1NT), Balanced()),
 
 				Invitational(2, Suit.Clubs, Points(Raise1), Shape(5), LongestMajor(3)),
 
@@ -238,12 +263,8 @@ namespace TricksterBots.Bots.Bridge
 
 				Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
 
-                // TODO: Really balanced?  This would only be the case for 4333 given current rules.  Maybe so...
-                Invitational(2, Suit.Unknown, Points(RaiseTo2NT), LongestMajor(3), Balanced()),
 
 				Invitational(3, Suit.Clubs, Points(LimitRaise), Shape(5), LongestMajor(3)),
-
-				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), Balanced(), LongestMajor(3)),
 
 				Signoff(4, Suit.Clubs, Points(Weak4Level), Shape(6, 11)),
 
@@ -253,14 +274,27 @@ namespace TricksterBots.Bots.Bridge
 
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-			};
+                Signoff(Call.Pass, Points(RespondPass)),
+            });
+			pb.Bids.AddRange(NoTrumpResponses());
+
 			pb.Partner(OpenerRebid);
+			return pb;
 		}
-		private void RespondTo1D(PrescribedBids pb)
+
+		private PrescribedBids RespondTo1D()
 		{
-			pb.Bids = new BidRule[]
+			var pb = new PrescribedBids();
+
+            AddInterferenceRules(pb);
+
+            pb.Bids.AddRange(new BidRule[]
 			{
-				Signoff(Call.Pass, 0, Points(RespondPass)),
+				// TODO: More formal redouble???
+				Forcing(Call.Redouble, Points((10, 100)), HighCardPoints((10, 100))),
+
+                Invitational(3, Suit.Diamonds, DummyPoints(LimitRaise), Shape(5, 11), LongestMajor(3)),
+                Invitational(2, Suit.Diamonds, Points(Raise1), Shape(5, 11), LongestMajor(2)),
 
 				// TODO: Only forcing if not a passed hand...
 				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
@@ -269,12 +303,10 @@ namespace TricksterBots.Bots.Bridge
 				Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4), Shape(Suit.Hearts, 0, 3)),
 				Forcing(1, Suit.Spades, Points(Respond1Level), Shape(5, 11), LongerOrEqualTo(Suit.Hearts)),
 
-				Nonforcing(1, Suit.Unknown, Points(Respond1NT), Balanced(), LongestMajor(3)),
+//				Nonforcing(1, Suit.Unknown, Points(Respond1NT), Balanced(), LongestMajor(3)),
 
 
 				Forcing(2, Suit.Clubs, Points(NewSuit2Level), Shape(5, 11), LongestMajor(3)),
-
-				Invitational(2, Suit.Diamonds, DefaultPriority + 1, Points(Raise1), Shape(5, 11), LongestMajor(3)),
 
 				Forcing(2, Suit.Hearts, Points(SlamInterest), Shape(5, 11)),
 
@@ -283,28 +315,36 @@ namespace TricksterBots.Bots.Bridge
                 // TODO: Really balanced?  This would only be the case for 4333 given current rules.  Maybe so...
                 Invitational(2, Suit.Unknown, Points(RaiseTo2NT), LongestMajor(3), Balanced()),
 
-				Invitational(3, Suit.Diamonds, DefaultPriority + 10, DummyPoints(LimitRaise), Shape(5, 11), LongestMajor(3)),
 
 				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
-				Signoff(4, Suit.Diamonds, 1, Points(Weak4Level), Shape(6, 11)),
+				Signoff(4, Suit.Diamonds, Points(Weak4Level), Shape(6, 11)),
 
                 // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-                Signoff(4, Suit.Hearts, 1, Points(Weak4Level), Shape(7, 11)),
+                Signoff(4, Suit.Hearts, Points(Weak4Level), Shape(7, 11)),
 
-				Signoff(4, Suit.Spades, 1, Points(Weak4Level), Shape(7, 11)),
+				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11)),
 
-			};
+
+                Signoff(Call.Pass, Points(RespondPass)),
+            });
+			pb.Bids.AddRange(NoTrumpResponses());
 			pb.Partner(OpenerRebid);
+			return pb;
 		}
-		private void RespondTo1H(PrescribedBids pb)
+		private PrescribedBids RespondTo1H()
 		{
-			var bids = new List<BidRule>()
+			var pb = new PrescribedBids();
+			AddInterferenceRules(pb);
+            pb.Bids.AddRange(new BidRule[]
 			{
-				Signoff(Call.Pass, 0, Points(RespondPass)),
 
-				Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4, 11), Shape(Suit.Hearts, 0, 2)),
+                Invitational(2, Suit.Hearts, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
+
+                Invitational(3, Suit.Hearts,DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
+
+                Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4, 11), Shape(Suit.Hearts, 0, 2)),
 				Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, LimitRaise), Shape(4, 11), Shape(Suit.Hearts, 3)),
 				Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, GameOrBetter), Shape(4, 11), Shape(Suit.Hearts, 3, 8)),
 
@@ -312,13 +352,9 @@ namespace TricksterBots.Bots.Bridge
 
                 // Two level minor bids are handled by NewMinorSuit2Level...
 
-                Invitational(2, Suit.Hearts, DefaultPriority + 100, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
-
 				Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
 
 				Invitational(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
-
-				Invitational(3, Suit.Hearts, DefaultPriority + 100,DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
 
 				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
@@ -328,17 +364,26 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Hearts, DummyPoints(Suit.Hearts, Weak4Level), Shape(5, 8)),
 
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11)),
-			};
 
-			pb.Bids = bids.Concat(NewMinorSuit2Level(Suit.Hearts));
+                Signoff(Call.Pass,Points(RespondPass)),
+
+            });
+
+			pb.Bids.AddRange(NewMinorSuit2Level(Suit.Hearts));
+			pb.Bids.AddRange(NoTrumpResponses());
 			pb.Partner(OpenerRebid);
+			return pb;
 		}
 
-		private void RespondTo1S(PrescribedBids pb)
+		private PrescribedBids RespondTo1S()
 		{
-			var bids = new List<BidRule>()
+			var pb = new PrescribedBids();
+			AddInterferenceRules(pb);
+			pb.Bids.AddRange(new BidRule[]
 			{
-				Signoff(Call.Pass, Points(RespondPass)),
+				// Highest priority is to show support...
+                Invitational(3, Suit.Spades, DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
+                Invitational(2, Suit.Spades, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
 
 				// TODO: Should Respond 1NT be lower priority or should raises be higher?
 				Nonforcing(1, Suit.Unknown, Points(Respond1NT), Balanced()),
@@ -347,11 +392,8 @@ namespace TricksterBots.Bots.Bridge
                 // THIS IS HIGHER PRIORITY THAN SHOWING MINORS NO MATTER WHAT THE LENGTH...
 				Forcing(2, Suit.Hearts, Points(NewSuit2Level), Shape(5, 11)),
 
-				Invitational(2, Suit.Spades, DefaultPriority + 100, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
-
 				Invitational(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
 
-				Invitational(3, Suit.Spades, DefaultPriority + 100, DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
 
 				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
@@ -359,32 +401,42 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(4, Suit.Hearts, Points(Weak4Level), Shape(7, 11)),
 
-				Signoff(4, Suit.Spades, DummyPoints(Weak4Level), Shape(5, 8))
-			};
-			pb.Bids = bids.Concat(NewMinorSuit2Level(Suit.Spades));
+				Signoff(4, Suit.Spades, DummyPoints(Weak4Level), Shape(5, 8)),
+
+				Signoff(Call.Pass, Points(RespondPass)),
+
+            });
+			pb.Bids.AddRange(NewMinorSuit2Level(Suit.Spades));
+			pb.Bids.AddRange(NoTrumpResponses());
 			pb.Partner(OpenerRebid);
+			return pb;
 		}
 
-		private void RespondToWeakOpen(PrescribedBids pb)
+		private PrescribedBids RespondToWeakOpen()
 		{
-			pb.Bids = new BidRule[]
+			var pb = new PrescribedBids();
+			pb.Bids.AddRange(new BidRule[]
 			{
 				Signoff(4, Suit.Hearts, Fit(), RuleOf17()),
 				Signoff(4, Suit.Hearts, Fit(10), PassEndsAuction(false)),
 				Signoff(4, Suit.Spades, Fit(), RuleOf17()),
 				Signoff(4, Suit.Spades, Fit(10), PassEndsAuction(false)),
-			};
+				// TODO: Pass???
+
+				// TODO: NT Bids
+				// TODO: Minor bids???
+			});
+			return pb;
 		}
 
 
 		// TODO: THIS IS SUPER HACKED NOW TO JUST 
-		private void RespondWithInt(PrescribedBids pb)
+		private PrescribedBids RespondWithInt()
 		{
-
-			pb.Bids = new List<BidRule>()
+			var pb = new PrescribedBids();
+			pb.Bids.AddRange(new BidRule[]
 			{
-				Signoff(Call.Pass, 0, Points(RespondPass)),
-
+		
 				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
 				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(5, 11), LongerThan(Suit.Spades)),
 
@@ -393,9 +445,7 @@ namespace TricksterBots.Bots.Bridge
 
 				// TODO: Opponents stopped!  Maybe two rules, one at lower priority that bid this in the worst case...
 				// Perhaps pass could be higher than that rule if we dont have 11 points, and dont have opps stopped
-			
-                Nonforcing(1, Suit.Unknown, DefaultPriority - 10, Points(Respond1NT), Balanced(), LongestMajor(3)),
-
+		
 				Invitational(2, Suit.Hearts, CueBid(false), Fit(), DummyPoints(Raise1), ShowsTrump()),
 				Forcing(2, Suit.Hearts, CueBid(true), Fit(Suit.Clubs), DummyPoints(Suit.Clubs, LimitRaiseOrBetter), ShowsTrump()),
 				Forcing(2, Suit.Hearts, CueBid(true), Fit(Suit.Diamonds), DummyPoints(Suit.Diamonds, LimitRaiseOrBetter), ShowsTrump()),
@@ -408,26 +458,28 @@ namespace TricksterBots.Bots.Bridge
 
 				// TODO: Still need lots and lots more bid levels here.  But decent start...
 
-				// TODO: Also needs opps stopped
-				Invitational(2, Suit.Unknown, DefaultPriority - 10, Points(RaiseTo2NT), Balanced()),
-
 				Nonforcing(3, Suit.Hearts, Fit(), DummyPoints(WeakJumpRaise), Shape(4)),
 
-				// TODO: What is not balanced but do have opponents stopped.  Maybe remove balanced.....
-				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), OppsStopped(), Balanced()),
-
+		
 				// TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
 				Signoff(4, Suit.Hearts, Fit(), DummyPoints(WeakJumpRaise), Shape(5, 8)),
-			};
-			// TODO: NEED TO RESPOND WITH INTERFERENCE..
 
-			//this.NextConventionState = () => new NaturalOpenerRebid();
+
+                Signoff(Call.Pass, Points(RespondPass)),
+
+
+            });
+			// TODO: Need to have opponents stopped?  Maybe those bids go higher up ...
+			pb.Bids.AddRange(NoTrumpResponses());
+
+			return pb;
 		}
 
-		public void ResponderRebid(PrescribedBids pb)
+		public PrescribedBids ResponderRebid()
 		{
-			var bids = new List<BidRule>()
+			var pb = new PrescribedBids();
+			pb.Bids.AddRange(new BidRule[]
 			{
 
                 Nonforcing(2, Suit.Clubs, Shape(6, 11), Points(ResponderMinimumHand)),
@@ -442,9 +494,10 @@ namespace TricksterBots.Bots.Bridge
                 Invitational(3, Suit.Hearts, Shape(6, 11), Points(ResponderMediumHand)),
                 Invitational(3, Suit.Spades, Shape(6, 11), Points(ResponderMediumHand))
 
-			};
-			bids.AddRange(Compete.HackXXXGetBids());
-			pb.Bids = bids;
+			});
+
+			pb.Bids.AddRange(Compete.HackXXXGetBids());
+			return pb;
 		}
 
 	}

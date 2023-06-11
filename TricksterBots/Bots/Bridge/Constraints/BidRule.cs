@@ -14,14 +14,18 @@ namespace TricksterBots.Bots.Bridge
 
 	public class BidRule
 	{
-		public Bid Bid { get; }
-		public int Priority { get; }
+        public enum BidForce { Nonforcing, Invitational, Forcing, Signoff }
+
+        public Bid Bid { get; }
+
+		public BidForce Force { get; }
+
 
 		private IEnumerable<Constraint> _constraints;
-		public BidRule(Bid bid, int priority, params Constraint[] constraints)
+		public BidRule(Bid bid, BidForce force, params Constraint[] constraints)
 		{
 			this.Bid = bid;
-			this.Priority = priority;
+			this.Force = force;
 			this._constraints = constraints;
 		}
 

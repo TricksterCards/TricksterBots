@@ -20,7 +20,6 @@ namespace TricksterBots.Bots.Bridge
         {
             pb.Bids = new BidRule[]
             {
-                Nonforcing(Call.Pass, DefaultPriority - 100, Points(LessThanOvercall)),
 
                 Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(6, 11)),
                 Nonforcing(1, Suit.Hearts, Points(Overcall1Level), Shape(6, 11)),
@@ -50,8 +49,10 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(3, Suit.Hearts, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 				Nonforcing(3, Suit.Spades, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 
+                Nonforcing(Call.Pass, Points(LessThanOvercall)),
 
-			};
+
+            };
             pb.Partner(Advance);
         }
 
@@ -60,18 +61,14 @@ namespace TricksterBots.Bots.Bridge
         {
             pb.Bids = new BidRule[]
             {
-                Nonforcing(Call.Pass, DefaultPriority - 100),   // TODO: What points?  What shape?
-
            
-                Nonforcing(1, Suit.Hearts, DefaultPriority - 20, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
-                Nonforcing(1, Suit.Hearts, DefaultPriority - 20, Points(AdvanceNewSuit1Level), Shape(6, 11)),
+                Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
+                Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(6, 11)),
 
-                Nonforcing(1, Suit.Spades, DefaultPriority - 20, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
-                Nonforcing(1, Suit.Spades, DefaultPriority - 20, Points(AdvanceNewSuit1Level), Shape(6, 11)),
+                Nonforcing(1, Suit.Spades, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
+                Nonforcing(1, Suit.Spades, Points(AdvanceNewSuit1Level), Shape(6, 11)),
 
-                // TODO: Need to have opps stopped?? What if not?  Then what?
-                Nonforcing(1, Suit.Unknown, DefaultPriority - 10, Points(AdvanceTo1NT)),
-
+               
                 // TODO: Should these be prioirty - 5 - support should be higher priorty.  Seems reasonable
                 Nonforcing(2, Suit.Clubs, Points(AdvanceNewSuit2Level), Shape(5), GoodSuit()),
                 Nonforcing(2, Suit.Clubs, Points(AdvanceNewSuit2Level), Shape(6, 11)),
@@ -84,22 +81,27 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-
+                // 2C is not really possible since this is an advance...
                 Nonforcing(2, Suit.Diamonds, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),
                 Nonforcing(2, Suit.Hearts, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),
                 Nonforcing(2, Suit.Spades, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),
 
-                // Fill this out better but for now just go on law of total trump, jumping if weak
+                // Fill this out better but for now just go on law of total trump, jumping if weak.  
+                Nonforcing(4, Suit.Clubs, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                Nonforcing(4, Suit.Diamonds, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                Nonforcing(4, Suit.Hearts, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                Nonforcing(4, Suit.Spades, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+
                 Nonforcing(3, Suit.Clubs, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
                 Nonforcing(3, Suit.Diamonds, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
                 Nonforcing(3, Suit.Hearts, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
                 Nonforcing(3, Suit.Spades, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
 
-                Nonforcing(4, Suit.Clubs, DefaultPriority + 100, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                Nonforcing(4, Suit.Diamonds, DefaultPriority + 100, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                Nonforcing(4, Suit.Hearts, DefaultPriority + 100, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                Nonforcing(4, Suit.Spades, DefaultPriority + 100, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
 
+                // Lowest priority is to bid some level of NT - all fit() bids should be higher priority.
+                Nonforcing(1, Suit.Unknown, OppsStopped(), Points(AdvanceTo1NT)),
+
+                // TODO: Any specification of PASS?>>
             };
 
             pb.Partner(OvercallRebid);
@@ -115,7 +117,7 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(3, Suit.Hearts, Fit(), PairPoints((24, 25)), ShowsTrump()),
                 Nonforcing(3, Suit.Spades, Fit(), PairPoints((24, 25)), ShowsTrump()),
 
-                Signoff(3, Suit.Unknown, DefaultPriority - 100, OppsStopped(), PairPoints((25, 30)) )
+                Signoff(3, Suit.Unknown, OppsStopped(), OppsStopped(), PairPoints((25, 30)) )
 
             };
             pb.Partner(AdvancerRebid);
