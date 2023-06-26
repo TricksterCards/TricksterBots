@@ -15,7 +15,7 @@ namespace TricksterBots.Bots.Bridge
 
         public Contract()
         {
-            this.Bid = new Bid(Call.NotActed, BidForce.Nonforcing);
+            this.Bid = new Bid(Call.NotActed);
             this.By = null;
             this.Doubled = false;
             this.Redoubled = false;

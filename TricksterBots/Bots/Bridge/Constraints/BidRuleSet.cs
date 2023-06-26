@@ -16,13 +16,13 @@ namespace TricksterBots.Bots.Bridge
     {
 		protected class RuleInfo
 		{
-			public RuleInfo(int index)
+			public RuleInfo(BidRule rule)
 			{
-				this.RuleIndex = index;
+				this.Rule = rule;
 				this.HandSummary = null;
 				this.PairAgreements = null;
 			}
-			public int		RuleIndex;
+			public BidRule Rule;
 			public HandSummary HandSummary;
 			public PairAgreements PairAgreements;
 		}
@@ -30,31 +30,28 @@ namespace TricksterBots.Bots.Bridge
 
         public PrescribedBids PrescribedBids { get; private set; } 
 
+		public PrescribedBidsFactory PartnerBidsFactory { get; private set; }
+
         private List<RuleInfo> _ruleInfo = new List<RuleInfo>();
 
         public bool HasRules {  get {  return _ruleInfo.Count > 0; } }
 
+
        
-        public BidRuleSet(Bid bid, PrescribedBids pb) 
+
+		public BidRuleSet(Bid bid, IEnumerable<BidRule> rules, PrescribedBidsFactory partnerBidsFactory) 
         {
             this.Bid = bid;
-            this.PrescribedBids = pb;
+         	this.PartnerBidsFactory = partnerBidsFactory;
             this._ruleInfo = new List<RuleInfo>();
+			foreach (var rule in rules)
+			{
+				_ruleInfo.Add(new RuleInfo(rule));
+			}
         }
 
-		public void AddRuleIndex(int i)
-		{
-			_ruleInfo.Add(new RuleInfo(i));
-			// TODO: All bids should have the same force...
-			// Error if they don't since "once and done" should have
-			// parred them down to the approriate set of all same force...
-		}
 
 
-		protected BidRule RuleFor(RuleInfo ri)
-		{
-			return PrescribedBids.Bids[ri.RuleIndex];
-		}
 
         //
         // This method makes sure that any rules that do not apply are removed.  If there are no rules that could apply
@@ -87,7 +84,7 @@ namespace TricksterBots.Bots.Bridge
         {
             foreach (var ri in _ruleInfo)
             {
-                if (RuleFor(ri).Conforms(false, ps, hs)) { return true; }
+                if (ri.Rule.SatisifiesDynamicConstraints(ps, hs)) { return true; }
             }
             return false;
         }
@@ -103,7 +100,7 @@ namespace TricksterBots.Bots.Bridge
             bool firstRule = true;
             foreach (var ri in _ruleInfo)
             {
-                (HandSummary hs, PairAgreements pa) newState = RuleFor(ri).ShowState(ps);
+                (HandSummary hs, PairAgreements pa) newState = ri.Rule.ShowState(ps);
 				ri.HandSummary = newState.hs;
 				ri.PairAgreements = newState.pa;	
 				// TODO: This is right to save the state, but needs to be used later WITHOUT calling show.
@@ -119,16 +116,16 @@ namespace TricksterBots.Bots.Bridge
 
 		public bool PruneRules(PositionState ps)
 		{
-			var rules = new List<BidRule>();
+			var rules = new List<RuleInfo>();
 			foreach (var ri in _ruleInfo)
 			{
-				if (RuleFor(ri).Conforms(false, ps, ps.PublicHandSummary))
+				if (ri.Rule.SatisifiesDynamicConstraints(ps, ps.PublicHandSummary))
 				{
-					rules.Add(rule);
+					rules.Add(ri);
 				}
 			}
-			if (rules.Count == _rules.Count) { return false; }
-			_rules = rules;
+			if (rules.Count == _ruleInfo.Count) { return false; }
+			_ruleInfo = rules;
 			return true;
 		}
 

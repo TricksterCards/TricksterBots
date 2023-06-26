@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -35,7 +36,34 @@ namespace TricksterBots.Bots.Bridge
 			this._constraints = this._constraints.Append(constraint);
 		}
 
-		public bool Conforms(bool onceAndDoneOnly, PositionState ps, HandSummary hs)
+		public bool SatisifiesStaticConstraints(PositionState ps)
+		{
+			foreach (Constraint constraint in _constraints)
+			{
+				if (constraint.OnceAndDone && !constraint.Conforms(Bid, ps, null))
+				{
+					return false;
+				}
+			}
+			return true;
+
+
+		}
+
+
+
+        public bool SatisifiesDynamicConstraints(PositionState ps, HandSummary hs)
+        {
+            foreach (Constraint constraint in _constraints)
+            {
+                if (!constraint.OnceAndDone &&
+					!constraint.Conforms(Bid, ps, hs)) { return false; }
+            }
+            return true;
+        }
+
+		/*
+        public bool Conforms(bool onceAndDoneOnly, PositionState ps, HandSummary hs)
 		{
 			foreach (Constraint constraint in _constraints)
 			{
@@ -51,7 +79,7 @@ namespace TricksterBots.Bots.Bridge
 			}
 			return true;
 		}
-
+		*/
 
 		public (HandSummary, PairAgreements) ShowState(PositionState ps)
 		{
@@ -75,5 +103,15 @@ namespace TricksterBots.Bots.Bridge
 		}
 	}
 
+
+	public class PartnerBidRule : BidRule
+	{
+		public PrescribedBidsFactory PartnerBidFactory { get; private set; }
+        public PartnerBidRule(Bid bid, PrescribedBidsFactory partnerBids, params Constraint[] constraints) :
+			base(bid, BidForce.Nonforcing, constraints)
+        {
+            this.PartnerBidFactory = partnerBids;
+        }
+    }
 
 }

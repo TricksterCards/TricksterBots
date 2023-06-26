@@ -10,7 +10,7 @@ using TricksterBots.Bots.Bridge;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class StandardAmericanOpenRespond : Natural
+	public class StandardAmericanOpenRespond : StandardAmerican
 	{
 		//	public static new PrescribedBids DefaultBidderXXX()
 		//	{
@@ -18,13 +18,18 @@ namespace TricksterBots.Bots.Bridge
 		//		return new PrescribedBids(bidder, bidder.Open);
 		//	}
 
-		public static PrescribedBids Open()
+		public static PrescribedBids OpenSuit()
 		{
 			var pb = new PrescribedBids();
-			pb.Bids.AddRange(new List<BidRule>
+			pb.BidRules.AddRange(new List<BidRule>
 			{
 
-				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(3), Shape(Suit.Diamonds, 0, 3), LongestMajor(4)),
+				PartnerBids(1, Suit.Clubs, RespondTo1C),
+                PartnerBids(1, Suit.Diamonds, RespondTo1D),
+                PartnerBids(1, Suit.Hearts, RespondTo1H),
+                PartnerBids(1, Suit.Spades, RespondTo1S),
+
+                Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(3), Shape(Suit.Diamonds, 0, 3), LongestMajor(4)),
 				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(4, 11), LongerThan(Suit.Diamonds), LongestMajor(4)),
 
 				Nonforcing(1, Suit.Diamonds, Points(Open1Suit), Shape(3), Shape(Suit.Clubs, 0, 2), LongestMajor(4)),
@@ -65,19 +70,15 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(Call.Pass, Points(LessThanOpen)),
 
 			});
-            pb.Partner(1, Suit.Clubs, RespondTo1C);
-            pb.Partner(1, Suit.Diamonds, RespondTo1D);
-            pb.Partner(1, Suit.Hearts, RespondTo1H);
-            pb.Partner(1, Suit.Spades, RespondTo1S);
-            pb.Partner(RespondToWeakOpen);
+            pb.DefaultPartnerBidsFactory = RespondToWeakOpen;
             return pb;
 		}
 
 
-		private PrescribedBids OpenerRebid()
+		private static PrescribedBids OpenerRebid()
 		{
 			var pb = new PrescribedBids();
-			pb.Bids.AddRange(new List<BidRule>()
+			pb.BidRules.AddRange(new List<BidRule>()
 			{
 				// TODO: These seem silly.  Especially diamonds...
 				Nonforcing(1, Suit.Diamonds, Shape(4, 11)),
@@ -134,8 +135,7 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: What about 3NT...
 
             });
-			pb.Partner(ResponderRebid);
-	
+			pb.DefaultPartnerBidsFactory = ResponderRebid;
 			return pb;
 		}
 
@@ -159,7 +159,7 @@ namespace TricksterBots.Bots.Bridge
 		static protected (int, int) ResponderRedouble = (10, 40);
 		static protected (int, int) ResponderRedoubleHCP = (10, 40);
 
-		protected BidRule[] NewMinorSuit2Level(Suit openersSuit)
+		protected static BidRule[] NewMinorSuit2Level(Suit openersSuit)
 		{
 			return new BidRule[]
 			{
@@ -190,7 +190,7 @@ namespace TricksterBots.Bots.Bridge
 			};
 		}
 
-		protected BidRule[] NoTrumpResponses()
+		protected static BidRule[] NoTrumpResponses()
 		{
 			return new BidRule[]
 			{
@@ -222,24 +222,24 @@ namespace TricksterBots.Bots.Bridge
 		}
 		*/
 
-		private void AddInterferenceRules(PrescribedBids pb)
+		private static void AddInterferenceRules(PrescribedBids pb)
 		{
 			pb.RedirectIfRhoBid(RespondWithInt);
-			pb.Partner(new Bid(Call.Redouble), ResponseAfterRedouble);
-			pb.Bids.Add(Forcing(Call.Redouble, Points(ResponderRedouble), HighCardPoints(ResponderRedoubleHCP)));
+			pb.BidRules.Add(PartnerBids(Call.Redouble, ResponseAfterRedouble));
+			pb.BidRules.Add(Forcing(Call.Redouble, Points(ResponderRedouble), HighCardPoints(ResponderRedoubleHCP)));
 		}
 
 
-		private PrescribedBids ResponseAfterRedouble()
+		private static PrescribedBids ResponseAfterRedouble()
 		{
 			return new PrescribedBids();	// TODO: For now we just fall-back to competative bids.  
 		}
 
-		public PrescribedBids RespondTo1C()
+		private static PrescribedBids RespondTo1C()
 		{
 			var pb = new PrescribedBids();
 			AddInterferenceRules(pb);
-			pb.Bids.AddRange(new BidRule[]
+			pb.BidRules.AddRange(new BidRule[]
 			{
 				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
 				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(6), LongestMajor(5)),
@@ -276,19 +276,19 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(Call.Pass, Points(RespondPass)),
             });
-			pb.Bids.AddRange(NoTrumpResponses());
+			pb.BidRules.AddRange(NoTrumpResponses());
 
-			pb.Partner(OpenerRebid);
+			pb.DefaultPartnerBidsFactory = OpenerRebid;
 			return pb;
 		}
 
-		private PrescribedBids RespondTo1D()
+		private static PrescribedBids RespondTo1D()
 		{
 			var pb = new PrescribedBids();
 
             AddInterferenceRules(pb);
 
-            pb.Bids.AddRange(new BidRule[]
+            pb.BidRules.AddRange(new BidRule[]
 			{
 				// TODO: More formal redouble???
 				Forcing(Call.Redouble, Points((10, 100)), HighCardPoints((10, 100))),
@@ -329,15 +329,15 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(Call.Pass, Points(RespondPass)),
             });
-			pb.Bids.AddRange(NoTrumpResponses());
-			pb.Partner(OpenerRebid);
+			pb.BidRules.AddRange(NoTrumpResponses());
+			pb.DefaultPartnerBidsFactory = OpenerRebid;
 			return pb;
 		}
-		private PrescribedBids RespondTo1H()
+		private static PrescribedBids RespondTo1H()
 		{
 			var pb = new PrescribedBids();
 			AddInterferenceRules(pb);
-            pb.Bids.AddRange(new BidRule[]
+            pb.BidRules.AddRange(new BidRule[]
 			{
 
                 Invitational(2, Suit.Hearts, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
@@ -369,17 +369,17 @@ namespace TricksterBots.Bots.Bridge
 
             });
 
-			pb.Bids.AddRange(NewMinorSuit2Level(Suit.Hearts));
-			pb.Bids.AddRange(NoTrumpResponses());
-			pb.Partner(OpenerRebid);
+			pb.BidRules.AddRange(NewMinorSuit2Level(Suit.Hearts));
+			pb.BidRules.AddRange(NoTrumpResponses());
+			pb.DefaultPartnerBidsFactory = OpenerRebid;
 			return pb;
 		}
 
-		private PrescribedBids RespondTo1S()
+		private static PrescribedBids RespondTo1S()
 		{
 			var pb = new PrescribedBids();
 			AddInterferenceRules(pb);
-			pb.Bids.AddRange(new BidRule[]
+			pb.BidRules.AddRange(new BidRule[]
 			{
 				// Highest priority is to show support...
                 Invitational(3, Suit.Spades, DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
@@ -406,16 +406,16 @@ namespace TricksterBots.Bots.Bridge
 				Signoff(Call.Pass, Points(RespondPass)),
 
             });
-			pb.Bids.AddRange(NewMinorSuit2Level(Suit.Spades));
-			pb.Bids.AddRange(NoTrumpResponses());
-			pb.Partner(OpenerRebid);
+			pb.BidRules.AddRange(NewMinorSuit2Level(Suit.Spades));
+			pb.BidRules.AddRange(NoTrumpResponses());
+			pb.DefaultPartnerBidsFactory = OpenerRebid;
 			return pb;
 		}
 
-		private PrescribedBids RespondToWeakOpen()
+		private static PrescribedBids RespondToWeakOpen()
 		{
 			var pb = new PrescribedBids();
-			pb.Bids.AddRange(new BidRule[]
+			pb.BidRules.AddRange(new BidRule[]
 			{
 				Signoff(4, Suit.Hearts, Fit(), RuleOf17()),
 				Signoff(4, Suit.Hearts, Fit(10), PassEndsAuction(false)),
@@ -431,10 +431,10 @@ namespace TricksterBots.Bots.Bridge
 
 
 		// TODO: THIS IS SUPER HACKED NOW TO JUST 
-		private PrescribedBids RespondWithInt()
+		private static PrescribedBids RespondWithInt()
 		{
 			var pb = new PrescribedBids();
-			pb.Bids.AddRange(new BidRule[]
+			pb.BidRules.AddRange(new BidRule[]
 			{
 		
 				Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
@@ -471,15 +471,15 @@ namespace TricksterBots.Bots.Bridge
 
             });
 			// TODO: Need to have opponents stopped?  Maybe those bids go higher up ...
-			pb.Bids.AddRange(NoTrumpResponses());
+			pb.BidRules.AddRange(NoTrumpResponses());
 
 			return pb;
 		}
 
-		public PrescribedBids ResponderRebid()
+		public static PrescribedBids ResponderRebid()
 		{
 			var pb = new PrescribedBids();
-			pb.Bids.AddRange(new BidRule[]
+			pb.BidRules.AddRange(new BidRule[]
 			{
 
                 Nonforcing(2, Suit.Clubs, Shape(6, 11), Points(ResponderMinimumHand)),
@@ -496,7 +496,7 @@ namespace TricksterBots.Bots.Bridge
 
 			});
 
-			pb.Bids.AddRange(Compete.HackXXXGetBids());
+			pb.BidRules.AddRange(Compete.HackGetBids());
 			return pb;
 		}
 

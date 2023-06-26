@@ -26,25 +26,42 @@ namespace TricksterBots.Bots.Bridge
 
 
 		// Convention rules..
-	//	public static ConventionRule ConventionRule(params Constraint[] constraints)
-	//	{
-	//		return new ConventionRule(constraints);
-	//	}
+		//	public static ConventionRule ConventionRule(params Constraint[] constraints)
+		//	{
+		//		return new ConventionRule(constraints);
+		//	}
 
 
 		// TODO: ANYTHING THAT USED TO REFER TO THIS NEEDS TO USE A FACTORY...
-	//	public static RedirectRule Redirect(PrescribeBidRules redirectTo)
-	//	{
-	//		return Redirect(redirectTo, new Constraint[0]);
-	//	}
+		//	public static RedirectRule Redirect(PrescribeBidRules redirectTo)
+		//	{
+		//		return Redirect(redirectTo, new Constraint[0]);
+		//	}
 
-	//	public static RedirectRule Redirect(PrescribeBidRules redirectTo, params Constraint[] constraints)
-	//	{
-	//		return new RedirectRule(this, redirectTo, constraints);
-	//	}
+		//	public static RedirectRule Redirect(PrescribeBidRules redirectTo, params Constraint[] constraints)
+		//	{
+		//		return new RedirectRule(this, redirectTo, constraints);
+		//	}
+
+		public static BidRule PartnerBids(int level, Suit suit, PrescribedBidsFactory partnerBidsFactory)
+		{
+			return PartnerBids(level, suit, partnerBidsFactory, new Constraint[0]);
+		}
+		public static BidRule PartnerBids(int level, Suit suit, PrescribedBidsFactory partnerBidsFactory, params Constraint[] constraints)
+		{
+			return new PartnerBidRule(new Bid(level, suit), partnerBidsFactory, constraints);
+		}
 
 
+		public static BidRule PartnerBids(Call call, PrescribedBidsFactory partnerBidsFactory)
+		{
+			return PartnerBids(call, partnerBidsFactory, new Constraint[0]);
+		}
 
+		public static BidRule PartnerBids(Call call, PrescribedBidsFactory partnerBidsFactory, params Constraint[] constraints)
+		{
+			return new PartnerBidRule(new Bid(call), partnerBidsFactory, constraints);
+		}
 
 		public static BidRule Forcing(int level, Suit suit, params Constraint[] constraints)
 		{
@@ -58,7 +75,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 		// TODO: Need a non-forcing BidMessage...
-		public BidRule Nonforcing(int level, Suit suit, params Constraint[] constraints)
+		public static BidRule Nonforcing(int level, Suit suit, params Constraint[] constraints)
 		{
 			return Rule(level, suit, BidForce.Nonforcing, constraints);
 		}
@@ -303,11 +320,7 @@ namespace TricksterBots.Bots.Bridge
 			return new BidRound(round);
 		}
 
-		public static Constraint SystemOn(Convention convention, params Constraint[] constraints)
-		{
-			// TODO: Need to do OR 
-			throw new NotImplementedException();
-		}
+		
 
 		public static Constraint ShowsTrump(Suit? trumpSuit = null)
 		{
@@ -321,43 +334,43 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-		public Constraint CueBid(bool desiredValue = true)
+		public static Constraint CueBid(bool desiredValue = true)
 		{
 			return CueBid(null, desiredValue);
 		}
 
-		public Constraint CueBid(Suit? suit, bool desiredValue = true)
+		public static Constraint CueBid(Suit? suit, bool desiredValue = true)
 		{
 			return new CueBid(suit, desiredValue);
 		}
 
-		public Constraint TakeoutSuit(Suit? suit = null)
+		public static Constraint TakeoutSuit(Suit? suit = null)
 		{
 			return new TakeoutSuit(suit);
 		}
 
 		// TOOD: These are temporary for now.  But need to think them through.  
-		public Constraint Fit(int count = 8, Suit? suit = null, bool desiredValue = true)
+		public static Constraint Fit(int count = 8, Suit? suit = null, bool desiredValue = true)
 		{
 			return new PairShowsMinShape(suit, count, desiredValue);
 		}
 
-		public Constraint Fit(Suit suit, bool desiredValue = true)
+		public static Constraint Fit(Suit suit, bool desiredValue = true)
 		{
 			return Fit(8, suit, desiredValue);
 		}
 
-		public Constraint Fit(bool desiredValue)
+		public static Constraint Fit(bool desiredValue)
 		{
 			return Fit(8, null, desiredValue);
 		}
 
-		public Constraint PairPoints((int Min, int Max) range)
+		public static Constraint PairPoints((int Min, int Max) range)
 		{
 			return PairPoints(null, range);
 		}
 
-		public Constraint PairPoints(Suit? suit, (int Min, int Max) range)
+		public static Constraint PairPoints(Suit? suit, (int Min, int Max) range)
 		{
 			return new PairShowsPoints(suit, range.Min, range.Max);
 		}

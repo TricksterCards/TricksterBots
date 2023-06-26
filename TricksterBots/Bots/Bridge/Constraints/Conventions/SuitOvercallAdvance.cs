@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -9,18 +10,12 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class StandardAmericanOvercallAdvance : Natural
+    public class StandardAmericanOvercallAdvance : StandardAmerican
     {
-		public static new PrescribedBids DefaultBidderXXX()
-		{
-			var bidder = new StandardAmericanOvercallAdvance();
-			return new PrescribedBids(bidder, bidder.Initiate);
-		}
-		private void Initiate(PrescribedBids pb)
-        {
-            pb.Bids = new BidRule[]
-            {
 
+		public static PrescribedBids Overcall()
+        {
+            return new PrescribedBids(Advance, 
                 Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(6, 11)),
                 Nonforcing(1, Suit.Hearts, Points(Overcall1Level), Shape(6, 11)),
                 Nonforcing(1, Suit.Spades, Points(Overcall1Level), Shape(6, 11)),
@@ -49,19 +44,17 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(3, Suit.Hearts, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 				Nonforcing(3, Suit.Spades, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 
-                Nonforcing(Call.Pass, Points(LessThanOvercall)),
+                Nonforcing(Call.Pass, Points(LessThanOvercall))
 
 
-            };
-            pb.Partner(Advance);
+            );
+          
         }
 
 
-        private void Advance(PrescribedBids pb)
+        private static PrescribedBids Advance()
         {
-            pb.Bids = new BidRule[]
-            {
-           
+            return new PrescribedBids(OvercallRebid,            
                 Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
                 Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(6, 11)),
 
@@ -99,18 +92,15 @@ namespace TricksterBots.Bots.Bridge
 
 
                 // Lowest priority is to bid some level of NT - all fit() bids should be higher priority.
-                Nonforcing(1, Suit.Unknown, OppsStopped(), Points(AdvanceTo1NT)),
+                Nonforcing(1, Suit.Unknown, OppsStopped(), Points(AdvanceTo1NT))
 
                 // TODO: Any specification of PASS?>>
-            };
-
-            pb.Partner(OvercallRebid);
+            );
         }
 
-        private void OvercallRebid(PrescribedBids pb)
+        private static PrescribedBids OvercallRebid()
         {
-            pb.Bids = new BidRule[]
-            {
+            return new PrescribedBids(AdvancerRebid, 
                 // TODO: NEED TO FORMALIZE THE POINT RANGES... FOR NOW JUST LOOK AT 3-LEVEL BIDS
                 Nonforcing(3, Suit.Clubs, Fit(), PairPoints((24, 25)), ShowsTrump()),
                 Nonforcing(3, Suit.Diamonds, Fit(), PairPoints((24, 25)), ShowsTrump()),
@@ -119,25 +109,19 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(3, Suit.Unknown, OppsStopped(), OppsStopped(), PairPoints((25, 30)) )
 
-            };
-            pb.Partner(AdvancerRebid);
-
+            );
         }
 
 
-        private void AdvancerRebid(PrescribedBids pb)
+        private static PrescribedBids AdvancerRebid()
         {
-
-            // TODO: Need to do more than this, but for now this seems reasonable.  
-            pb.Bids = new BidRule[]
-            {
+            return new PrescribedBids(null, 
                 // TODO: ONly bid these if they are necessary.  Minors don't need to go the 4-level unless forced there...
                 Signoff(4, Suit.Clubs, Fit(), PairPoints((26, 28)), ShowsTrump()),
                 Signoff(4, Suit.Diamonds, Fit(), PairPoints((26, 28)), ShowsTrump()),
                 Signoff(4, Suit.Hearts, Fit(), PairPoints((26, 31)), ShowsTrump()),
                 Signoff(4, Suit.Spades, Fit(), PairPoints((26, 31)), ShowsTrump())
-            };
-
+            );
         }
     
     }

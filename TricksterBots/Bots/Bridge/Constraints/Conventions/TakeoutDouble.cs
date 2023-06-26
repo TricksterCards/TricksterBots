@@ -15,7 +15,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-        private PrescribedBids Initiate()
+        public static PrescribedBids InitiateConvention()
         {
             var pb = new PrescribedBids();
             pb.Redirect(null, Role(PositionRole.Overcaller, 1, false), BidAvailable(1, Suit.Unknown, false));
@@ -24,14 +24,14 @@ namespace TricksterBots.Bots.Bridge
             // that 2C is available in subsueqnet rules, but whatever...  Hack works for now.
             foreach (var suit in BasicBidding.BasicSuits)
             {
-                pb.Bids.Add(Takeout(suit));
+                pb.BidRules.Add(Takeout(suit));
             }
-            pb.Partner(Respond);
+            pb.DefaultPartnerBidsFactory = Respond;
             return pb;
         }
 
 
-        private BidRule Takeout(Suit suit)
+        private static BidRule Takeout(Suit suit)
         {
             // TODO: Should this be 2 or 1 for MinBidLevel?  Or is this really based on opponent bids?
             // TODO: Ugly way to avoid bidding this over NT...
@@ -54,13 +54,13 @@ namespace TricksterBots.Bots.Bridge
         public static (int, int) GameLevel = (12, 40);
         public static (int, int) Game3NT = (13, 40);
 
-        private PrescribedBids Respond()
+        private static PrescribedBids Respond()
         {
             var pb = new PrescribedBids();
 
             pb.RedirectIfRhoBid(RespondWithInterference);
 
-            pb.Bids = new List<BidRule>
+            pb.BidRules.AddRange(new List<BidRule>
             {
                 // TODO: FOR NOW WE WILL JUST BID AT THE NEXT LEVEL REGARDLESS OF POINTS...
                 // TODO: Need LongestSuit()...
@@ -87,14 +87,14 @@ namespace TricksterBots.Bots.Bridge
 
                // Signoff(3, Suit.Unknown, )
 
-            };
+            });
             return pb;
         }
 
-        private PrescribedBids RespondWithInterference()
+        private static PrescribedBids RespondWithInterference()
         {
             var pb = new PrescribedBids();
-            pb.Bids.Add(Signoff(Call.Pass, new Constraint[0]));   // TODO: Do something here
+            pb.BidRules.Add(Signoff(Call.Pass, new Constraint[0]));   // TODO: Do something here
             return pb;
         }
     }

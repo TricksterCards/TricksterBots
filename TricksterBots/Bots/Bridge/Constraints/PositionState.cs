@@ -48,7 +48,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			if (_bids.Count <= historyLevel)
 			{
-				return new Bid(Call.NotActed, BidForce.Nonforcing);
+				return new Bid(Call.NotActed);
 			}
 			return _bids[_bids.Count - 1 - historyLevel].Bid;
 		}
@@ -96,9 +96,9 @@ namespace TricksterBots.Bots.Bridge
 			get { return BidRound - _roleAssignedOffset;  }
 		}
 
-		public PrescribedBidsFactory GetPartnerNextState()
+		public PrescribedBidsFactory GetPartnerBidsFactory()
 		{
-			return Partner._bids.Count > 0 ? Partner._bids.Last().PartnerRules : null;
+			return Partner._bids.Count > 0 ? Partner._bids.Last().PartnerBidsFactory : null;
 		}
 
 		// THIS IS AN INTERNAL FUNCITON:
@@ -209,12 +209,13 @@ namespace TricksterBots.Bots.Bridge
 
 		public bool PrivateHandConforms(BidRule rule)
 		{
-			return (this._privateHandSummary == null) ? false : rule.Conforms(false, this, this._privateHandSummary);
+			return (this._privateHandSummary == null) ? false : rule.SatisifiesDynamicConstraints(this, this._privateHandSummary);
 		}
 
 
         // TODO: Just a start of taking a group of rules and returning a subest
         // TODO: NEED TO ADD -PRIORITY BIDS FOR FALL-BACK. THESE SHOULD BE IGNORED IN THE FIRST ROUND
+		/*
         public BidRuleSet ChooseBid(Dictionary<Bid, BidRuleSet> rules)
 		{
 			Debug.Assert(_privateHandSummary != null);
@@ -240,6 +241,7 @@ namespace TricksterBots.Bots.Bridge
 			}
             return choice;
 		}
+		*/
 
 	}
 }

@@ -13,27 +13,22 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-        private (int, int) CompeteTo2 = (20, 22);
-        private (int, int) CompeteTo3 = (23, 25);
-        private (int, int) CompeteTo2NT = (20, 24);
-        private (int, int) CompeteTo3NT = (25, 31); // TODO: Add more...
-        private (int, int) CompeteTo4 = (26, 28);
-        private (int, int) CompeteTo5 = (29, 32);
+        private static (int, int) CompeteTo2 = (20, 22);
+        private static (int, int) CompeteTo3 = (23, 25);
+        private static (int, int) CompeteTo2NT = (20, 24);
+        private static (int, int) CompeteTo3NT = (25, 31); // TODO: Add more...
+        private static (int, int) CompeteTo4 = (26, 28);
+        private static (int, int) CompeteTo5 = (29, 32);
 
 
 
         // TODO: This is super ugly.  Need to think through how bids work / fall-through or get them like this
         // throug a static function.  These are all duplicated.  Can be appended to the end of another list.  
         // right now used by ResponderRebid.  
-        public static List<BidRule> HackXXXGetBids()
-        {
-            var c = new Compete();
-            return c.HackGetBids();
-        }
 
-        private List<BidRule> HackGetBids()
+        public static BidRule[] HackGetBids()
         {
-            return new List<BidRule>()
+            return new BidRule[]
             {
                 // Stilly buy highest priority bids for any hand...
                 Nonforcing(7, Suit.Clubs, Shape(13)),
@@ -82,10 +77,10 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        private PrescribedBids GetBids()
+        public static PrescribedBids GetBids()
         {
             var pb = new PrescribedBids();
-            pb.Bids = HackGetBids();
+            pb.BidRules.AddRange(HackGetBids()); 
             return pb;
         }
     }

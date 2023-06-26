@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,12 +15,18 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
     // TODO: Line this up with trickser conventions, but re-declare for now for flexibility...
-    public enum Convention { Natural, Competative, StrongOpen, NT, Stayman, Transfer, TakeoutDouble };
+    public static class Convention
+    {
+        public static string Stayman = "Stayman";
+        public static string Transfer = "Transfer";
+        public static string Strong2Clubs = "Strong2Clubs";
+        public static string UnusualNT = "UnusualNT";
+        public static string Michaeld = "Michaels";
+        public static string TakeoutDouble = "TakeoutDouble";
+    }
 
 
-
-
-
+    /*
     public class RedirectGroupXXX
     {
         private List<PrescribedBidsFactory> _bidders = new List<PrescribedBidsFactory>();
@@ -59,6 +66,75 @@ namespace TricksterBots.Bots.Bridge
             return bids;
         }
     }
+    */
+
+
+    internal class BidChoices
+    {
+        private List<PrescribedBids> PrescribedBids = new List<PrescribedBids>();
+        private PositionState _ps;
+        public BidChoices(PositionState ps, PrescribedBidsFactory defaultBidsFactory)
+        {
+            this._ps = ps;
+            var partnerBidsFactory = ps.GetPartnerBidsFactory();
+            if (partnerBidsFactory != null)
+            {
+                BuildBidList(partnerBidsFactory, ps);
+            }
+            BuildBidList(defaultBidsFactory, ps);
+        }
+
+        private void BuildBidList(PrescribedBidsFactory bidFactory, PositionState ps)
+        {
+            var pb = bidFactory();
+            var redirects = pb.GetRedirects(ps);
+            if (redirects != null)
+            {
+                foreach (var childBids in redirects)
+                {
+                    BuildBidList(childBids, ps);
+                }
+            }
+            else
+            {
+                this.PrescribedBids.Add(pb);
+            }
+
+        }
+
+
+
+        public BidRuleSet ChooseBestBid()
+        {
+            BidRuleSet bidRuleSet = null;
+            var definedBids = new HashSet<Bid>();
+            var contract = _ps.BiddingState.GetContract();
+            foreach (var pb in PrescribedBids)
+            {
+                bidRuleSet = pb.ChooseBestBid(_ps, contract, definedBids);
+                if (bidRuleSet != null)
+                {
+                    return bidRuleSet;
+                }
+                definedBids.UnionWith(pb.AllBids(_ps));
+
+            }
+            // TODO: Should we construct a pass here???
+            return ChooseBid(Bid.Pass);
+        }
+
+        public BidRuleSet ChooseBid(Bid bid)
+        {
+            foreach (var pb in PrescribedBids)
+            {
+                var bidRuleSet = pb.GetBidRuleSet(bid, _ps);
+                if (bidRuleSet != null) { return bidRuleSet; }
+            }
+            // TODO: Need to do something better than this, but for now just create an empty bidrule set
+            return new BidRuleSet(bid, new BidRule[0], null);
+        }
+
+    }
 
     public class BiddingState
     {
@@ -66,8 +142,8 @@ namespace TricksterBots.Bots.Bridge
         //   public Dictionary<Convention, Bidder> Conventions { get; protected set; }
 
 
-        private RedirectGroupXXX _baseBiddingXXX = new RedirectGroupXXX();
-
+   //    private RedirectGroupXXX _baseBiddingXXX = new RedirectGroupXXX();
+  
         public Dictionary<Direction, PositionState> Positions { get; }
 
 
@@ -219,17 +295,11 @@ namespace TricksterBots.Bots.Bridge
                 }
                     
             }
-
-            this._baseBiddingXXX.Add(Natural.DefaultBidderXXX);
-            this._baseBiddingXXX.Add(OpenAndOvercallNoTrump.DefaultBidderXXX);
-            this._baseBiddingXXX.Add(StrongBidder.InitiateConvention);
-            this._baseBiddingXXX.Add(TakeoutDouble.InitiateConvention);
-            this._baseBiddingXXX.Add(Compete.DefatulBidderXXX);
             
         }
 
 
-
+        /*
         internal Dictionary<Bid, BidRuleSet> AvailableBids(PositionState ps)
         {
             // TODO: Always creating a new object and then copying all the default bidders into
@@ -258,6 +328,7 @@ namespace TricksterBots.Bots.Bridge
             return bids;
 
 		}
+        */
 		/*
 		internal Dictionary<Bid, BidRuleGroup> AvailableBids(PositionState ps)
 		{
@@ -316,7 +387,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public string GetHackBid(string[] history, string expected)
         {
-            /*
+          /*  
             Debug.WriteLine($"==== START TEST ==== Expect {expected}");
             if (history == null)
             {
@@ -337,8 +408,13 @@ namespace TricksterBots.Bots.Bridge
             {
                 foreach (var b in history)
                 {
-                   // Debug.WriteLine($"--- Historical: {b}");
                     var bid = Bid.FromString(b);
+                    // Debug.WriteLine($"--- Historical: {b}");
+
+
+                    var bidChoices = new BidChoices(NextToAct, StandardAmerican.DefaultBidsFactory);             
+                    var choice = bidChoices.ChooseBid(bid);
+                    /*
                     var o = AvailableBids(NextToAct);
                     BidRuleSet choice;
                     if (o.TryGetValue(bid, out choice) == false)
@@ -351,28 +427,29 @@ namespace TricksterBots.Bots.Bridge
                         choice = new BidRuleSet(bid, Convention.Natural, null);
                         choice.Add(rule);
                     }
+                    */
                     NextToAct.MakeBid(choice);
                     NextToAct = NextToAct.LeftHandOpponent;
                 }
             }
             // Now we are actually ready to look at a hand and do somethihg
 
-            var options = AvailableBids(NextToAct);
-            var bidRule = NextToAct.ChooseBid(options);
-            NextToAct.MakeBid(bidRule);
+            var choices = new BidChoices(NextToAct, StandardAmerican.DefaultBidsFactory);
+            var bidRuleSet = choices.ChooseBestBid();
+            NextToAct.MakeBid(bidRuleSet);
 
-          //  if (bidRule.Bid.ToString() != expected)
-         //   {
-          //      Debug.WriteLine($"SUCCESS - Got expected {bidRule.Bid}");
-          //  }
-          //  else
-          //  {
-          //      Debug.WriteLine($"******** ERROR!  Expected {expected} but got {bidRule.Bid}");
-          //  }
-            //Debug.WriteLine("");
+        //    if (bidRuleSet.Bid.ToString() != expected)
+        //    {
+        //        Debug.WriteLine($"SUCCESS - Got expected {bidRuleSet.Bid}");
+        //    }
+        //    else
+        //    {
+        //        Debug.WriteLine($"******** ERROR!  Expected {expected} but got {bidRuleSet.Bid}");
+        //    }
+        //    Debug.WriteLine("");
 
             NextToAct = NextToAct.LeftHandOpponent;
-            return bidRule.Bid.ToString();
+            return bidRuleSet.Bid.ToString();
         }
 
 

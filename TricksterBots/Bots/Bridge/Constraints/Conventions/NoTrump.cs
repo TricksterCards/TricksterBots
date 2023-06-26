@@ -5,8 +5,11 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.Remoting.Messaging;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Trickster.Bots;
 using Trickster.cloud;
 using static TricksterBots.Bots.Bridge.OneNoTrumpBidder;
 
@@ -108,7 +111,7 @@ namespace TricksterBots.Bots.Bridge
 
         public NTType OpenType { get; private set; }
 
-        public OneNoTrumpBidder(NTType type, Convention convention, int priority) : base(convention, priority)
+        public OneNoTrumpBidder(NTType type)
         {
             this.OpenType = type;
         }
@@ -133,20 +136,83 @@ namespace TricksterBots.Bots.Bridge
             Debug.Fail("Should never get to here - Range not supported");
             return DummyPoints(0, 0);
         }
+
+        public static BidRule[] GetOpenRules()
+        {
+            return new OneNoTrumpBidder(NTType.Open1NT)._GetOpenRules();
+        }
+
+        public static BidRule[] GetOvercallRules()
+        {
+            return new OneNoTrumpBidder(NTType.Overcall1NT)._GetOpenRules();
+        }
+
+        public static BidRule[] GetBalancingRules()
+        {
+            // TODO: This is not exactly right.  Actual rules should specify that opps suit is stopped.  Does not need to be balanced, but helps.
+            // TODO: Anyway, this needs to be rethought...
+            return new OneNoTrumpBidder(NTType.Balancing1NT)._GetBalancingRules();
+        }
+
+        public BidRule[] _GetOpenRules()
+        {
+            return new BidRule[]
+            {
+                PartnerBids(1, Suit.Unknown, Respond),
+                Nonforcing(1, Suit.Unknown, Points(OpenerRange.Open), Balanced(), PassEndsAuction(false))
+            };
+        }
+
+        public BidRule[] _GetBalancingRules()
+        {
+            return new BidRule[]
+            {
+                PartnerBids(1, Suit.Unknown, Respond),
+                // TODO: Perhaps more rules here for balancing but for now this is fine -- Balanced() is not necessary
+                Nonforcing(1, Suit.Unknown, Points(OpenerRange.Open), PassEndsAuction(true))
+            };
+        }
+
+        private PrescribedBids Respond()
+        {
+            var pb = new PrescribedBids();
+            pb.Redirect(StaymanBidder.InitiateConvention(OpenType));
+            pb.Redirect(TransferBidder.InitiateConvention(OpenType));
+            pb.Redirect(Natural1NT.Respond(OpenType));
+            return pb;
+        }
+
     }
 
-    public class OpenAndOvercallNoTrump : Bidder
+    public class NoTrump : Bidder
     {
-        public static PrescribedBids DefaultBidderXXX()
+
+        public static PrescribedBids Open()
         {
-            var bidder = new OpenAndOvercallNoTrump();
-            return new PrescribedBids(bidder, bidder.Initiate);
+            var pb = new PrescribedBids();
+            pb.BidRules.AddRange(OneNoTrumpBidder.GetOpenRules());
+            pb.BidRules.AddRange(TwoNoTrumpBidder.GetOpenRules());
+
+
+            return pb;
+
+
+        }
+        public static PrescribedBids StrongOvercall()
+        {
+            var pb = new PrescribedBids();
+            pb.BidRules.AddRange(OneNoTrumpBidder.GetOvercallRules());
+            return pb;
         }
 
-        private OpenAndOvercallNoTrump() : base(Convention.Natural, 100)
+        public static PrescribedBids BalancingOvercall()
         {
+            var pb = new PrescribedBids();
+            pb.BidRules.AddRange(OneNoTrumpBidder.GetBalancingRules());
+            return pb;
         }
 
+        /*
         private void Initiate(PrescribedBids pb)
         {
             pb.Redirects = new RedirectRule[]
@@ -165,31 +231,26 @@ namespace TricksterBots.Bots.Bridge
                 // TODO: NEED NATURAL 3NT TOO BUT FOR NOW JUST 2NT
             };
         }
+        */
     }
 
 
 
     public class Natural1NT : OneNoTrumpBidder
     {
-        public static PrescribedBids Bidder(NTType type)
+        public Natural1NT(NTType type) : base(type)
         {
-            var b = new Natural1NT(type);
-            return new PrescribedBids(b, b.InitialBid);
-        }
-        private Natural1NT(NTType type) : base(type, Convention.Natural, 100) { }
-   
-        private void InitialBid(PrescribedBids pb)
-        {
-            pb.Bids = new BidRule[]
-            {
-                // TODO: If the type is Overcall then we need to check for suit stopped... But anyway thats in the future
-                Nonforcing(1, Suit.Unknown, DefaultPriority + 10, Points(OpenerRange.Open), Balanced())
-            };
-            pb.Partner(Conventions);
         }
 
-        private void Conventions(PrescribedBids pb)
+        public static PrescribedBidsFactory Respond(NTType type)
         {
+            return new Natural1NT(type).NaturalResponse;
+        }
+
+        /*
+        public PrescribedBids Respond()
+        {
+            var pb = new PrescribedBids();
             // TODO: Make these redirect rules conditional on some global state.  Conditions can be:
             //  Off
             //  Pass
@@ -218,11 +279,14 @@ namespace TricksterBots.Bots.Bridge
                     break;
             }
         }
-        private void NaturalResponse(PrescribedBids pb)
+        */
+
+        private PrescribedBids NaturalResponse()
         {
-            pb.Bids.AddRange(new BidRule[]
+            var pb = new PrescribedBids();
+            pb.BidRules.AddRange(new BidRule[]
             {
-                Signoff(Call.Pass, 0, Points(ResponderRange.LessThanInvite)),
+                Signoff(Call.Pass, Points(ResponderRange.LessThanInvite)),
 
                 Signoff(2, Suit.Clubs, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
                 Signoff(2, Suit.Diamonds, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
@@ -236,12 +300,14 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(3, Suit.Unknown, Points(ResponderRange.Game), LongestMajor(4)),
 
             });
-            pb.Partner(OpenerRebid);
+            pb.DefaultPartnerBidsFactory = OpenerRebid;
+            return pb;
         }
 
-        private void OpenerRebid(PrescribedBids pb)
+        private PrescribedBids OpenerRebid()
         {
-            pb.Bids = new BidRule[]
+            var pb = new PrescribedBids();
+            pb.BidRules.AddRange(new BidRule[]
             {
                 Signoff(Call.Pass, Points(OpenerRange.DontAcceptInvite), Partner(LastBid(2, Suit.Unknown))),
                 Signoff(Call.Pass, Partner(LastBid(2, Suit.Clubs))),
@@ -258,13 +324,14 @@ namespace TricksterBots.Bots.Bridge
 
                 Nonforcing(4, Suit.Hearts, Partner(LastBid(3, Suit.Hearts)), Shape(3, 5)),
                 Nonforcing(4, Suit.Spades, Partner(LastBid(3, Suit.Spades)), Shape(3, 5))
-            };
-            pb.Partner(ResponderRebid);
-
+            });
+            pb.DefaultPartnerBidsFactory = ResponderRebid;
+            return pb;
         }
-        private void ResponderRebid(PrescribedBids pb)
+        private PrescribedBids ResponderRebid()
         {
-            pb.Bids = new BidRule[]
+            var pb = new PrescribedBids();
+            pb.BidRules.AddRange(new BidRule[]
             {
                 // TODO: Ideally this would be "Parther(ShowsShape(Hearts, 5)" Better than lastbid...
                 Signoff(3, Suit.Unknown, Partner(LastBid(3, Suit.Hearts)), Shape(Suit.Hearts, 0, 2)),
@@ -274,7 +341,8 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(4, Suit.Hearts, Partner(LastBid(3, Suit.Hearts)), Shape(3, 4)),
                 Nonforcing(4, Suit.Spades, Partner(LastBid(3, Suit.Spades)), Shape(3, 4))
 
-            };
+            });
+            return pb;
         }
     }
 
@@ -284,34 +352,21 @@ namespace TricksterBots.Bots.Bridge
         protected static Constraint OpenPoints = And(HighCardPoints(20, 21), Points(20, 22));
         protected static Constraint RespondNoGame = And(HighCardPoints(0, 4), Points(0, 4));
         protected static Constraint RespondGame = Points(5, 10);
-    //    public static Constraint RespondGameOrBetter = Points(5, 40);
+        //    public static Constraint RespondGameOrBetter = Points(5, 40);
 
-        public TwoNoTrumpBidder(Convention convention, int priority) : base(convention, priority)
-        {
-          
-        }
-    }
 
-    public class Natural2NT : TwoNoTrumpBidder
-    {
-        private Natural2NT() : base(Convention.Natural, 100) { }
-        public static PrescribedBids DefaultBidderXXX()
+        public static BidRule[] GetOpenRules()
         {
-            var bidder = new Natural2NT();
-            return new PrescribedBids(bidder, bidder.Initiate);
-        }
 
-        private void Initiate(PrescribedBids pb)
-        {
-            pb.Bids = new BidRule[]
+            return new BidRule[]
             {
-                Nonforcing(2, Suit.Unknown, DefaultPriority + 10, OpenPoints, Balanced())
+                PartnerBids(2, Suit.Unknown, Respond),
+                Nonforcing(2, Suit.Unknown, OpenPoints, Balanced())
             };
-            pb.Partner(Conventions);
         }
 
 
-        private void Conventions(PrescribedBids pb)
+        private static PrescribedBids Respond()
         {
             // TODO: Make these redirect rules conditional on some global state.  Conditions can be:
             //  Off
@@ -319,19 +374,25 @@ namespace TricksterBots.Bots.Bridge
             //  X
             //  3C
             // So basically just a condition based on the RHO bid and a global somewhere that has these bid options...
-            pb.Redirects = new RedirectRule[]
-            {
-                Redirect(Stayman2NT.InitiateConvention),
-                Redirect(Transfer2NT.InitiateConvention),
-                Redirect(NaturalResponse),
-            };
+            var pb = new PrescribedBids();
+            pb.Redirect(Stayman2NT.InitiateConvention);
+            pb.Redirect(Transfer2NT.InitiateConvention);
+            pb.Redirect(Natural2NT.NaturalResponse);
+            return pb;
         }
 
-        private void NaturalResponse(PrescribedBids pb)
+    }
+
+    public class Natural2NT : TwoNoTrumpBidder
+    {
+  
+
+        public static PrescribedBids NaturalResponse()
         {
-            pb.Bids = new BidRule[]
+            var pb = new PrescribedBids();
+            pb.BidRules.AddRange(new BidRule[]
             {
-                Signoff(Call.Pass, 0, RespondNoGame),
+                Signoff(Call.Pass, RespondNoGame),
 
                 // TODO: Perhaps bid BestSuit() of all the signoff suits... 
                 Signoff(3, Suit.Clubs, RespondNoGame, Shape(5, 11), LongestMajor(4)),
@@ -343,7 +404,8 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(4, Suit.Hearts, RespondGame, Shape(5, 11), BetterThan(Suit.Spades)),
                 Signoff(4, Suit.Spades, RespondGame, Shape(5, 11), BetterOrEqualTo(Suit.Hearts)),
-            };
+            });
+            return pb;
         }
     }
 }
