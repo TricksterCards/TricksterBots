@@ -336,6 +336,8 @@ namespace Trickster.Bots
             var dummyHand = new Hand(dummy.Hand);
             var dummyHasTrump = dummyHand.Any(c => c.suit == state.trumpSuit);
             var dummyCardsBySuit = GetCardsBySuit(dummyHand)
+                // Don't pick trump as a weak suit
+                .Where(s => s.Key != trump)
                 // Only suits with no honors and fewer than 5 cards are considered "weak"
                 .Where(s => s.Value.Count < 5 && s.Value.All(c => c.rank < Rank.Ten))
                 // Avoid helping dummy get void in a suit if they still have trump
@@ -343,7 +345,8 @@ namespace Trickster.Bots
                 // Prefer leading dummy's shorter suits first
                 .OrderBy(s => s.Value.Count())
                 // If two suits have the same length, pick the one with the smaller high card
-                .ThenBy(s => s.Value.Max(c => c.rank));
+                .ThenBy(s => s.Value.Max(c => c.rank))
+                .ToList();
 
             if (dummyCardsBySuit.Any())
                 return dummyCardsBySuit.Select(s => s.Key).First();
@@ -573,11 +576,10 @@ namespace Trickster.Bots
         {
             // Leads: Suits
 
-            // For opening lead, if playing in declarer's 2nd bid suit - lead trump
+            // For opening lead, if playing in declarer's 2nd bid suit - lead trump (skip if first bid suit was NT)
             var hasLegalTrump = legalCards.Any(c => EffectiveSuit(c) == state.trumpSuit);
-            // TODO: Does NT count as a first bid suit? Currently this treats it as one.
             var declarersFirstBidSuit = GetDeclarer(state).BidHistory.Where(b => DeclareBid.Is(b)).Select(b => new DeclareBid(b).suit).First();
-            if (IsOpeningLead(state) && hasLegalTrump && state.trumpSuit != declarersFirstBidSuit)
+            if (IsOpeningLead(state) && hasLegalTrump && state.trumpSuit != declarersFirstBidSuit && declarersFirstBidSuit != Suit.Unknown)
                 legalCards = legalCards.Where(c => EffectiveSuit(c) == state.trumpSuit).ToList();
 
             // If you have a 3-card sequence starting with ace, lead that
@@ -597,12 +599,14 @@ namespace Trickster.Bots
 
             // If you have a sequence of two or more cards with the highest card the 10 or higher,
             // lead top of that sequence as long as not doubleton, eg KQ.
-            // ignore the suit if it has an Ace
+            // ignore the suit if it has an Ace or is trump
             var twoCardSequences = GetSequences(legalCards, state.cardsPlayed, minLength: 2, minTopRank: (int)Rank.Ten);
             var nonDoubletonTwoCardSequences = twoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())].Count > 2);
             var nonDoubletonTwoCardSequencesWithoutAce = nonDoubletonTwoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())][0].rank != Rank.Ace);
-            if (nonDoubletonTwoCardSequencesWithoutAce.Any())
-                return nonDoubletonTwoCardSequencesWithoutAce.First().First();
+            var nonTrumpNonDoubletonTwoCardSequencesWithoutAce = nonDoubletonTwoCardSequencesWithoutAce
+                .Where(seq => trump != EffectiveSuit(seq.First())).ToList();
+            if (nonTrumpNonDoubletonTwoCardSequencesWithoutAce.Any())
+                return nonTrumpNonDoubletonTwoCardSequencesWithoutAce.First().First();
 
             // Lead partner’s bid/led suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
             // Lead highest of partner’s bid/led suit, we're okay leading a suit with an Ace here
@@ -669,7 +673,7 @@ namespace Trickster.Bots
                 if (nDummyTrump > 0 && nDummyTrump <= 4 && dummyHasShortness)
                 {
                     var nDeclarerTrump = CountDeclarersCardsInTrump(state);
-                    if (nDummyTrump <= 4 && nDummyTrump <= nDeclarerTrump)
+                    if (nDummyTrump <= nDeclarerTrump)
                     {
                         return SuggestDefensiveLeadInSuit(state, legalTrump);
                     }
@@ -682,6 +686,8 @@ namespace Trickster.Bots
             var declarerIsVoidInTrump = players.TargetIsVoidInSuit(state.player, GetDeclarer(state), state.trumpSuit, knownCards.Concat(dummyHand).ToList());
             if (!declarerIsVoidInTrump && nDummyTrump > 0 && legalTrump.Count() == 1)
                 return legalTrump.First();
+
+            // TODO: allow leading trump if it's the safe choice
 
             // Leads after trick 1: same general rules apply (playing touching honors, etc).
             // * Give priority to returning partner's suit (especially in NT),
