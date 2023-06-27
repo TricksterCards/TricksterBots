@@ -673,7 +673,7 @@ namespace Trickster.Bots
                 if (nDummyTrump > 0 && nDummyTrump <= 4 && dummyHasShortness)
                 {
                     var nDeclarerTrump = CountDeclarersCardsInTrump(state);
-                    if (nDummyTrump <= 4 && nDummyTrump <= nDeclarerTrump)
+                    if (nDummyTrump <= nDeclarerTrump)
                     {
                         return SuggestDefensiveLeadInSuit(state, legalTrump);
                     }
@@ -686,6 +686,8 @@ namespace Trickster.Bots
             var declarerIsVoidInTrump = players.TargetIsVoidInSuit(state.player, GetDeclarer(state), state.trumpSuit, knownCards.Concat(dummyHand).ToList());
             if (!declarerIsVoidInTrump && nDummyTrump > 0 && legalTrump.Count() == 1)
                 return legalTrump.First();
+
+            // TODO: allow leading trump if it's the safe choice
 
             // Leads after trick 1: same general rules apply (playing touching honors, etc).
             // * Give priority to returning partner's suit (especially in NT),
