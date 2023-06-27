@@ -599,12 +599,14 @@ namespace Trickster.Bots
 
             // If you have a sequence of two or more cards with the highest card the 10 or higher,
             // lead top of that sequence as long as not doubleton, eg KQ.
-            // ignore the suit if it has an Ace
+            // ignore the suit if it has an Ace or is trump
             var twoCardSequences = GetSequences(legalCards, state.cardsPlayed, minLength: 2, minTopRank: (int)Rank.Ten);
             var nonDoubletonTwoCardSequences = twoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())].Count > 2);
             var nonDoubletonTwoCardSequencesWithoutAce = nonDoubletonTwoCardSequences.Where(seq => cardsBySuit[EffectiveSuit(seq.First())][0].rank != Rank.Ace);
-            if (nonDoubletonTwoCardSequencesWithoutAce.Any())
-                return nonDoubletonTwoCardSequencesWithoutAce.First().First();
+            var nonTrumpNonDoubletonTwoCardSequencesWithoutAce = nonDoubletonTwoCardSequencesWithoutAce
+                .Where(seq => trump != EffectiveSuit(seq.First())).ToList();
+            if (nonTrumpNonDoubletonTwoCardSequencesWithoutAce.Any())
+                return nonTrumpNonDoubletonTwoCardSequencesWithoutAce.First().First();
 
             // Lead partner’s bid/led suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
             // Lead highest of partner’s bid/led suit, we're okay leading a suit with an Ace here
