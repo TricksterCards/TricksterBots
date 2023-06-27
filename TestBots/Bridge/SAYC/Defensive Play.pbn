@@ -74,6 +74,20 @@ D3 D7 DJ DQ
 S2 S8 SA S3
 -  -  H5 -
 
+% Ensure we don't pick trump as dummy's weakest suit
+
+[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (Suit case 2)"]
+[Deal "N:8.Q53.KQ84.T7643 KT75.K7642.63.Q2 - -"]
+[Auction "N"]
+Pass Pass 1S 2D
+Pass Pass Pass
+[Contract "2D"]
+[Play "N"]
+S8 S5 SJ S2
+H3 S7 SA S6
+D4 ST S4 S9
+C4 -  -  -
+
 [Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (NT)"]
 [Deal "N:Q652.Q652.Q652.A - - 873.J94.A94.KJT4"]
 [Contract "2NT"]

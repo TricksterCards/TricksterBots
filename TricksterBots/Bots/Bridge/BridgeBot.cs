@@ -336,6 +336,8 @@ namespace Trickster.Bots
             var dummyHand = new Hand(dummy.Hand);
             var dummyHasTrump = dummyHand.Any(c => c.suit == state.trumpSuit);
             var dummyCardsBySuit = GetCardsBySuit(dummyHand)
+                // Don't pick trump as a weak suit
+                .Where(s => s.Key != trump)
                 // Only suits with no honors and fewer than 5 cards are considered "weak"
                 .Where(s => s.Value.Count < 5 && s.Value.All(c => c.rank < Rank.Ten))
                 // Avoid helping dummy get void in a suit if they still have trump
@@ -343,7 +345,8 @@ namespace Trickster.Bots
                 // Prefer leading dummy's shorter suits first
                 .OrderBy(s => s.Value.Count())
                 // If two suits have the same length, pick the one with the smaller high card
-                .ThenBy(s => s.Value.Max(c => c.rank));
+                .ThenBy(s => s.Value.Max(c => c.rank))
+                .ToList();
 
             if (dummyCardsBySuit.Any())
                 return dummyCardsBySuit.Select(s => s.Key).First();
