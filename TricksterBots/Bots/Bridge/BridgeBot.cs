@@ -359,7 +359,7 @@ namespace Trickster.Bots
 
             // Start with the min count we know from bidding
             if (summary.HandShape.ContainsKey(state.trumpSuit))
-                return nCardsInTrump = summary.HandShape[state.trumpSuit].Min;
+                nCardsInTrump = summary.HandShape[state.trumpSuit].Min;
 
             if (nCardsInTrump <= 0)
                 return 0;
