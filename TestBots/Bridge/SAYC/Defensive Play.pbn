@@ -272,6 +272,24 @@ C3 S8 CJ CK
 C5 S9 C2 CA
 SA -  -  S2
 
+[Event "2nd Hand Defense: Off-suit boss is not sure trick if trump played"]
+[Deal "E:KQ95.T82.JT97.QJ - - A732.Q543.KQ2.T7"]
+[Contract "3C"]
+[Auction "E"]
+Pass Pass 1C Pass
+1S Pass 2C Pass
+3C Pass Pass Pass
+[Play "N"]
+DK D7 D4 D3
+H3 H2 HJ HA
+C7 CJ C4 C2
+CT CQ C6 C3
+HQ H8 H6 H7
+H4 HT HK H9
+D2 D9 DA D6
+DQ DT D5 C5
+H5 -  -  CA
+
 
 
 %
