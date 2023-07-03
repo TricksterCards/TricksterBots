@@ -99,7 +99,7 @@ namespace TestBots.Bridge
                                         dealerSeat = dealerSeat,
                                         declarerSeat = declarerSeat,
                                         history = history.ToArray(),
-                                        dummy = i > 0 ? hands[dummySeat] : "",
+                                        dummy = i > 0 ? seat == dummySeat ? hands[declarerSeat] : hands[dummySeat] : "",
                                         hand = hand,
                                         play = play,
                                         plays = plays.GetRange(0, i).ToArray(),

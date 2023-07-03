@@ -362,7 +362,7 @@ namespace Trickster.Bots
 
             // Start with the min count we know from bidding
             if (summary.HandShape.ContainsKey(state.trumpSuit))
-                return nCardsInTrump = summary.HandShape[state.trumpSuit].Min;
+                nCardsInTrump = summary.HandShape[state.trumpSuit].Min;
 
             if (nCardsInTrump <= 0)
                 return 0;
@@ -379,12 +379,10 @@ namespace Trickster.Bots
             var bossCards = state.legalCards.Where(c => IsCardHigh(c, knownCards));
             if (state.trumpSuit != Suit.Unknown)
             {
-                var lho = state.players.Single(p => p.Seat == (state.player.Seat + 1) % state.players.Count);
-                var rho = state.players.Single(p => p.Seat == (state.player.Seat - 1 + state.players.Count) % state.players.Count);
-
                 // Don't count off suit boss cards if opponents still have trump (excluding those who have already played to the trick)
+                // Also don't count off suit boss cards if the trick already contains trump
                 var players = new PlayersCollectionBase(this, state.players);
-                if (!players.LhoIsVoidInSuit(state.player, state.trumpSuit, knownCards) || (state.trick.Count == 0 && !players.RhoIsVoidInSuit(state.player, state.trumpSuit, knownCards)))
+                if (state.trick.Any(IsTrump) || !players.LhoIsVoidInSuit(state.player, state.trumpSuit, knownCards) || (state.trick.Count == 0 && !players.RhoIsVoidInSuit(state.player, state.trumpSuit, knownCards)))
                     bossCards = bossCards.Where(c => c.suit == state.trumpSuit);
             }
 
@@ -776,7 +774,7 @@ namespace Trickster.Bots
             Card coverHonor = null;
 
             // If we can trump in, do so
-            var legalTrump = state.legalCards.Where(c => EffectiveSuit(c) == state.trumpSuit).OrderBy(RankSort);
+            var legalTrump = state.legalCards.Where(c => EffectiveSuit(c) == state.trumpSuit).OrderBy(RankSort).ToList();
             if (ledCard.suit != state.trumpSuit && legalTrump.Any())
                 return legalTrump.First();
 
@@ -784,8 +782,9 @@ namespace Trickster.Bots
             // and it is the "setting trick" aka the trick to defeat the contract, take it.
             var tricksNeededToSet = GetTricksNeededToSet(state);
             var sureWinners = GetSureWinners(state);
-            if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
-                return sureWinners.First();
+            var sureWinnersInSuit = sureWinners.Where(c => EffectiveSuit(c) == ledSuit).ToList();
+            if (sureWinnersInSuit.Any() && sureWinners.Count >= tricksNeededToSet)
+                return sureWinnersInSuit.First();
 
             var knownCards = state.legalCards.Concat(state.cardsPlayed);
             var isDummyRHO = GetNextSeatAfter(dummy.Seat, state.players.Count) == state.player.Seat;

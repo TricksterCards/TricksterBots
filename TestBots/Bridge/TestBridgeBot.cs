@@ -277,6 +277,8 @@ namespace TestBots
                     player.Hand = test.hand;
                 else if (player.Bid == BidBase.Dummy)
                     player.Hand = dummyHand;
+                else if (nextSeat == (player.Seat + 2) % 4 && players[(player.Seat + 2) % 4].Bid == BidBase.Dummy)
+                    player.Hand = dummyHand; // Show declarer's hand to dummy if it's dummy's turn to play
                 else // TODO: calculate correct length based on who's played in the current trick
                     player.Hand = UnknownCards(test.hand.Length / 2); 
             }
