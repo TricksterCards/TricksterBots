@@ -106,11 +106,14 @@ namespace TricksterBots.Bots.Bridge
 
 	public class PartnerBidRule : BidRule
 	{
-		public PrescribedBidsFactory PartnerBidFactory { get; private set; }
-        public PartnerBidRule(Bid bid, PrescribedBidsFactory partnerBids, params Constraint[] constraints) :
+		public BidChoicesFactory PartnerBidFactory { get; private set; }
+		public Bid GoodThrough { get; private set; }
+
+        public PartnerBidRule(Bid bid, Bid goodThrough, BidChoicesFactory partnerBids, params Constraint[] constraints) :
 			base(bid, BidForce.Nonforcing, constraints)
         {
             this.PartnerBidFactory = partnerBids;
+			this.GoodThrough = goodThrough;
         }
     }
 

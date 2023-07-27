@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,27 +16,25 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-        public static PrescribedBids InitiateConvention()
+        public static IEnumerable<BidRule> InitiateConvention(PositionState ps)
         {
-            var pb = new PrescribedBids();
-            pb.Redirect(null, Role(PositionRole.Overcaller, 1, false), BidAvailable(1, Suit.Unknown, false));
-            // TODO: Need takeout doubles after first round, but for now this works...
-            // This is ugly way to avoid bidding over 1NT too. Hack but works for now.  Don't really need to check
-            // that 2C is available in subsueqnet rules, but whatever...  Hack works for now.
-            foreach (var suit in BasicBidding.BasicSuits)
+            var bids = new List<BidRule>();
+            // TODO: Make this work off of the CONTRACT, not last bid but for now just use RHO...
+            var rhoBid = ps.RightHandOpponent.LastBid;
+            Debug.Assert(rhoBid.IsBid); // Should only get here if RHO opened
+            if (rhoBid.Level == 1 && rhoBid.Suit != Suit.Unknown)
             {
-                pb.BidRules.Add(Takeout(suit));
+                bids.AddRange(Takeout((Suit)rhoBid.Suit));
             }
-            pb.DefaultPartnerBidsFactory = Respond;
-            return pb;
+            return bids;
         }
 
 
-        private static BidRule Takeout(Suit suit)
+        private static BidRule[] Takeout(Suit suit)
         {
             // TODO: Should this be 2 or 1 for MinBidLevel?  Or is this really based on opponent bids?
             // TODO: Ugly way to avoid bidding this over NT...
-            var rule = Forcing(Call.Double, CueBid(suit), Points(TakeoutRange), Shape(suit, 0, 4), BidAvailable(2, Suit.Clubs));
+            var rule = Forcing(Bid.Double, CueBid(suit), Points(TakeoutRange), Shape(suit, 0, 4), BidAvailable(2, Suit.Clubs));
             foreach (var otherSuit in BasicBidding.BasicSuits)
             {
                 if (otherSuit != suit)
@@ -44,7 +43,11 @@ namespace TricksterBots.Bots.Bridge
                     rule.AddConstraint(Shape(otherSuit, 3, 4));
                 }
             }
-            return rule;
+            return new BidRule[]
+            {
+                rule,
+                DefaultPartnerBids(Bid.Pass, Respond)
+            };
         }
 
         public static (int, int) MinLevel = (0, 8);
@@ -54,13 +57,9 @@ namespace TricksterBots.Bots.Bridge
         public static (int, int) GameLevel = (12, 40);
         public static (int, int) Game3NT = (13, 40);
 
-        private static PrescribedBids Respond()
+        private static IEnumerable<BidRule> Respond(PositionState ps)
         {
-            var pb = new PrescribedBids();
-
-            pb.RedirectIfRhoBid(RespondWithInterference);
-
-            pb.BidRules.AddRange(new List<BidRule>
+            return new List<BidRule>
             {
                 // TODO: FOR NOW WE WILL JUST BID AT THE NEXT LEVEL REGARDLESS OF POINTS...
                 // TODO: Need LongestSuit()...
@@ -87,15 +86,18 @@ namespace TricksterBots.Bots.Bridge
 
                // Signoff(3, Suit.Unknown, )
 
-            });
-            return pb;
+            };
+           
         }
 
+        // TODO: Interference...
+        /*
         private static PrescribedBids RespondWithInterference()
         {
             var pb = new PrescribedBids();
-            pb.BidRules.Add(Signoff(Call.Pass, new Constraint[0]));   // TODO: Do something here
+            pb.BidRules.Add(Signoff(Bid.Pass, new Constraint[0]));   // TODO: Do something here
             return pb;
         }
+        */
     }
 }

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Trickster.cloud;
 using TricksterBots.Bots.Bridge;
 
+
+/*
 namespace TricksterBots.Bots.Bridge
 {
    
@@ -36,3 +38,4 @@ namespace TricksterBots.Bots.Bridge
         }
     }
 }
+*/

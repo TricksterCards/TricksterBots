@@ -68,7 +68,7 @@ namespace TricksterBots.Bots.Bridge
     }
     */
 
-
+/*
     internal class BidChoices
     {
         private List<PrescribedBids> PrescribedBids = new List<PrescribedBids>();
@@ -135,7 +135,7 @@ namespace TricksterBots.Bots.Bridge
         }
 
     }
-
+*/
     public class BiddingState
     {
 
@@ -412,8 +412,8 @@ namespace TricksterBots.Bots.Bridge
                     // Debug.WriteLine($"--- Historical: {b}");
 
 
-                    var bidChoices = new BidChoices(NextToAct, StandardAmerican.DefaultBidsFactory);             
-                    var choice = bidChoices.ChooseBid(bid);
+                    var bids = StandardAmerican.DefaultBidsFactory(NextToAct);             
+                    var choice = bids.GetBidRuleSet(bid);
                     /*
                     var o = AvailableBids(NextToAct);
                     BidRuleSet choice;
@@ -434,8 +434,8 @@ namespace TricksterBots.Bots.Bridge
             }
             // Now we are actually ready to look at a hand and do somethihg
 
-            var choices = new BidChoices(NextToAct, StandardAmerican.DefaultBidsFactory);
-            var bidRuleSet = choices.ChooseBestBid();
+            var choices = StandardAmerican.DefaultBidsFactory(NextToAct);
+            var bidRuleSet = choices.GetBidRuleSet(choices.BestBid);
             NextToAct.MakeBid(bidRuleSet);
 
         //    if (bidRuleSet.Bid.ToString() != expected)

@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.cloud;
@@ -28,9 +29,8 @@ namespace TricksterBots.Bots.Bridge
 		}
         public Bid Bid { get; }
 
-        public PrescribedBids PrescribedBids { get; private set; } 
+		private PartnerChoicesXXX _partnerChoices;
 
-		public PrescribedBidsFactory PartnerBidsFactory { get; private set; }
 
         private List<RuleInfo> _ruleInfo = new List<RuleInfo>();
 
@@ -39,19 +39,32 @@ namespace TricksterBots.Bots.Bridge
 
        
 
-		public BidRuleSet(Bid bid, IEnumerable<BidRule> rules, PrescribedBidsFactory partnerBidsFactory) 
+		public BidRuleSet(Bid bid) 
         {
             this.Bid = bid;
-         	this.PartnerBidsFactory = partnerBidsFactory;
+			this._partnerChoices = new PartnerChoicesXXX();
             this._ruleInfo = new List<RuleInfo>();
-			foreach (var rule in rules)
-			{
-				_ruleInfo.Add(new RuleInfo(rule));
-			}
         }
 
 
+		public void AddRule(BidRule rule)
+		{
+			Debug.Assert(rule.Bid.Equals(this.Bid));
+			if (rule is PartnerBidRule partnerBids)
+			{
+				_partnerChoices.AddFactory(rule.Bid, partnerBids.PartnerBidFactory);
+			}
+			else
+			{
+				_ruleInfo.Add(new RuleInfo(rule));
+			}
+	    }
 
+
+		public void MergePartnerChoices(PartnerChoicesXXX defaults)
+		{
+			_partnerChoices.Merge(defaults);
+		}
 
         //
         // This method makes sure that any rules that do not apply are removed.  If there are no rules that could apply

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -79,10 +80,10 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: This is where we would need to use a differnet implementation of HandSummary evaluator...
 				StandardHandEvaluator.Evaluate(hand, showHand);
 				this._privateHandSummary = showHand.HandSummary;
-			} 
+			}
 			else
-			{ 
-				this._privateHandSummary = null; 
+			{
+				this._privateHandSummary = null;
 			}
 		}
 
@@ -93,13 +94,17 @@ namespace TricksterBots.Bots.Bridge
 
 		public int RoleRound
 		{
-			get { return BidRound - _roleAssignedOffset;  }
+			get { return BidRound - _roleAssignedOffset; }
 		}
 
-		public PrescribedBidsFactory GetPartnerBidsFactory()
+		public Bid LastBid { get { return GetBidHistory(0); } }
+		/*
+		public BidChoicesFactory GetPartnerBidsFactory()
 		{
 			return Partner._bids.Count > 0 ? Partner._bids.Last().PartnerBidsFactory : null;
 		}
+		*/
+
 
 		// THIS IS AN INTERNAL FUNCITON:
 		public Bid MakeBid(BidRuleSet bidGroup)

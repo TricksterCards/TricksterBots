@@ -19,40 +19,44 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-        public static PrescribedBids Open()
+        public static IEnumerable<BidRule> Open(PositionState _)
 
         {
-            return new PrescribedBids(Respond,
+            return new BidRule[] {
+                // TODO: Interference here...
+                DefaultPartnerBids(Bid.Pass, Respond),
                 Forcing(2, Suit.Clubs, Points(StrongOpenRange), ShowsNoSuit())
-            );
+            };
     
         }
 
-        private static PrescribedBids Respond()
+        private static IEnumerable<BidRule> Respond(PositionState _)
         {
-            return new PrescribedBids(OpenerRebid, 
-                // TODO: Priorities for the positive bids, especially if balanced AND have a good suit...
-                Forcing(2, Suit.Diamonds, Points(Waiting), ShowsNoSuit()),
+            return new BidRule[] {
+               // TODO: DefaultPartnerBids(TODO: NEED POSITIVE RESPONSES TO GO TO NEW STATE),
                 Forcing(2, Suit.Hearts, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(2, Suit.Spades, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(2, Suit.Unknown, Points(PositiveResponse), Balanced()),
                 Forcing(3, Suit.Clubs, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
-                Forcing(3, Suit.Diamonds, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid))
-            );
+                Forcing(3, Suit.Diamonds, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
+
+                PartnerBids(2, Suit.Diamonds, Bid.Pass, OpenerRebid), 
+                // TODO: Interference...
+                Forcing(2, Suit.Diamonds, Points(Waiting), ShowsNoSuit()),
+
+            };
         }
 
-        private static PrescribedBids OpenerRebid()
+        private static IEnumerable<BidRule> OpenerRebid(PositionState _)
         {
-            var pb = new PrescribedBids();
-            pb.BidRules.AddRange(new BidRule[]
+            return new BidRule[]
             {
                 Forcing(2, Suit.Hearts, Shape(5, 11)),
                 Forcing(2, Suit.Spades, Shape(5, 11)),
                 Forcing(2, Suit.Unknown, Balanced(), Points(Rebid2NT)),
                 Forcing(3, Suit.Clubs, Shape(5, 11)),
                 Forcing(3, Suit.Diamonds, Shape(5, 11))
-            });
-            return pb;
+            };
             // TODO: Next state, more bids, et.....
         }
     }

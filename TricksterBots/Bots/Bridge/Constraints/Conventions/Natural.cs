@@ -56,34 +56,42 @@ namespace TricksterBots.Bots.Bridge
 
 
         // TODO: Perhaps move this to somewhere better.  For now, we 
-        public static PrescribedBids DefaultBidsFactory()
+        public static BidChoicesXXX DefaultBidsFactory(PositionState ps)
         {
-            var pb = new PrescribedBids();
-
-            pb.Redirect(Open, Role(PositionRole.Opener, 1));
-            pb.Redirect(Overcall, Role(PositionRole.Overcaller, 1));
-            pb.Redirect(Compete.GetBids);
-            return pb;
+            if (ps.Role == PositionRole.Opener)
+            {
+                return Open(ps);
+            }
+            else if (ps.Role == PositionRole.Overcaller)
+            {
+                return Overcall(ps);
+            }
+            else
+            {
+                return new BidChoicesXXX(ps, Compete.CompBids);
+            }
         }
 
-        public static PrescribedBids Open()
+        public static BidChoicesXXX Open(PositionState ps)
         {
-            var pb = new PrescribedBids();
-            pb.Redirect(Strong2Clubs.Open);
-            pb.Redirect(NoTrump.Open);
-            pb.Redirect(StandardAmericanOpenRespond.OpenSuit);
-            return pb;
+            var choices = new BidChoicesXXX(ps);
+            
+            choices.AddRules(Strong2Clubs.Open);
+            choices.AddRules(NoTrump.Open);
+            choices.AddRules(StandardAmericanOpenRespond.OpenSuit);
+
+            return choices;
         }
 
-        private static PrescribedBids Overcall()
+        private static BidChoicesXXX Overcall(PositionState ps)
         {
-            var pb = new PrescribedBids();
-            pb.Redirect(StandardAmericanOvercallAdvance.Overcall);
-            pb.Redirect(NoTrump.StrongOvercall);
-            pb.Redirect(TakeoutDouble.InitiateConvention);
-            pb.Redirect(NoTrump.BalancingOvercall);
+            var choices = new BidChoicesXXX(ps);
+            choices.AddRules(StandardAmericanOvercallAdvance.Overcall);
+            choices.AddRules(NoTrump.StrongOvercall);
+            choices.AddRules(TakeoutDouble.InitiateConvention);
+            choices.AddRules(NoTrump.BalancingOvercall);
            
-            return pb;
+            return choices;
         }
     }
 }

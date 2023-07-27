@@ -26,7 +26,7 @@ namespace TricksterBots.Bots.Bridge
         // throug a static function.  These are all duplicated.  Can be appended to the end of another list.  
         // right now used by ResponderRebid.  
 
-        public static BidRule[] HackGetBids()
+        public static BidRule[] CompBids(PositionState _)
         {
             return new BidRule[]
             {
@@ -77,11 +77,5 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        public static PrescribedBids GetBids()
-        {
-            var pb = new PrescribedBids();
-            pb.BidRules.AddRange(HackGetBids()); 
-            return pb;
-        }
     }
 }

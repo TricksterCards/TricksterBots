@@ -15,25 +15,31 @@ namespace TricksterBots.Bots.Bridge
  
         public StaymanBidder(NTType type) : base(type) { }
 
-        public static PrescribedBidsFactory InitiateConvention(NTType type)
+        public static BidRulesFactory InitiateConvention(NTType type)
         {
             return new StaymanBidder(type).Initiate;
         }
 
-		private PrescribedBids Initiate()
+		private IEnumerable<BidRule> Initiate(PositionState ps)
 		{
-            return new PrescribedBids(Answer, 
-                Forcing(2, Suit.Clubs, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Flat(false), ShowsNoSuit()),
-                Forcing(2, Suit.Clubs, Points(ResponderRange.InviteOrBetter), Shape(Suit.Spades, 4), Flat(false), ShowsNoSuit()),
-                Forcing(2, Suit.Clubs, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5), ShowsNoSuit()),
-                Forcing(2, Suit.Clubs, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4), ShowsNoSuit())
-				// TODO: The following rule is "Garbage Stayman"
-			///	Forcing(2, Suit.Clubs, Points((0, 7)), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
-			);
+            Bid bid = ps.RightHandOpponent.GetBidHistory(0).IsBid ? Bid.Double : new Bid(2, Suit.Clubs);
+            return new BidRule[] {
+                DefaultPartnerBids(Bid.Double, Answer),
+                Forcing(bid, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 0, 4), Flat(false), ShowsNoSuit()),
+                Forcing(bid, Points(ResponderRange.InviteOrBetter), Shape(Suit.Spades, 4), Shape(Suit.Hearts, 0, 4), Flat(false), ShowsNoSuit()),
+                Forcing(bid, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5), ShowsNoSuit()),
+                Forcing(bid, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4), ShowsNoSuit())
+                // TODO: The following rule is "Garbage Stayman"
+                ///	Forcing(2, Suit.Clubs, Points((0, 7)), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
+            };
+            // TODO: Need to add rules for garbage stayman if that is on, and for 4-way transfers if that is on...
 		}
-        public PrescribedBids Answer()
+
+       
+        public IEnumerable<BidRule> Answer(PositionState ps)
 		{
-            return new PrescribedBids(Explain,
+            return new BidRule[] {
+                DefaultPartnerBids(Bid.Double, Explain),
 				// TODO: Are these bids truly forcing?  Not if garbage stayman...
 				Forcing(2, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3), ShowsNoSuit()),
 
@@ -41,12 +47,13 @@ namespace TricksterBots.Bots.Bridge
 				Forcing(2, Suit.Hearts, Shape(4, 5), LongerOrEqualTo(Suit.Spades)),
 
                 Forcing(2, Suit.Spades, Shape(4, 5), LongerThan(Suit.Hearts))
-            );
+            };
         }
 
-        public PrescribedBids Explain()
+        public IEnumerable<BidRule> Explain(PositionState _)
         {
-            return new PrescribedBids(PlaceContract, 
+            return new BidRule[] {
+                DefaultPartnerBids(Bid.Double, PlaceContract), 
                 // If we have a 5 card suit and want to go to game then show that suit.
                 Forcing(3, Suit.Spades, Points(ResponderRange.GameOrBetter), Shape(5), Partner(LastBid(2, Suit.Diamonds))),
                 Forcing(3, Suit.Hearts, Points(ResponderRange.GameOrBetter), Shape(5), Partner(LastBid(2, Suit.Diamonds))),
@@ -62,9 +69,12 @@ namespace TricksterBots.Bots.Bridge
 
 
                 Invitational(3, Suit.Hearts, ShowsTrump(), DummyPoints(ResponderRange.Invite), Partner(LastBid(2, Suit.Hearts)), Shape(4, 5)),
-
-
                 Invitational(3, Suit.Spades, ShowsTrump(), DummyPoints(ResponderRange.Invite), Partner(LastBid(2, Suit.Spades)), Shape(4, 5)),
+
+
+                // Prioritize suited contracts over 3NT bid by placing these rules first...
+                Signoff(4, Suit.Hearts, ShowsTrump(), DummyPoints(ResponderRange.Game), Partner(LastBid(2, Suit.Hearts)), Shape(4, 5)),
+                Signoff(4, Suit.Spades, ShowsTrump(), DummyPoints(ResponderRange.Game), Partner(LastBid(2, Suit.Spades)), Shape(4, 5)), 
 
                 // TODO: After changeover is done an tests are working again, change all of these rules to simply
                 // Signoff(3, Suit.Unknown, ShowsTrump(), Points(ResponderRange.Game), Fit(Suit.Hearts, false), Fit(Suit.Spades, false)),
@@ -72,26 +82,23 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(3, Suit.Unknown, ShowsTrump(), Points(ResponderRange.Game), Partner(LastBid(2, Suit.Hearts)), Shape(Suit.Hearts, 0, 3)),
                 Signoff(3, Suit.Unknown, ShowsTrump(), Points(ResponderRange.Game), Partner(LastBid(2, Suit.Spades)), Shape(Suit.Spades, 0, 3)),
 
-                Signoff(4, Suit.Hearts, ShowsTrump(), DummyPoints(ResponderRange.Game), Partner(LastBid(2, Suit.Hearts)), Shape(4, 5)),
-
-                Signoff(4, Suit.Spades, ShowsTrump(), DummyPoints(ResponderRange.Game), Partner(LastBid(2, Suit.Spades)), Shape(4, 5))
-            );
+            };
         }
 
 
-	    public PrescribedBids PlaceContract()
+        public IEnumerable<BidRule> PlaceContract(PositionState _)
         {
-            return new PrescribedBids(null,
+            return new BidRule[] {
 				// These rules deal with a 5/4 invitational that we want to reject.  Leave contract in bid suit
 				// if we have 3.  Otherwise put in NT
-				Signoff(Call.Pass, Points(OpenerRange.DontAcceptInvite),
+				Signoff(Bid.Pass, Points(OpenerRange.DontAcceptInvite),
                                     Fit(Suit.Hearts), Partner(LastBid(2, Suit.Hearts))),
-                Signoff(Call.Pass, Points(OpenerRange.DontAcceptInvite),
+                Signoff(Bid.Pass, Points(OpenerRange.DontAcceptInvite),
                                     Fit(Suit.Spades), Partner(LastBid(2, Suit.Spades))),
 
                 Signoff(2, Suit.Unknown, Points(OpenerRange.DontAcceptInvite)),
 
-                PartnerBids(2, Suit.Spades, CheckSpadeGame),
+                PartnerBids(3, Suit.Spades, Bid.Double, CheckSpadeGame),
                 Nonforcing(3, Suit.Spades, Points(OpenerRange.DontAcceptInvite), Shape(4), Partner(HasShape(4))),
 
                 Signoff(3, Suit.Unknown, Points(OpenerRange.AcceptInvite), Partner(LastBid(2, Suit.Unknown))),
@@ -114,13 +121,14 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Spades, Points(OpenerRange.AcceptInvite), Fit()),
                 Signoff(4, Suit.Spades, Partner(LastBid(3, Suit.Unknown)), Fit()),
                 Signoff(4, Suit.Spades, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Spades)), Shape(3))
-            );
+            };
         }
-    	public PrescribedBids CheckSpadeGame()
+
+    	public IEnumerable<BidRule> CheckSpadeGame(PositionState _)
         {
-            return new PrescribedBids(null,
+            return new BidRule[] {
                 Signoff(4, Suit.Spades, ShowsTrump(), DummyPoints(ResponderRange.Game), Partner(LastBid(3, Suit.Spades)), Shape(4, 5))
-            );
+            };
 		}
 	}
 
@@ -131,48 +139,53 @@ namespace TricksterBots.Bots.Bridge
     public class Stayman2NT: TwoNoTrumpBidder
     {
 
-        public static PrescribedBids InitiateConvention() 
+        public static IEnumerable<BidRule> InitiateConvention(PositionState ps) 
         {
-            return new PrescribedBids(Answer,
-                Forcing(3, Suit.Clubs, RespondGame, Shape(Suit.Hearts, 4), Flat(false)),
-                Forcing(3, Suit.Clubs, RespondGame, Shape(Suit.Spades, 4), Flat(false)),
-                Forcing(3, Suit.Clubs, RespondGame, Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5)),
-                Forcing(3, Suit.Clubs, RespondGame, Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4))
+            Bid bid = ps.RightHandOpponent.GetBidHistory(0).IsBid ? Bid.Double : new Bid(3, Suit.Clubs);
+            return new BidRule[] {
+                PartnerBids(bid, Bid.Double, Answer),
+                Forcing(bid, RespondGame, Shape(Suit.Hearts, 4), Flat(false)),
+                Forcing(bid, RespondGame, Shape(Suit.Spades, 4), Flat(false)),
+                Forcing(bid, RespondGame, Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5)),
+                Forcing(bid, RespondGame, Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4))
                 // TODO: The following rule is "Garbage Stayman"
                 //Forcing(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
-            );
+            };
         }
-        public static PrescribedBids Answer()
+        public static IEnumerable<BidRule> Answer(PositionState _)
         {
-            return new PrescribedBids(ResponderRebid,
+            return new BidRule[] {
+                DefaultPartnerBids(Bid.Double, ResponderRebid),
 
                 Forcing(3, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3)),
 
                 // If we are 4-4 then hearts bid before spades.  Can't be 5-5 or wouldn't be balanced.
                 Forcing(3, Suit.Hearts, Shape(4, 5), LongerOrEqualTo(Suit.Spades)),
                 Forcing(3, Suit.Spades, Shape(4, 5), LongerThan(Suit.Hearts))
-            );
+            };
         }
 
-        public static PrescribedBids ResponderRebid()
+        public static IEnumerable<BidRule> ResponderRebid(PositionState _)
         {
-            return new PrescribedBids(OpenerRebid,
+            return new BidRule[] {
+                DefaultPartnerBids(Bid.Double, OpenerRebid),
+
                 Forcing(3, Suit.Hearts, Shape(5), Partner(LastBid(3, Suit.Diamonds))),
                 Forcing(3, Suit.Spades, Shape(5), Partner(LastBid(3, Suit.Diamonds))),
 
                 Signoff(3, Suit.Unknown, Fit(Suit.Hearts, false), Fit(Suit.Spades, false)),
                 Signoff(4, Suit.Hearts, Fit()),
                 Signoff(4, Suit.Spades, Fit())
-            );
+            };
         }
     
-        public static PrescribedBids OpenerRebid()
+        public static IEnumerable<BidRule> OpenerRebid(PositionState _)
         { 
-            return new PrescribedBids(null,
+            return new BidRule[] {
                 Signoff(3, Suit.Unknown, Fit(Suit.Hearts, false), Fit(Suit.Spades, false)),
                 Signoff(4, Suit.Hearts, Fit()),
                 Signoff(4, Suit.Spades, Fit())
-            );
+            };
         }
     }
 

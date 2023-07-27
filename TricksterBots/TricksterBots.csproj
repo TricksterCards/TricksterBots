@@ -132,6 +132,7 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\ShowsSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\ShowsTrump.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\TakeoutSuit.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidChoices.cs" />
     <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />
     <Compile Include="Bots\Bridge\Constraints\Contract.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Compete.cs" />

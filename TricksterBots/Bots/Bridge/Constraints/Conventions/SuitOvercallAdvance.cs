@@ -13,9 +13,11 @@ namespace TricksterBots.Bots.Bridge
     public class StandardAmericanOvercallAdvance : StandardAmerican
     {
 
-		public static PrescribedBids Overcall()
+		public static IEnumerable<BidRule> Overcall(PositionState _)
         {
-            return new PrescribedBids(Advance, 
+            return new BidRule[] {
+                // TODO: What is the level of interference we can take
+                DefaultPartnerBids(new Bid(4, Suit.Unknown), Advance), 
                 Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(6, 11)),
                 Nonforcing(1, Suit.Hearts, Points(Overcall1Level), Shape(6, 11)),
                 Nonforcing(1, Suit.Spades, Points(Overcall1Level), Shape(6, 11)),
@@ -44,17 +46,17 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(3, Suit.Hearts, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 				Nonforcing(3, Suit.Spades, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 
-                Nonforcing(Call.Pass, Points(LessThanOvercall))
-
-
-            );
+                Nonforcing(Bid.Pass, Points(LessThanOvercall))
+            };
           
         }
 
 
-        private static PrescribedBids Advance()
+        private static IEnumerable<BidRule> Advance(PositionState _)
         {
-            return new PrescribedBids(OvercallRebid,            
+            return new BidRule[] {
+                // TODO: What is the level of interference we can take
+                DefaultPartnerBids(new Bid(4, Suit.Unknown), OvercallRebid),
                 Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
                 Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(6, 11)),
 
@@ -95,12 +97,13 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(1, Suit.Unknown, OppsStopped(), Points(AdvanceTo1NT))
 
                 // TODO: Any specification of PASS?>>
-            );
+            };
         }
 
-        private static PrescribedBids OvercallRebid()
+        private static IEnumerable<BidRule> OvercallRebid(PositionState _)
         {
-            return new PrescribedBids(AdvancerRebid, 
+            return new BidRule[] {
+                DefaultPartnerBids(new Bid(4, Suit.Hearts), AdvancerRebid),
                 // TODO: NEED TO FORMALIZE THE POINT RANGES... FOR NOW JUST LOOK AT 3-LEVEL BIDS
                 Nonforcing(3, Suit.Clubs, Fit(), PairPoints((24, 25)), ShowsTrump()),
                 Nonforcing(3, Suit.Diamonds, Fit(), PairPoints((24, 25)), ShowsTrump()),
@@ -109,19 +112,19 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(3, Suit.Unknown, OppsStopped(), OppsStopped(), PairPoints((25, 30)) )
 
-            );
+            };
         }
 
 
-        private static PrescribedBids AdvancerRebid()
+        private static IEnumerable<BidRule> AdvancerRebid(PositionState _)
         {
-            return new PrescribedBids(null, 
+            return new BidRule[] { 
                 // TODO: ONly bid these if they are necessary.  Minors don't need to go the 4-level unless forced there...
                 Signoff(4, Suit.Clubs, Fit(), PairPoints((26, 28)), ShowsTrump()),
                 Signoff(4, Suit.Diamonds, Fit(), PairPoints((26, 28)), ShowsTrump()),
                 Signoff(4, Suit.Hearts, Fit(), PairPoints((26, 31)), ShowsTrump()),
                 Signoff(4, Suit.Spades, Fit(), PairPoints((26, 31)), ShowsTrump())
-            );
+            };
         }
     
     }

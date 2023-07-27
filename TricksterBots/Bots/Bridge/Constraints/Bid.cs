@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Linq;
 using System.Net.Mail;
@@ -20,7 +21,7 @@ namespace TricksterBots.Bots.Bridge
 	public enum Call { Pass, Bid, Double, Redouble, NotActed }
 
 
-	public struct Bid : IEquatable<Bid>
+	public struct Bid : IEquatable<Bid>, IComparable<Bid>
 	{
 		public int? Level { get; }
 		public Suit? Suit { get; }
@@ -75,6 +76,9 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 		public static Bid Pass = new Bid(Call.Pass);
+		public static Bid Null = new Bid(Call.NotActed);
+		public static Bid Double = new Bid(Call.Double);
+		public static Bid Redouble = new Bid(Call.Redouble);
 
 		public Bid(Call call)
 		{
@@ -163,6 +167,30 @@ namespace TricksterBots.Bots.Bridge
 			if (thisLevel <= contractLevel) { return (false, 0); }
 			return (true, (thisLevel - contractLevel) / 5);
 		}
+
+        private int OvercallValue
+        {
+			get
+			{
+				switch (this.Call)
+				{
+					case Call.NotActed: return 0;
+					case Call.Pass: return 1;
+					case Call.Double: return 2;
+					case Call.Redouble: return 3;
+					default:
+						Debug.Assert(IsBid);
+						return 4 + RawLevel;
+				}
+			}
+        }
+
+        public int CompareTo(Bid other)
+        {
+            return OvercallValue - other.OvercallValue;
+        }
     }
+
+
 
 }

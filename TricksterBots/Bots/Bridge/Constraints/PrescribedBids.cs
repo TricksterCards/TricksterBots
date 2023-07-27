@@ -10,14 +10,16 @@ using System.Threading;
 using System.Diagnostics;
 using System.Data;
 
+
 namespace TricksterBots.Bots.Bridge
 {
+    public delegate IEnumerable<BidRule> BidRulesFactory(PositionState positionState);
 
 
-
-    public delegate PrescribedBids PrescribedBidsFactory();
+   // public delegate PrescribedBids PrescribedBidsFactory();
     //  public delegate void PrescribeBidRules(PrescribedBids prescribedBids);
-
+}
+/*
     public class PrescribedBids
     {
         // private Bidder _bidder;
@@ -232,8 +234,7 @@ namespace TricksterBots.Bots.Bridge
              }
              return _defaultPartnerBids;
          }
-        */
-
+        
         // Return NULL if no bids satisfy the constraints, otherwise returns a BidRuleSet
         public BidRuleSet GetBidRuleSet(Bid bid, PositionState ps)
         {
@@ -296,3 +297,4 @@ namespace TricksterBots.Bots.Bridge
     }
 
 }
+        */
