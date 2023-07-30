@@ -56,7 +56,7 @@ namespace TricksterBots.Bots.Bridge
 
 
         // TODO: Perhaps move this to somewhere better.  For now, we 
-        public static BidChoicesXXX DefaultBidsFactory(PositionState ps)
+        public static BidChoices DefaultBidsFactory(PositionState ps)
         {
             if (ps.Role == PositionRole.Opener)
             {
@@ -68,13 +68,13 @@ namespace TricksterBots.Bots.Bridge
             }
             else
             {
-                return new BidChoicesXXX(ps, Compete.CompBids);
+                return new BidChoices(ps, Compete.CompBids);
             }
         }
 
-        public static BidChoicesXXX Open(PositionState ps)
+        public static BidChoices Open(PositionState ps)
         {
-            var choices = new BidChoicesXXX(ps);
+            var choices = new BidChoices(ps);
             
             choices.AddRules(Strong2Clubs.Open);
             choices.AddRules(NoTrump.Open);
@@ -83,9 +83,9 @@ namespace TricksterBots.Bots.Bridge
             return choices;
         }
 
-        private static BidChoicesXXX Overcall(PositionState ps)
+        private static BidChoices Overcall(PositionState ps)
         {
-            var choices = new BidChoicesXXX(ps);
+            var choices = new BidChoices(ps);
             choices.AddRules(StandardAmericanOvercallAdvance.Overcall);
             choices.AddRules(NoTrump.StrongOvercall);
             choices.AddRules(TakeoutDouble.InitiateConvention);

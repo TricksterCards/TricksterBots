@@ -98,12 +98,13 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 		public Bid LastBid { get { return GetBidHistory(0); } }
-		/*
-		public BidChoicesFactory GetPartnerBidsFactory()
+
+		
+		public BidChoicesFactory GetBidsFactory()
 		{
-			return Partner._bids.Count > 0 ? Partner._bids.Last().PartnerBidsFactory : null;
+			return Partner._bids.Count > 0 ? Partner._bids.Last().GetBidsFactory(Partner) : null;
 		}
-		*/
+	
 
 
 		// THIS IS AN INTERNAL FUNCITON:

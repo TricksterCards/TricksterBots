@@ -66,6 +66,11 @@ namespace TricksterBots.Bots.Bridge
 			_partnerChoices.Merge(defaults);
 		}
 
+		public BidChoicesFactory GetBidsFactory(PositionState ps)
+		{
+			return _partnerChoices.GetPartnerBidsFactory(ps);
+		}
+
         //
         // This method makes sure that any rules that do not apply are removed.  If there are no rules that could apply
         // then the priority.

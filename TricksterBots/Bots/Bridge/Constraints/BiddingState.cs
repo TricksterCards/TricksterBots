@@ -412,7 +412,7 @@ namespace TricksterBots.Bots.Bridge
                     // Debug.WriteLine($"--- Historical: {b}");
 
 
-                    var bids = StandardAmerican.DefaultBidsFactory(NextToAct);             
+                    var bids = GetBidsForNextToAct();             
                     var choice = bids.GetBidRuleSet(bid);
                     /*
                     var o = AvailableBids(NextToAct);
@@ -434,7 +434,7 @@ namespace TricksterBots.Bots.Bridge
             }
             // Now we are actually ready to look at a hand and do somethihg
 
-            var choices = StandardAmerican.DefaultBidsFactory(NextToAct);
+            var choices = GetBidsForNextToAct();
             var bidRuleSet = choices.GetBidRuleSet(choices.BestBid);
             NextToAct.MakeBid(bidRuleSet);
 
@@ -451,6 +451,13 @@ namespace TricksterBots.Bots.Bridge
             NextToAct = NextToAct.LeftHandOpponent;
             return bidRuleSet.Bid.ToString();
         }
+
+        internal BidChoices GetBidsForNextToAct()
+        {
+            BidChoicesFactory bidsFactory = NextToAct.GetBidsFactory();
+            if (bidsFactory != null) return bidsFactory(NextToAct);
+			return StandardAmerican.DefaultBidsFactory(NextToAct);
+		}
 
 
         internal void UpdateStateFromFirstBid()

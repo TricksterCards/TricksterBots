@@ -186,9 +186,9 @@ namespace TricksterBots.Bots.Bridge
 
 
         // If this 
-        private BidChoicesXXX ConventionalResponses(PositionState ps)
+        private BidChoices ConventionalResponses(PositionState ps)
         {
-            var choices = new BidChoicesXXX(ps);
+            var choices = new BidChoices(ps);
             choices.AddRules(StaymanBidder.InitiateConvention(OpenType));
      //       if (transferEalbed)
       //      {
@@ -375,7 +375,7 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        private static BidChoicesXXX Respond(PositionState ps)
+        private static BidChoices Respond(PositionState ps)
         {
             // TODO: Make these redirect rules conditional on some global state.  Conditions can be:
             //  Off
@@ -383,7 +383,7 @@ namespace TricksterBots.Bots.Bridge
             //  X
             //  3C
             // So basically just a condition based on the RHO bid and a global somewhere that has these bid options...
-            var choices = new BidChoicesXXX(ps);
+            var choices = new BidChoices(ps);
             choices.AddRules(Stayman2NT.InitiateConvention);
             choices.AddRules(Transfer2NT.InitiateConvention);
             choices.AddRules(Natural2NT.NaturalResponse);

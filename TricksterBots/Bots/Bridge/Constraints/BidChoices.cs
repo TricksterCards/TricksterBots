@@ -25,12 +25,12 @@ namespace TricksterBots.Bots.Bridge
             _choices.Add(goodThrough, partnerFactory);
         }
 
-        public BidChoicesFactory GetPartnerFactory(PositionState ps)
+        public BidChoicesFactory GetPartnerBidsFactory(PositionState ps)
         {
-            var rhoBid = ps.RightHandOpponent.GetBidHistory(0);
+            var lhoBid = ps.LeftHandOpponent.GetBidHistory(0);
             foreach (KeyValuePair<Bid, BidChoicesFactory> choice in _choices)
             {
-                if (choice.Key.CompareTo(rhoBid) <= 0) return choice.Value;
+                if (choice.Key.CompareTo(lhoBid) <= 0) return choice.Value;
             }
             return null;
         }
@@ -57,14 +57,14 @@ namespace TricksterBots.Bots.Bridge
         {
             _rulesFactory = rulesFactory;
         }
-        private BidChoicesXXX Choices(PositionState ps)
+        private BidChoices Choices(PositionState ps)
         {
-           return new BidChoicesXXX(ps, _rulesFactory);
+           return new BidChoices(ps, _rulesFactory);
         }
     }
 
-    public delegate BidChoicesXXX BidChoicesFactory(PositionState ps);
-    public class BidChoicesXXX
+    public delegate BidChoices BidChoicesFactory(PositionState ps);
+    public class BidChoices
     {
         public Bid BestBid { get; private set; }
         private PositionState _ps;
@@ -72,7 +72,7 @@ namespace TricksterBots.Bots.Bridge
         private Dictionary<Bid, BidRuleSet> _choices;
         public PartnerChoicesXXX DefaultPartnerBids { get; private set; }
  
-        public BidChoicesXXX(PositionState ps)
+        public BidChoices(PositionState ps)
         {
             BestBid = Bid.Null;
             _ps = ps;
@@ -94,7 +94,7 @@ namespace TricksterBots.Bots.Bridge
             return choice;
         }
 
-        public BidChoicesXXX(PositionState ps, BidRulesFactory rulesFactory) : this(ps)
+        public BidChoices(PositionState ps, BidRulesFactory rulesFactory) : this(ps)
         {
             AddRules(rulesFactory);
         }
@@ -119,7 +119,7 @@ namespace TricksterBots.Bots.Bridge
                     {
                         if (rule.SatisifiesStaticConstraints(_ps))
                         {
-                            groupDefaultPartnerBids.AddFactory(rule.Bid, partnerBids.PartnerBidFactory);
+                            groupDefaultPartnerBids.AddFactory(partnerBids.GoodThrough, partnerBids.PartnerBidFactory);
                         }
                     }
                     else
@@ -140,7 +140,7 @@ namespace TricksterBots.Bots.Bridge
                         if (added.Contains(rule.Bid))
                         {
                             _choices[rule.Bid].AddRule(rule);
-                            if (BestBid.Equals(Bid.Null) && _ps.PrivateHandConforms(rule))
+                            if (BestBid.Equals(Bid.Null) && !(rule is PartnerBidRule) &&_ps.PrivateHandConforms(rule))
                             {
                                 BestBid = rule.Bid;
                             }
