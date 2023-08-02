@@ -176,7 +176,9 @@ namespace TricksterBots.Bots.Bridge
 
         }
 
-        public Contract GetContract()
+        public Contract Contract { get; private set; }
+
+        private Contract ComputeContract()
         {
             Contract contract = new Contract();
             int historyLevel = 0;
@@ -270,6 +272,7 @@ namespace TricksterBots.Bots.Bridge
         {
             this.Positions = new Dictionary<Direction, PositionState>();
             this.Conventions = new Dictionary<string, Bid>();
+            this.Contract = new Contract(Bid.Null, null, false, false);
             Debug.Assert(hands.Length == 4);
             var d = dealer;
             for (int i = 0; i < hands.Length; i++)
@@ -428,15 +431,14 @@ namespace TricksterBots.Bots.Bridge
                         choice.Add(rule);
                     }
                     */
-                    NextToAct.MakeBid(choice);
-                    NextToAct = NextToAct.LeftHandOpponent;
+                    MakeBid(choice);
                 }
             }
             // Now we are actually ready to look at a hand and do somethihg
 
             var choices = GetBidsForNextToAct();
             var bidRuleSet = choices.GetBidRuleSet(choices.BestBid);
-            NextToAct.MakeBid(bidRuleSet);
+            MakeBid(bidRuleSet);
 
         //    if (bidRuleSet.Bid.ToString() != expected)
         //    {
@@ -448,8 +450,14 @@ namespace TricksterBots.Bots.Bridge
         //    }
         //    Debug.WriteLine("");
 
-            NextToAct = NextToAct.LeftHandOpponent;
             return bidRuleSet.Bid.ToString();
+        }
+
+        private void MakeBid(BidRuleSet bidRuleSet)
+        {
+            NextToAct.MakeBid(bidRuleSet);
+            NextToAct = NextToAct.LeftHandOpponent;
+            this.Contract = ComputeContract();
         }
 
         internal BidChoices GetBidsForNextToAct()

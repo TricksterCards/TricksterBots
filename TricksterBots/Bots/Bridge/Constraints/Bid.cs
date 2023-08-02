@@ -18,7 +18,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public enum Call { Pass, Bid, Double, Redouble, NotActed }
+	public enum Call { NotActed, Pass, Bid, Double, Redouble }
 
 
 	public struct Bid : IEquatable<Bid>, IComparable<Bid>

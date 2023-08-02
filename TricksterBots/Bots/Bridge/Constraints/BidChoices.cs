@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using static TricksterBots.Bots.Bridge.BidRule;
@@ -130,19 +131,24 @@ namespace TricksterBots.Bots.Bridge
                 }
                 else
                 {
-                    if (rule.SatisifiesStaticConstraints(_ps))
+                    // TODO: We must not recompute this over and over... Contract needs to be a 
+					(bool Valid, int jump) bidOverContract = rule.Bid.IsValid(_ps, _ps.BiddingState.Contract);
+                    if (bidOverContract.Valid)
                     {
-                        if (!_choices.ContainsKey(rule.Bid))
+                        if (rule.SatisifiesStaticConstraints(_ps))
                         {
-                            _choices[rule.Bid] = new BidRuleSet(rule.Bid); ;
-                            added.Add(rule.Bid);
-                        }
-                        if (added.Contains(rule.Bid))
-                        {
-                            _choices[rule.Bid].AddRule(rule);
-                            if (BestBid.Equals(Bid.Null) && !(rule is PartnerBidRule) &&_ps.PrivateHandConforms(rule))
+                            if (!_choices.ContainsKey(rule.Bid))
                             {
-                                BestBid = rule.Bid;
+                                _choices[rule.Bid] = new BidRuleSet(rule.Bid); ;
+                                added.Add(rule.Bid);
+                            }
+                            if (added.Contains(rule.Bid))
+                            {
+                                _choices[rule.Bid].AddRule(rule);
+                                if (BestBid.Equals(Bid.Null) && !(rule is PartnerBidRule) && _ps.PrivateHandConforms(rule))
+                                {
+                                    BestBid = rule.Bid;
+                                }
                             }
                         }
                     }

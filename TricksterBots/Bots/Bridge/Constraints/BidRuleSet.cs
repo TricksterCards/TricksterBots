@@ -52,7 +52,7 @@ namespace TricksterBots.Bots.Bridge
 			Debug.Assert(rule.Bid.Equals(this.Bid));
 			if (rule is PartnerBidRule partnerBids)
 			{
-				_partnerChoices.AddFactory(rule.Bid, partnerBids.PartnerBidFactory);
+				_partnerChoices.AddFactory(partnerBids.GoodThrough, partnerBids.PartnerBidFactory);
 			}
 			else
 			{

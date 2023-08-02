@@ -12,7 +12,8 @@ namespace TricksterBots.Bots.Bridge
 {
     public class TakeoutDouble: Bidder
     {
-        private static (int, int) TakeoutRange = (11, 17);
+        private static (int, int) TakeoutRange = (11, 16);
+        private static (int, int) StrongTakeout = (17, 40);
 
 
 
@@ -45,6 +46,7 @@ namespace TricksterBots.Bots.Bridge
             }
             return new BidRule[]
             {
+                Forcing(Bid.Double, Points(StrongTakeout)),
                 rule,
                 DefaultPartnerBids(Bid.Pass, Respond)
             };
