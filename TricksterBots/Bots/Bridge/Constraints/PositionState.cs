@@ -218,6 +218,10 @@ namespace TricksterBots.Bots.Bridge
 			return (this._privateHandSummary == null) ? false : rule.SatisifiesDynamicConstraints(this, this._privateHandSummary);
 		}
 
+		public bool IsValidNextBid(Bid bid)
+		{
+			return BiddingState.NextToAct == this && BiddingState.IsValidNextBid(bid);
+		}
 
         // TODO: Just a start of taking a group of rules and returning a subest
         // TODO: NEED TO ADD -PRIORITY BIDS FOR FALL-BACK. THESE SHOULD BE IGNORED IN THE FIRST ROUND

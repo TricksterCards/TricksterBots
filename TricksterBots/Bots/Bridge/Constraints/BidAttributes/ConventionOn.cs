@@ -22,10 +22,11 @@ namespace TricksterBots.Bots.Bridge
             {
                 var goodThrough = ps.BiddingState.Conventions[_convention];
                 if (goodThrough.Call == Call.NotActed) { return false; }
-                var contract = ps.BiddingState.GetContract();
-                if (goodThrough.IsPass || goodThrough.Call == Call.Double) { return contract.By == ps.Partner; }
-                (bool Valid, int Jump) v = goodThrough.IsValid(ps, contract);
-                return v.Valid;
+                var contract = ps.BiddingState.Contract;
+                if (goodThrough.IsPass) { return contract.By == ps.Partner && !contract.Doubled; }
+                if (goodThrough.Call == Call.Double) { return contract.By == ps.Partner; }
+                // TODO: Add redouble here ......
+                return ps.IsValidNextBid(goodThrough);
             }
             return false;
         }

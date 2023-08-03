@@ -460,6 +460,27 @@ namespace TricksterBots.Bots.Bridge
             this.Contract = ComputeContract();
         }
 
+        public bool IsValidNextBid(Bid bid)
+        {
+            if (bid.IsPass) { return true; }
+            if (bid.Equals(Bid.Null)) { return false; }
+            if (bid.IsBid)
+            {
+                if (Contract.Bid.IsPass || Contract.Bid.Equals(Bid.Null)) { return true; }
+                return bid.CompareTo(Contract.Bid) > 0;
+            }
+            // So it's double or redouble.  Contract has no bid then can't be valid...
+            if (!Contract.Bid.IsBid) { return false; }
+            if (bid.Equals(Bid.Double))
+            {
+                return !Contract.Doubled && NextToAct.IsOpponent(Contract.By);
+
+            }
+            Debug.Assert(bid.Equals(Bid.Redouble));
+            return !Contract.Redoubled && Contract.Doubled && (NextToAct == Contract.By || NextToAct == Contract.By.Partner);
+
+        }
+
         internal BidChoices GetBidsForNextToAct()
         {
             BidChoicesFactory bidsFactory = NextToAct.GetBidsFactory();

@@ -131,9 +131,7 @@ namespace TricksterBots.Bots.Bridge
                 }
                 else
                 {
-                    // TODO: We must not recompute this over and over... Contract needs to be a 
-					(bool Valid, int jump) bidOverContract = rule.Bid.IsValid(_ps, _ps.BiddingState.Contract);
-                    if (bidOverContract.Valid)
+                    if (_ps.IsValidNextBid(rule.Bid))
                     {
                         if (rule.SatisifiesStaticConstraints(_ps))
                         {

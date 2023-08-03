@@ -18,10 +18,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
 		{
-			var contract = ps.BiddingState.GetContract();
-			(bool Valid, int jump) bidOverContract = bid.IsValid(ps, contract);
-			Debug.Assert(bidOverContract.Valid);
-			return this._jumpLevels.Contains(bidOverContract.jump);
+			return this._jumpLevels.Contains(bid.JumpOver(ps.BiddingState.Contract));
 		}
 	}
 }

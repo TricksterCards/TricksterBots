@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Linq;
@@ -141,6 +142,7 @@ namespace TricksterBots.Bots.Bridge
 			}
 		}
 
+		/*
 		public (bool Valid, int Jump) IsValid(PositionState position, Contract contract)
 		{
 			if (this.IsPass) { return (true, 0); }
@@ -167,6 +169,22 @@ namespace TricksterBots.Bots.Bridge
 			if (thisLevel <= contractLevel) { return (false, 0); }
 			return (true, (thisLevel - contractLevel) / 5);
 		}
+		*/
+
+		public int JumpOver(Contract contract)
+		{
+			if (!this.IsBid) 
+			{
+				Debug.Fail("Can not ask about a jump bid for a call that is not a bid");
+				return -1;
+			}
+			if (contract.Bid.Equals(Bid.Pass) || contract.Bid.Equals(Bid.Null))
+			{
+				return 1 - (int)Level;
+			}
+			Debug.Assert(contract.Bid.IsBid);
+			return (this.RawLevel - contract.Bid.RawLevel) / 5;
+		}
 
         private int OvercallValue
         {
@@ -184,6 +202,7 @@ namespace TricksterBots.Bots.Bridge
 				}
 			}
         }
+
 
         public int CompareTo(Bid other)
         {
