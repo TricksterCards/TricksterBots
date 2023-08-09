@@ -437,7 +437,13 @@ namespace TricksterBots.Bots.Bridge
             // Now we are actually ready to look at a hand and do somethihg
 
             var choices = GetBidsForNextToAct();
-            var bidRuleSet = choices.GetBidRuleSet(choices.BestBid);
+            var chosenBid = choices.BestBid;
+            if (chosenBid.Equals(Bid.Null))
+            {
+                chosenBid = Bid.Pass;
+             //   Debug.WriteLine("No best bid.  Chosing pass");
+            }
+            var bidRuleSet = choices.GetBidRuleSet(chosenBid);
             MakeBid(bidRuleSet);
 
         //    if (bidRuleSet.Bid.ToString() != expected)

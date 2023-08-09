@@ -31,7 +31,7 @@ namespace TricksterBots.Bots.Bridge
             var lhoBid = ps.LeftHandOpponent.GetBidHistory(0);
             foreach (KeyValuePair<Bid, BidChoicesFactory> choice in _choices)
             {
-                if (choice.Key.CompareTo(lhoBid) <= 0) return choice.Value;
+                if (choice.Key.CompareTo(lhoBid) >= 0) return choice.Value;
             }
             return null;
         }

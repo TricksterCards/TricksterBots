@@ -20,12 +20,13 @@ namespace TricksterBots.Bots.Bridge
         public static IEnumerable<BidRule> InitiateConvention(PositionState ps)
         {
             var bids = new List<BidRule>();
-            // TODO: Make this work off of the CONTRACT, not last bid but for now just use RHO...
-            var rhoBid = ps.RightHandOpponent.LastBid;
-            Debug.Assert(rhoBid.IsBid); // Should only get here if RHO opened
-            if (rhoBid.Level == 1 && rhoBid.Suit != Suit.Unknown)
+            if (ps.IsOpponentsContract)
             {
-                bids.AddRange(Takeout((Suit)rhoBid.Suit));
+                var contractBid = ps.BiddingState.Contract.Bid;
+                if (contractBid.Level == 1 && contractBid.Suit != Suit.Unknown)
+                {
+                    bids.AddRange(Takeout((Suit)contractBid.Suit));
+                }
             }
             return bids;
         }

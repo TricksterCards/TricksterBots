@@ -43,9 +43,25 @@ namespace TricksterBots.Bots.Bridge
 		public int Seat { get; }
 		public bool Vulnerable { get; }
 
+		public bool IsOurContract
+		{
+			get
+			{
+				var by = BiddingState.Contract.By;
+				return (by == this || by == Partner);
+			}
+		}
 
+        public bool IsOpponentsContract
+        {
+            get
+            {
+                var by = BiddingState.Contract.By;
+                return (by == RightHandOpponent || by == LeftHandOpponent);
+            }
+        }
 
-		public Bid GetBidHistory(int historyLevel)
+        public Bid GetBidHistory(int historyLevel)
 		{
 			if (_bids.Count <= historyLevel)
 			{

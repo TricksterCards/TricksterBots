@@ -46,14 +46,17 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(3, Suit.Hearts, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 				Nonforcing(3, Suit.Spades, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 
+                // TODO: Is this best way?  Need to prevent pass from invoking response. Go back to default...
+				PartnerBids(Bid.Pass, new Bid(7, Suit.Unknown), (BidChoicesFactory)null),
                 Nonforcing(Bid.Pass, Points(LessThanOvercall))
             };
           
         }
 
 
-        private static IEnumerable<BidRule> Advance(PositionState _)
+        private static IEnumerable<BidRule> Advance(PositionState ps)
         {
+            var partnerSuit = (Suit)ps.Partner.LastBid.Suit;
             return new BidRule[] {
                 // TODO: What is the level of interference we can take
                 DefaultPartnerBids(new Bid(4, Suit.Unknown), OvercallRebid),
@@ -75,6 +78,12 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(2, Suit.Spades, Jump(0), Points(AdvanceNewSuit2Level), Shape(6, 11)),
 
 
+
+                // TODO: Make a special BidRule here to handle rebid after cuebid...
+                Forcing(2, Suit.Clubs, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
+                Forcing(2, Suit.Diamonds, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
+                Forcing(2, Suit.Hearts, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
+                Forcing(2, Suit.Spades, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
 
                 // 2C is not really possible since this is an advance...
                 Nonforcing(2, Suit.Diamonds, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),

@@ -66,6 +66,8 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(4, Suit.Hearts, Points(LessThanOpen), Shape(8), DecentSuit()),
 				Nonforcing(4, Suit.Spades, Points(LessThanOpen), Shape(8), DecentSuit()),
 
+				// TODO: Is this best way?  Need to prevent pass from invoking response. Go back to default...
+				PartnerBids(Bid.Pass, new Bid(7, Suit.Unknown), (BidChoicesFactory)null),
 				Nonforcing(Bid.Pass, Points(LessThanOpen)),
 
 			};

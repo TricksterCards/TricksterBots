@@ -58,11 +58,11 @@ namespace TricksterBots.Bots.Bridge
         // TODO: Perhaps move this to somewhere better.  For now, we 
         public static BidChoices DefaultBidsFactory(PositionState ps)
         {
-            if (ps.Role == PositionRole.Opener)
+            if (ps.Role == PositionRole.Opener && ps.RoleRound == 1)
             {
                 return Open(ps);
             }
-            else if (ps.Role == PositionRole.Overcaller)
+            else if (ps.Role == PositionRole.Overcaller && ps.RoleRound == 1)
             {
                 return Overcall(ps);
             }
