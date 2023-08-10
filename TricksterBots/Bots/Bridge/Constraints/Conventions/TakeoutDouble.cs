@@ -36,7 +36,7 @@ namespace TricksterBots.Bots.Bridge
         {
             // TODO: Should this be 2 or 1 for MinBidLevel?  Or is this really based on opponent bids?
             // TODO: Ugly way to avoid bidding this over NT...
-            var rule = Forcing(Bid.Double, CueBid(suit), Points(TakeoutRange), Shape(suit, 0, 4), BidAvailable(2, Suit.Clubs));
+            var rule = Forcing(Bid.Double, Points(TakeoutRange), Shape(suit, 0, 4), BidAvailable(4, Suit.Clubs));
             foreach (var otherSuit in BasicBidding.BasicSuits)
             {
                 if (otherSuit != suit)
@@ -60,9 +60,10 @@ namespace TricksterBots.Bots.Bridge
         public static (int, int) GameLevel = (12, 40);
         public static (int, int) Game3NT = (13, 40);
 
-        private static IEnumerable<BidRule> Respond(PositionState ps)
+        private static BidChoices Respond(PositionState ps)
         {
-            return new List<BidRule>
+            var choices = new BidChoices(ps);
+            choices.AddRules(new BidRule[]
             {
                 // TODO: FOR NOW WE WILL JUST BID AT THE NEXT LEVEL REGARDLESS OF POINTS...
                 // TODO: Need LongestSuit()...
@@ -85,12 +86,11 @@ namespace TricksterBots.Bots.Bridge
 
                 Nonforcing(2, Suit.Unknown, Balanced(), OppsStopped(), Points(NoTrump2)),
 
-
-
-               // Signoff(3, Suit.Unknown, )
-
-            };
-           
+            });
+            // Many strong bids can be done with pure competition.
+            // TODO: Think through this - is this really what we want?
+            choices.AddRules(Compete.CompBids);
+            return choices;         
         }
 
         // TODO: Interference...

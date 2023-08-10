@@ -9,7 +9,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class TakeoutSuit : Constraint
+    public class TakeoutSuit : Constraint, IShowsState
     {
         private Suit? _suit;
   
@@ -58,6 +58,14 @@ namespace TricksterBots.Bots.Bridge
                 }
             }
             return true;
+        }
+
+        // TODO: This is not exactly right.  We PROBABLY have at least 4 in the suit...
+
+        public void ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+        {
+            var suit = bid.SuitIfNot(_suit);
+            showHand.Suits[suit].ShowShape(4, 11);
         }
     }
 

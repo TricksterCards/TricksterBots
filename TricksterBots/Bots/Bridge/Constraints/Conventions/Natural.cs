@@ -90,6 +90,9 @@ namespace TricksterBots.Bots.Bridge
             choices.AddRules(NoTrump.StrongOvercall);
             choices.AddRules(TakeoutDouble.InitiateConvention);
             choices.AddRules(NoTrump.BalancingOvercall);
+
+            // TODO: Perhaps do this for open also -- Pass as separate and final rule group...
+            choices.AddRules(StandardAmericanOvercallAdvance.PassInsteadOfOvercall);
            
             return choices;
         }

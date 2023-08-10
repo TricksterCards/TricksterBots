@@ -18,13 +18,7 @@ namespace TricksterBots.Bots.Bridge
         }
         public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
         {
-            var contract = ps.BiddingState.Contract;
-            if (contract.Bid.IsBid &&
-                ps.IsOpponent(contract.By))
-            {
-                return _desired;
-            }
-            return !_desired;
+            return _desired == ps.IsOpponentsContract;
         }
     }
 }

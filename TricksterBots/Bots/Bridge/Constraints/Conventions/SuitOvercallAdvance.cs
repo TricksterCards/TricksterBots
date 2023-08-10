@@ -46,13 +46,23 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(3, Suit.Hearts, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 				Nonforcing(3, Suit.Spades, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 
-                // TODO: Is this best way?  Need to prevent pass from invoking response. Go back to default...
-				PartnerBids(Bid.Pass, new Bid(7, Suit.Unknown), (BidChoicesFactory)null),
-                Nonforcing(Bid.Pass, Points(LessThanOvercall))
+
             };
           
         }
 
+
+        public static BidRule[] PassInsteadOfOvercall(PositionState ps)
+        {
+            return new BidRule[]
+            {
+                // TODO: This is also ugly.  Think about rules for next step with pass
+                // It is especially important that if we pass an open or overcall that 
+                // the default logic will kick in for the partner - perhaps to overcall etc.
+                PartnerBids(Bid.Pass, new Bid(7, Suit.Unknown), (BidChoicesFactory)null),
+                Nonforcing(Bid.Pass, Points(LessThanOvercall))
+            };
+        }
 
         private static IEnumerable<BidRule> Advance(PositionState ps)
         {

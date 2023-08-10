@@ -166,22 +166,31 @@ namespace TricksterBots.Bots.Bridge
 
         public BidRule[] _GetOvercallRules(PositionState ps)
         {
+            // TODO: Add stopped contract.Suit
+            if (ps.BiddingState.PassEndsAuction())
+            {
+                return new BidRule[0];
+            }
             return new BidRule[]
             {
                 PartnerBids(1, Suit.Unknown, GoodThrough(ps, OpenType.ToString()), ConventionalResponses),
                 // TODO: Perhaps more rules here for balancing but for now this is fine -- Balanced() is not necessary
-                Nonforcing(1, Suit.Unknown, Points(OpenerRange.Open), PassEndsAuction(false))
+                Nonforcing(1, Suit.Unknown, Points(OpenerRange.Open), Balanced(), OppsStopped(), PassEndsAuction(false))
             };
         }
 
         public BidRule[] _GetBalancingRules(PositionState ps)
         {
-            return new BidRule[]
+            if (ps.BiddingState.PassEndsAuction())
             {
-                PartnerBids(1, Suit.Unknown, GoodThrough(ps, OpenType.ToString()), ConventionalResponses),
-                // TODO: Perhaps more rules here for balancing but for now this is fine -- Balanced() is not necessary
-                Nonforcing(1, Suit.Unknown, Points(OpenerRange.Open), PassEndsAuction(true))
-            };
+                return new BidRule[]
+                {
+                    PartnerBids(1, Suit.Unknown, GoodThrough(ps, OpenType.ToString()), ConventionalResponses),
+                    // TODO: Perhaps more rules here for balancing but for now this is fine -- Balanced() is not necessary
+                    Nonforcing(1, Suit.Unknown, Break("Balancing 1NT"), Points(OpenerRange.Open), PassEndsAuction(true))
+                };
+            }
+            return new BidRule[0];
         }
 
 

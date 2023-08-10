@@ -28,6 +28,11 @@ namespace TricksterBots.Bots.Bridge
                 PartnerBids(1, Suit.Hearts, Bid.Pass, RespondTo1H),
                 PartnerBids(1, Suit.Spades, Bid.Pass, RespondTo1S),
 
+				PartnerBids(1, Suit.Clubs, new Bid(1, Suit.Unknown), RespondWithInt),
+                PartnerBids(1, Suit.Diamonds, new Bid(1, Suit.Unknown), RespondWithInt),
+                PartnerBids(1, Suit.Hearts, new Bid(1, Suit.Unknown), RespondWithInt),
+                PartnerBids(1, Suit.Spades, new Bid(1, Suit.Unknown), RespondWithInt),
+
                 Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(3), Shape(Suit.Diamonds, 0, 3), LongestMajor(4)),
 				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(4, 11), LongerThan(Suit.Diamonds), LongestMajor(4)),
 
@@ -269,6 +274,7 @@ namespace TricksterBots.Bots.Bridge
 
 				Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
+				// TODO: Need any special handling for partner bids?
                 Signoff(Bid.Pass, Points(RespondPass)),
             };
 			bids.AddRange(NoTrumpResponses());
@@ -304,10 +310,10 @@ namespace TricksterBots.Bots.Bridge
 				Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
 
                 // TODO: Really balanced?  This would only be the case for 4333 given current rules.  Maybe so...
-                Invitational(2, Suit.Unknown, Points(RaiseTo2NT), LongestMajor(3), Balanced()),
+              //  Invitational(2, Suit.Unknown, Points(RaiseTo2NT), LongestMajor(3), Balanced()),
 
 
-				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
+//				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
 				Signoff(4, Suit.Diamonds, Points(Weak4Level), Shape(6, 11)),
 
@@ -333,19 +339,12 @@ namespace TricksterBots.Bots.Bridge
 
                 Invitational(3, Suit.Hearts,DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
 
+                Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
+
                 Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4, 11), Shape(Suit.Hearts, 0, 2)),
 				Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, LimitRaise), Shape(4, 11), Shape(Suit.Hearts, 3)),
 				Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, GameOrBetter), Shape(4, 11), Shape(Suit.Hearts, 3, 8)),
 
-				Nonforcing(1, Suit.Unknown, Points(Respond1NT), Balanced()),
-
-                // Two level minor bids are handled by NewMinorSuit2Level...
-
-				Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
-
-				Invitational(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
-
-				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
 
                 // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
@@ -379,10 +378,6 @@ namespace TricksterBots.Bots.Bridge
                 // THIS IS HIGHER PRIORITY THAN SHOWING MINORS NO MATTER WHAT THE LENGTH...
 				Forcing(2, Suit.Hearts, Points(NewSuit2Level), Shape(5, 11)),
 
-				Invitational(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
-
-
-				Signoff(3, Suit.Unknown, Points(RaiseTo3NT), LongestMajor(3)),
 
                 // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
