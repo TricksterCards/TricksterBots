@@ -8,6 +8,22 @@ namespace TestBots
     [TestClass]
     public class TestPitchBot
     {
+
+        private static readonly PitchOptions fourPointDrawWithKittyOptions = new PitchOptions
+        {
+            variation = PitchVariation.FourPoint,
+            drawOption = PitchDrawOption.NonTrump,
+            gameOverScore = 15,
+            isPartnership = true,
+            kitty = 3,
+            lowGoesToTaker = true,
+            minBid = 2,
+            offerShootBid = false,
+            pitcherLeadsTrump = true,
+            playTrump = PitchPlayTrump.Anytime,
+            stickTheDealer = true,
+        };
+
         [TestMethod]
         public void TestBids()
         {
@@ -36,22 +52,7 @@ namespace TestBots
         [TestMethod]
         public void TestHighBids()
         {
-            var options = new PitchOptions()
-            {
-                variation = PitchVariation.FourPoint,
-                drawOption = PitchDrawOption.NonTrump,
-                gameOverScore = 15,
-                isPartnership = true,
-                kitty = 3,
-                lowGoesToTaker = true,
-                minBid = 2,
-                offerShootBid = false,
-                pitcherLeadsTrump = true,
-                playTrump = PitchPlayTrump.Anytime,
-                stickTheDealer = true,
-            };
-
-            Assert.AreEqual((int)PitchBid.Base + 3, GetSuggestedBid("AHQH6H5DJC5C", out var hand, options), $"Expect bid of 3 for hand {Util.PrettyHand(hand)}");
+            Assert.AreEqual((int)PitchBid.Base + 3, GetSuggestedBid("AHQH6H5DJC5C", out var hand, fourPointDrawWithKittyOptions), $"Expect bid of 3 for hand {Util.PrettyHand(hand)}");
         }
 
         [TestMethod]
@@ -76,21 +77,6 @@ namespace TestBots
         [TestMethod]
         public void DuckIfPartnerTakingTrick()
         {
-            var options = new PitchOptions()
-            {
-                variation = PitchVariation.FourPoint,
-                drawOption = PitchDrawOption.NonTrump,
-                gameOverScore = 15,
-                isPartnership = true,
-                kitty = 3,
-                lowGoesToTaker = true,
-                minBid = 2,
-                offerShootBid = false,
-                pitcherLeadsTrump = true,
-                playTrump = PitchPlayTrump.Anytime,
-                stickTheDealer = true,
-            };
-
             var players = new[]
             {
                 new TestPlayer((int)PitchBid.NotPitching, "3H6SQS"),
@@ -99,11 +85,32 @@ namespace TestBots
                 new TestPlayer((int)PitchBid.NotPitching),
             };
 
-            var bot = new PitchBot(options, Suit.Spades);
+            var bot = new PitchBot(fourPointDrawWithKittyOptions, Suit.Spades);
             var cardState = new TestCardState<PitchOptions>(bot, players, "TC7S9C");
             var suggestion = bot.SuggestNextCard(cardState);
 
             Assert.AreEqual("3H", $"{suggestion}");
+        }
+
+
+        [TestMethod]
+        [DataRow("JSQSAS", "5C7HJHKH", "JH")]
+        [DataRow("6DAD8H", "5CJHKH", "JH")]
+        public void TakeTrickWithPointerFromLastSeatIfPossible(string trick, string hand, string expected)
+        {
+            var players = new[]
+            {
+                new TestPlayer(GetBid(2, Suit.Hearts), hand),
+                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer((int)PitchBid.NotPitching),
+            };
+
+            var bot = new PitchBot(fourPointDrawWithKittyOptions, Suit.Hearts);
+            var cardState = new TestCardState<PitchOptions>(bot, players, trick);
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            Assert.AreEqual(expected, $"{suggestion}");
         }
 
         private static PitchOptions GetCallForBestOptions(int? callPartnerSeat = null)
