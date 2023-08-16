@@ -73,6 +73,39 @@ namespace TestBots
             Assert.AreEqual("4H", $"{suggestion}");
         }
 
+        [TestMethod]
+        public void DuckIfPartnerTakingTrick()
+        {
+            var options = new PitchOptions()
+            {
+                variation = PitchVariation.FourPoint,
+                drawOption = PitchDrawOption.NonTrump,
+                gameOverScore = 15,
+                isPartnership = true,
+                kitty = 3,
+                lowGoesToTaker = true,
+                minBid = 2,
+                offerShootBid = false,
+                pitcherLeadsTrump = true,
+                playTrump = PitchPlayTrump.Anytime,
+                stickTheDealer = true,
+            };
+
+            var players = new[]
+            {
+                new TestPlayer((int)PitchBid.NotPitching, "3H6SQS"),
+                new TestPlayer(GetBid(2, Suit.Spades)),
+                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer((int)PitchBid.NotPitching),
+            };
+
+            var bot = new PitchBot(options, Suit.Spades);
+            var cardState = new TestCardState<PitchOptions>(bot, players, "TC7S9C");
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            Assert.AreEqual("3H", $"{suggestion}");
+        }
+
         private static PitchOptions GetCallForBestOptions(int? callPartnerSeat = null)
         {
             return new PitchOptions()
