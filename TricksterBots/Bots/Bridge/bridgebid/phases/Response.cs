@@ -152,6 +152,7 @@ namespace Trickster.Bots
                         //  1N-2S (overridden by Relay)
                         response.BidMessage = BidMessage.Signoff;
                         response.Points.Max = 7;
+                        response.HandShape[response.declareBid.suit].Min = 5;
                         response.Description = $"5+ {response.declareBid.suit}";
                     }
 
@@ -253,6 +254,7 @@ namespace Trickster.Bots
                         response.BidMessage = BidMessage.Forcing;
                         response.Points.Min = 4;
                         response.Points.Max = 10;
+                        response.HandShape[response.declareBid.suit].Min = 5;
                         response.Description = $"5+ {response.declareBid.suit}";
                     }
 
@@ -449,6 +451,7 @@ namespace Trickster.Bots
                             response.Points.Max = 15;
                             response.BidPointType = BidPointType.Hcp;
                             response.IsBalanced = true;
+                            response.HandShape[opening.declareBid.suit].Min = 2;
                             response.Description = $"2+ {opening.declareBid.suit}";
                             break;
                     }
