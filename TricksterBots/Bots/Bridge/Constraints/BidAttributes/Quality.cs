@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -27,10 +26,15 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+		public override bool Conforms(Call call, PositionState ps, HandSummary hs)
 		{
-			var quality = hs.Suits[bid.SuitIfNot(_suit)].GetQuality();
-			return ((int)_min <= (int)quality.Max && (int)_max >= (int)quality.Min);
+			if (GetSuit(_suit, call) is Suit suit)
+			{
+				var quality = hs.Suits[suit].GetQuality();
+				return ((int)_min <= (int)quality.Max && (int)_max >= (int)quality.Min);
+			}
+			Debug.Fail("No suit for HasQuality constraint");
+			return false;
 		}
 	}
 
@@ -40,10 +44,12 @@ namespace TricksterBots.Bots.Bridge
 		{
 		}
 
-		void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
-			
+		void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)	
 		{
-			showHand.Suits[bid.SuitIfNot(_suit)].ShowQuality(_min, _max);
+			if (GetSuit(_suit, call) is Suit suit)
+			{
+				showHand.Suits[suit].ShowQuality(_min, _max);
+			}
 		}
 	}
 

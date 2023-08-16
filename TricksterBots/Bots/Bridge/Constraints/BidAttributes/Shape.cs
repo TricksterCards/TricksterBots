@@ -27,10 +27,15 @@ namespace TricksterBots.Bots.Bridge
             this._max = max;
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            (int Min, int Max) shape = hs.Suits[bid.SuitIfNot(_suit)].GetShape();
-			return (shape.Max >= _min && shape.Min <= _max);
+            if (GetSuit(_suit, call) is Suit suit)
+            {
+                (int Min, int Max) shape = hs.Suits[suit].GetShape();
+                return (shape.Max >= _min && shape.Min <= _max);
+            }
+            Debug.Fail("No suit specified in call or constraint declaration");
+            return false;
 		}
 
     }
@@ -39,16 +44,19 @@ namespace TricksterBots.Bots.Bridge
 	{
         public ShowsShape(Suit? suit, int min, int max) : base(suit, min, max) { }
 
-	    void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showArgeements)
+	    void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showArgeements)
 		{
-            showHand.Suits[bid.SuitIfNot(_suit)].ShowShape(_min, _max);
+            if (GetSuit(_suit, call) is Suit suit)
+            {
+                showHand.Suits[suit].ShowShape(_min, _max);
+            }
 		}
 
     }
 
 
 
-    public class HasMinShape: Constraint
+    public class HasMinShape : Constraint
     {
         protected Suit? _suit;
         protected int _min;
@@ -57,9 +65,14 @@ namespace TricksterBots.Bots.Bridge
             this._suit = suit;
             this._min = min;
         }
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            return hs.Suits[bid.SuitIfNot(_suit)].GetShape().Min >= _min;
+            if (GetSuit(_suit, call) is Suit suit)
+            {
+                return hs.Suits[suit].GetShape().Min >= _min;
+            }
+            Debug.Fail("No suit specified in call or constraint");
+            return false;
         }
     }
 

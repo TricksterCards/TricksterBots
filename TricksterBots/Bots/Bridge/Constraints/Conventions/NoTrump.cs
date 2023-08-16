@@ -167,7 +167,7 @@ namespace TricksterBots.Bots.Bridge
         public BidRule[] _GetOvercallRules(PositionState ps)
         {
             // TODO: Add stopped contract.Suit
-            if (ps.BiddingState.PassEndsAuction())
+            if (ps.BiddingState.Contract.PassEndsAuction)
             {
                 return new BidRule[0];
             }
@@ -181,7 +181,7 @@ namespace TricksterBots.Bots.Bridge
 
         public BidRule[] _GetBalancingRules(PositionState ps)
         {
-            if (ps.BiddingState.PassEndsAuction())
+            if (ps.BiddingState.Contract.PassEndsAuction)
             {
                 return new BidRule[]
                 {

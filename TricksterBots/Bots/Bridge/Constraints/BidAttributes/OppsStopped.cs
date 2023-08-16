@@ -17,7 +17,7 @@ namespace TricksterBots.Bots.Bridge
             this._desiredValue = desiredValue;
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
 
             var oppsSummary = PairSummary.Opponents(ps);
@@ -44,7 +44,7 @@ namespace TricksterBots.Bots.Bridge
     {
         public ShowsOppsStopped(bool desiredValue) : base(desiredValue) { }
 
-        public void ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+        public void ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
             if (_desiredValue)
             {

@@ -27,7 +27,7 @@ namespace TricksterBots.Bots.Bridge
 			public HandSummary HandSummary;
 			public PairAgreements PairAgreements;
 		}
-        public Bid Bid { get; }
+        public Call Call { get; }
 
 		private PartnerChoicesXXX _partnerChoices;
 
@@ -39,9 +39,9 @@ namespace TricksterBots.Bots.Bridge
 
        
 
-		public BidRuleSet(Bid bid) 
+		public BidRuleSet(Call call) 
         {
-            this.Bid = bid;
+            this.Call = call;
 			this._partnerChoices = new PartnerChoicesXXX();
             this._ruleInfo = new List<RuleInfo>();
         }
@@ -49,7 +49,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public void AddRule(BidRule rule)
 		{
-			Debug.Assert(rule.Bid.Equals(this.Bid));
+			Debug.Assert(rule.Call.Equals(this.Call));
 			if (rule is PartnerBidRule partnerBids)
 			{
 				_partnerChoices.AddFactory(partnerBids.GoodThrough, partnerBids.PartnerBidFactory);

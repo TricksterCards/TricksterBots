@@ -17,22 +17,23 @@ namespace TricksterBots.Bots.Bridge
             this._showBidSuit = showBidSuit;
             this._suits = suits;
         }
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
             return true;
         }
 
-        void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+        void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
-            if (_showBidSuit)
+            if (_showBidSuit &&
+                GetSuit(null, call) is Suit suit)
             {
-                showAgreements.Suits[bid.SuitIfNot(null)].ShowLongHand(ps);
+                showAgreements.Suits[suit].ShowLongHand(ps);
             }
             if (_suits != null)
             {
-                foreach (var suit in _suits)
+                foreach (var s in _suits)
                 {
-                    showAgreements.Suits[suit].ShowLongHand(ps);
+                    showAgreements.Suits[s].ShowLongHand(ps);
                 }
             }
         }

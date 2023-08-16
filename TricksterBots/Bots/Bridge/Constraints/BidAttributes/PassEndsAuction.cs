@@ -13,12 +13,12 @@ namespace TricksterBots.Bots.Bridge
         public PassEndsAuction(bool desiredValue) 
         {
             this._desiredValue = desiredValue;
-            this.OnceAndDone = true;
+            this.StaticConstraint = true;
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            return (_desiredValue == ps.BiddingState.PassEndsAuction());
+            return (_desiredValue == ps.BiddingState.Contract.PassEndsAuction);
         }
     }
 }

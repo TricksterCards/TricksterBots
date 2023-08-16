@@ -22,10 +22,11 @@ namespace TricksterBots.Bots.Bridge
             var bids = new List<BidRule>();
             if (ps.IsOpponentsContract)
             {
-                var contractBid = ps.BiddingState.Contract.Bid;
+                var contractBid = ps.BiddingState.Contract.LastBid;
+                // TODO: Higher levels...
                 if (contractBid.Level == 1 && contractBid.Suit != Suit.Unknown)
                 {
-                    bids.AddRange(Takeout((Suit)contractBid.Suit));
+                    bids.AddRange(Takeout(contractBid.Suit));
                 }
             }
             return bids;

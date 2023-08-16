@@ -24,18 +24,28 @@ namespace TricksterBots.Bots.Bridge
 
     public abstract class Constraint
     {
-        public bool OnceAndDone = false;
-        public abstract bool Conforms(Bid bid, PositionState ps, HandSummary hs);
+        public bool StaticConstraint = false;
+        public abstract bool Conforms(Call call, PositionState ps, HandSummary hs);
 
-       
-	}
+
+        public static Suit? GetSuit(Suit? s, Call call)
+        {
+            if (s != null) { return s; }
+            if (call is Bid bid)
+            {
+                return bid.Suit;
+            }
+            return null;
+        }
+
+    }
 
     public interface IShowsState 
     {
-        void ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements);
+        void ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements);
     }
 
-    
+
 }
 
 

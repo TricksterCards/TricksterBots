@@ -13,10 +13,10 @@ namespace TricksterBots.Bots.Bridge
 		public Seat(params int[] seats)
 		{
 			this.seats = seats;
-			this.OnceAndDone = true;
+			this.StaticConstraint = true;
 		}
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+		public override bool Conforms(Call call, PositionState ps, HandSummary hs)
 		{
 			return seats.Contains(ps.Seat);
 		}

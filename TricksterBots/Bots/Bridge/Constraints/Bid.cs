@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Mail;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -19,42 +20,46 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public enum Call { NotActed, Pass, Bid, Double, Redouble }
-
-
-	public struct Bid : IEquatable<Bid>, IComparable<Bid>
+	public abstract class Call : IEquatable<Call>, IComparable<Call>
 	{
-		public int? Level { get; }
-		public Suit? Suit { get; }
+		public int RawValue { get; private set; }
 
-		public Call Call { get; }
+        public override int GetHashCode()
+        {
+            return RawValue;
+        }
+
+        protected Call(int rawValue)
+        {
+            this.RawValue = rawValue;
+        }
+
+        public int CompareTo(Call other)
+        {
+            return RawValue - other.RawValue;
+        }
+
+		public static Call Pass = new Pass();
+		public static Call Double = new Double();
+		public static Call Redouble = new Redouble();
+
+        static public Call FromString(string str)
+        {
+            if (str == "Pass") { return Pass; }
+            if (str == "X") { return Double; }
+            if (str == "XX") { return Call.Redouble; }
+            int level = int.Parse(str.Substring(0, 1));
+            var suit = SymbolToSuit[str.Substring(1)];
+            return new Bid(level, suit);
+        }
+
+        public bool Equals(Call other)
+        {
+            return RawValue == other.RawValue;
+        }
 
 
-		public bool Is(int level, Suit suit)
-		{
-			return Call == Call.Bid && Level == level && Suit == suit;
-		}
-
-		public bool Equals(Bid other)
-		{
-			return (Call == other.Call && Level == other.Level && Suit == other.Suit);
-		}
-
-		public bool IsBid
-		{
-			get { return Call == Call.Bid; }
-		}
-		public bool IsPass
-		{
-			get { return Call == Call.Pass; }
-		}
-
-		public bool HasActed => Call != Call.NotActed;
-
-		public Suit SuitIfNot(Suit? suit)
-		{
-			return (suit == null) ? (Suit)Suit : (Suit)suit;
-		}
+        // TODO: I am sure this exists somewhere else...  Find it
 
 
         public static Dictionary<string, Suit> SymbolToSuit = new Dictionary<string, Suit>
@@ -66,111 +71,103 @@ namespace TricksterBots.Bots.Bridge
             {  "NT", Trickster.cloud.Suit.Unknown  }
         };
 
-        static public Bid FromString(string str)
+
+
+        public static Dictionary<Suit, string> SuitToSymbol = new Dictionary<Suit, string>
+        {
+            { Trickster.cloud.Suit.Clubs,    "♣" },
+            { Trickster.cloud.Suit.Diamonds, "♦" },
+            { Trickster.cloud.Suit.Hearts,   "♥" },
+            { Trickster.cloud.Suit.Spades,   "♠" },
+            { Trickster.cloud.Suit.Unknown,  "NT" }
+        };
+
+        public static Dictionary<Suit, int> StrainToInt = new Dictionary<Suit, int>
+        {
+            { Trickster.cloud.Suit.Clubs,    0 },
+            { Trickster.cloud.Suit.Diamonds, 1 },
+            { Trickster.cloud.Suit.Hearts,   2 },
+            { Trickster.cloud.Suit.Spades,   3 },
+            { Trickster.cloud.Suit.Unknown,  4 }
+        };
+
+
+    }
+
+    public class Pass : Call
+	{
+        public Pass() : base(0) { }
+        public override string ToString()
 		{
-			if (str == "Pass") { return new Bid(Call.Pass);  }
-			if (str == "X") { return new Bid(Call.Double); }
-			if (str == "XX") { return new Bid(Call.Redouble); }
-			int level = int.Parse(str.Substring(0, 1));
-			var suit = SymbolToSuit[str.Substring(1)];
-			return new Bid(level, suit);
+			return "Pass";
 		}
+	}
 
-		public static Bid Pass = new Bid(Call.Pass);
-		public static Bid Null = new Bid(Call.NotActed);
-		public static Bid Double = new Bid(Call.Double);
-		public static Bid Redouble = new Bid(Call.Redouble);
+	public class Double: Call
+	{
+        public Double() : base(1) { }
+        public override string ToString()
+        {
+            return "X";
+        }
+    }
 
-		public Bid(Call call)
-		{
-			Debug.Assert(call != Call.Bid);
-			this.Call = call;
-			this.Level = null;
-			this.Suit = null;
-		}
+    public class Redouble : Call
+    {
+        public Redouble() : base(2) { }
+        public override string ToString()
+        {
+            return "XX";
+        }
+    }
 
-		public Bid(int level, Suit suit)
-		{
-			this.Call = Call.Bid;
+
+
+    public class Bid : Call
+	{
+
+		public int Level { get; }
+		public Suit Suit { get; }
+
+
+//		public bool Is(int level, Suit suit)
+//		{
+//			return Call == Call.Bid && Level == level && Suit == suit;
+//		}
+
+//		public bool Equals(Bid other)
+//		{
+//			return (Call == other.Call && Level == other.Level && Suit == other.Suit);
+//		}
+
+
+	//	public Suit SuitIfNot(Suit? suit)
+//		{
+//			return (suit == null) ? (Suit)Suit : (Suit)suit;
+//		}
+
+
+
+		public Bid(int level, Suit suit) : base((level - 1) * 5 + StrainToInt[suit] + 3)
+        {
+
 			Debug.Assert(level >= 1 && level <= 7);
 			this.Level = level;
 			this.Suit = suit;
 		}
 
-		// TODO: I am sure this exists somewhere else...  Find it
-
-		public static Dictionary<Suit, string> SuitToSymbol = new Dictionary<Suit, string>
-		{
-			{ Trickster.cloud.Suit.Clubs,    "♣" },
-            { Trickster.cloud.Suit.Diamonds, "♦" },
-			{ Trickster.cloud.Suit.Hearts,   "♥" },
-            { Trickster.cloud.Suit.Spades,   "♠" },
-			{ Trickster.cloud.Suit.Unknown,  "NT" }
-		};
-
-		public static Dictionary<Suit, int> StrainToInt = new Dictionary<Suit, int>
-		{
-			{ Trickster.cloud.Suit.Clubs,    0 },
-			{ Trickster.cloud.Suit.Diamonds, 1 },
-			{ Trickster.cloud.Suit.Hearts,   2 },
-			{ Trickster.cloud.Suit.Spades,   3 },
-			{ Trickster.cloud.Suit.Unknown,  4 }
-		};
 
 		public override string ToString()
 		{
-			if (Call == Call.Bid)
-			{
-				return $"{Level}{SuitToSymbol[(Suit)this.Suit]}";
-			}
-			if (Call == Call.Pass)
-			{
-				return "Pass";
-			}
-			if (Call == Call.Double) { return "X"; }
-			if (Call == Call.Redouble) { return "XX"; }
-			Debug.Assert(false);
-			return "";
+			return $"{Level}{SuitToSymbol[(Suit)this.Suit]}";
 		}
 
-		internal int RawLevel
-		{
-			get
-			{
-				Debug.Assert(this.IsBid);
-				return ((int)this.Level - 1) * 5 + StrainToInt[(Suit)this.Suit];
-			}
-		}
+        public int JumpOver(Bid other)
+        {
+            return (RawValue - other.RawValue) / 5;
+        }
 
-		/*
-		public (bool Valid, int Jump) IsValid(PositionState position, Contract contract)
-		{
-			if (this.IsPass) { return (true, 0); }
-			if (this.Call == Call.Double)
-			{
-				if (!contract.Bid.IsBid || contract.Doubled) { return (false, 0); }
-				return ((position.LeftHandOpponent == contract.By || position.RightHandOpponent == contract.By), 0);
-			}
-			if (this.Call == Call.Redouble)
-			{
-				if (contract.Doubled && !contract.Redoubled)
-				{
-					return ((position == contract.By || position.Partner == contract.By), 0);
-				}
-				return (false, 0);
-			}
-			Debug.Assert(this.Call == Call.Bid);
-			if (contract.Bid.Call == Call.NotActed)
-			{
-				return (true, 1 - (int)this.Level);
-			}
-			int thisLevel = this.RawLevel;
-			int contractLevel = contract.Bid.RawLevel;
-			if (thisLevel <= contractLevel) { return (false, 0); }
-			return (true, (thisLevel - contractLevel) / 5);
-		}
-		*/
-
+        /* -- TODO: Part of contract?  Or part of Bid???
 		public int JumpOver(Contract contract)
 		{
 			if (!this.IsBid) 
@@ -185,7 +182,9 @@ namespace TricksterBots.Bots.Bridge
 			Debug.Assert(contract.Bid.IsBid);
 			return (this.RawLevel - contract.Bid.RawLevel) / 5;
 		}
+        */
 
+        /*
         private int OvercallValue
         {
 			get
@@ -208,8 +207,8 @@ namespace TricksterBots.Bots.Bridge
         {
             return OvercallValue - other.OvercallValue;
         }
+        */
+        
+
     }
-
-
-
 }

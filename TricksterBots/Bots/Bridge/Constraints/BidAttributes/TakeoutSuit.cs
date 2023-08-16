@@ -16,7 +16,7 @@ namespace TricksterBots.Bots.Bridge
         public TakeoutSuit(Suit? suit)
         {
             this._suit = suit;
-            this.OnceAndDone = false;
+            this.StaticConstraint = false;
         }
 
 
@@ -41,31 +41,37 @@ namespace TricksterBots.Bots.Bridge
             throw new ArgumentException();  // TODO: Is this OK?  Is it right?
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            var suit = bid.SuitIfNot(_suit);
-            var oppsSuits = PairSummary.Opponents(ps).ShownSuits;
-            if (oppsSuits.Contains(suit)) { return false; }
-            foreach (var other in BasicBidding.BasicSuits)
+            if (GetSuit(_suit, call) is Suit suit)
             {
-                if (other != suit && !oppsSuits.Contains(other))
+                var oppsSuits = PairSummary.Opponents(ps).ShownSuits;
+                if (oppsSuits.Contains(suit)) { return false; }
+                foreach (var other in BasicBidding.BasicSuits)
                 {
-                    // TODO: This may not be ideal but we always will prefer the higher ranking
-                    // suit if all other things are equal.  Perhaps if low point range we would
-                    // want to prefer lower suit.  
-                    var betterSuit = new IsBetterSuit(suit, other, HigherRanking(suit, other), false);
-                    if (!betterSuit.Conforms(bid, ps, hs)) { return false; }
+                    if (other != suit && !oppsSuits.Contains(other))
+                    {
+                        // TODO: This may not be ideal but we always will prefer the higher ranking
+                        // suit if all other things are equal.  Perhaps if low point range we would
+                        // want to prefer lower suit.  
+                        var betterSuit = new IsBetterSuit(suit, other, HigherRanking(suit, other), false);
+                        if (!betterSuit.Conforms(call, ps, hs)) { return false; }
+                    }
                 }
+                return true;
             }
-            return true;
+            Debug.Fail("No suit specified for TakeoutSuit constraint");
+            return false;
         }
 
         // TODO: This is not exactly right.  We PROBABLY have at least 4 in the suit...
 
-        public void ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+        public void ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
-            var suit = bid.SuitIfNot(_suit);
-            showHand.Suits[suit].ShowShape(4, 11);
+            if (GetSuit(_suit, call) is Suit suit)
+            {
+                showHand.Suits[suit].ShowShape(4, 11);
+            }
         }
     }
 

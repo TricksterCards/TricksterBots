@@ -39,7 +39,7 @@ namespace TricksterBots.Bots.Bridge
 
              //   Nonforcing(Call.Pass, 0),    // TOD   aO: What points?  This is the last gasp attempt here...
 
-                Nonforcing(4, Suit.Hearts, Break("4H"), Fit(), PairPoints(CompeteTo4), ShowsTrump()),
+                Nonforcing(4, Suit.Hearts, Break("Tony"), Fit(), PairPoints(CompeteTo4), ShowsTrump()),
                 Nonforcing(4, Suit.Spades, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
 
 

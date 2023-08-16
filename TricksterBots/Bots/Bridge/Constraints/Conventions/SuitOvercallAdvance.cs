@@ -1,9 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
@@ -56,68 +54,71 @@ namespace TricksterBots.Bots.Bridge
         {
             return new BidRule[]
             {
-                // TODO: This is also ugly.  Think about rules for next step with pass
-                // It is especially important that if we pass an open or overcall that 
-                // the default logic will kick in for the partner - perhaps to overcall etc.
-                PartnerBids(Bid.Pass, new Bid(7, Suit.Unknown), (BidChoicesFactory)null),
-                Nonforcing(Bid.Pass, Points(LessThanOvercall))
+
+                Nonforcing(Call.Pass, Points(LessThanOvercall))
             };
         }
 
         private static IEnumerable<BidRule> Advance(PositionState ps)
         {
-            var partnerSuit = (Suit)ps.Partner.LastBid.Suit;
-            return new BidRule[] {
-                // TODO: What is the level of interference we can take
-                DefaultPartnerBids(new Bid(4, Suit.Unknown), OvercallRebid),
-                Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
-                Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(6, 11)),
+            if (ps.Partner.LastCall is Bid partnerBid)
+            {
+                var partnerSuit = partnerBid.Suit;
+                return new BidRule[] {
+                    // TODO: What is the level of interference we can take
+                    DefaultPartnerBids(new Bid(4, Suit.Unknown), OvercallRebid),
+                    Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
+                    Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(6, 11)),
 
-                Nonforcing(1, Suit.Spades, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
-                Nonforcing(1, Suit.Spades, Points(AdvanceNewSuit1Level), Shape(6, 11)),
+                    Nonforcing(1, Suit.Spades, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),
+                    Nonforcing(1, Suit.Spades, Points(AdvanceNewSuit1Level), Shape(6, 11)),
 
                
-                // TODO: Should these be prioirty - 5 - support should be higher priorty.  Seems reasonable
-                Nonforcing(2, Suit.Clubs, Points(AdvanceNewSuit2Level), Shape(5), GoodSuit()),
-                Nonforcing(2, Suit.Clubs, Points(AdvanceNewSuit2Level), Shape(6, 11)),
-                Nonforcing(2, Suit.Diamonds, Points(AdvanceNewSuit2Level), Shape(5), GoodSuit()),
-                Nonforcing(2, Suit.Diamonds, Points(AdvanceNewSuit2Level), Shape(6, 11)),
-                Nonforcing(2, Suit.Hearts, Jump(0), Points(AdvanceNewSuit2Level), Shape(5), GoodSuit()),
-                Nonforcing(2, Suit.Hearts, Jump(0), Points(AdvanceNewSuit2Level), Shape(6, 11)),
-                Nonforcing(2, Suit.Spades, Jump(0), Points(AdvanceNewSuit2Level), Shape(5), GoodSuit()),
-                Nonforcing(2, Suit.Spades, Jump(0), Points(AdvanceNewSuit2Level), Shape(6, 11)),
+                    // TODO: Should these be prioirty - 5 - support should be higher priorty.  Seems reasonable
+                    Nonforcing(2, Suit.Clubs, Points(AdvanceNewSuit2Level), Shape(5), GoodSuit()),
+                    Nonforcing(2, Suit.Clubs, Points(AdvanceNewSuit2Level), Shape(6, 11)),
+                    Nonforcing(2, Suit.Diamonds, Points(AdvanceNewSuit2Level), Shape(5), GoodSuit()),
+                    Nonforcing(2, Suit.Diamonds, Points(AdvanceNewSuit2Level), Shape(6, 11)),
+                    Nonforcing(2, Suit.Hearts, Jump(0), Points(AdvanceNewSuit2Level), Shape(5), GoodSuit()),
+                    Nonforcing(2, Suit.Hearts, Jump(0), Points(AdvanceNewSuit2Level), Shape(6, 11)),
+                    Nonforcing(2, Suit.Spades, Jump(0), Points(AdvanceNewSuit2Level), Shape(5), GoodSuit()),
+                    Nonforcing(2, Suit.Spades, Jump(0), Points(AdvanceNewSuit2Level), Shape(6, 11)),
 
 
 
-                // TODO: Make a special BidRule here to handle rebid after cuebid...
-                Forcing(2, Suit.Clubs, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
-                Forcing(2, Suit.Diamonds, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
-                Forcing(2, Suit.Hearts, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
-                Forcing(2, Suit.Spades, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
+                    // TODO: Make a special BidRule here to handle rebid after cuebid...
+                    Forcing(2, Suit.Clubs, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
+                    Forcing(2, Suit.Diamonds, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
+                    Forcing(2, Suit.Hearts, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
+                    Forcing(2, Suit.Spades, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
 
-                // 2C is not really possible since this is an advance...
-                Nonforcing(2, Suit.Diamonds, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),
-                Nonforcing(2, Suit.Hearts, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),
-                Nonforcing(2, Suit.Spades, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),
+                    // 2C is not really possible since this is an advance...
+                    Nonforcing(2, Suit.Diamonds, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),
+                    Nonforcing(2, Suit.Hearts, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),
+                    Nonforcing(2, Suit.Spades, Partner(HasMinShape(5)), Fit(), DummyPoints(AdvanceRaise), ShowsTrump()),
 
-                // Fill this out better but for now just go on law of total trump, jumping if weak.  
-                Nonforcing(4, Suit.Clubs, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                Nonforcing(4, Suit.Diamonds, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                Nonforcing(4, Suit.Hearts, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                Nonforcing(4, Suit.Spades, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                    // Fill this out better but for now just go on law of total trump, jumping if weak.  
+                    Nonforcing(4, Suit.Clubs, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                    Nonforcing(4, Suit.Diamonds, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                    Nonforcing(4, Suit.Hearts, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                    Nonforcing(4, Suit.Spades, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
 
-                Nonforcing(3, Suit.Clubs, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                Nonforcing(3, Suit.Diamonds, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                Nonforcing(3, Suit.Hearts, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                Nonforcing(3, Suit.Spades, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                    Nonforcing(3, Suit.Clubs, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                    Nonforcing(3, Suit.Diamonds, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                    Nonforcing(3, Suit.Hearts, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                    Nonforcing(3, Suit.Spades, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
 
 
-                // Lowest priority is to bid some level of NT - all fit() bids should be higher priority.
-                Nonforcing(1, Suit.Unknown, OppsStopped(), Points(AdvanceTo1NT))
+                    // Lowest priority is to bid some level of NT - all fit() bids should be higher priority.
+                    Nonforcing(1, Suit.Unknown, OppsStopped(), Points(AdvanceTo1NT))
 
-                // TODO: Any specification of PASS?>>
-            };
+                    // TODO: Any specification of PASS?>>
+                };
+            }
+            Debug.Fail("Partner.LastCall is not a bid.  How in the world did we get here?");
+            return new BidRule[0];
         }
+       
 
         private static IEnumerable<BidRule> OvercallRebid(PositionState _)
         {

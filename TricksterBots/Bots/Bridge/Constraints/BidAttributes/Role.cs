@@ -18,10 +18,10 @@ namespace TricksterBots.Bots.Bridge
             _role = role;
             _round = round;
             _desiredValue = desiredValue;
-            this.OnceAndDone = true;
+            this.StaticConstraint = true;
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
             return _desiredValue == (_role == ps.Role && (_round == 0 || ps.RoleRound == _round));
         }

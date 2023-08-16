@@ -26,6 +26,20 @@ namespace TricksterBots.Bots.Bridge
     }
 
 
+    // TODO: Move this stuff somewhere better.  Maybe DebugLog
+
+    public class DebugLog
+    {
+        public bool Enabled;
+        public void Log(string msg)
+        {
+            if (Enabled)
+            {
+                Debug.WriteLine(msg);
+            }
+        }
+    }
+
     /*
     public class RedirectGroupXXX
     {
@@ -151,8 +165,9 @@ namespace TricksterBots.Bots.Bridge
 
         public PositionState NextToAct { get; private set; }
 
-        public Dictionary<string, Bid> Conventions { get; private set; }
+        public Dictionary<string, Call> Conventions { get; private set; }
 
+        /*
         public bool PassEndsAuction()
         {
             var position = NextToAct;
@@ -175,9 +190,11 @@ namespace TricksterBots.Bots.Bridge
             return true;
 
         }
+        */
 
         public Contract Contract { get; private set; }
 
+        /*
         private Contract ComputeContract()
         {
             Contract contract = new Contract();
@@ -228,6 +245,7 @@ namespace TricksterBots.Bots.Bridge
             }
             return contract;
         }
+        */
 
         public static bool IsVulnerable(string vul, Direction direction)
         {
@@ -252,6 +270,7 @@ namespace TricksterBots.Bots.Bridge
 
         }
 
+        /*
         private static Dictionary<string, string> HACK_Conventions = new Dictionary<string, string>()
         {
             { "Stayman1NTOpen", "X" },
@@ -267,12 +286,13 @@ namespace TricksterBots.Bots.Bridge
             { "MichaelsCuebid", "1♠" }, // TODO: Only 1 level opening bids?
             { "UnusualNT", "1♠" }       // TODO: Same question here...  Only 1 of a suit?
         };
+        */
 
         public BiddingState(Hand[] hands, Direction dealer, string vul /* Dictionary<string, string> conventions = null TODO: Add as parameter*/)
         {
             this.Positions = new Dictionary<Direction, PositionState>();
-            this.Conventions = new Dictionary<string, Bid>();
-            this.Contract = new Contract(Bid.Null, null, false, false);
+            this.Conventions = new Dictionary<string, Call>();
+            this.Contract = new Contract();
             Debug.Assert(hands.Length == 4);
             var d = dealer;
             for (int i = 0; i < hands.Length; i++)
@@ -283,7 +303,19 @@ namespace TricksterBots.Bots.Bridge
             this.Dealer = Positions[dealer];
             this.NextToAct = Dealer;
 
-     
+
+
+            // Hack for now.  TODO: Fill in this dictionary properly...
+            Conventions["Stayman1NTOpen"] = Call.Double;
+            Conventions["Transfer1NTOpen"] = Call.Double;
+            Conventions["4WayTransfer1NTOpen"] = null;
+            Conventions["Stayman2NTOpen"] = Call.Double;
+            Conventions["Transfer2NTOpen"] = Call.Double;
+            Conventions["Stayman1NTOvercall"] = Call.Double;
+            Conventions["Transfer1NTOvercall"] = null;
+            Conventions["Stayman1NTBalancing"] = Call.Double;
+            Conventions["Transfer1NTBalancing"] = null;
+            /*
             foreach (var convention in HACK_Conventions)
             {
                 if (convention.Value == null)
@@ -294,11 +326,11 @@ namespace TricksterBots.Bots.Bridge
                 else
                 {
                     // TODO: What to do on failure?
-                    this.Conventions[convention.Key] = Bid.FromString(convention.Value);
+                    this.Conventions[convention.Key] = Call.FromString(convention.Value);
                 }
                     
             }
-            
+            */
         }
 
 
@@ -390,6 +422,26 @@ namespace TricksterBots.Bots.Bridge
 
 		public string GetHackBid(string[] history, string expected)
         {
+            /*
+            var hackTest = new Dictionary<Call, int>();
+            hackTest[new Bid(2, Suit.Diamonds)] = 1;
+            hackTest[new Bid(2, Suit.Unknown)] = 2;
+            hackTest[new Double()] = 3;
+            hackTest[Call.Pass] = 17;
+            if (hackTest.ContainsKey(new Bid(2, Suit.Diamonds)))
+            {
+                Debug.WriteLine("First thing looks ok");
+            }
+            if (hackTest.ContainsKey(Call.Double))
+            {
+                Debug.WriteLine("Thats odd");
+            }
+            if (hackTest.ContainsKey(Call.Pass))
+            {
+                Debug.WriteLine("Would be wierid as hell not to get here...");
+            }
+            */
+
           /*  
             Debug.WriteLine($"==== START TEST ==== Expect {expected}");
             if (history == null)
@@ -437,10 +489,10 @@ namespace TricksterBots.Bots.Bridge
             // Now we are actually ready to look at a hand and do somethihg
 
             var choices = GetBidsForNextToAct();
-            var chosenBid = choices.BestBid;
-            if (chosenBid.Equals(Bid.Null))
+            var chosenBid = choices.BestCall;
+            if (chosenBid == null)
             {
-                chosenBid = Bid.Pass;
+                chosenBid = Call.Pass;
              //   Debug.WriteLine("No best bid.  Chosing pass");
             }
             var bidRuleSet = choices.GetBidRuleSet(chosenBid);
@@ -456,16 +508,17 @@ namespace TricksterBots.Bots.Bridge
         //    }
         //    Debug.WriteLine("");
 
-            return bidRuleSet.Bid.ToString();
+            return bidRuleSet.Call.ToString();
         }
 
         private void MakeBid(BidRuleSet bidRuleSet)
         {
             NextToAct.MakeBid(bidRuleSet);
+            Contract.MakeCall(bidRuleSet.Call, NextToAct);
             NextToAct = NextToAct.LeftHandOpponent;
-            this.Contract = ComputeContract();
         }
 
+        /*
         public bool IsValidNextBid(Bid bid)
         {
             if (bid.IsPass) { return true; }
@@ -486,6 +539,7 @@ namespace TricksterBots.Bots.Bridge
             return !Contract.Redoubled && Contract.Doubled && (NextToAct == Contract.By || NextToAct == Contract.By.Partner);
 
         }
+        */
 
         internal BidChoices GetBidsForNextToAct()
         {

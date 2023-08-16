@@ -15,42 +15,37 @@ namespace TricksterBots.Bots.Bridge
 	{
 		private int _bidIndex;
 		private Call _call;
-		private Suit? _suit;
-		private int _level;
-		private bool _compareSuit;
+	//	private Suit? _suit;
+	//	private int _level;
+	//	private bool _compareSuit;
 		private bool _desiredValue;
 
 
-		// If you just want to see if the last action was a bid then pass level = 0 and Call.Bid
-		// If level == 0 then level will be ignored.  If compareSuit is false then suit will be ignored, otherwise
-		// if compareSuit is true and suit == null then the suit of the bid will be used.
-		// bidIndex specifies how far back in history to look for the bid.  0 is the last bid made by
-		// the position.  1 indicates 1 bid back in history.
-		public BidHistory(int bidIndex, Call call, int level, bool compareSuit, Suit? suit, bool desiredValue)
+		// If call is null then this class will return true if the spcified call
+		// is the same suit as the previous bid.
+		// If call is non-null then the calls must be equal
+		public BidHistory(int bidIndex, Call call, bool desiredValue)
 		{
-			Debug.Assert(level >= 0 && level <= 7);
 			this._bidIndex = bidIndex;
 			this._call = call;
-			this._level = level;
-			this._suit = suit;
-			this._compareSuit = compareSuit;
 			this._desiredValue = desiredValue;
 
-			this.OnceAndDone = true;
+			this.StaticConstraint = true;
 		}
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs) 
+		public override bool Conforms(Call call, PositionState ps, HandSummary hs) 
 		{
-			var previousBid = ps.GetBidHistory(_bidIndex);
-			if (_call != Call.Bid)
+			var previousCall = ps.GetBidHistory(_bidIndex);
+			if (previousCall != null)
 			{
-				return ((previousBid.Call == _call) == _desiredValue);
-			}
-			if (previousBid.Call == Call.Bid && 
-				(_compareSuit == false || previousBid.Suit == bid.SuitIfNot(_suit)) &&
-				(_level == 0 || _level == previousBid.Level))
-			{
-				return _desiredValue;
+				if (_call != null)
+				{
+					return previousCall.Equals(_call) == _desiredValue;
+				}
+				if (call is Bid bid && previousCall is Bid previousBid)
+				{
+					return (bid.Suit == previousBid.Suit) == _desiredValue;
+				}
 			}
 			return !_desiredValue;
 		}

@@ -13,20 +13,20 @@ namespace TricksterBots.Bots.Bridge
         public ConventionOn(string convention)
         {
             this._convention = convention;
-            this.OnceAndDone = true;
+            this.StaticConstraint = true;
         }
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call _ignored, PositionState ps, HandSummary hs)
         {
             if (ps.BiddingState.Conventions.ContainsKey(_convention))
             {
                 var goodThrough = ps.BiddingState.Conventions[_convention];
-                if (goodThrough.Call == Call.NotActed) { return false; }
+                if (goodThrough == null) { return false; }
                 var contract = ps.BiddingState.Contract;
-                if (goodThrough.IsPass) { return contract.By == ps.Partner && !contract.Doubled; }
-                if (goodThrough.Call == Call.Double) { return contract.By == ps.Partner; }
+                if (goodThrough.Equals(Call.Pass)) { return contract.LastBidBy == ps.Partner && !contract.Doubled; }
+                if (goodThrough.Equals(Call.Double)) { return contract.LastBidBy == ps.Partner; }
                 // TODO: Add redouble here ......
-                return ps.IsValidNextBid(goodThrough);
+                return contract.IsValid(goodThrough, ps);
             }
             return false;
         }

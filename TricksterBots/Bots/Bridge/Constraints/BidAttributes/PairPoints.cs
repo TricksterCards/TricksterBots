@@ -33,12 +33,11 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        protected (int Min, int Max) GetPoints(Bid bid, PositionState ps, HandSummary hs)
+        protected (int Min, int Max) GetPoints(Call call, PositionState ps, HandSummary hs)
         {
             var points = hs.StartingPoints;
-            if (!_useStartingPoints)
+            if (!_useStartingPoints && GetSuit(_suit, call) is Suit suit)
             {
-                var suit = bid.SuitIfNot(_suit);
                 if (ps.PairAgreements.Suits[suit].LongHand == ps)
                 {
                     points = hs.Suits[suit].LongHandPoints;
@@ -47,6 +46,7 @@ namespace TricksterBots.Bots.Bridge
                 {
                     points = hs.Suits[suit].DummyPoints;
                 }
+               
             }
             if (points == null)
             {
@@ -84,10 +84,10 @@ namespace TricksterBots.Bots.Bridge
             return (thisPoints.Min, thisPoints.Max, partnerPoints.Min, partnerPoints.Max);
         }
         */
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            var pointsThis = GetPoints(bid, ps, hs);
-            var pointsPartner = GetPoints(bid, ps.Partner, ps.Partner.PublicHandSummary);
+            var pointsThis = GetPoints(call, ps, hs);
+            var pointsPartner = GetPoints(call, ps.Partner, ps.Partner.PublicHandSummary);
             return (pointsThis.Max + pointsPartner.Min >= _min && pointsThis.Min + pointsPartner.Min <= _max);
         }
     }
@@ -96,24 +96,24 @@ namespace TricksterBots.Bots.Bridge
     {
         public PairShowsPoints(Suit? suit, int min, int max) : base(suit, min, max) { }
 
-        void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+        void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
-            var pointsThis = GetPoints(bid, ps, ps.PublicHandSummary);
-            var pointsPartner = GetPoints(bid, ps.Partner, ps.Partner.PublicHandSummary);
-            var suit = bid.SuitIfNot(_suit);
+            var pointsThis = GetPoints(call, ps, ps.PublicHandSummary);
+            var pointsPartner = GetPoints(call, ps.Partner, ps.Partner.PublicHandSummary);
+            var suit = GetSuit(_suit, call);
             int showMin = Math.Max(_min - pointsPartner.Min, 0);
             int showMax = Math.Max(_max - pointsPartner.Min, 0);
-            if (this._useStartingPoints || ps.PairAgreements.Suits[suit].LongHand == null)
+            if (this._useStartingPoints || suit == null|| ps.PairAgreements.Suits[(Suit)suit].LongHand == null)
             {
                 showHand.ShowStartingPoints(showMin, showMax);
             }
-            else if (ps.PairAgreements.Suits[suit].LongHand == ps)
+            else if (ps.PairAgreements.Suits[(Suit)suit].LongHand == ps)
             {
-                showHand.Suits[suit].ShowLongHandPoints(showMin, showMax);
+                showHand.Suits[(Suit)suit].ShowLongHandPoints(showMin, showMax);
             }
             else
             {
-                showHand.Suits[suit].ShowDummyPoints(showMin, showMax);
+                showHand.Suits[(Suit)suit].ShowDummyPoints(showMin, showMax);
             }
         }
     }

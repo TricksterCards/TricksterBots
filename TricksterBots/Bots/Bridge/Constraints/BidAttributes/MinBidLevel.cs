@@ -16,14 +16,13 @@ namespace TricksterBots.Bots.Bridge
 
         public BidAvailable(int level, Suit suit, bool desiredValue)
         {
-            Debug.Assert(level >= 1 && level <= 7);
             this._bid = new Bid(level, suit);
-            this.OnceAndDone = true;
+            this.StaticConstraint = true;
             _desiredValue = desiredValue;   
         }
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            return _desiredValue == ps.IsValidNextBid(_bid);
+            return _desiredValue == ps.IsValidNextCall(_bid);
         }
     }
 }

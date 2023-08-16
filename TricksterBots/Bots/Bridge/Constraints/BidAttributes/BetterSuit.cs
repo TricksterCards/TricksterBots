@@ -35,25 +35,27 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+		public override bool Conforms(Call call, PositionState ps, HandSummary hs)
 		{
-			var better = bid.SuitIfNot(_better);
-			var worse = bid.SuitIfNot(_worse);
-			var betterShape = hs.Suits[better].GetShape();
-			var worseShape = hs.Suits[worse].GetShape();
-			var defaultIfEqual = bid.SuitIfNot(_defaultIfEqual);
-
-			
-			if (betterShape.Max < worseShape.Min) { return false; }
-			if (betterShape.Max == worseShape.Min && worse == defaultIfEqual) { return false; }
-			if (!_lengthOnly && betterShape == worseShape)
+			if (GetSuit(_better, call) is Suit better &&
+				GetSuit(_worse, call) is Suit worse &&
+				GetSuit(_defaultIfEqual, call) is Suit defaultIfEqual)
 			{
-				int bq = (int)(hs.Suits[better].GetQuality().Min);
-				int wq = (int)(hs.Suits[worse].GetQuality().Min);
-				if (bq > wq) { return true; }
-				if (wq > bq) { return false;}
+				var betterShape = hs.Suits[better].GetShape();
+				var worseShape = hs.Suits[worse].GetShape();
+				if (betterShape.Max < worseShape.Min) { return false; }
+				if (betterShape.Max == worseShape.Min && worse == defaultIfEqual) { return false; }
+				if (!_lengthOnly && betterShape == worseShape)
+				{
+					int bq = (int)(hs.Suits[better].GetQuality().Min);
+					int wq = (int)(hs.Suits[worse].GetQuality().Min);
+					if (bq > wq) { return true; }
+					if (wq > bq) { return false; }
+				}
+				return true;
 			}
-			return true;
+			Debug.Fail("One of three suits not specified in constraint");
+			return false;
 		}
 
 	}
@@ -66,13 +68,12 @@ namespace TricksterBots.Bots.Bridge
 
 		// The worse suit can not be longer than thw better one, and the quality can not be higher, so all we can
 		// do here is simply restrict the maximums for both shape and quality.
-		void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+		void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
 		{
-			var better = bid.SuitIfNot(_better);
-			// If there has been no shape defined for the better suit then we can't really do anything useful...
-			if (ps.PublicHandSummary.Suits[better].Shape != null)
+			if (GetSuit(_better, call) is Suit better &&
+				ps.PublicHandSummary.Suits[better].Shape != null &&
+				GetSuit(_worse, call) is Suit worse)
 			{
-				var worse = bid.SuitIfNot(_worse);
 				var betterShape = ps.PublicHandSummary.Suits[better].GetShape();
 				var worseShape = ps.PublicHandSummary.Suits[worse].GetShape();
 				showHand.Suits[worse].ShowShape(worseShape.Min, Math.Min(worseShape.Max, betterShape.Max));

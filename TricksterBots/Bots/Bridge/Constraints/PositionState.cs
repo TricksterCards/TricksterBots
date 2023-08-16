@@ -45,29 +45,21 @@ namespace TricksterBots.Bots.Bridge
 
 		public bool IsOurContract
 		{
-			get
-			{
-				var by = BiddingState.Contract.By;
-				return (by == this || by == Partner);
-			}
+			get { return BiddingState.Contract.IsOurs(this); }
 		}
 
         public bool IsOpponentsContract
         {
-            get
-            {
-                var by = BiddingState.Contract.By;
-                return (by == RightHandOpponent || by == LeftHandOpponent);
-            }
+			get { return BiddingState.Contract.IsOpponents(this); }
         }
 
-        public Bid GetBidHistory(int historyLevel)
+        public Call GetBidHistory(int historyLevel)
 		{
 			if (_bids.Count <= historyLevel)
 			{
-				return new Bid(Call.NotActed);
+				return null;
 			}
-			return _bids[_bids.Count - 1 - historyLevel].Bid;
+			return _bids[_bids.Count - 1 - historyLevel].Call;
 		}
 
 		public PositionState Partner => BiddingState.Positions[BasicBidding.Partner(Direction)];
@@ -113,7 +105,7 @@ namespace TricksterBots.Bots.Bridge
 			get { return BidRound - _roleAssignedOffset; }
 		}
 
-		public Bid LastBid { get { return GetBidHistory(0); } }
+		public Call LastCall { get { return GetBidHistory(0); } }
 
 		
 		public BidChoicesFactory GetBidsFactory()
@@ -124,9 +116,9 @@ namespace TricksterBots.Bots.Bridge
 
 
 		// THIS IS AN INTERNAL FUNCITON:
-		public Bid MakeBid(BidRuleSet bidGroup)
+		public Call MakeBid(BidRuleSet bidGroup)
 		{
-            if (!bidGroup.Bid.IsPass && !this._roleAssigned)
+            if (!bidGroup.Call.Equals(Call.Pass) && !this._roleAssigned)
 			{
 				if (Role == PositionRole.Opener)
 				{
@@ -160,7 +152,7 @@ namespace TricksterBots.Bots.Bridge
 				}
 			}
 			*/
-			return bidGroup.Bid;
+			return bidGroup.Call;
 		}
 
 		private void AssignRole(PositionRole role)
@@ -234,9 +226,9 @@ namespace TricksterBots.Bots.Bridge
 			return (this._privateHandSummary == null) ? false : rule.SatisifiesDynamicConstraints(this, this._privateHandSummary);
 		}
 
-		public bool IsValidNextBid(Bid bid)
+		public bool IsValidNextCall(Call call)
 		{
-			return BiddingState.NextToAct == this && BiddingState.IsValidNextBid(bid);
+			return BiddingState.NextToAct == this && BiddingState.Contract.IsValid(call, this);
 		}
 
         // TODO: Just a start of taking a group of rules and returning a subest

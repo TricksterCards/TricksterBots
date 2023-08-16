@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.cloud;
@@ -14,14 +14,30 @@ namespace TricksterBots.Bots.Bridge
         {
             this._trumpSuit = trumpSuit;
         }
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
+            if (Suit(call) == null)
+            {
+                Debug.Fail("Suit must be specified or call must be a bid for TrumpSuit constraint");
+                return false;
+            }
             return true;
         }
 
-        void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+        private Suit? Suit(Call call)
         {
-            showAgreements.ShowTrump(bid.SuitIfNot(_trumpSuit));
+            if (_trumpSuit != null) return _trumpSuit;
+            if (call is Bid bid)
+            {
+                return bid.Suit;
+            }
+            return null;
+        }
+
+        void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+        {
+            Suit suit = (Suit)Suit(call);
+            showAgreements.ShowTrump(suit);
         }
     }
 }

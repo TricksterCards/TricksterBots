@@ -22,13 +22,16 @@ namespace TricksterBots.Bots.Bridge
 
 		private IEnumerable<BidRule> Initiate(PositionState ps)
 		{
-            Bid bid = ps.RightHandOpponent.GetBidHistory(0).IsBid ? Bid.Double : new Bid(2, Suit.Clubs);
+            // If there is a bid then it can only be 2C..
+            Bid bidStayman = new Bid(2, Suit.Clubs);
+
+            Call call = ps.RightHandOpponent.GetBidHistory(0).Equals(bidStayman) ? Bid.Double : bidStayman;
             return new BidRule[] {
-                DefaultPartnerBids(Bid.Double, Answer),
-                Forcing(bid, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 0, 4), Flat(false), ShowsNoSuit()),
-                Forcing(bid, Points(ResponderRange.InviteOrBetter), Shape(Suit.Spades, 4), Shape(Suit.Hearts, 0, 4), Flat(false), ShowsNoSuit()),
-                Forcing(bid, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5), ShowsNoSuit()),
-                Forcing(bid, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4), ShowsNoSuit())
+                PartnerBids(call, Call.Double, Answer),
+                Forcing(call, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 0, 4), Flat(false), ShowsNoSuit()),
+                Forcing(call, Points(ResponderRange.InviteOrBetter), Shape(Suit.Spades, 4), Shape(Suit.Hearts, 0, 4), Flat(false), ShowsNoSuit()),
+                Forcing(call, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5), ShowsNoSuit()),
+                Forcing(call, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4), ShowsNoSuit())
                 // TODO: The following rule is "Garbage Stayman"
                 ///	Forcing(2, Suit.Clubs, Points((0, 7)), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
             };
@@ -39,7 +42,8 @@ namespace TricksterBots.Bots.Bridge
         public IEnumerable<BidRule> Answer(PositionState ps)
 		{
             return new BidRule[] {
-                DefaultPartnerBids(Bid.Double, Explain),
+                DefaultPartnerBids(goodThrough: Bid.Double, Explain),
+
 				// TODO: Are these bids truly forcing?  Not if garbage stayman...
 				Forcing(2, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3), ShowsNoSuit()),
 
@@ -141,13 +145,16 @@ namespace TricksterBots.Bots.Bridge
 
         public static IEnumerable<BidRule> InitiateConvention(PositionState ps) 
         {
-            Bid bid = ps.RightHandOpponent.GetBidHistory(0).IsBid ? Bid.Double : new Bid(3, Suit.Clubs);
+            // If there is a bid then it can only be 3C..
+            Bid bidStayman = new Bid(3, Suit.Clubs);
+
+            Call call = ps.RightHandOpponent.GetBidHistory(0).Equals(bidStayman) ? Bid.Double : bidStayman;
             return new BidRule[] {
-                PartnerBids(bid, Bid.Double, Answer),
-                Forcing(bid, RespondGame, Shape(Suit.Hearts, 4), Flat(false)),
-                Forcing(bid, RespondGame, Shape(Suit.Spades, 4), Flat(false)),
-                Forcing(bid, RespondGame, Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5)),
-                Forcing(bid, RespondGame, Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4))
+                PartnerBids(call, Bid.Double, Answer),
+                Forcing(call, RespondGame, Shape(Suit.Hearts, 4), Flat(false)),
+                Forcing(call, RespondGame, Shape(Suit.Spades, 4), Flat(false)),
+                Forcing(call, RespondGame, Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5)),
+                Forcing(call, RespondGame, Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4))
                 // TODO: The following rule is "Garbage Stayman"
                 //Forcing(2, Suit.Clubs, Points(NTLessThanInvite), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
             };
@@ -155,7 +162,7 @@ namespace TricksterBots.Bots.Bridge
         public static IEnumerable<BidRule> Answer(PositionState _)
         {
             return new BidRule[] {
-                DefaultPartnerBids(Bid.Double, ResponderRebid),
+                DefaultPartnerBids(Call.Double, ResponderRebid),
 
                 Forcing(3, Suit.Diamonds, Shape(Suit.Hearts, 0, 3), Shape(Suit.Spades, 0, 3)),
 

@@ -24,7 +24,7 @@ namespace TricksterBots.Bots.Bridge
         {
             return new BidRule[] {
                 // TODO: Interference here...
-                DefaultPartnerBids(Bid.Pass, Respond),
+                DefaultPartnerBids(Call.Pass, Respond),
                 Forcing(2, Suit.Clubs, Points(StrongOpenRange), ShowsNoSuit())
             };
     

@@ -17,7 +17,7 @@ namespace TricksterBots.Bots.Bridge
 		{
 			_relativePosition = relativePosition;
 			_constraint = constraint;
-            this.OnceAndDone = constraint.OnceAndDone;
+            this.StaticConstraint = constraint.StaticConstraint;
             if (constraint as IShowsState != null)
 			{
 				throw new ArgumentException();
@@ -34,10 +34,10 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+		public override bool Conforms(Call call, PositionState ps, HandSummary hs)
 		{
 			var pos = GetPosition(ps);
-			return _constraint.Conforms(bid, pos, pos.PublicHandSummary);
+			return _constraint.Conforms(call, pos, pos.PublicHandSummary);
 		}
 	}
 }

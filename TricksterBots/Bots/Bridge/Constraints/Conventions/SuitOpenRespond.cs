@@ -23,10 +23,10 @@ namespace TricksterBots.Bots.Bridge
 			return new List<BidRule>
 			{
 
-				PartnerBids(1, Suit.Clubs, Bid.Pass, RespondTo1C),
-                PartnerBids(1, Suit.Diamonds, Bid.Pass, RespondTo1D),
-                PartnerBids(1, Suit.Hearts, Bid.Pass, RespondTo1H),
-                PartnerBids(1, Suit.Spades, Bid.Pass, RespondTo1S),
+				PartnerBids(1, Suit.Clubs, Call.Pass, RespondTo1C),
+                PartnerBids(1, Suit.Diamonds, Call.Pass, RespondTo1D),
+                PartnerBids(1, Suit.Hearts, Call.Pass, RespondTo1H),
+                PartnerBids(1, Suit.Spades, Call.Pass, RespondTo1S),
 
 				PartnerBids(1, Suit.Clubs, new Bid(1, Suit.Unknown), RespondWithInt),
                 PartnerBids(1, Suit.Diamonds, new Bid(1, Suit.Unknown), RespondWithInt),
@@ -71,8 +71,7 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(4, Suit.Hearts, Points(LessThanOpen), Shape(8), DecentSuit()),
 				Nonforcing(4, Suit.Spades, Points(LessThanOpen), Shape(8), DecentSuit()),
 
-				// TODO: Is this best way?  Need to prevent pass from invoking response. Go back to default...
-				PartnerBids(Bid.Pass, new Bid(7, Suit.Unknown), (BidChoicesFactory)null),
+
 				Nonforcing(Bid.Pass, Points(LessThanOpen)),
 
 			};
@@ -119,18 +118,18 @@ namespace TricksterBots.Bots.Bridge
 
 
 				// Rebid a 6 card suit
-				Nonforcing(2, Suit.Clubs, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
-				Nonforcing(2, Suit.Diamonds, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
-				Nonforcing(2, Suit.Hearts, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
-				Nonforcing(2, Suit.Spades, LastBid(1), Shape(6, 11), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Clubs, Rebid(), Shape(6, 11), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Diamonds, Rebid(), Shape(6, 11), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Hearts, Rebid(), Shape(6, 11), Points(MinimumOpener)),
+				Nonforcing(2, Suit.Spades, Rebid(), Shape(6, 11), Points(MinimumOpener)),
 
 
 
 
-				Nonforcing(3, Suit.Clubs, LastBid(1), Shape(6, 11), Points(MediumOpener)),
-				Nonforcing(3, Suit.Diamonds, LastBid(1), Shape(6, 11), Points(MediumOpener)),
-				Nonforcing(3, Suit.Hearts, LastBid(1), Shape(6, 11), Points(MediumOpener)),
-				Nonforcing(3, Suit.Spades, LastBid(1), Shape(6, 11), Points(MediumOpener)),
+				Nonforcing(3, Suit.Clubs, Rebid(), Shape(6, 11), Points(MediumOpener)),
+				Nonforcing(3, Suit.Diamonds, Rebid(), Shape(6, 11), Points(MediumOpener)),
+				Nonforcing(3, Suit.Hearts, Rebid(), Shape(6, 11), Points(MediumOpener)),
+				Nonforcing(3, Suit.Spades, Rebid(), Shape(6, 11), Points(MediumOpener)),
 
 
 

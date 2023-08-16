@@ -12,16 +12,19 @@ using static TricksterBots.Bots.Bridge.BidRule;
 namespace TricksterBots.Bots.Bridge
 {
 
+    public delegate IEnumerable<BidRule> BidRulesFactory(PositionState positionState);
+
+
     public class PartnerChoicesXXX
     {
-        private SortedList<Bid, BidChoicesFactory> _choices;
+        private SortedList<Call, BidChoicesFactory> _choices;
 
         public PartnerChoicesXXX()
         {
-            _choices = new SortedList<Bid, BidChoicesFactory>();
+            _choices = new SortedList<Call, BidChoicesFactory>();
         }
 
-        public void AddFactory(Bid goodThrough, BidChoicesFactory partnerFactory)
+        public void AddFactory(Call goodThrough, BidChoicesFactory partnerFactory)
         {
             _choices.Add(goodThrough, partnerFactory);
         }
@@ -29,7 +32,7 @@ namespace TricksterBots.Bots.Bridge
         public BidChoicesFactory GetPartnerBidsFactory(PositionState ps)
         {
             var lhoBid = ps.LeftHandOpponent.GetBidHistory(0);
-            foreach (KeyValuePair<Bid, BidChoicesFactory> choice in _choices)
+            foreach (KeyValuePair<Call, BidChoicesFactory> choice in _choices)
             {
                 if (choice.Key.CompareTo(lhoBid) >= 0) return choice.Value;
             }
@@ -39,22 +42,29 @@ namespace TricksterBots.Bots.Bridge
 
         public void Merge(PartnerChoicesXXX other)
         {
-            Bid highestGoodThrough = _choices.Count == 0 ? Bid.Null : _choices.Last().Key;
-            foreach (KeyValuePair<Bid, BidChoicesFactory> choice in other._choices)
+            if (_choices.Count == 0)
             {
-                if (highestGoodThrough.CompareTo(choice.Key) < 0)
+                _choices = other._choices;  // TODO: Should I copy this???
+            }
+            else
+            {
+                Call highestGoodThrough = _choices.Last().Key;
+                foreach (KeyValuePair<Call, BidChoicesFactory> choice in other._choices)
                 {
-                    AddFactory(choice.Key, choice.Value);
+                    if (highestGoodThrough.CompareTo(choice.Key) < 0)
+                    {
+                        AddFactory(choice.Key, choice.Value);
+                    }
                 }
             }
         }
     }
-
-    public class ChoicesFromBids
+    /*
+    public class ChoicesFromRules
     {
         public BidChoicesFactory Factory { get { return this.Choices; } }
         private BidRulesFactory _rulesFactory;
-        public ChoicesFromBids(BidRulesFactory rulesFactory)
+        public ChoicesFromRules(BidRulesFactory rulesFactory)
         {
             _rulesFactory = rulesFactory;
         }
@@ -63,34 +73,33 @@ namespace TricksterBots.Bots.Bridge
            return new BidChoices(ps, _rulesFactory);
         }
     }
+    */
 
     public delegate BidChoices BidChoicesFactory(PositionState ps);
     public class BidChoices
     {
-        public Bid BestBid { get; private set; }
+        public Call BestCall { get; private set; }
         private PositionState _ps;
 
-        private Dictionary<Bid, BidRuleSet> _choices;
+        private Dictionary<Call, BidRuleSet> _choices;
         public PartnerChoicesXXX DefaultPartnerBids { get; private set; }
  
         public BidChoices(PositionState ps)
         {
-            BestBid = Bid.Null;
+            BestCall = null;
             _ps = ps;
-            _choices = new Dictionary<Bid, BidRuleSet>();
+            _choices = new Dictionary<Call, BidRuleSet>();
             DefaultPartnerBids = new PartnerChoicesXXX();
-            DefaultPartnerBids.AddFactory(new Bid(7, Trickster.cloud.Suit.Unknown), new ChoicesFromBids(Compete.CompBids).Factory);
         }
 
-        public BidRuleSet GetBidRuleSet(Bid bid)
+        public BidRuleSet GetBidRuleSet(Call call)
         {
-            if (_choices.ContainsKey(bid))
+            if (_choices.ContainsKey(call))
             {
-                return _choices[bid];
+                return _choices[call];
             }
-            Debug.Assert(!bid.Equals(Bid.Null));
-            var bogusRule = new BidRule(bid, BidForce.Nonforcing, new Constraint[0]);
-            var choice = new BidRuleSet(bid);
+            var bogusRule = new BidRule(call, BidForce.Nonforcing, new Constraint[0]);
+            var choice = new BidRuleSet(call);
             choice.AddRule(bogusRule);
             return choice;
         }
@@ -110,11 +119,11 @@ namespace TricksterBots.Bots.Bridge
         public void AddRules(IEnumerable<BidRule> rules)
         {
 
-            var added = new HashSet<Bid>();
+            var added = new HashSet<Call>();
             var groupDefaultPartnerBids = new PartnerChoicesXXX();
             foreach (var rule in rules)
             {
-                if (rule.Bid.Equals(Bid.Null))
+                if (rule.Call == null)
                 {
                     if (rule is PartnerBidRule partnerBids)
                     {
@@ -131,37 +140,42 @@ namespace TricksterBots.Bots.Bridge
                 }
                 else
                 {
-                    if (_ps.IsValidNextBid(rule.Bid))
+                    if (_ps.IsValidNextCall(rule.Call))
                     {
                         if (rule.SatisifiesStaticConstraints(_ps))
                         {
-                            if (!_choices.ContainsKey(rule.Bid))
+                            if (!_choices.ContainsKey(rule.Call))
                             {
-                                _choices[rule.Bid] = new BidRuleSet(rule.Bid); ;
-                                added.Add(rule.Bid);
+                                _choices[rule.Call] = new BidRuleSet(rule.Call); ;
+                                added.Add(rule.Call);
                             }
-                            if (added.Contains(rule.Bid))
+                            if (added.Contains(rule.Call))
                             {
-                                _choices[rule.Bid].AddRule(rule);
-                                if (BestBid.Equals(Bid.Null) && !(rule is PartnerBidRule) && _ps.PrivateHandConforms(rule))
+                                _choices[rule.Call].AddRule(rule);
+                                if (BestCall == null && !(rule is PartnerBidRule) && _ps.PrivateHandConforms(rule))
                                 {
-                                    BestBid = rule.Bid;
+                                    BestCall = rule.Call;
                                 }
                             }
                         }
                     }
                 }
             }
-            foreach (var bid in added)
+            foreach (var call in added)
             {
-                if (_choices[bid].HasRules)
+                // Add default rules for any call other than Pass.  Pass must have
+                // explicit rules or it defaults to a null factory (default behavior).
+                if (_choices[call].HasRules)
                 {
-                    _choices[bid].MergePartnerChoices(groupDefaultPartnerBids);
-                    _choices[bid].MergePartnerChoices(DefaultPartnerBids);
+                    if (!call.Equals(Call.Pass))
+                    {
+                        _choices[call].MergePartnerChoices(groupDefaultPartnerBids);
+                        _choices[call].MergePartnerChoices(DefaultPartnerBids);
+                    }
                 }
                 else
                 {
-                    _choices.Remove(bid);
+                    _choices.Remove(call);
                 }
             }
         }

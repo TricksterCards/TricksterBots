@@ -31,7 +31,7 @@ namespace TricksterBots.Bots.Bridge
         }
 
         // Returns the points for the hand, adjusted for dummy points if appropriate.
-        protected (int, int) GetPoints(Bid bid, PositionState ps, HandSummary hs)
+        protected (int, int) GetPoints(Call call, PositionState ps, HandSummary hs)
         {
             (int, int)? points = null;
             switch (_pointType)
@@ -43,14 +43,16 @@ namespace TricksterBots.Bots.Bridge
                     points = hs.StartingPoints;
                     break;
                 case PointType.Suit:
-                    var suit = bid.SuitIfNot(_trumpSuit);
-                    if (ps.PairAgreements.Suits[suit].LongHand == ps)
+                    if (GetSuit(_trumpSuit, call) is Suit suit)
                     {
-                        points = hs.Suits[suit].LongHandPoints;
-                    }
-                    else if (ps.PairAgreements.Suits[suit].Dummy == ps)
-                    {
-                        points = hs.Suits[suit].DummyPoints;
+                        if (ps.PairAgreements.Suits[suit].LongHand == ps)
+                        {
+                            points = hs.Suits[suit].LongHandPoints;
+                        }
+                        else if (ps.PairAgreements.Suits[suit].Dummy == ps)
+                        {
+                            points = hs.Suits[suit].DummyPoints;
+                        }
                     }
                     break;
             }
@@ -62,9 +64,9 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        public override bool Conforms(Bid bid, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            (int Min, int Max) points = GetPoints(bid, ps, hs);
+            (int Min, int Max) points = GetPoints(call, ps, hs);
             return (_min <= points.Max && _max >= points.Min);
         }
 
@@ -76,7 +78,7 @@ namespace TricksterBots.Bots.Bridge
         public ShowsPoints(Suit? trumpSuit, int min, int max, PointType pointType) : base(trumpSuit, min, max, pointType) { }
 
 
-        void IShowsState.ShowState(Bid bid, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+        void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
             switch (_pointType)
             {
@@ -87,20 +89,26 @@ namespace TricksterBots.Bots.Bridge
                     showHand.ShowStartingPoints(_min, _max);
                     break;
                 case PointType.Suit:
-                    var suit = bid.SuitIfNot(_trumpSuit);
-                    if (ps.PairAgreements.Suits[suit].LongHand == ps)
+                    if (GetSuit(_trumpSuit, call) is Suit suit)
                     {
-                        showHand.Suits[suit].ShowLongHandPoints(_min, _max);
+                        if (ps.PairAgreements.Suits[suit].LongHand == ps)
+                        {
+                            showHand.Suits[suit].ShowLongHandPoints(_min, _max);
 
-                    }
-                    else if (ps.PairAgreements.Suits[suit].Dummy == ps)
-                    {
-                        showHand.Suits[suit].ShowDummyPoints(_min, _max);
+                        }
+                        else if (ps.PairAgreements.Suits[suit].Dummy == ps)
+                        {
+                            showHand.Suits[suit].ShowDummyPoints(_min, _max);
+                        }
+                        else
+                        {
+                            showHand.ShowStartingPoints(_min, _max);
+                        }
                     }
                     else
                     {
-                        showHand.ShowStartingPoints(_min, _max);
-                    }    
+                        Debug.Fail("Need to specify a suit.");
+                    }
                     break;
                 default:
                     Debug.Assert(false);
