@@ -107,7 +107,8 @@
     <Compile Include="Bots\Bridge\bridgebid\phases\ResponderRebid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\phases\Response.cs" />
     <Compile Include="Bots\Bridge\BridgeBot.cs" />
-    <Compile Include="Bots\Bridge\Constraints\Bid.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BiddingSystem.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Call.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Balanced.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BetterSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BidHistory.cs" />
@@ -152,8 +153,9 @@
     <Compile Include="Bots\Bridge\Constraints\HandEvaluator.cs" />
     <Compile Include="Bots\Bridge\Constraints\HandSummary.cs" />
     <Compile Include="Bots\Bridge\Constraints\Constraint.cs" />
-    <Compile Include="Bots\Bridge\Constraints\Conventions\Natural.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Conventions\StandardAmerican.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Points.cs" />
+    <Compile Include="Bots\Bridge\Constraints\PairState.cs" />
     <Compile Include="Bots\Bridge\Constraints\PairSummary.cs" />
     <Compile Include="Bots\Bridge\Constraints\PositionState.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Shape.cs" />

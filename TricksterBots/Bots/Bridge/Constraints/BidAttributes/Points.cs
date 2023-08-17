@@ -45,11 +45,11 @@ namespace TricksterBots.Bots.Bridge
                 case PointType.Suit:
                     if (GetSuit(_trumpSuit, call) is Suit suit)
                     {
-                        if (ps.PairAgreements.Suits[suit].LongHand == ps)
+                        if (ps.PairState.Agreements.Suits[suit].LongHand == ps)
                         {
                             points = hs.Suits[suit].LongHandPoints;
                         }
-                        else if (ps.PairAgreements.Suits[suit].Dummy == ps)
+                        else if (ps.PairState.Agreements.Suits[suit].Dummy == ps)
                         {
                             points = hs.Suits[suit].DummyPoints;
                         }
@@ -91,12 +91,12 @@ namespace TricksterBots.Bots.Bridge
                 case PointType.Suit:
                     if (GetSuit(_trumpSuit, call) is Suit suit)
                     {
-                        if (ps.PairAgreements.Suits[suit].LongHand == ps)
+                        if (ps.PairState.Agreements.Suits[suit].LongHand == ps)
                         {
                             showHand.Suits[suit].ShowLongHandPoints(_min, _max);
 
                         }
-                        else if (ps.PairAgreements.Suits[suit].Dummy == ps)
+                        else if (ps.PairState.Agreements.Suits[suit].Dummy == ps)
                         {
                             showHand.Suits[suit].ShowDummyPoints(_min, _max);
                         }

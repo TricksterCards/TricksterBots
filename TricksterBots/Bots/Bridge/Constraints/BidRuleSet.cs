@@ -111,7 +111,7 @@ namespace TricksterBots.Bots.Bridge
         {
 			// TODO: This is a hack. Need to understand what's going on here.  But for now if empty rules
 			// just return the current state...
-			if (!HasRules) { return (ps.PublicHandSummary, ps.PairAgreements); }
+			if (!HasRules) { return (ps.PublicHandSummary, ps.PairState.Agreements); }
 
             var showHand = new HandSummary.ShowState();
             var showAgreements = new PairAgreements.ShowState();

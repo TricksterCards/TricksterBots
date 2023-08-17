@@ -29,7 +29,7 @@ namespace TricksterBots.Bots.Bridge
 
 		private List<BidRuleSet> _bids;
 
-		public PairAgreements PairAgreements { get; private set; }
+		public PairState PairState { get; private set; }
 
 		public BiddingState BiddingState { get; }
 
@@ -70,7 +70,7 @@ namespace TricksterBots.Bots.Bridge
 		// TODO: Potentially LHO Interferred...  Maybe just in 
 
 
-		public PositionState(BiddingState biddingState, Direction direction, int seat, bool vulnerable, Hand hand)
+		public PositionState(BiddingState biddingState, PairState pairState, Direction direction, int seat, bool vulnerable, Hand hand)
 		{
 			Debug.Assert(seat >= 1 && seat <= 4);
 			this.BiddingState = biddingState;
@@ -79,7 +79,7 @@ namespace TricksterBots.Bots.Bridge
 			this.Role = PositionRole.Opener;    // Best start for any position.  Will change with time.
 			this.Vulnerable = vulnerable;
 			this.PublicHandSummary = new HandSummary();
-			this.PairAgreements = new PairAgreements();
+			this.PairState = pairState;
 			this._bids = new List<BidRuleSet>();
 
 			if (hand != null)
@@ -108,9 +108,11 @@ namespace TricksterBots.Bots.Bridge
 		public Call LastCall { get { return GetBidHistory(0); } }
 
 		
-		public BidChoicesFactory GetBidsFactory()
+		public BidChoices GetBidChoices()
 		{
-			return Partner._bids.Count > 0 ? Partner._bids.Last().GetBidsFactory(Partner) : null;
+			BidChoicesFactory bidFactory = Partner._bids.Count > 0 ? Partner._bids.Last().GetBidsFactory(Partner) : null;
+			if (bidFactory == null) { bidFactory = PairState.BiddingSystem.GetBidChoices; }
+			return bidFactory(this);
 		}
 	
 
@@ -184,31 +186,30 @@ namespace TricksterBots.Bots.Bridge
                 (HandSummary hs, PairAgreements pa) newState = bidGroup.ShowState(this);
 
 				var showHand = new HandSummary.ShowState(PublicHandSummary);
-				var showAgreements = new PairAgreements.ShowState(PairAgreements);
+				var showAgreements = new PairAgreements.ShowState(PairState.Agreements);
 
 				showHand.Combine(newState.hs, State.CombineRule.Merge);
 				showAgreements.Combine(newState.pa, State.CombineRule.Merge);
 
 
 				if (this.PublicHandSummary.Equals(showHand.HandSummary) &&
-					this.PairAgreements.Equals(showAgreements.PairAgreements)) 
+					this.PairState.Agreements.Equals(showAgreements.PairAgreements)) 
 				{ 
 					return stateChanged;
 				}
 				stateChanged = true;
 				this.PublicHandSummary = showHand.HandSummary;
-				this.PairAgreements = showAgreements.PairAgreements;
-				this.Partner.PairAgreements = this.PairAgreements;
+				this.PairState.Agreements = showAgreements.PairAgreements;
 			}
 			Debug.Assert(false); // This is bad - we had over 1000 state changes.  Infinite loop time...
 			return false;	// Seems the best thing to do to avoid repeated
 		}
 
 
-		public bool IsOpponent(PositionState other)
-		{
-			return (other == this.LeftHandOpponent || other == this.RightHandOpponent);
-		}
+	//	public bool IsOpponent(PositionState other)
+	//	{
+	//		return (other.PairState != this.PairState);
+	//	}
 
 		/* -- TODO: Seems unused...
 		internal (HandSummary, PairAgreements) Update(IShowsState showsState, Bid bid)

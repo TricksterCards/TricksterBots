@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
 
+
 namespace TricksterBots.Bots.Bridge
 {
     // TODO: Line this up with trickser conventions, but re-declare for now for flexibility...
@@ -21,135 +22,12 @@ namespace TricksterBots.Bots.Bridge
         public static string Transfer = "Transfer";
         public static string Strong2Clubs = "Strong2Clubs";
         public static string UnusualNT = "UnusualNT";
-        public static string Michaeld = "Michaels";
+        public static string Michaels = "Michaels";
         public static string TakeoutDouble = "TakeoutDouble";
     }
 
 
-    // TODO: Move this stuff somewhere better.  Maybe DebugLog
 
-    public class DebugLog
-    {
-        public bool Enabled;
-        public void Log(string msg)
-        {
-            if (Enabled)
-            {
-                Debug.WriteLine(msg);
-            }
-        }
-    }
-
-    /*
-    public class RedirectGroupXXX
-    {
-        private List<PrescribedBidsFactory> _bidders = new List<PrescribedBidsFactory>();
-
-        public void Add(PrescribedBidsFactory bid)
-        {
-            _bidders.Add(bid);
-        }
-
-        // TODO: Is this the best way to do this?  Seems kind of inefficient but OK fo now
-        // always adding base biddders to partner bidder group...  
-        public void Add(RedirectGroupXXX other)
-        {
-            foreach (var bidder in other._bidders)
-            {
-                Add(bidder);
-            }
-        }
-
-        public Dictionary<Bid, BidRuleSet> GetBids(PositionState ps)
-        {
-            Dictionary<Bid, BidRuleSet> bids = new Dictionary<Bid, BidRuleSet>();
-            foreach (var bidder in _bidders)
-            {
-                var newBids = bidder().GetBids(ps);
-                if (newBids != null)    // TODO: Why ever getting null?? Is this acceptable?
-                {
-                    foreach (var newBid in newBids)
-                    {
-                        if (!bids.ContainsKey(newBid.Key))
-                        {
-                            bids[newBid.Key] = newBid.Value;
-                        }
-                    }
-                }
-            }
-            return bids;
-        }
-    }
-    */
-
-/*
-    internal class BidChoices
-    {
-        private List<PrescribedBids> PrescribedBids = new List<PrescribedBids>();
-        private PositionState _ps;
-        public BidChoices(PositionState ps, PrescribedBidsFactory defaultBidsFactory)
-        {
-            this._ps = ps;
-            var partnerBidsFactory = ps.GetPartnerBidsFactory();
-            if (partnerBidsFactory != null)
-            {
-                BuildBidList(partnerBidsFactory, ps);
-            }
-            BuildBidList(defaultBidsFactory, ps);
-        }
-
-        private void BuildBidList(PrescribedBidsFactory bidFactory, PositionState ps)
-        {
-            var pb = bidFactory();
-            var redirects = pb.GetRedirects(ps);
-            if (redirects != null)
-            {
-                foreach (var childBids in redirects)
-                {
-                    BuildBidList(childBids, ps);
-                }
-            }
-            else
-            {
-                this.PrescribedBids.Add(pb);
-            }
-
-        }
-
-
-
-        public BidRuleSet ChooseBestBid()
-        {
-            BidRuleSet bidRuleSet = null;
-            var definedBids = new HashSet<Bid>();
-            var contract = _ps.BiddingState.GetContract();
-            foreach (var pb in PrescribedBids)
-            {
-                bidRuleSet = pb.ChooseBestBid(_ps, contract, definedBids);
-                if (bidRuleSet != null)
-                {
-                    return bidRuleSet;
-                }
-                definedBids.UnionWith(pb.AllBids(_ps));
-
-            }
-            // TODO: Should we construct a pass here???
-            return ChooseBid(Bid.Pass);
-        }
-
-        public BidRuleSet ChooseBid(Bid bid)
-        {
-            foreach (var pb in PrescribedBids)
-            {
-                var bidRuleSet = pb.GetBidRuleSet(bid, _ps);
-                if (bidRuleSet != null) { return bidRuleSet; }
-            }
-            // TODO: Need to do something better than this, but for now just create an empty bidrule set
-            return new BidRuleSet(bid, new BidRule[0], null);
-        }
-
-    }
-*/
     public class BiddingState
     {
 
@@ -167,85 +45,7 @@ namespace TricksterBots.Bots.Bridge
 
         public Dictionary<string, Call> Conventions { get; private set; }
 
-        /*
-        public bool PassEndsAuction()
-        {
-            var position = NextToAct;
-            int countPasses = 0;
-            while (countPasses < 3)
-            {
-                position = position.RightHandOpponent;
-                var bid = position.GetBidHistory(0);
-                if (bid.Call != Call.Pass)
-                {
-                    // If there has been a bid (or X or XX) followed by two passes then next pass ends auction
-                    if (bid.Call == Call.NotActed) { 
-                        return false;
-                    }
-                    return countPasses == 2;
-                }
-                countPasses++;
-            }
-            // 3 passes in a row, so next one will end auction with pass-out.
-            return true;
-
-        }
-        */
-
         public Contract Contract { get; private set; }
-
-        /*
-        private Contract ComputeContract()
-        {
-            Contract contract = new Contract();
-            int historyLevel = 0;
-            var position = NextToAct;
-            int countPasses = 0;
-            while (true)
-            {
-                position = position.RightHandOpponent;
-                var bid = position.GetBidHistory(historyLevel);
-                if (bid.Call == Call.NotActed)
-                {
-                    Debug.Assert(contract.Bid.Call == Call.NotActed);
-                    break;
-                }
-                if (bid.Call == Call.Pass)
-                {
-                    countPasses++;
-                    if (countPasses == 4)
-                    {
-                        contract.Bid = bid;
-                        break;
-                    }
-                }
-                else
-                { 
-                    countPasses = 0;
-                }
-                if (bid.Call == Call.Bid)
-                {
-                    contract.Bid = bid;
-                    contract.By = position;
-                    break;
-                }
-                if (bid.Call == Call.Double)
-                {
-                    contract.Doubled = true;
-                }
-                if (bid.Call == Call.Redouble)
-                {
-                    contract.Redoubled = true;
-                }
-
-                if (position == NextToAct)
-                {
-                    historyLevel += 1;
-                }
-            }
-            return contract;
-        }
-        */
 
         public static bool IsVulnerable(string vul, Direction direction)
         {
@@ -295,9 +95,14 @@ namespace TricksterBots.Bots.Bridge
             this.Contract = new Contract();
             Debug.Assert(hands.Length == 4);
             var d = dealer;
-            for (int i = 0; i < hands.Length; i++)
+            // TODO: Bidding system should be a parameter for each pair...  For now both are standard american
+            IBiddingSystem biddingSystem = new StandardAmerican();
+            var ns = new PairState(Pair.NorthSouth, biddingSystem);
+            var ew = new PairState(Pair.EastWest, biddingSystem);
+            for (int seat = 1; seat <= hands.Length; seat++)
             {
-                this.Positions[d] = new PositionState(this, d, i + 1, IsVulnerable(vul, d), hands[i]);
+                PairState pairState = (d == Direction.North || d == Direction.South) ? ns : ew;
+                this.Positions[d] = new PositionState(this, pairState, d, seat, IsVulnerable(vul, d), hands[seat - 1]);
                 d = BasicBidding.LeftHandOpponent(d);
             }
             this.Dealer = Positions[dealer];
@@ -334,182 +139,29 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        /*
-        internal Dictionary<Bid, BidRuleSet> AvailableBids(PositionState ps)
+
+        public string SuggestBid(string[] history)
         {
-            // TODO: Always creating a new object and then copying all the default bidders into
-            // that group so not the best implementation, but whatever...
-            var bidders = new RedirectGroupXXX();
-            // TODO: Clean this up.  Not the prettiest code but whatever...
-            PrescribedBidsFactory nextState = ps.GetPartnerNextState();
-            if (nextState != null)
-            {
-                bidders.Add(nextState);
-            }
-           
-            bidders.Add(_baseBiddingXXX);
-            var bids = bidders.GetBids(ps);
-
-			if (!bids.ContainsKey(Bid.Pass))
-			{
-				// TODO: How bad is this?  Is this an emergency?
-				// TODO: Always add a pass at the end of this function no matter what?  
-				// If forcing then isn't really on optoin.  Is this the right place anyway?
-				//Debug.WriteLine("** CREATING PASS SINCE NONE SPECIFIED **");
-				var ruleGroup = new BidRuleSet(Bid.Pass, Convention.Natural, null);
-				ruleGroup.Add(new BidRule(Bid.Pass, 0, new Constraint[0]));
-				bids[Bid.Pass] = ruleGroup;
-			}
-            return bids;
-
-		}
-        */
-		/*
-		internal Dictionary<Bid, BidRuleGroup> AvailableBids(PositionState ps)
-		{
-			var options = new BidOptions();
-			var bidRules = new List<BidRule>();
-
-			var bidders = new List<PrescribedBids>();
-
-
-			if (ps.Partner.PartnerNextState != null)
-			{
-				bidders.Add(ps.Partner.PartnerNextState());
-			}
-			bidders.AddRange(DefaultBidders);
-
-			// Now we look at every bidder.  For each one:
-			//    1. If they don't conform then skip to next one
-			//    2. If they do conform then see if is a redirect.  If so ignore rules
-			//    3. Otherwise, if they conform and there is not a redirect then append the bid rules.
-
-			// Look at the Partner's previous bid (if there is one) and if there
-			// is a bidder specified, then do that first --- Need to redirect, etc here too but not yet...
-
-			while (bidders.Count > 0)
-			{
-				var redirect = new List<Bidder>();
-				foreach (var bidder in bidders)
-				{
-					if (bidder.Applies(NextToAct))
-					{
-						bool didRedirect = false;
-						if (bidder.Redirects != null)
-						{
-							foreach (var r in bidder.Redirects)
-							{
-								var redirectBidder = r.Redirect(NextToAct);
-								if (redirectBidder != null)
-								{
-									redirect.Add(redirectBidder);
-									didRedirect = true;
-								}
-							}
-						}
-						if (!didRedirect && bidder.BidRules != null)
-						{
-							options.Add(bidder, NextToAct);
-						}
-					}
-					// TODO: Deal with redirect.  Where?  Here, or in Applies?  Not sure. 
-				}
-				bidders = redirect;
-			}
-			return options.GetChoices();
-		}
-		*/
-
-		public string GetHackBid(string[] history, string expected)
-        {
-            /*
-            var hackTest = new Dictionary<Call, int>();
-            hackTest[new Bid(2, Suit.Diamonds)] = 1;
-            hackTest[new Bid(2, Suit.Unknown)] = 2;
-            hackTest[new Double()] = 3;
-            hackTest[Call.Pass] = 17;
-            if (hackTest.ContainsKey(new Bid(2, Suit.Diamonds)))
-            {
-                Debug.WriteLine("First thing looks ok");
-            }
-            if (hackTest.ContainsKey(Call.Double))
-            {
-                Debug.WriteLine("Thats odd");
-            }
-            if (hackTest.ContainsKey(Call.Pass))
-            {
-                Debug.WriteLine("Would be wierid as hell not to get here...");
-            }
-            */
-
-          /*  
-            Debug.WriteLine($"==== START TEST ==== Expect {expected}");
-            if (history == null)
-            {
-                Debug.WriteLine("No historical bids.");
-            }
-            else
-            {
-                Debug.Write("Bids: ");
-                foreach (var bidString in history)
-                {
-                    Debug.Write($"{bidString} ");
-                }
-                Debug.WriteLine("");
-            }
-            */
-            // If there is any history then we need to get those bids first and at the end evaluate the hand
             if (history != null)
             {
-                foreach (var b in history)
+                foreach (var call in history)
                 {
-                    var bid = Bid.FromString(b);
-                    // Debug.WriteLine($"--- Historical: {b}");
-
-
-                    var bids = GetBidsForNextToAct();             
-                    var choice = bids.GetBidRuleSet(bid);
-                    /*
-                    var o = AvailableBids(NextToAct);
-                    BidRuleSet choice;
-                    if (o.TryGetValue(bid, out choice) == false)
-                    {
-                        // TODO: THIS IS SUPER IMPORTANT TO GET BUT NEED TO IGNORE IT FOR A WHILE.
-
-                        // TURN THIS BACK ON AT SOME POINT!  
-                        Debug.WriteLine($"*** ERROR: Did not find {b} in bid optoins.  Constructing a bid with state information");
-                        var rule = new BidRule(bid, BidRule.BidForce.Nonforcing, new Constraint[0]);
-                        choice = new BidRuleSet(bid, Convention.Natural, null);
-                        choice.Add(rule);
-                    }
-                    */
+                    var bids = GetBidsForNextToAct();
+                    var choice = bids.GetBidRuleSet(Call.FromString(call));
                     MakeBid(choice);
                 }
             }
-            // Now we are actually ready to look at a hand and do somethihg
-
             var choices = GetBidsForNextToAct();
-            var chosenBid = choices.BestCall;
-            if (chosenBid == null)
+            var chosenCall = choices.BestCall;
+            if (chosenCall == null)
             {
-                chosenBid = Call.Pass;
-             //   Debug.WriteLine("No best bid.  Chosing pass");
+                chosenCall = Call.Pass;
+                // TODO: Log something here...
             }
-            var bidRuleSet = choices.GetBidRuleSet(chosenBid);
-            MakeBid(bidRuleSet);
-
-        //    if (bidRuleSet.Bid.ToString() != expected)
-        //    {
-        //        Debug.WriteLine($"SUCCESS - Got expected {bidRuleSet.Bid}");
-        //    }
-        //    else
-        //    {
-        //        Debug.WriteLine($"******** ERROR!  Expected {expected} but got {bidRuleSet.Bid}");
-        //    }
-        //    Debug.WriteLine("");
-
-            return bidRuleSet.Call.ToString();
+            MakeBid(choices.GetBidRuleSet(chosenCall));
+            return chosenCall.ToString();
         }
+
 
         private void MakeBid(BidRuleSet bidRuleSet)
         {
@@ -518,34 +170,10 @@ namespace TricksterBots.Bots.Bridge
             NextToAct = NextToAct.LeftHandOpponent;
         }
 
-        /*
-        public bool IsValidNextBid(Bid bid)
-        {
-            if (bid.IsPass) { return true; }
-            if (bid.Equals(Bid.Null)) { return false; }
-            if (bid.IsBid)
-            {
-                if (Contract.Bid.IsPass || Contract.Bid.Equals(Bid.Null)) { return true; }
-                return bid.CompareTo(Contract.Bid) > 0;
-            }
-            // So it's double or redouble.  Contract has no bid then can't be valid...
-            if (!Contract.Bid.IsBid) { return false; }
-            if (bid.Equals(Bid.Double))
-            {
-                return !Contract.Doubled && NextToAct.IsOpponent(Contract.By);
-
-            }
-            Debug.Assert(bid.Equals(Bid.Redouble));
-            return !Contract.Redoubled && Contract.Doubled && (NextToAct == Contract.By || NextToAct == Contract.By.Partner);
-
-        }
-        */
 
         internal BidChoices GetBidsForNextToAct()
         {
-            BidChoicesFactory bidsFactory = NextToAct.GetBidsFactory();
-            if (bidsFactory != null) return bidsFactory(NextToAct);
-			return StandardAmerican.DefaultBidsFactory(NextToAct);
+            return NextToAct.GetBidChoices();
 		}
 
 

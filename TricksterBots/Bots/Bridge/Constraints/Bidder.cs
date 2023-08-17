@@ -326,8 +326,11 @@ namespace TricksterBots.Bots.Bridge
 			return new CompositeConstraint(CompositeConstraint.Operation.Or, constraints);
 		}
 
-		// Suit quality is good or better
-		public static Constraint GoodSuit(Suit? suit = null)
+        public static Constraint ExcellentSuit(Suit? suit = null)
+        { return new ShowsQuality(suit, SuitQuality.Excellent, SuitQuality.Solid); }
+
+
+        public static Constraint GoodSuit(Suit? suit = null)
 		{ return new ShowsQuality(suit, SuitQuality.Good, SuitQuality.Solid); }
 
 		public static Constraint DecentSuit(Suit? suit = null)

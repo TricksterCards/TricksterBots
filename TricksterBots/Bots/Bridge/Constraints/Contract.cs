@@ -23,13 +23,13 @@ namespace TricksterBots.Bots.Bridge
 
 		public bool IsOurs(PositionState ps)
 		{
-			return (Declarer == ps || Declarer == ps.Partner);
+			return (Declarer != null && Declarer.PairState == ps.PairState);
 		}
 
 
 		public bool IsOpponents(PositionState ps)
 		{
-			return (Declarer == ps.RightHandOpponent || Declarer == ps.LeftHandOpponent);
+			return (Declarer != null && Declarer.PairState != ps.PairState);
 		}
 
 		public bool IsValid(Call call, PositionState by)

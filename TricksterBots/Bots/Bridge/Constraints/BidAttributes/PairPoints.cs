@@ -38,11 +38,11 @@ namespace TricksterBots.Bots.Bridge
             var points = hs.StartingPoints;
             if (!_useStartingPoints && GetSuit(_suit, call) is Suit suit)
             {
-                if (ps.PairAgreements.Suits[suit].LongHand == ps)
+                if (ps.PairState.Agreements.Suits[suit].LongHand == ps)
                 {
                     points = hs.Suits[suit].LongHandPoints;
                 }
-                else if (ps.PairAgreements.Suits[suit].Dummy == ps)
+                else if (ps.PairState.Agreements.Suits[suit].Dummy == ps)
                 {
                     points = hs.Suits[suit].DummyPoints;
                 }
@@ -103,11 +103,11 @@ namespace TricksterBots.Bots.Bridge
             var suit = GetSuit(_suit, call);
             int showMin = Math.Max(_min - pointsPartner.Min, 0);
             int showMax = Math.Max(_max - pointsPartner.Min, 0);
-            if (this._useStartingPoints || suit == null|| ps.PairAgreements.Suits[(Suit)suit].LongHand == null)
+            if (this._useStartingPoints || suit == null|| ps.PairState.Agreements.Suits[(Suit)suit].LongHand == null)
             {
                 showHand.ShowStartingPoints(showMin, showMax);
             }
-            else if (ps.PairAgreements.Suits[(Suit)suit].LongHand == ps)
+            else if (ps.PairState.Agreements.Suits[(Suit)suit].LongHand == ps)
             {
                 showHand.Suits[(Suit)suit].ShowLongHandPoints(showMin, showMax);
             }

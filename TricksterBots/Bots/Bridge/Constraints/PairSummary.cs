@@ -96,7 +96,7 @@ namespace TricksterBots.Bots.Bridge
             }
         }
 
-        public PairSummary(PositionState ps) : this(ps.PublicHandSummary, ps.Partner.PublicHandSummary, ps.PairAgreements) { }
+        public PairSummary(PositionState ps) : this(ps.PublicHandSummary, ps.Partner.PublicHandSummary, ps.PairState.Agreements) { }
 
         public static PairSummary Opponents(PositionState ps)
         {

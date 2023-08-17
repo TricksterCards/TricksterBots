@@ -22,7 +22,7 @@ namespace TricksterBots.Bots.Bridge
 {
 	public abstract class Call : IEquatable<Call>, IComparable<Call>
 	{
-		public int RawValue { get; private set; }
+		protected int RawValue { get; private set; }
 
         public override int GetHashCode()
         {
@@ -64,31 +64,31 @@ namespace TricksterBots.Bots.Bridge
 
         public static Dictionary<string, Suit> SymbolToSuit = new Dictionary<string, Suit>
         {
-            {  "♣",  Trickster.cloud.Suit.Clubs },
-            {  "♦",  Trickster.cloud.Suit.Diamonds},
-            {  "♥",  Trickster.cloud.Suit.Hearts  },
-            {  "♠",  Trickster.cloud.Suit.Spades  },
-            {  "NT", Trickster.cloud.Suit.Unknown  }
+            {  "♣",  Suit.Clubs },
+            {  "♦",  Suit.Diamonds},
+            {  "♥",  Suit.Hearts  },
+            {  "♠",  Suit.Spades  },
+            {  "NT", Suit.Unknown  }
         };
 
 
 
         public static Dictionary<Suit, string> SuitToSymbol = new Dictionary<Suit, string>
         {
-            { Trickster.cloud.Suit.Clubs,    "♣" },
-            { Trickster.cloud.Suit.Diamonds, "♦" },
-            { Trickster.cloud.Suit.Hearts,   "♥" },
-            { Trickster.cloud.Suit.Spades,   "♠" },
-            { Trickster.cloud.Suit.Unknown,  "NT" }
+            { Suit.Clubs,    "♣" },
+            { Suit.Diamonds, "♦" },
+            { Suit.Hearts,   "♥" },
+            { Suit.Spades,   "♠" },
+            { Suit.Unknown,  "NT" }
         };
 
         public static Dictionary<Suit, int> StrainToInt = new Dictionary<Suit, int>
         {
-            { Trickster.cloud.Suit.Clubs,    0 },
-            { Trickster.cloud.Suit.Diamonds, 1 },
-            { Trickster.cloud.Suit.Hearts,   2 },
-            { Trickster.cloud.Suit.Spades,   3 },
-            { Trickster.cloud.Suit.Unknown,  4 }
+            { Suit.Clubs,    0 },
+            { Suit.Diamonds, 1 },
+            { Suit.Hearts,   2 },
+            { Suit.Spades,   3 },
+            { Suit.Unknown,  4 }
         };
 
 
@@ -122,40 +122,18 @@ namespace TricksterBots.Bots.Bridge
     }
 
 
-
     public class Bid : Call
 	{
-
 		public int Level { get; }
 		public Suit Suit { get; }
 
 
-//		public bool Is(int level, Suit suit)
-//		{
-//			return Call == Call.Bid && Level == level && Suit == suit;
-//		}
-
-//		public bool Equals(Bid other)
-//		{
-//			return (Call == other.Call && Level == other.Level && Suit == other.Suit);
-//		}
-
-
-	//	public Suit SuitIfNot(Suit? suit)
-//		{
-//			return (suit == null) ? (Suit)Suit : (Suit)suit;
-//		}
-
-
-
 		public Bid(int level, Suit suit) : base((level - 1) * 5 + StrainToInt[suit] + 3)
         {
-
 			Debug.Assert(level >= 1 && level <= 7);
 			this.Level = level;
 			this.Suit = suit;
 		}
-
 
 		public override string ToString()
 		{
@@ -166,49 +144,5 @@ namespace TricksterBots.Bots.Bridge
         {
             return (RawValue - other.RawValue) / 5;
         }
-
-        /* -- TODO: Part of contract?  Or part of Bid???
-		public int JumpOver(Contract contract)
-		{
-			if (!this.IsBid) 
-			{
-				Debug.Fail("Can not ask about a jump bid for a call that is not a bid");
-				return -1;
-			}
-			if (contract.Bid.Equals(Bid.Pass) || contract.Bid.Equals(Bid.Null))
-			{
-				return 1 - (int)Level;
-			}
-			Debug.Assert(contract.Bid.IsBid);
-			return (this.RawLevel - contract.Bid.RawLevel) / 5;
-		}
-        */
-
-        /*
-        private int OvercallValue
-        {
-			get
-			{
-				switch (this.Call)
-				{
-					case Call.NotActed: return 0;
-					case Call.Pass: return 1;
-					case Call.Double: return 2;
-					case Call.Redouble: return 3;
-					default:
-						Debug.Assert(IsBid);
-						return 4 + RawLevel;
-				}
-			}
-        }
-
-
-        public int CompareTo(Bid other)
-        {
-            return OvercallValue - other.OvercallValue;
-        }
-        */
-        
-
     }
 }

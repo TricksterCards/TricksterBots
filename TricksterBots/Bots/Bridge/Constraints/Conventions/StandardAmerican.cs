@@ -14,7 +14,7 @@ using TricksterBots.Bots.Bridge;
 namespace TricksterBots.Bots.Bridge
 {
 
-    public class StandardAmerican : Bidder
+    public class StandardAmerican : Bidder, IBiddingSystem
     {
 
    //     public static PrescribedBids DefaultBidderXXX()
@@ -54,9 +54,7 @@ namespace TricksterBots.Bots.Bridge
         public static (int, int) AdvanceRaise = (6, 9);
         public static (int, int) AdvanceCuebid = (10, 40);
 
-
-        // TODO: Perhaps move this to somewhere better.  For now, we 
-        public static BidChoices DefaultBidsFactory(PositionState ps)
+        public BidChoices GetBidChoices(PositionState ps)
         {
             if (ps.Role == PositionRole.Opener && ps.RoleRound == 1)
             {
@@ -78,7 +76,10 @@ namespace TricksterBots.Bots.Bridge
             
             choices.AddRules(Strong2Clubs.Open);
             choices.AddRules(NoTrump.Open);
-            choices.AddRules(StandardAmericanOpenRespond.OpenSuit);
+            choices.AddRules(StandardAmericanOpenRespond.OpenSuit1Level);
+            choices.AddRules(StandardAmericanOpenRespond.OpenSuitWeak);
+            choices.AddRules(StandardAmericanOpenRespond.OpenPass);
+          
 
             return choices;
         }
@@ -96,5 +97,7 @@ namespace TricksterBots.Bots.Bridge
            
             return choices;
         }
+
+
     }
 }

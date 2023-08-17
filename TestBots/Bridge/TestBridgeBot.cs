@@ -53,7 +53,7 @@ namespace TestBots
                 var i = t.history == null ? 0 : t.history.Length % 4;
                 hands[i] = bidTest.hand;
                 var bHack = new BiddingState(hands, Direction.North, "EW");
-                var bidString = bHack.GetHackBid(t.history, t.bid);
+                var bidString = bHack.SuggestBid(t.history);
             }
 
         }
@@ -237,7 +237,7 @@ namespace TestBots
             var bHack = new BiddingState(hands, Direction.North, "EW");
 
             string expected = BidString(test.expectedBid);
-            var bid = bHack.GetHackBid(historyStrings.ToArray(), expected);
+            var bid = bHack.SuggestBid(historyStrings.ToArray());
 
             if (bid != expected)
             {

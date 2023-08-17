@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
@@ -18,22 +19,19 @@ namespace TricksterBots.Bots.Bridge
 		//		return new PrescribedBids(bidder, bidder.Open);
 		//	}
 
-		public static IEnumerable<BidRule> OpenSuit(PositionState _)
+		public static IEnumerable<BidRule> OpenSuit1Level(PositionState _)
 		{
 			return new List<BidRule>
 			{
+				DefaultPartnerBids(Call.Double, RespondAfterDouble),
+                DefaultPartnerBids(new Bid(1, Suit.Unknown), RespondWithInt),
 
-				PartnerBids(1, Suit.Clubs, Call.Pass, RespondTo1C),
-                PartnerBids(1, Suit.Diamonds, Call.Pass, RespondTo1D),
-                PartnerBids(1, Suit.Hearts, Call.Pass, RespondTo1H),
-                PartnerBids(1, Suit.Spades, Call.Pass, RespondTo1S),
+                PartnerBids(1, Suit.Clubs, Call.Pass, RespondTo1C),
+				PartnerBids(1, Suit.Diamonds, Call.Pass, RespondTo1D),
+				PartnerBids(1, Suit.Hearts, Call.Pass, RespondTo1H),
+				PartnerBids(1, Suit.Spades, Call.Pass, RespondTo1S),
 
-				PartnerBids(1, Suit.Clubs, new Bid(1, Suit.Unknown), RespondWithInt),
-                PartnerBids(1, Suit.Diamonds, new Bid(1, Suit.Unknown), RespondWithInt),
-                PartnerBids(1, Suit.Hearts, new Bid(1, Suit.Unknown), RespondWithInt),
-                PartnerBids(1, Suit.Spades, new Bid(1, Suit.Unknown), RespondWithInt),
-
-                Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(3), Shape(Suit.Diamonds, 0, 3), LongestMajor(4)),
+				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(3), Shape(Suit.Diamonds, 0, 3), LongestMajor(4)),
 				Nonforcing(1, Suit.Clubs, Points(Open1Suit), Shape(4, 11), LongerThan(Suit.Diamonds), LongestMajor(4)),
 
 				Nonforcing(1, Suit.Diamonds, Points(Open1Suit), Shape(3), Shape(Suit.Clubs, 0, 2), LongestMajor(4)),
@@ -42,43 +40,43 @@ namespace TricksterBots.Bots.Bridge
 				Nonforcing(1, Suit.Hearts, Points(Open1Suit), Shape(5, 11), LongerThan(Suit.Spades)),
 
 				Nonforcing(1, Suit.Spades, Points(Open1Suit), Shape(5, 11), LongerOrEqualTo(Suit.Hearts)),
+			};
+		}
 
-				// 1NT rule(s) in NoTrump class.
+		public static IEnumerable<BidRule> OpenSuitWeak(PositionState _)
+		{
+			return new BidRule[]
+			{
+				DefaultPartnerBids(new Bid(4, Suit.Hearts), RespondToWeakOpen),
 
-				// NOTE: Strong open will override this - 2C Conventional will always be possible so
-				// this rule would be silly.
-				//Rule(2, Suit.Clubs, Points(Open2Suit), Shape(6), Quality(SuitQuality.Good)),
-
+				// 2C can not be bid since strong opening.  Take care of great 6-card suits by bidding 3C
 				Nonforcing(2, Suit.Diamonds, Points(Open2Suit), Shape(6), GoodSuit()),
-
 				Nonforcing(2, Suit.Hearts, Points(Open2Suit), Shape(6), GoodSuit()),
-
 				Nonforcing(2, Suit.Spades, Points(Open2Suit), Shape(6), GoodSuit()),
 
-				// 2NT rule(s) in NoTrump class.
-			
+				Nonforcing(3, Suit.Clubs, Points(LessThanOpen), Shape(6), ExcellentSuit()),
 				Nonforcing(3, Suit.Clubs, Points(LessThanOpen), Shape(7), GoodSuit()),
-				Nonforcing(3, Suit.Clubs, Points(LessThanOpen), Shape(8)),
-
 				Nonforcing(3, Suit.Diamonds, Points(LessThanOpen), Shape(7), GoodSuit()),
 				Nonforcing(3, Suit.Hearts, Points(LessThanOpen), Shape(7), GoodSuit()),
 				Nonforcing(3, Suit.Spades, Points(LessThanOpen), Shape(7), GoodSuit()),
-
-				// 3NT rule(s) in NoTrump class.
 				
                 Nonforcing(4, Suit.Clubs, Points(LessThanOpen), Shape(8), DecentSuit()),
 				Nonforcing(4, Suit.Diamonds, Points(LessThanOpen), Shape(8), DecentSuit()),
 				Nonforcing(4, Suit.Hearts, Points(LessThanOpen), Shape(8), DecentSuit()),
 				Nonforcing(4, Suit.Spades, Points(LessThanOpen), Shape(8), DecentSuit()),
 
-
-				Nonforcing(Bid.Pass, Points(LessThanOpen)),
-
 			};
 		}
 
+		public static IEnumerable<BidRule> OpenPass(PositionState _)
+		{
+            return new BidRule[]
+            {
+                Nonforcing(Bid.Pass, Points(LessThanOpen))
+            };
 
-		private static IEnumerable<BidRule> OpenerRebid(PositionState _)
+        }
+        private static IEnumerable<BidRule> OpenerRebid(PositionState _)
 		{
 			return new List<BidRule>()
 			{
@@ -161,6 +159,8 @@ namespace TricksterBots.Bots.Bridge
 		static protected (int, int) ResponderRedouble = (10, 40);
 		static protected (int, int) ResponderRedoubleHCP = (10, 40);
 
+	
+
 		protected static BidRule[] NewMinorSuit2Level(Suit openersSuit)
 		{
 			return new BidRule[]
@@ -202,36 +202,6 @@ namespace TricksterBots.Bots.Bridge
 			};
         }
 
-		/*
-		private PrescribedBids InitialResponse()
-		{
-			// We may be invoked because opener Passed.  If that's the case, bail now.
-			var pb = new PrescribedBids();
-	
-			pb.Redirects = new List<RedirectRule>
-			{
-				Redirect(RespondTo1C, Partner(LastBid(1, Suit.Clubs)), RHO(Passed())),
-				Redirect(RespondTo1D, Partner(LastBid(1, Suit.Diamonds)), RHO(Passed())),
-				Redirect(RespondTo1H, Partner(LastBid(1, Suit.Hearts)), RHO(Passed())),
-				Redirect(RespondTo1S, Partner(LastBid(1, Suit.Spades)), RHO(Passed())),
-
-				Redirect(RespondToWeakOpen, Partner(BidAtLevel(2, 3, 4))),
-
-				// TODO: First attempt at any interference.  For now only if interfere with 1S bid
-				Redirect(RespondWithInt, RHO(DidBid()))
-			};
-			return pb;
-		}
-		*/
-
-		/*
-		private static void AddInterferenceRules(PrescribedBids pb)
-		{
-			pb.RedirectIfRhoBid(RespondWithInt);
-			pb.BidRules.Add(PartnerBids(Call.Redouble, ResponseAfterRedouble));
-			pb.BidRules.Add(Forcing(Bid.Redouble, Points(ResponderRedouble), HighCardPoints(ResponderRedoubleHCP)));
-		}
-		*/
 
 
 
@@ -392,7 +362,7 @@ namespace TricksterBots.Bots.Bridge
 			return bids;
 		}
 
-		private static BidRule[] RespondToWeakOpen()
+		private static IEnumerable<BidRule> RespondToWeakOpen(PositionState ps)
 		{
 			return new BidRule[]
 			{
@@ -436,6 +406,8 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: Still need lots and lots more bid levels here.  But decent start...
 
 				Nonforcing(3, Suit.Hearts, Fit(), DummyPoints(WeakJumpRaise), Shape(4)),
+                Nonforcing(3, Suit.Spades, Fit(), DummyPoints(WeakJumpRaise), Shape(4)),
+
 
 		
 				// TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
@@ -453,7 +425,47 @@ namespace TricksterBots.Bots.Bridge
 			return bids;
 		}
 
-		public static IEnumerable<BidRule> ResponderRebid(PositionState ps)
+		static protected (int, int) RespondRedouble = (10, 40);
+		static protected (int, int) RespondX1Level = (6, 9);
+
+        private static IEnumerable<BidRule> RespondAfterDouble(PositionState ps)
+        {
+            var bids = new List<BidRule>
+            {
+				Forcing(Call.Redouble, Points(RespondRedouble)),
+				// TODO: Here we need to make all bids reflect that they are less than 10 points...
+
+				Nonforcing(1, Suit.Hearts, Points(RespondX1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
+                Nonforcing(1, Suit.Hearts, Points(RespondX1Level), Shape(5, 11), LongerThan(Suit.Spades)),
+
+                Nonforcing(1, Suit.Spades, Points(RespondX1Level), Shape(4), Shape(Suit.Hearts, 0, 3)),
+                Nonforcing(1, Suit.Spades, Points(RespondX1Level), Shape(5, 11), LongerOrEqualTo(Suit.Hearts)),
+
+                Nonforcing(1, Suit.Diamonds, Jump(0), Shape(4, 11), Points(RespondX1Level)),
+
+
+                Nonforcing(2, Suit.Clubs, Fit(), Points(RespondX1Level)),
+				Nonforcing(2, Suit.Clubs, Shape(5, 11), Points(RespondX1Level)),
+
+                Nonforcing(2, Suit.Diamonds, Fit(), Points(RespondX1Level)),
+                Nonforcing(2, Suit.Diamonds, Jump(0), Shape(5, 11), Points(RespondX1Level)),
+
+				Nonforcing(2, Suit.Hearts, Fit(), Points(RespondX1Level)),
+                Nonforcing(2, Suit.Hearts, Jump(0), Shape(5, 11), Points(RespondX1Level)),
+
+                Nonforcing(2, Suit.Spades, Fit(), Points(RespondX1Level)),
+
+				// TODO: Perhaps higer priority than raise of a minor???
+                Nonforcing(1, Suit.Unknown, Points(RespondX1Level)),
+
+                Signoff(Bid.Pass, Points(RespondPass))
+
+            };
+         
+            return bids;
+        }
+
+        public static IEnumerable<BidRule> ResponderRebid(PositionState ps)
 		{
 			var bids = new List<BidRule>
 			{
