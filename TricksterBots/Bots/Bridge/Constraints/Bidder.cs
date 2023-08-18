@@ -475,6 +475,11 @@ namespace TricksterBots.Bots.Bridge
 			return new ShowsSuit(false, suits);
 		}
 
+		public static Constraint HasShownSuit(Suit? suit = null)
+		{
+			return new HasShownSuit(suit);
+		}
+
 		public static Constraint ShowsSuit()
 		{
 			return new ShowsSuit(true, null);
