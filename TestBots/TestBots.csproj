@@ -105,6 +105,9 @@
     <Content Include="Bridge\SAYC\Bridge Basics 2.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Bridge\SAYC\Bridge Basics 3.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
