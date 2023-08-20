@@ -20,9 +20,13 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public abstract class Call : IEquatable<Call>, IComparable<Call>
-	{
-		protected int RawValue { get; private set; }
+    public enum Strain { Clubs = 0, Diamonds = 1, Hearts = 2, Spades = 3, NoTrump = 4 }
+
+
+
+    public abstract class Call : IEquatable<Call>, IComparable<Call>
+    {
+        protected int RawValue { get; private set; }
 
         public override int GetHashCode()
         {
@@ -39,9 +43,37 @@ namespace TricksterBots.Bots.Bridge
             return RawValue - other.RawValue;
         }
 
-		public static Call Pass = new Pass();
-		public static Call Double = new Double();
-		public static Call Redouble = new Redouble();
+        public static Call Pass = new Pass();
+        public static Call Double = new Double();
+        public static Call Redouble = new Redouble();
+
+        public static Strain SuitToStrain(Suit? suit)
+        {
+            switch (suit)
+            {
+                case null: return Strain.NoTrump;
+                case Suit.Unknown: return Strain.NoTrump;
+                case Suit.Clubs: return Strain.Clubs;
+                case Suit.Diamonds: return Strain.Diamonds;
+                case Suit.Hearts: return Strain.Hearts;
+                case Suit.Spades: return Strain.Spades;
+                default:
+                    Debug.Fail("Should always be a suit");
+                    return Strain.NoTrump;
+            }
+        }
+
+        public static Suit? StrainToSuit(Strain strain)
+        {
+            switch (strain)
+            {
+                case Strain.Clubs:    return Suit.Clubs;
+                case Strain.Diamonds: return Suit.Diamonds;
+                case Strain.Hearts:   return Suit.Hearts;
+                case Strain.Spades:   return Suit.Spades;
+                default:              return null;
+            }
+        }
 
         static public Call FromString(string str)
         {
@@ -49,8 +81,8 @@ namespace TricksterBots.Bots.Bridge
             if (str == "X") { return Double; }
             if (str == "XX") { return Call.Redouble; }
             int level = int.Parse(str.Substring(0, 1));
-            var suit = SymbolToSuit[str.Substring(1)];
-            return new Bid(level, suit);
+            var strain = SymbolToStrain[str.Substring(1)];
+            return new Bid(level, strain);
         }
 
         public bool Equals(Call other)
@@ -62,27 +94,27 @@ namespace TricksterBots.Bots.Bridge
         // TODO: I am sure this exists somewhere else...  Find it
 
 
-        public static Dictionary<string, Suit> SymbolToSuit = new Dictionary<string, Suit>
+        public static Dictionary<string, Strain> SymbolToStrain = new Dictionary<string, Strain>
         {
-            {  "♣",  Suit.Clubs },
-            {  "♦",  Suit.Diamonds},
-            {  "♥",  Suit.Hearts  },
-            {  "♠",  Suit.Spades  },
-            {  "NT", Suit.Unknown  }
+            {  "♣",  Strain.Clubs    },
+            {  "♦",  Strain.Diamonds },
+            {  "♥",  Strain.Hearts   },
+            {  "♠",  Strain.Spades   },
+            {  "NT", Strain.NoTrump  }
         };
 
 
 
-        public static Dictionary<Suit, string> SuitToSymbol = new Dictionary<Suit, string>
+        public static Dictionary<Strain, string> StrainToSymbol = new Dictionary<Strain, string>
         {
-            { Suit.Clubs,    "♣" },
-            { Suit.Diamonds, "♦" },
-            { Suit.Hearts,   "♥" },
-            { Suit.Spades,   "♠" },
-            { Suit.Unknown,  "NT" }
+            { Strain.Clubs,    "♣" },
+            { Strain.Diamonds, "♦" },
+            { Strain.Hearts,   "♥" },
+            { Strain.Spades,   "♠" },
+            { Strain.NoTrump,  "NT" }
         };
 
-        public static Dictionary<Suit, int> StrainToInt = new Dictionary<Suit, int>
+        public static Dictionary<Suit, int> SuitToInt = new Dictionary<Suit, int>
         {
             { Suit.Clubs,    0 },
             { Suit.Diamonds, 1 },
@@ -123,26 +155,36 @@ namespace TricksterBots.Bots.Bridge
 
 
     public class Bid : Call
-	{
-		public int Level { get; }
-		public Suit Suit { get; }
+    {
+        public int Level { get; }
+        public Strain Strain { get; }
+        public Suit? Suit => StrainToSuit(Strain);
 
 
-		public Bid(int level, Suit suit) : base((level - 1) * 5 + StrainToInt[suit] + 3)
+        public Bid(int level, Suit suit) : base((level - 1) * 5 + SuitToInt[suit] + 3)
         {
-			Debug.Assert(level >= 1 && level <= 7);
-			this.Level = level;
-			this.Suit = suit;
-		}
+            Debug.Assert(level >= 1 && level <= 7);
+            this.Level = level;
+            this.Strain = SuitToStrain(suit);
+        }
+
+        public Bid(int level, Strain strain) : base((level - 1) * 5 + (int)strain + 3)
+        {
+            Debug.Assert(level >= 1 && level <= 7);
+            this.Level = level;
+            this.Strain = strain;
+        }
 
 		public override string ToString()
 		{
-			return $"{Level}{SuitToSymbol[(Suit)this.Suit]}";
+			return $"{Level}{StrainToSymbol[this.Strain]}";
 		}
 
+        // A jump shows a bid that could have been made at a lower level.  This means that the next 5 bids from 1X -> 2X for example
+        // are not jumps.  Math is 2X(raw) - 2X(raw) - 1.
         public int JumpOver(Bid other)
         {
-            return (RawValue - other.RawValue) / 5;
+            return (RawValue - other.RawValue - 1) / 5;
         }
     }
 }

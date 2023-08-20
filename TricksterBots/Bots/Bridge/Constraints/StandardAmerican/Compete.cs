@@ -39,7 +39,7 @@ namespace TricksterBots.Bots.Bridge
 
              //   Nonforcing(Call.Pass, 0),    // TOD   aO: What points?  This is the last gasp attempt here...
 
-                Nonforcing(4, Suit.Hearts, Break("Tony"), Fit(), PairPoints(CompeteTo4), ShowsTrump()),
+                Nonforcing(4, Suit.Hearts, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
                 Nonforcing(4, Suit.Spades, Fit(), PairPoints(CompeteTo4), ShowsTrump()),
 
 
@@ -65,6 +65,8 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(5, Suit.Clubs, Fit(), PairPoints(CompeteTo5), ShowsTrump()),
                 Nonforcing(5, Suit.Diamonds, Fit(), PairPoints(CompeteTo5), ShowsTrump()),
 
+                // TODO: Penalty doubles for game contracts.
+                
 
                 // TODO: Priority for these???
                 Nonforcing(6, Suit.Clubs, Shape(12)),

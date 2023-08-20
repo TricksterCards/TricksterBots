@@ -187,7 +187,7 @@ namespace TricksterBots.Bots.Bridge
                 {
                     PartnerBids(1, Suit.Unknown, GoodThrough(ps, OpenType.ToString()), ConventionalResponses),
                     // TODO: Perhaps more rules here for balancing but for now this is fine -- Balanced() is not necessary
-                    Nonforcing(1, Suit.Unknown, Break("Balancing 1NT"), Points(OpenerRange.Open), PassEndsAuction(true))
+                    Nonforcing(1, Suit.Unknown, Points(OpenerRange.Open), PassEndsAuction(true))
                 };
             }
             return new BidRule[0];

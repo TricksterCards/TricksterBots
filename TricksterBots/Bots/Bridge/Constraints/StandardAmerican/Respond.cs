@@ -15,7 +15,7 @@ namespace TricksterBots.Bots.Bridge
         static protected (int, int) Respond1Level = (6, 40);
         static protected (int, int) Raise1 = (6, 10);
         static protected (int, int) Respond1NT = (6, 10);
-        static protected (int, int) NewSuit2Level = (12, 40);  // TODO: null??
+        static protected (int, int) NewSuit2Level = (11, 40);  
         static protected (int, int) RaiseTo2NT = (11, 12);
         static protected (int, int) SlamInterest = (17, 40);
         static protected (int, int) LimitRaise = (11, 12);
@@ -62,7 +62,7 @@ namespace TricksterBots.Bots.Bridge
             };
         }
 
-        protected static BidRule[] NoTrumpResponses()
+        protected static BidRule[] NoTrumpResponses(PositionState ps)
         {
             return new BidRule[]
             {
@@ -76,7 +76,7 @@ namespace TricksterBots.Bots.Bridge
 
 
         // Responses to Open1C no interference
-        public static IEnumerable<BidRule> Club(PositionState _)
+        public static IEnumerable<BidRule> Club(PositionState ps)
         {
             var bids = new List<BidRule>
             {
@@ -118,7 +118,7 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(Bid.Pass, Points(RespondPass)),
             };
-            bids.AddRange(NoTrumpResponses());
+            bids.AddRange(NoTrumpResponses(ps));
             return bids;
         }
 
@@ -167,7 +167,7 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(Bid.Pass, Points(RespondPass)),
             };
-            bids.AddRange(NoTrumpResponses());
+            bids.AddRange(NoTrumpResponses(ps));
             return bids;
         }
         public static IEnumerable<BidRule> Heart(PositionState ps)
@@ -198,7 +198,7 @@ namespace TricksterBots.Bots.Bridge
 
             };
             bids.AddRange(NewMinorSuit2Level(Suit.Hearts));
-            bids.AddRange(NoTrumpResponses());
+            bids.AddRange(NoTrumpResponses(ps));
             return bids;
         }
 
@@ -230,7 +230,7 @@ namespace TricksterBots.Bots.Bridge
 
             };
             bids.AddRange(NewMinorSuit2Level(Suit.Spades));
-            bids.AddRange(NoTrumpResponses());
+            bids.AddRange(NoTrumpResponses(ps));
             return bids;
         }
 
@@ -252,54 +252,70 @@ namespace TricksterBots.Bots.Bridge
 
 
         // TODO: THIS IS SUPER HACKED NOW TO JUST 
-        public static IEnumerable<BidRule> OppsOvercalled(PositionState ps)
+        public static BidChoices OppsOvercalled(PositionState ps)
         {
-            var bids = new List<BidRule>
-            {
+            var choices = new BidChoices(ps);
+            choices.DefaultPartnerBids.AddFactory(Call.Double, (p) => { return new BidChoices(p, Open.Rebid); });
 
+            choices.AddRules(NegativeDouble.InitiateConvention);
+            choices.AddRules(new BidRule[]
+            {
                 Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(4), LongerOrEqualTo(Suit.Spades)),
                 Forcing(1, Suit.Hearts, Points(Respond1Level), Shape(5, 11), LongerThan(Suit.Spades)),
 
                 Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4), Shape(Suit.Hearts, 0, 3)),
                 Forcing(1, Suit.Spades, Points(Respond1Level), Shape(5, 11), LongerOrEqualTo(Suit.Hearts)),
 
-				// TODO: Opponents stopped!  Maybe two rules, one at lower priority that bid this in the worst case...
-				// Perhaps pass could be higher than that rule if we dont have 11 points, and dont have opps stopped
-		
-				Invitational(2, Suit.Hearts, CueBid(false), Fit(), DummyPoints(Raise1), ShowsTrump()),
-                Forcing(2, Suit.Hearts, CueBid(true), Fit(Suit.Clubs), DummyPoints(Suit.Clubs, LimitRaiseOrBetter), ShowsTrump()),
-                Forcing(2, Suit.Hearts, CueBid(true), Fit(Suit.Diamonds), DummyPoints(Suit.Diamonds, LimitRaiseOrBetter), ShowsTrump()),
+                // TODO: Perhaps show new 5+ card suit forcing here?  Only if not passed.
+
+				// Now cuebid raises are next in priority - RaisePartner calls ShowTrump()
+                Forcing(2, Suit.Diamonds, CueBid(), RaisePartner(Suit.Clubs), DummyPoints(Suit.Clubs, LimitRaiseOrBetter)),
+
+                Forcing(2, Suit.Hearts, CueBid(), RaisePartner(Suit.Clubs), DummyPoints(Suit.Clubs, LimitRaiseOrBetter)),
+                Forcing(2, Suit.Hearts, CueBid(), RaisePartner(Suit.Diamonds), DummyPoints(Suit.Diamonds, LimitRaiseOrBetter)),
 
 
-                Invitational(2, Suit.Spades, CueBid(false), Fit(), DummyPoints(Raise1), ShowsTrump()),
-                Forcing(2, Suit.Spades, CueBid(true), Fit(Suit.Clubs), DummyPoints(Suit.Clubs, LimitRaiseOrBetter), ShowsTrump()),
-                Forcing(2, Suit.Spades, CueBid(true), Fit(Suit.Diamonds), DummyPoints(Suit.Diamonds, LimitRaiseOrBetter), ShowsTrump()),
-                Forcing(2, Suit.Spades, CueBid(true), Fit(Suit.Hearts), DummyPoints(Suit.Hearts, LimitRaiseOrBetter), ShowsTrump()),
+                Forcing(2, Suit.Spades, CueBid(), RaisePartner(Suit.Clubs), DummyPoints(Suit.Clubs, LimitRaiseOrBetter)),
+                Forcing(2, Suit.Spades, CueBid(), RaisePartner(Suit.Diamonds), DummyPoints(Suit.Diamonds, LimitRaiseOrBetter)),
+                Forcing(2, Suit.Spades, Break(true, "CB"), CueBid(), RaisePartner(Suit.Hearts), DummyPoints(Suit.Hearts, LimitRaiseOrBetter)),
+
+
+                // TODO: Weak jumps here take precedence over simple raise
+
+				Nonforcing(3, Suit.Hearts, Fit(), Jump(1), DummyPoints(WeakJumpRaise), Shape(4)),
+                Nonforcing(3, Suit.Spades, Fit(), Jump(1), DummyPoints(WeakJumpRaise), Shape(4)),
+
+
+                // Now time for invitational bids.
+                Invitational(2, Suit.Clubs, CueBid(false), RaisePartner(), DummyPoints(Raise1)),
+                Invitational(2, Suit.Clubs, OppsStopped(false), CueBid(false), RaisePartner(fit: 7), DummyPoints(Raise1)),
+
+                Invitational(2, Suit.Diamonds, CueBid(false), RaisePartner(), DummyPoints(Raise1)),
+                Invitational(2, Suit.Diamonds, OppsStopped(false), CueBid(false), RaisePartner(fit: 7), DummyPoints(Raise1)),
+
+                Invitational(2, Suit.Hearts, CueBid(false), RaisePartner(), DummyPoints(Raise1)),
+                Invitational(2, Suit.Spades, CueBid(false), RaisePartner(), DummyPoints(Raise1)),
 
 				// TODO: Still need lots and lots more bid levels here.  But decent start...
-
-				Nonforcing(3, Suit.Hearts, Fit(), DummyPoints(WeakJumpRaise), Shape(4)),
-                Nonforcing(3, Suit.Spades, Fit(), DummyPoints(WeakJumpRaise), Shape(4)),
-
-
 		
 				// TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-				Signoff(4, Suit.Hearts, Fit(), DummyPoints(WeakJumpRaise), Shape(5, 8)),
-
+				Signoff(4, Suit.Hearts, RaisePartner(raise: 3, fit: 10), DummyPoints(Weak4Level)),
+                Signoff(4, Suit.Spades, RaisePartner(raise: 3, fit: 10), DummyPoints(Weak4Level)),
 
                 Signoff(Bid.Pass, Points(RespondPass)),
 
-
-            };
+            });
             // TODO: Need to have opponents stopped?  Maybe those bids go higher up ...
-            bids.AddRange(NoTrumpResponses());
+            choices.AddRules(NoTrumpResponses);
 
-            return bids;
+            return choices;
         }
 
         static protected (int, int) RespondRedouble = (10, 40);
         static protected (int, int) RespondX1Level = (6, 9);
+        static protected (int, int) RespondXJump = (0, 6);
+        
 
         public static IEnumerable<BidRule> OppsDoubled(PositionState ps)
         {
@@ -314,19 +330,26 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(1, Suit.Spades, Points(RespondX1Level), Shape(4), Shape(Suit.Hearts, 0, 3)),
                 Nonforcing(1, Suit.Spades, Points(RespondX1Level), Shape(5, 11), LongerOrEqualTo(Suit.Hearts)),
 
-                Nonforcing(1, Suit.Diamonds, Jump(0), Shape(4, 11), Points(RespondX1Level)),
+                Nonforcing(1, Suit.Diamonds, Shape(4, 11), Points(RespondX1Level)),
 
+                //
+                // If we have a good fie but a week hand then time to jump.
+                //
+                Nonforcing(3, Suit.Clubs,    Partner(HasShownSuit()), Fit(9), ShowsTrump(), Points(RespondXJump)),
+                Nonforcing(3, Suit.Diamonds, Partner(HasShownSuit()), Fit(9), ShowsTrump(), Points(RespondXJump)),
+                Nonforcing(3, Suit.Hearts,   Partner(HasShownSuit()), Fit(9), ShowsTrump(), Points(RespondXJump)),
+                Nonforcing(3, Suit.Spades,   Partner(HasShownSuit()), Fit(9), ShowsTrump(), Points(RespondXJump)),
 
-                Nonforcing(2, Suit.Clubs, Fit(), Points(RespondX1Level)),
+                Nonforcing(2, Suit.Clubs, Partner(HasShownSuit()), Fit(), Points(RespondX1Level)),
                 Nonforcing(2, Suit.Clubs, Shape(5, 11), Points(RespondX1Level)),
 
-                Nonforcing(2, Suit.Diamonds, Fit(), Points(RespondX1Level)),
+                Nonforcing(2, Suit.Diamonds, Partner(HasShownSuit()), Fit(), Points(RespondX1Level)),
                 Nonforcing(2, Suit.Diamonds, Jump(0), Shape(5, 11), Points(RespondX1Level)),
 
-                Nonforcing(2, Suit.Hearts, Fit(), Points(RespondX1Level)),
+                Nonforcing(2, Suit.Hearts, Partner(HasShownSuit()), Fit(), Points(RespondX1Level)),
                 Nonforcing(2, Suit.Hearts, Jump(0), Shape(5, 11), Points(RespondX1Level)),
 
-                Nonforcing(2, Suit.Spades, Fit(), Points(RespondX1Level)),
+                Nonforcing(2, Suit.Spades, Partner(HasShownSuit()), Fit(), Points(RespondX1Level)),
 
 				// TODO: Perhaps higer priority than raise of a minor???
                 Nonforcing(1, Suit.Unknown, Points(RespondX1Level)),

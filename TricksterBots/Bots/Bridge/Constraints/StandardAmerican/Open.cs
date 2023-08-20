@@ -88,9 +88,9 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-        public static IEnumerable<BidRule> Rebid(PositionState _)
+        public static IEnumerable<BidRule> Rebid(PositionState ps)
 		{
-			return new List<BidRule>()
+			var bids = new List<BidRule>()
 			{
 				DefaultPartnerBids(Bid.Double, Respond.Rebid),
 
@@ -102,10 +102,10 @@ namespace TricksterBots.Bots.Bridge
 
 
 				// Responder changed suits and we have a fit.  Support at appropriate level.
-                Nonforcing(2, Suit.Clubs,  Fit(), ShowsTrump(), Points(Minimum)),
-				Nonforcing(2, Suit.Diamonds, Fit(), ShowsTrump(), Points(Minimum)),
-				Nonforcing(2, Suit.Hearts, Fit(), ShowsTrump(), Points(Minimum)),
-				Nonforcing(2, Suit.Spades, Fit(), ShowsTrump(), Points(Minimum)),
+                Nonforcing(2, Suit.Clubs,  RaisePartner(), Points(Minimum)),
+				Nonforcing(2, Suit.Diamonds, RaisePartner(), Points(Minimum)),
+				Nonforcing(2, Suit.Hearts, RaisePartner(), Points(Minimum)),
+				Nonforcing(2, Suit.Spades, RaisePartner(), Points(Minimum)),
 
 
 				Nonforcing(3, Suit.Clubs, Fit(), ShowsTrump(), Points(Medium)),
@@ -149,6 +149,8 @@ namespace TricksterBots.Bots.Bridge
 				// TODO: What about 3NT...
 
             };
+			bids.AddRange(Compete.CompBids(ps));
+			return bids;
 		}
 
 

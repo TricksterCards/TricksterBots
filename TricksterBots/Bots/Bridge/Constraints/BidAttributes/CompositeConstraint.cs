@@ -122,4 +122,25 @@ namespace TricksterBots.Bots.Bridge
 		}
 	}
 
+	// TODO: Perhaps this would be best to fall back on - although there is no "OR"
+	// This is a special, magical class that never actually gets called.  When a rule is added the
+	// ChildConstraints are added, and this constraint is essentially thrown away and never called.
+	// This happens when the rule is being constructed, not when constraints are being evaluated
+	// so this can not be used in conjunction with modifiers like PartnerProxy or any other contraint
+	// that takes a child constraint.
+	public class ConstraintGroup: Constraint
+	{
+		public Constraint[] ChildConstraints { get; }
+		public ConstraintGroup(params Constraint[] childConstraints)
+		{
+			this.ChildConstraints = childConstraints;
+		}
+
+		// THIS METHOD SHOULD NEVER BE CALLED!  
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
 }

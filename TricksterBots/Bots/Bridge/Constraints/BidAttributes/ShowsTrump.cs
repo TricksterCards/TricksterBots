@@ -9,35 +9,25 @@ namespace TricksterBots.Bots.Bridge
 {
     public class ShowsTrump : Constraint, IShowsState
     {
-        private Suit? _trumpSuit;
-        public ShowsTrump(Suit? trumpSuit)
+        private Strain? _trumpStrain;
+        public ShowsTrump(Strain? trumpStrain)
         {
-            this._trumpSuit = trumpSuit;
+            this._trumpStrain = trumpStrain;
         }
         public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            if (Suit(call) == null)
+            if (GetStrain(_trumpStrain, call) == null)
             {
-                Debug.Fail("Suit must be specified or call must be a bid for TrumpSuit constraint");
+                Debug.Fail("Strain must be specified or call must be a bid for TrumpSuit constraint");
                 return false;
             }
             return true;
         }
 
-        private Suit? Suit(Call call)
-        {
-            if (_trumpSuit != null) return _trumpSuit;
-            if (call is Bid bid)
-            {
-                return bid.Suit;
-            }
-            return null;
-        }
-
         void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
-            Suit suit = (Suit)Suit(call);
-            showAgreements.ShowTrump(suit);
+            Strain strain = (Strain)GetStrain(_trumpStrain, call);
+            showAgreements.ShowTrump(strain);
         }
     }
 }

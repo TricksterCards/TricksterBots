@@ -86,10 +86,10 @@ namespace TricksterBots.Bots.Bridge
      //       this.CountAces = other.CountAces;
       //      this.CountKings = other.CountKings;
             this.Suits = new Dictionary<Suit, SuitSummary>();
-            foreach (Suit suit in BasicBidding.Strains)
+            foreach (Suit suit in BasicBidding.BasicSuits)
             {
                 Suits[suit] = new SuitSummary(hs1.Suits[suit], hs2.Suits[suit]);
-                if (suit != Suit.Unknown && pa.Suits[suit].LongHand != null)
+                if (pa.Suits[suit].LongHand != null)
                 { 
                     ShownSuits.Add(suit);
                 }

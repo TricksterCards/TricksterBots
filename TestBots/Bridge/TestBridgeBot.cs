@@ -80,11 +80,21 @@ namespace TestBots
                 var text = File.ReadAllText(file);
                 var tests = PBN.ImportTests(text);
 
+                var testsPassing = 0;
+                var testsFailing = 0;
+
                 foreach (var test in tests)
                 {
                     if (!string.IsNullOrEmpty(test.bid))
                     {
-                        RunBidTest(new BidTest(test));
+                        if (RunBidTest(new BidTest(test)))
+                        {
+                            testsPassing++;
+                        }
+                        else
+                        {
+                            testsFailing++;
+                        }
                     }
                     else if (!string.IsNullOrEmpty(test.play))
                     {
@@ -95,6 +105,16 @@ namespace TestBots
                         throw new ArgumentException("Test must have either an expected bid or expected play.");
                     }
                 }
+
+                if (testsFailing == 0)
+                {
+                    Debug.WriteLine($"SUCCESS: {testsPassing} tests succeeded in {file}");
+                }
+                else
+                {
+                    Debug.WriteLine($"FAIL:    {testsFailing} failed.  {testsPassing} passed in {file}");
+                }
+
             }
         }
 
@@ -216,7 +236,7 @@ namespace TestBots
             return passed ? "passed" : "failed";
         }
 
-        private static void RunBidTest(BidTest test)
+        private static bool RunBidTest(BidTest test)
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
             var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
@@ -234,18 +254,17 @@ namespace TestBots
             Hand[] hands = { null, null, null, null };
             var i = historyStrings.Count % 4;
             hands[i] = test.hand;
-            var bHack = new BiddingState(hands, Direction.North, "EW");
+            var biddingState = new BiddingState(hands, Direction.North, "EW");
 
             string expected = BidString(test.expectedBid);
-            var bid = bHack.SuggestBid(historyStrings.ToArray());
+            var bid = biddingState.SuggestBid(historyStrings.ToArray());
 
             if (bid != expected)
             {
                 Debug.WriteLine($"FAILED: '{test.type}' suggested {bid} but expected {expected}");
             }
+            return (bid == expected);
 
-       //     Assert.AreEqual(BidString(test.expectedBid), bid.ToString(),
-         //       $"NEW TEST '{test.type}' suggested {bid.ToString()} but expected {BidString(test.expectedBid)}");
 
         }
 

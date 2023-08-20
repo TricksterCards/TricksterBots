@@ -91,9 +91,9 @@ namespace TricksterBots.Bots.Bridge
 			
 				this.HandSummary = (startState == null) ? new HandSummary() : new HandSummary(startState);
 				this.Suits = new Dictionary<Suit, SuitSummary.ShowState>();
-				foreach (var strain in BasicBidding.Strains)
+				foreach (var suit in BasicBidding.BasicSuits)
 				{
-					this.Suits[strain] = new SuitSummary.ShowState(HandSummary, HandSummary.Suits[strain]);
+					this.Suits[suit] = new SuitSummary.ShowState(HandSummary, HandSummary.Suits[suit]);
 				}
 			}
 
@@ -108,7 +108,17 @@ namespace TricksterBots.Bots.Bridge
 				HandSummary.HighCardPoints = CombineRange(HandSummary.HighCardPoints, (min, max), CombineRule.Show);
 				HandSummary.ShowPoints(min, max);
 			}
-			public void ShowIsBalanced(bool isBalanced)
+			public void ShowNoTrumpLongHandPoints(int min, int max)
+			{
+				HandSummary.NoTrumpLongHandPoints = CombineRange(HandSummary.NoTrumpLongHandPoints, (min, max), CombineRule.Show);
+			}
+
+            public void ShowNoTrumpDummyPoints(int min, int max)
+            {
+                HandSummary.NoTrumpDummyPoints = CombineRange(HandSummary.NoTrumpDummyPoints, (min, max), CombineRule.Show);
+            }
+
+            public void ShowIsBalanced(bool isBalanced)
 			{
 				// TODO: This needs to union?  What if one is true and one is false???
 				HandSummary.IsBalanced = CombineBool(HandSummary.IsBalanced, isBalanced, CombineRule.Show);
@@ -319,6 +329,9 @@ namespace TricksterBots.Bots.Bridge
 
 		public (int Min, int Max)? Points { get; protected set; }
 
+		public (int Min, int Max)? NoTrumpLongHandPoints { get; protected set; }
+		public (int Min, int Max)? NoTrumpDummyPoints { get; protected set; }
+
 	//	public (int Min, int Max) GetPoints()
 	//	{
 //			if (Points == null) { return (0, 100); }
@@ -346,13 +359,15 @@ namespace TricksterBots.Bots.Bridge
 		{
 			this.Points = null;
 			this.HighCardPoints = null; 
-			this.StartingPoints = null; 
+			this.StartingPoints = null;
+			this.NoTrumpLongHandPoints = null;
+			this.NoTrumpDummyPoints = null;
 			this.IsBalanced = null;
 			this.IsFlat = null;
 			this.CountAces = null;
 			this.CountKings = null;
 			this.Suits = new Dictionary<Suit, SuitSummary>();
-			foreach (Suit suit in BasicBidding.Strains)
+			foreach (Suit suit in BasicBidding.BasicSuits)
 			{
 				Suits[suit] = new SuitSummary();
 			}
@@ -363,12 +378,14 @@ namespace TricksterBots.Bots.Bridge
 			this.Points = other.Points;
 			this.HighCardPoints = other.HighCardPoints;
 			this.StartingPoints = other.StartingPoints;
+			this.NoTrumpLongHandPoints = other.NoTrumpLongHandPoints;
+			this.NoTrumpDummyPoints = other.NoTrumpDummyPoints;
 			this.IsBalanced = other.IsBalanced;
 			this.IsFlat = other.IsFlat;
 			this.CountAces = other.CountAces;
 			this.CountKings = other.CountKings;
 			this.Suits = new Dictionary<Suit, SuitSummary>();
-			foreach (Suit suit in BasicBidding.Strains)
+			foreach (Suit suit in BasicBidding.BasicSuits)
 			{
 				Suits[suit] = new SuitSummary(other.Suits[suit]);
 			}
@@ -398,11 +415,13 @@ namespace TricksterBots.Bots.Bridge
 			this.Points = CombineRange(this.Points, other.Points, cr);
 			this.HighCardPoints = CombineRange(this.HighCardPoints, other.HighCardPoints, cr);
 			this.StartingPoints = CombineRange(this.StartingPoints, other.StartingPoints, cr);
+			this.NoTrumpLongHandPoints = CombineRange(this.NoTrumpLongHandPoints, other.NoTrumpLongHandPoints, cr);
+			this.NoTrumpDummyPoints = CombineRange(this.NoTrumpDummyPoints, other.NoTrumpDummyPoints, cr);
 			this.IsBalanced = CombineBool(this.IsBalanced, other.IsBalanced, cr);
 			this.IsFlat = CombineBool(this.IsFlat, other.IsFlat, cr);
 			this.CountAces = CombineInt(this.CountAces, other.CountAces, cr);
 			this.CountKings = CombineInt(this.CountKings, other.CountKings, cr);
-			foreach (var suit in BasicBidding.Strains)
+			foreach (var suit in BasicBidding.BasicSuits)
 			{
 				this.Suits[suit].Combine(other.Suits[suit], cr);
 			}
@@ -460,11 +479,13 @@ namespace TricksterBots.Bots.Bridge
 			if (this.Points != other.Points ||
 				this.HighCardPoints != other.HighCardPoints ||
 				this.StartingPoints != other.StartingPoints ||
+				this.NoTrumpLongHandPoints != other.NoTrumpLongHandPoints ||
+				this.NoTrumpDummyPoints != other.NoTrumpDummyPoints ||
 				this.IsBalanced != other.IsBalanced ||
 				this.IsFlat != other.IsFlat ||
 				this.CountAces != other.CountAces ||
 				this.CountKings != other.CountKings) { return false; }
-			foreach (var suit in BasicBidding.Strains)
+			foreach (var suit in BasicBidding.BasicSuits)
 			{
 				if (!this.Suits[suit].Equals(other.Suits[suit])) return false;
 			}

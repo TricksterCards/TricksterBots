@@ -12,13 +12,13 @@ namespace TricksterBots.Bots.Bridge
 {
     public class Contract
     {
-        public Bid LastBid = null;    
+        public Bid Bid = null;    
         public PositionState LastBidBy = null;
 		public PositionState Declarer = null;
         public bool Doubled = false;
         public bool Redoubled = false;
 		public int CallsRemaining = 4;
-		public Dictionary<Suit, List<PositionState>> FirstToNameStrain = new Dictionary<Suit, List<PositionState>>();
+		public Dictionary<Strain, List<PositionState>> FirstToNameStrain = new Dictionary<Strain, List<PositionState>>();
 
 
 		public bool IsOurs(PositionState ps)
@@ -44,9 +44,9 @@ namespace TricksterBots.Bots.Bridge
 			{
 				return (!Redoubled && Doubled && IsOurs(by));
 			}
-			if (call is Bid bid)
+			if (call is Bid newBid)
 			{
-				return (this.LastBid == null || bid.CompareTo(this.LastBid) > 0);
+				return (this.Bid == null || newBid.CompareTo(this.Bid) > 0);
 			}
 			Debug.Fail("Should never get to this line");
 			return false;
@@ -54,7 +54,7 @@ namespace TricksterBots.Bots.Bridge
 
 		private void MakeBid(Bid bid, PositionState by)
 		{
-            LastBid = bid;
+            Bid = bid;
             LastBidBy = by;
             Doubled = false;
             Redoubled = false;
@@ -63,9 +63,9 @@ namespace TricksterBots.Bots.Bridge
 			// For simplicity we assume the current bidder will be declarer.  Code below
 			// will change it if necessary
 			Declarer = by;
-			if (this.FirstToNameStrain.ContainsKey(bid.Suit))
+			if (this.FirstToNameStrain.ContainsKey(bid.Strain))
 			{
-				foreach (var namedStrain in FirstToNameStrain[bid.Suit])
+				foreach (var namedStrain in FirstToNameStrain[bid.Strain])
 				{
 					if (namedStrain == by) return;
 					if (namedStrain == by.Partner)
@@ -77,11 +77,11 @@ namespace TricksterBots.Bots.Bridge
 				// If we get here then the current pair (the "by" position) has not
 				// bid this strain, but the opponents have.  Add the current bidder
 				// to the list for this strain.
-				FirstToNameStrain[bid.Suit].Add(by);
+				FirstToNameStrain[bid.Strain].Add(by);
 			}
 			else
 			{
-				FirstToNameStrain[bid.Suit] = new List<PositionState> { by };
+				FirstToNameStrain[bid.Strain] = new List<PositionState> { by };
 			}
         }
 
@@ -106,7 +106,7 @@ namespace TricksterBots.Bots.Bridge
 				{
 					Redoubled = true;
 					Debug.Assert(this.Doubled);
-					CallsRemaining = (LastBid.Level == 7 && LastBid.Suit == Suit.Unknown) ? 0 : 3;
+					CallsRemaining = (Bid.Level == 7 && Bid.Suit == Suit.Unknown) ? 0 : 3;
 				}
 				return true;
 			}
@@ -115,7 +115,7 @@ namespace TricksterBots.Bots.Bridge
 
 		public int Jump(Bid bid)
 		{
-			return (bid == null) ? bid.Level - 1 : bid.JumpOver(LastBid);
+			return (bid == null) ? bid.Level - 1 : bid.JumpOver(Bid);
 		}
 
 		public bool PassEndsAuction { get { return this.CallsRemaining == 1; } }

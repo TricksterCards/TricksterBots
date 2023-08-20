@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
@@ -13,7 +14,10 @@ namespace TricksterBots.Bots.Bridge
     public class TakeoutDouble: Bidder
     {
         private static (int, int) TakeoutRange = (11, 16);
-        private static (int, int) StrongTakeout = (17, 40);
+        private static (int, int) StrongTakeout = (17, 100);
+        private static (int, int) MinimumTakeout = (11, 16);
+        private static (int, int) MediumTakeout = (17, 18);
+        private static (int, int) MaximumTakeout = (19, 100);
 
 
 
@@ -22,11 +26,11 @@ namespace TricksterBots.Bots.Bridge
             var bids = new List<BidRule>();
             if (ps.IsOpponentsContract)
             {
-                var contractBid = ps.BiddingState.Contract.LastBid;
+                var contractBid = ps.BiddingState.Contract.Bid;
                 // TODO: Higher levels...
-                if (contractBid.Level == 1 && contractBid.Suit != Suit.Unknown)
+                if (contractBid.Level == 1 && contractBid.Suit is Suit suit)
                 {
-                    bids.AddRange(Takeout(contractBid.Suit));
+                    bids.AddRange(Takeout(suit));
                 }
             }
             return bids;
@@ -66,6 +70,7 @@ namespace TricksterBots.Bots.Bridge
             var choices = new BidChoices(ps);
             choices.AddRules(new BidRule[]
             {
+                DefaultPartnerBids(goodThrough: new Bid(4, Suit.Hearts), DoublerRebid),
                 // TODO: FOR NOW WE WILL JUST BID AT THE NEXT LEVEL REGARDLESS OF POINTS...
                 // TODO: Need LongestSuit()...
                 // TODO: Should this be TakeoutSuit()...
@@ -76,24 +81,68 @@ namespace TricksterBots.Bots.Bridge
 
                 Nonforcing(1, Suit.Unknown, Balanced(), OppsStopped(), Points(NoTrump1)),
 
-                Nonforcing(2, Suit.Clubs, TakeoutSuit(), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
-                Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
-                Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(0), CueBid(false), Points(MinLevel)),
-                Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(1), CueBid(false), Points(InviteLevel)),
+                Nonforcing(2, Suit.Clubs, TakeoutSuit(), Points(MinLevel)),
+                Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(0), Points(MinLevel)),
+                Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(1), Points(InviteLevel)),
+                Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(0), Points(MinLevel)),
+                Nonforcing(2, Suit.Hearts, TakeoutSuit(), Jump(1), Points(InviteLevel)),
+                Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(0), Points(MinLevel)),
+                Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(1), Points(InviteLevel)),
 
 
                 Nonforcing(2, Suit.Unknown, Balanced(), OppsStopped(), Points(NoTrump2)),
 
+                // TODO: Game bids
+                Signoff(4, Suit.Hearts, TakeoutSuit(), Points(GameLevel)),
+                Signoff(4, Suit.Spades, TakeoutSuit(), Points(GameLevel)),
+
+                Signoff(3, Suit.Unknown, Balanced(), OppsStopped(), Points(Game3NT))
             });
             // Many strong bids can be done with pure competition.
             // TODO: Think through this - is this really what we want?
-            choices.AddRules(Compete.CompBids);
+           //  FOR NOW TAKE THIS OUT AND TRY TO COVER THE BASES... choices.AddRules(Compete.CompBids);
             return choices;         
         }
 
+
+
+
+        private static IEnumerable<BidRule> DoublerRebid(PositionState ps)
+        {
+            return new BidRule[]
+            {
+     
+                DefaultPartnerBids(Call.Double, AdvancerRebid),
+
+
+                // TODO: Clean this up... For now just majors...  Clean up range...
+                Signoff(4, Suit.Hearts, Fit(), Partner(HasShownSuit()), PairPoints((25, 30))),
+                Signoff(4, Suit.Spades, Fit(), Partner(HasShownSuit()), PairPoints((25, 30))),
+
+                // CANT BE - Invitational(2, Suit.Clubs, RaisePartner(), Points(MediumTakeout)),
+                Invitational(2, Suit.Diamonds, RaisePartner(), DummyPoints(MediumTakeout)),
+                Invitational(2, Suit.Hearts,   RaisePartner(), DummyPoints(MediumTakeout)),
+                Invitational(2, Suit.Spades,   RaisePartner(), DummyPoints(MediumTakeout)),
+
+                Invitational(3, Suit.Clubs,    RaisePartner(), DummyPoints(MediumTakeout)),
+                Invitational(3, Suit.Diamonds, RaisePartner(), DummyPoints(MediumTakeout)),
+                Invitational(3, Suit.Diamonds, RaisePartner(2), DummyPoints(MaximumTakeout)),
+                Invitational(3, Suit.Hearts,   RaisePartner(), DummyPoints(MediumTakeout)),
+                Invitational(3, Suit.Hearts,   RaisePartner(2), DummyPoints(MaximumTakeout)),
+                Invitational(3, Suit.Spades,   RaisePartner(), DummyPoints(MediumTakeout)),
+                Invitational(3, Suit.Spades,   RaisePartner(2), DummyPoints(MaximumTakeout)),
+                // TODO: Bid new suits for strong hands...  Bid NT?  
+
+                Signoff(Call.Pass, Points(MinimumTakeout)),
+
+                // TODO: THIS IS WHERE I START OFF - BB2 - DEAL 21 NEEDS STRONG RESPONSE...
+            };
+        }
+
+        private static IEnumerable<BidRule> AdvancerRebid(PositionState ps)
+        {
+            return Compete.CompBids(ps);
+        }
         // TODO: Interference...
         /*
         private static PrescribedBids RespondWithInterference()

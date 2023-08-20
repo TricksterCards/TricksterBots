@@ -38,6 +38,13 @@ namespace TricksterBots.Bots.Bridge
             return null;
         }
 
+        public static Strain? GetStrain(Strain? strain, Call call)
+        {
+            if (strain != null) { return strain; }
+            if (call is Bid bid) { return bid.Strain; }
+            return null;
+        }
+
     }
 
     public interface IShowsState 

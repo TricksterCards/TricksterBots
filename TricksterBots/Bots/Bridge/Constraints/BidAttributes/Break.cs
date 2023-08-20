@@ -11,8 +11,9 @@ namespace TricksterBots.Bots.Bridge
         public string Name { get; private set; }
         public int CountPublic = 0;
         public int CountPrivate = 0;
-        public Break(string name)
+        public Break(bool isStatic, string name)
         {
+            this.StaticConstraint = isStatic;
             this.Name = name;
         }
         public override bool Conforms(Call call, PositionState ps, HandSummary hs)

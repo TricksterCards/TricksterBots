@@ -378,9 +378,15 @@ namespace TricksterBots.Bots.Bridge
 
 		
 
-		public static Constraint ShowsTrump(Suit? trumpSuit = null)
+		public static Constraint ShowsTrump(Strain? trumpStrain = null)
 		{
-			return new ShowsTrump(trumpSuit);
+			return new ShowsTrump(trumpStrain);
+		}
+
+		public static Constraint ShowsTrump(Suit? trumpSuit)
+		{
+			if (trumpSuit == null) { return new ShowsTrump(null); }
+			return new ShowsTrump(Call.SuitToStrain(trumpSuit));
 		}
 
 		public static Constraint Jump(params int[] jumpLevels)
@@ -400,9 +406,10 @@ namespace TricksterBots.Bots.Bridge
 			return new CueBid(suit, desiredValue);
 		}
 
+		// Perhaps rename this.  Perhaps move this to takeout...
 		public static Constraint TakeoutSuit(Suit? suit = null)
 		{
-			return new TakeoutSuit(suit);
+			return new ConstraintGroup(new TakeoutSuit(suit), CueBid(false));
 		}
 
 		// TOOD: These are temporary for now.  But need to think them through.  
@@ -460,9 +467,9 @@ namespace TricksterBots.Bots.Bridge
 			return new RuleOf17(suit);
 		}
 
-		public static Constraint Break(string name)
+		public static Constraint Break(bool isStatic, string name)
 		{
-			return new Break(name);
+			return new Break(isStatic, name);
 		}
 
 
@@ -499,6 +506,22 @@ namespace TricksterBots.Bots.Bridge
 			return new ConventionOn(convention);
 		}
 
-	}
+
+
+		// THE FOLLOWING CONSTRAINTS ARE GROUPS OF CONSTRAINTS
+        public static Constraint RaisePartner(Suit? suit = null, int raise = 1, int fit = 8)
+        {
+            return new ConstraintGroup(Fit(fit, suit), Partner(HasShownSuit(suit)), Jump(raise - 1), ShowsTrump(suit));
+        }
+        public static Constraint RaisePartner(int level)
+        {
+            return RaisePartner(null, level);
+        }
+		public static Constraint RaisePartner(Suit suit)
+		{
+			return RaisePartner(suit, 1);
+		}
+
+    }
 };
 

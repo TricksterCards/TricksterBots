@@ -18,7 +18,7 @@ namespace TricksterBots.Bots.Bridge
         }
         public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            if (GetSuit(null, call) is Suit suit)
+            if (GetSuit(_suit, call) is Suit suit)
             {
                 return ps.PairState.Agreements.Suits[suit].LongHand == ps;
             }

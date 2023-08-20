@@ -70,7 +70,9 @@ namespace TricksterBots.Bots.Bridge
 			hs.ShowHighCardPoints(hcp, hcp);
 			var startPoints = hcp + BasicBidding.ComputeDistributionPoints(hand); 
 			hs.ShowStartingPoints(startPoints, startPoints);
-			var counts = BasicBidding.CountsBySuit(hand);
+            hs.ShowNoTrumpDummyPoints(startPoints, startPoints);
+            hs.ShowNoTrumpLongHandPoints(startPoints, startPoints);
+            var counts = BasicBidding.CountsBySuit(hand);
 			hs.ShowIsBalanced(BasicBidding.IsBalanced(hand));
 			hs.ShowIsFlat(BasicBidding.Is4333(counts));
 			int countAces = hand.Count(c => c.rank == Rank.Ace);
@@ -94,8 +96,6 @@ namespace TricksterBots.Bots.Bridge
 				hs.Suits[suit].ShowHaveQueen(hand.Contains(new Card(suit, Rank.Queen)));
 				hs.Suits[suit].ShowStopped(Stopped(hand, suit, c));
 			}
-			hs.Suits[Suit.Unknown].ShowDummyPoints(startPoints, startPoints);
-			hs.Suits[Suit.Unknown].ShowLongHandPoints(startPoints, startPoints);
 		}
 	}
 }

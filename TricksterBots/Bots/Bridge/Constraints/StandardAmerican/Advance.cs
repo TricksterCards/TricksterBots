@@ -13,7 +13,7 @@ namespace TricksterBots.Bots.Bridge
         public static (int, int) AdvanceNewSuit1Level = (6, 40); // TODO: Highest level for this?
         public static (int, int) NewSuit2Level = (11, 40); // Same here...
         public static (int, int) AdvanceTo1NT = (6, 10);
-        public static (int, int) AdvanceWeakJumpRaise = (0, 11);   // TODO: What is the high end of jump raise weak
+        public static (int, int) WeakJumpRaise = (0, 11);   // TODO: What is the high end of jump raise weak
         public static (int, int) Raise = (6, 9);
         public static (int, int) AdvanceCuebid = (10, 40);
 
@@ -22,10 +22,19 @@ namespace TricksterBots.Bots.Bridge
         {
             if (ps.Partner.LastCall is Bid partnerBid)
             {
-                var partnerSuit = partnerBid.Suit;
+                // NOTE: We only shold get here when a suit has been bid.  NoTrump overcalls have different logic.
+                Suit partnerSuit = (Suit)partnerBid.Suit;
                 return new BidRule[] {
                     // TODO: What is the level of interference we can take
                     DefaultPartnerBids(new Bid(4, Suit.Unknown), Overcall.Rebid),
+
+                                        // Weak jumps to game are highter priority than simple raises.
+                    // Fill this out better but for now just go on law of total trump, jumping if weak.  
+                    Nonforcing(4, Suit.Clubs, Jump(1, 2), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
+                    Nonforcing(4, Suit.Diamonds, Jump(1, 2), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
+                    Nonforcing(4, Suit.Hearts, Jump(1, 2), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
+                    Nonforcing(4, Suit.Spades, Jump(1, 2), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
+
 
                     // If we have support for partner
                     Nonforcing(2, Suit.Diamonds,  Partner(HasShownSuit()), Fit(), DummyPoints(Raise), ShowsTrump()),
@@ -59,17 +68,11 @@ namespace TricksterBots.Bots.Bridge
                     Forcing(2, Suit.Spades, CueBid(), Fit(partnerSuit), DummyPoints(AdvanceCuebid), ShowsTrump(partnerSuit)),
 
  
-                    // Weak jumps to game are highter priority than simple raises.
-                    // Fill this out better but for now just go on law of total trump, jumping if weak.  
-                    Nonforcing(4, Suit.Clubs, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                    Nonforcing(4, Suit.Diamonds, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                    Nonforcing(4, Suit.Hearts, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                    Nonforcing(4, Suit.Spades, Jump(1, 2), Fit(10), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
 
-                    Nonforcing(3, Suit.Clubs, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                    Nonforcing(3, Suit.Diamonds, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                    Nonforcing(3, Suit.Hearts, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
-                    Nonforcing(3, Suit.Spades, Jump(1), Fit(9), DummyPoints(AdvanceWeakJumpRaise), ShowsTrump()),
+                    Nonforcing(3, Suit.Clubs, Jump(1), Fit(9), DummyPoints(WeakJumpRaise), ShowsTrump()),
+                    Nonforcing(3, Suit.Diamonds, Jump(1), Fit(9), DummyPoints(WeakJumpRaise), ShowsTrump()),
+                    Nonforcing(3, Suit.Hearts, Jump(1), Fit(9), DummyPoints(WeakJumpRaise), ShowsTrump()),
+                    Nonforcing(3, Suit.Spades, Jump(1), Fit(9), DummyPoints(WeakJumpRaise), ShowsTrump()),
 
 
        

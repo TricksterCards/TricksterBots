@@ -22,18 +22,31 @@ namespace TricksterBots.Bots.Bridge
 		public BidForce Force { get; }
 
 
-		private IEnumerable<Constraint> _constraints;
+		private List<Constraint> _constraints = new List<Constraint>();
 		public BidRule(Call call, BidForce force, params Constraint[] constraints)
 		{
 			this.Call = call;
 			this.Force = force;
-			this._constraints = constraints;
+			foreach (Constraint constraint in constraints)
+			{
+				AddConstraint(constraint);
+			}
 		}
 
 
 		public void AddConstraint(Constraint constraint)
 		{
-			this._constraints = this._constraints.Append(constraint);
+			if (constraint is ConstraintGroup group)
+			{
+				foreach (Constraint child in group.ChildConstraints)
+				{
+					AddConstraint(child);
+				}
+			}
+			else
+			{
+				this._constraints.Add(constraint);
+			}
 		}
 
 		public bool SatisifiesStaticConstraints(PositionState ps)
