@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
-using static TricksterBots.Bots.Bridge.OneNoTrumpBidder;
+
 
 namespace TricksterBots.Bots.Bridge
 {
@@ -31,15 +31,15 @@ namespace TricksterBots.Bots.Bridge
             { OpenerRange.SuperAccept, And(HighCardPoints(17, 17), Points(17, 18)) }
         };
 
- 
+
         private static Dictionary<ResponderRange, Constraint> Respond1NTPoints = new Dictionary<ResponderRange, Constraint>
         {
-            { ResponderRange.LessThanInvite, And(HighCardPoints(0, 7), Points(0, 8)) },
-            { ResponderRange.Invite, And(HighCardPoints(8, 9), Points(8, 10)) },
-            { ResponderRange.InviteOrBetter, And(HighCardPoints(8, 40), Points(8, 100)) },
-            { ResponderRange.Game, Or(And(HighCardPoints(10, 15), Points(10, 15)), And(HighCardPoints(8,15), Points(11, 17))) },
-            { ResponderRange.GameOrBetter, Or(And(HighCardPoints(10, 40), Points(10, 40)), And(HighCardPoints(8, 40), Points(11, 40))) },  
-            { ResponderRange.GameIfSuperAccept, And(HighCardPoints(6, 20), Points(6, 20)) }
+            { ResponderRange.LessThanInvite, Points(0, 8) },
+            { ResponderRange.Invite, Points(8, 9) },
+            { ResponderRange.InviteOrBetter, HighCardPoints(8, 40) },
+            { ResponderRange.Game, Points(10, 15) },
+            { ResponderRange.GameOrBetter, Points(10, 100) },  
+            { ResponderRange.GameIfSuperAccept, Points(6, 15) }
         };
         // TODO: Need to incorporate the "OR" thingie...
         /*
@@ -199,15 +199,9 @@ namespace TricksterBots.Bots.Bridge
         {
             var choices = new BidChoices(ps);
             choices.AddRules(StaymanBidder.InitiateConvention(OpenType));
-     //       if (transferEalbed)
-      //      {
-                choices.AddRules(TransferBidder.InitiateConvention(OpenType));
-            //      }
-            // else choices.AddRules.Natural1NT.Respond(OpenType)
-            // TODO: What about natural stuff?  3-level bids make no sense.  For now add them...
+            choices.AddRules(TransferBidder.InitiateConvention(OpenType));
             choices.AddRules(Natural1NT.Respond(OpenType));
             return choices;
-
         }
 
     }
@@ -234,26 +228,7 @@ namespace TricksterBots.Bots.Bridge
             return OneNoTrumpBidder.GetBalancingRules(ps);
         }
 
-        /*
-        private void Initiate(PrescribedBids pb)
-        {
-            pb.Redirects = new RedirectRule[]
-            {
-
-				Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Balancing1NT),
-						 Role(PositionRole.Overcaller, 1), PassEndsAuction(true)),
-
-				Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Open1NT), Role(PositionRole.Opener, 1)),
-
-
-				Redirect(() => Natural1NT.Bidder(OneNoTrumpBidder.NTType.Overcall1NT),
-                         Role(PositionRole.Overcaller, 1), PassEndsAuction(false)),
-
-                Redirect(Natural2NT.DefaultBidderXXX, Role(PositionRole.Opener,1)),
-                // TODO: NEED NATURAL 3NT TOO BUT FOR NOW JUST 2NT
-            };
-        }
-        */
+      
     }
 
 
@@ -269,45 +244,12 @@ namespace TricksterBots.Bots.Bridge
             return new Natural1NT(type).NaturalResponse();
         }
 
-        /*
-        public PrescribedBids Respond()
-        {
-            var pb = new PrescribedBids();
-            // TODO: Make these redirect rules conditional on some global state.  Conditions can be:
-            //  Off
-            //  Pass
-            //  X
-            //  2C
-            // So basically just a condition based on the RHO bid and a global somewhere that has these bid options...
-            switch (OpenType)
-            {
-                case NTType.Open1NT:
-                    pb.Redirects = new RedirectRule[]
-                    {
-                        Redirect(() => StaymanBidder.InitiateConvention(OpenType), ConventionOn("Stayman1NTOpen")),
-                        Redirect(() => TransferBidder.InitiateConvention(OpenType), ConventionOn("Transfer1NTOpen")),
-						Redirect(NaturalResponse),
-					};
-                    break;
 
-                case NTType.Overcall1NT:
-                case NTType.Balancing1NT:
-                    pb.Redirects = new RedirectRule[]
-                    {
-                        // TODO: This is SAYC SPECIFIC.  ONLY STAYAN WITH OVERCALL.
-                        Redirect(() => StaymanBidder.InitiateConvention(OpenType)),
-						Redirect(NaturalResponse),
-					};
-                    break;
-            }
-        }
-        */
 
         private IEnumerable<BidRule> NaturalResponse()
         {
             return new BidRule[]
             {
-                Signoff(Bid.Pass, Points(ResponderRange.LessThanInvite)),
 
                 DefaultPartnerBids(Bid.Pass, OpenerRebid),
                 Signoff(2, Suit.Clubs, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
@@ -315,11 +257,14 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(2, Suit.Hearts, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
                 Signoff(2, Suit.Spades, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
 
-                Invitational(2, Suit.Unknown, Points(ResponderRange.Invite), LongestMajor(4)),
+                Invitational(2, Suit.Unknown, Break(true, "2NT"), Points(ResponderRange.Invite), LongestMajor(4)),
                 // TODO: These natural bids are not exactly right....
                 Forcing(3, Suit.Hearts, Points(ResponderRange.GameOrBetter), Shape(5, 11)),
                 Forcing(3, Suit.Spades, Points(ResponderRange.GameOrBetter), Shape(5, 11)),
                 Signoff(3, Suit.Unknown, Points(ResponderRange.Game), LongestMajor(4)),
+
+                Signoff(Bid.Pass, Points(ResponderRange.LessThanInvite)),
+
 
             };
         }

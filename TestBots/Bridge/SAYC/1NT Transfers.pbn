@@ -2,7 +2,7 @@
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
 %Creator: BridgeComposer Version 5.101.2
-%Created: Sun Jan  1 21:33:14 2023 -0800
+%Created: Mon Aug 21 21:58:41 2023 -0700
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -33,7 +33,7 @@
 %PipColors #000000,#ff0000,#ff0000,#000000
 %PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
 %ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 10
+%SelectedBoard 1
 %ShowBoardLabels 2
 %ShowCardTable 2
 %TSTCustomSortOrder Default
@@ -70,7 +70,7 @@
 [South ""]
 [Dealer "N"]
 [Vulnerable "None"]
-[Deal "N:KT9.KQJ7.KQ5.J97 5.T983.AJT4.A643 AQ432.654.32.K85 J876.A2.9876.QT2"]
+[Deal "N:KT9.KQJ7.KQ5.J97 5.T983.AJT4.A643 AQ432.654.32.Q85 J876.A2.9876.KT2"]
 [Scoring ""]
 [Declarer ""]
 [Contract ""]
@@ -91,7 +91,7 @@
 [South ""]
 [Dealer "N"]
 [Vulnerable "None"]
-[Deal "N:AK3.QJ98.AJ5.Q74 542.764.K763.A32 JT986.AT3.82.KJ5 Q7.K52.QT94.T986"]
+[Deal "N:AK3.QJ98.AJ5.Q74 542.764.K763.A32 JT986.AT3.82.K65 Q7.K52.QT94.JT98"]
 [Scoring ""]
 [Declarer ""]
 [Contract ""]

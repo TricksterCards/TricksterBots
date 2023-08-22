@@ -157,17 +157,16 @@ namespace TricksterBots.Bots.Bridge
 
 		private IEnumerable<BidRule> PlaceGameContract(PositionState _)
 		{
-			return new BidRule[] { 
+			return new BidRule[] {
 				// If partner has shown 5 hearts or 5 spades then this is game force contract so place
 				// it in NT or 4 of their suit.
 
-				// TODO: Use Fit() instead of all this partner shape crap.  Change later...
+		
 
-				Signoff(3, Suit.Unknown, Partner(HasMinShape(Suit.Hearts, 5)), Shape(Suit.Hearts, 2)),
-				Signoff(3, Suit.Unknown, Partner(HasMinShape(Suit.Spades, 5)), Shape(Suit.Spades, 2)),
+                Signoff(4, Suit.Hearts, Fit(), ShowsTrump()),
+                Signoff(4, Suit.Spades, Fit(), ShowsTrump()),
 
-				Signoff(4, Suit.Hearts, Partner(HasMinShape(5)), Shape(3, 5)),
-				Signoff(4, Suit.Spades, Partner(HasMinShape(5)), Shape(3, 5)),
+                Signoff(3, Suit.Unknown),
 
 				Signoff(Bid.Pass)
 			};

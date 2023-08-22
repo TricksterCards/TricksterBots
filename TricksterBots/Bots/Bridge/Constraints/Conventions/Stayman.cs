@@ -103,7 +103,8 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(2, Suit.Unknown, Points(OpenerRange.DontAcceptInvite)),
 
                 PartnerBids(3, Suit.Spades, Bid.Double, CheckSpadeGame),
-                Nonforcing(3, Suit.Spades, Points(OpenerRange.DontAcceptInvite), Shape(4), Partner(HasShape(4))),
+                // This is possible to know we have a fit if partner bid stayman, we respond hearts,
+                Nonforcing(3, Suit.Spades, Points(OpenerRange.DontAcceptInvite), Fit()),
 
                 Signoff(3, Suit.Unknown, Points(OpenerRange.AcceptInvite), Partner(LastBid(2, Suit.Unknown))),
                 Signoff(3, Suit.Unknown, LastBid(2, Suit.Diamonds), Partner(LastBid(3, Suit.Hearts)),

@@ -2,7 +2,7 @@
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
 %Creator: BridgeComposer Version 5.101.2
-%Created: Sun Aug 20 00:25:23 2023 -0700
+%Created: Mon Aug 21 14:44:48 2023 -0700
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -33,7 +33,7 @@
 %PipColors #000000,#ff0000,#ff0000,#000000
 %PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
 %ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 11
+%SelectedBoard 31
 %ShowBoardLabels 2
 %ShowCardTable 2
 %TSTCustomSortOrder Default
@@ -293,3 +293,430 @@ Pass Pass 2C Pass
 2C Pass 2H Pass
 2S Pass 3S Pass
 4S Pass Pass Pass
+
+[Event "BB3 - Deal 13"]
+[Site ""]
+[Date ""]
+[Board "13"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:QJ43.AQ6.AT.Q963 T9865.K5.K8.8542 AK.973.QJ75.AKJ7 72.JT842.96432.T"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "6NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 6NT Pass
+Pass Pass
+
+[Event "BB3 - Deal 14"]
+[Site ""]
+[Date ""]
+[Board "14"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "E"]
+[Vulnerable "NS"]
+[Deal "E:Q7.KT75.AQJ95.J4 K832.62.T862.AT5 A5.AQJ83.K7.KQ86 JT964.94.43.9732"]
+[Scoring ""]
+[Declarer "W"]
+[Contract "6H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "E"]
+1D Pass 1H Pass
+2H Pass 4NT Pass
+5D Pass 6H Pass
+Pass Pass
+
+[Event "BB3 - Deal 15"]
+[Site ""]
+[Date ""]
+[Board "15"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "EW"]
+[Deal "S:4.964.T9873.A742 AJT6.KQ.QJ.KQJT6 82.T8532.A62.953 KQ9753.AJ7.K54.8"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+Pass 1C Pass 1S
+Pass 4S Pass 4NT
+Pass 5D Pass 5S
+Pass Pass Pass
+
+[Event "BB3 - Deal 16"]
+[Site ""]
+[Date ""]
+[Board "16"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "All"]
+[Deal "W:9652.T8.AT7.KQ54 KJ73.AQ74.82.AJ6 T84.J632.4.T9872 AQ.K95.KQJ9653.3"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "6D"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+Pass 1NT Pass 4C
+Pass 4S Pass 6D
+Pass Pass Pass
+
+[Event "BB3 - Deal 17"]
+[Site ""]
+[Date ""]
+[Board "17"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:Q72.T543.KT74.T9 J63.AJ7.AQJ5.Q63 KT85.862.92.J872 A94.KQ9.863.AK54"]
+[Scoring ""]
+[Declarer "E"]
+[Contract "4NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+Pass 1NT Pass 4NT
+Pass Pass Pass
+
+[Event "BB3 - Deal 18"]
+[Site ""]
+[Date ""]
+[Board "18"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "E"]
+[Vulnerable "NS"]
+[Deal "E:A532.K84.954.652 Q9.A972.KQJ8.AKJ KT864.53.A6.T984 J7.QJT6.T732.Q73"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "E"]
+Pass 2NT Pass 3C
+Pass 3H Pass 4H
+Pass Pass Pass
+
+[Event "BB3 - Deal 19"]
+[Site ""]
+[Date ""]
+[Board "19"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "EW"]
+[Deal "S:QJT73.A6.J2.9742 K95.Q95.A9865.AK 864.K3.KT4.QJT63 A2.JT8742.Q73.85"]
+[Scoring ""]
+[Declarer "W"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+Pass 1NT Pass 2D
+Pass 2H Pass 3H
+Pass 4H Pass Pass
+Pass
+
+[Event "BB3 - Deal 20"]
+[Site ""]
+[Date ""]
+[Board "20"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "All"]
+[Deal "W:Q2.Q843.QT92.Q86 AKJ.AK.AK653.AT5 T9875.J72.J7.K92 643.T965.84.J743"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "3NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+Pass 2C Pass 2D
+Pass 3NT Pass Pass
+Pass
+
+[Event "BB3 - Deal 21"]
+[Site ""]
+[Date ""]
+[Board "21"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:K6.QJT62.754.963 95.97543.JT9.QJT A742.AK.AK63.K75 QJT83.8.Q82.A842"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "3NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+Pass Pass 2NT Pass
+3D Pass 3H Pass
+3NT Pass Pass Pass
+
+[Event "BB3 - Deal 22"]
+[Site ""]
+[Date ""]
+[Board "22"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "E"]
+[Vulnerable "NS"]
+[Deal "E:AKQ.J.AKJ74.KJ63 9864.AK42.QT85.4 J2.Q76.93.AQT975 T753.T9853.62.82"]
+[Scoring ""]
+[Declarer "E"]
+[Contract "6C"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "E"]
+2C Pass 3C Pass
+4NT Pass 5D Pass
+6C Pass Pass Pass
+
+[Event "BB3 - Deal 23"]
+[Site ""]
+[Date ""]
+[Board "23"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "EW"]
+[Deal "S:62.A84.Q752.QT97 AJ97.QJT6.A6.K63 T43.973.KJT93.J4 KQ85.K52.84.A852"]
+[Scoring ""]
+[Declarer "W"]
+[Contract "4S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+Pass 1NT Pass 2C
+Pass 2H Pass 3NT
+Pass 4S Pass Pass
+Pass
+
+[Event "BB3 - Deal 24"]
+[Site ""]
+[Date ""]
+[Board "24"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "All"]
+[Deal "W:863.T843.9.AJ752 AKJ95.5.KQJ63.KQ 2.KQJ6.T8742.T84 QT74.A972.A5.963"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "6S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+Pass 1S Pass 3S
+Pass 4NT Pass 5H
+Pass 6S Pass Pass
+Pass
+
+[Event "BB3 - Deal 25"]
+[Site ""]
+[Date ""]
+[Board ""]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KJ4.93.K9863.T75 Q953.QT74.T4.962 T62.A62.Q752.843 A87.KJ85.AJ.AKQJ"]
+[Scoring ""]
+[Declarer "W"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+Pass Pass Pass 2C
+Pass 2D Pass 2NT
+Pass 3C Pass 3H
+Pass 4H Pass Pass
+Pass
+
+[Event "BB3 - Deal 26"]
+[Site ""]
+[Date ""]
+[Board "26"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "E"]
+[Vulnerable "NS"]
+[Deal "E:KQT9.84.A842.T73 J4.KJ52.Q73.AKJ6 63.A7.KJT96.8542 A8752.QT963.5.Q9"]
+[Scoring ""]
+[Declarer "N"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "E"]
+Pass 1NT Pass 2H
+Pass 2S Pass 3H
+Pass 4H Pass Pass
+Pass
+
+[Event "BB3 - Deal 27"]
+[Site ""]
+[Date ""]
+[Board "27"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "EW"]
+[Deal "S:KQJ8.QJ6.KQ94.J5 9754.A9853.T6.A4 3.K7.AJ2.KQT9763 AT62.T42.8753.82"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "4NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+1NT Pass 4C Pass
+4D Pass 4NT Pass
+Pass Pass
+
+[Event "BB3 - Deal 28"]
+[Site ""]
+[Date ""]
+[Board "28"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "All"]
+[Deal "W:KJ9.AJ7.KQ73.J52 642.843.A2.KT763 AQ75.KQ952.654.8 T83.T6.JT98.AQ94"]
+[Scoring ""]
+[Declarer "E"]
+[Contract "4H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+1NT Pass 2C Pass
+2D Pass 3H Pass
+4H Pass Pass Pass
+
+[Event "BB3 - Deal 29"]
+[Site ""]
+[Date ""]
+[Board "29"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KJ5.K93.KQJ.A863 63.J62.A43.KJT92 Q742.Q854.T9752. AT98.AT7.86.Q754"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass Pass Pass
+
+[Event "BB3 - Deal 30"]
+[Site ""]
+[Date ""]
+[Board "30"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "E"]
+[Vulnerable "NS"]
+[Deal "E:KT75.92.AKJ64.AJ 863.86.QT975.975 AQJ94.AK3.83.KQ8 2.QJT754.2.T6432"]
+[Scoring ""]
+[Declarer "W"]
+[Contract "7S"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "E"]
+1D Pass 1S Pass
+3S Pass 4NT Pass
+5H Pass 5NT Pass
+6H Pass 7S Pass
+Pass Pass
+
+[Event "BB3 - Deal 31"]
+[Site ""]
+[Date ""]
+[Board "31"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "EW"]
+[Deal "S:KQT.AKJ865.J.AK6 974.Q92.AKT9.853 J63.73.8753.T742 A852.T4.Q642.QJ9"]
+[Scoring ""]
+[Declarer "S"]
+[Contract "3H"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+2C Pass 2D Pass
+2H Pass 3C Pass
+3H Pass Pass Pass
+
+[Event "BB3 - Deal 32"]
+[Site ""]
+[Date ""]
+[Board "32"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "All"]
+[Deal "W:KQ85.AK74.96.KQ7 A74.QT852.K4.964 632.6.QJT7532.53 JT9.J93.A8.AJT82"]
+[Scoring ""]
+[Declarer "E"]
+[Contract "3D"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+1NT Pass 2S Pass
+3C Pass 3D Pass
+Pass Pass

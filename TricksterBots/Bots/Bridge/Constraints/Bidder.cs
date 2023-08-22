@@ -313,19 +313,21 @@ namespace TricksterBots.Bots.Bridge
 
 		public static Constraint And(params Constraint[] constraints)
 		{
+			return new ConstraintGroup(constraints);
+			/*
 			if (constraints.Length > 0 || constraints[0] is IShowsState)
 			{
 				return new CompositeShowsState(CompositeConstraint.Operation.And, constraints);
 			}
 			return new CompositeConstraint(CompositeConstraint.Operation.And, constraints);
-
+			*/
 		}
-
+/*
 		public static Constraint Or(params Constraint[] constraints)
 		{
 			return new CompositeConstraint(CompositeConstraint.Operation.Or, constraints);
 		}
-
+*/
         public static Constraint ExcellentSuit(Suit? suit = null)
         { return new ShowsQuality(suit, SuitQuality.Excellent, SuitQuality.Solid); }
 
@@ -409,7 +411,7 @@ namespace TricksterBots.Bots.Bridge
 		// Perhaps rename this.  Perhaps move this to takeout...
 		public static Constraint TakeoutSuit(Suit? suit = null)
 		{
-			return new ConstraintGroup(new TakeoutSuit(suit), CueBid(false));
+			return And(new TakeoutSuit(suit), CueBid(false));
 		}
 
 		// TOOD: These are temporary for now.  But need to think them through.  
@@ -511,7 +513,7 @@ namespace TricksterBots.Bots.Bridge
 		// THE FOLLOWING CONSTRAINTS ARE GROUPS OF CONSTRAINTS
         public static Constraint RaisePartner(Suit? suit = null, int raise = 1, int fit = 8)
         {
-            return new ConstraintGroup(Fit(fit, suit), Partner(HasShownSuit(suit)), Jump(raise - 1), ShowsTrump(suit));
+            return And(Fit(fit, suit), Partner(HasShownSuit(suit)), Jump(raise - 1), ShowsTrump(suit));
         }
         public static Constraint RaisePartner(int level)
         {

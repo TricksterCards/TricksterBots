@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace TricksterBots.Bots.Bridge
 {
+	/*
 	public class CompositeConstraint : Constraint
 	{
 		public enum Operation { And, Or };
@@ -121,25 +122,48 @@ namespace TricksterBots.Bots.Bridge
             }
 		}
 	}
+	*/
 
-	// TODO: Perhaps this would be best to fall back on - although there is no "OR"
+
 	// This is a special, magical class that never actually gets called.  When a rule is added the
 	// ChildConstraints are added, and this constraint is essentially thrown away and never called.
 	// This happens when the rule is being constructed, not when constraints are being evaluated
 	// so this can not be used in conjunction with modifiers like PartnerProxy or any other contraint
 	// that takes a child constraint.
+
+	// IF and ONLY IF all child constraints are static then this constraint can
 	public class ConstraintGroup: Constraint
 	{
 		public Constraint[] ChildConstraints { get; }
 		public ConstraintGroup(params Constraint[] childConstraints)
 		{
 			this.ChildConstraints = childConstraints;
+			this.StaticConstraint = true;
+			foreach (var constraint in ChildConstraints)
+			{
+				if (!constraint.StaticConstraint)
+				{
+					this.StaticConstraint = false;
+				}
+			}
 		}
 
-		// THIS METHOD SHOULD NEVER BE CALLED!  
+		// When this class is added directly to a rule then the child constraints are copied to the rule and
+		// this method is never called.  However, PositionProxy will call this method if it is ever passed
+		// a ConstraintGroup.  This will be fine since it only allows for static constraints and all of the 
+		// constraints for a group must be static for the group to be considered static.
         public override bool Conforms(Call call, PositionState ps, HandSummary hs)
         {
-            throw new NotImplementedException();
+			if (StaticConstraint)
+			{
+				foreach (var constraint in ChildConstraints)
+				{
+					if (!constraint.Conforms(call, ps, hs)) return false;
+				}
+				return true;
+			}
+			Debug.Fail("Conforms should never be called on a non-static constraint group");
+			return false;
         }
     }
 

@@ -2,7 +2,7 @@
 % EXPORT
 %Content-type: text/x-pbn; charset=ISO-8859-1
 %Creator: BridgeComposer Version 5.101.2
-%Created: Thu Jun  1 21:58:50 2023 -0700
+%Created: Mon Aug 21 22:31:07 2023 -0700
 %BCOptions Center STBorder STShade
 %BidAndCardSpacing Thin
 %BoardsPerPage 1
@@ -33,7 +33,7 @@
 %PipColors #000000,#ff0000,#ff0000,#000000
 %PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
 %ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 31
+%SelectedBoard 28
 %ShowBoardLabels 2
 %ShowCardTable 2
 %TSTCustomSortOrder Default
@@ -641,9 +641,8 @@ Pass Pass
 [BCFlags "1f"]
 [Auction "N"]
 Pass 1NT Pass 2D
-Pass 2H Pass 3H
-Pass 4H Pass Pass
-Pass
+Pass 2H Pass 4H
+Pass Pass Pass
 
 [Event "BB1 Deal 30"]
 [Site ""]
