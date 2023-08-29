@@ -20,7 +20,7 @@ namespace TricksterBots.Bots.Bridge
     {
         public enum NTType { Open1NT, Overcall1NT, Balancing1NT }
         public enum OpenerRange { Open, DontAcceptInvite, AcceptInvite, LessThanSuperAccept, SuperAccept }
-        public enum ResponderRange { LessThanInvite, Invite, InviteOrBetter, Game, GameOrBetter, GameIfSuperAccept }
+        public enum ResponderRange { LessThanInvite, Invite, InviteOrBetter, Game, GameOrBetter, GameIfSuperAccept, SmallSlam }
 
         private static Dictionary<OpenerRange, Constraint> Open1NTPoints = new Dictionary<OpenerRange, Constraint>
         {
@@ -39,7 +39,8 @@ namespace TricksterBots.Bots.Bridge
             { ResponderRange.InviteOrBetter, HighCardPoints(8, 40) },
             { ResponderRange.Game, Points(10, 15) },
             { ResponderRange.GameOrBetter, Points(10, 100) },  
-            { ResponderRange.GameIfSuperAccept, Points(6, 15) }
+            { ResponderRange.GameIfSuperAccept, Points(6, 15) },
+            { ResponderRange.SmallSlam, Points(18, 19) }
         };
         // TODO: Need to incorporate the "OR" thingie...
         /*
@@ -69,7 +70,8 @@ namespace TricksterBots.Bots.Bridge
             { ResponderRange.InviteOrBetter, And(HighCardPoints(8, 40), Points(8, 100)) },
             { ResponderRange.Game, And(HighCardPoints(10, 15), Points(10, 15)) },
             { ResponderRange.GameOrBetter, And(HighCardPoints(10, 40), Points(10, 40)) },
-            { ResponderRange.GameIfSuperAccept, And(HighCardPoints(6, 20), Points(6, 20)) }
+            { ResponderRange.GameIfSuperAccept, And(HighCardPoints(6, 20), Points(6, 20)) },
+            { ResponderRange.SmallSlam, Points(18, 19) }
         };
 
 
@@ -92,7 +94,8 @@ namespace TricksterBots.Bots.Bridge
             { ResponderRange.Game, And(HighCardPoints(12, 15), Points(12, 15)) },
             { ResponderRange.GameOrBetter, And(HighCardPoints(12, 40), Points(12, 40)) },
             // Balancing 1NT does not super accept so make these values impossible
-            { ResponderRange.GameIfSuperAccept, And(HighCardPoints(40, 40), Points(40, 40)) }
+            { ResponderRange.GameIfSuperAccept, And(HighCardPoints(40, 40), Points(40, 40)) },
+            { ResponderRange.SmallSlam, Points(40, 40) }  // This can't happen - we're a passed hand
         };
 
 
@@ -262,6 +265,9 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Hearts, Points(ResponderRange.GameOrBetter), Shape(5, 11)),
                 Forcing(3, Suit.Spades, Points(ResponderRange.GameOrBetter), Shape(5, 11)),
                 Signoff(3, Suit.Unknown, Points(ResponderRange.Game), LongestMajor(4)),
+
+                Signoff(6, Suit.Unknown, Flat(), Points(ResponderRange.SmallSlam)),
+                Signoff(6, Suit.Unknown, Balanced(), Shape(Suit.Hearts, 2, 3), Shape(Suit.Spades, 2, 3), Points(ResponderRange.SmallSlam)),
 
                 Signoff(Bid.Pass, Points(ResponderRange.LessThanInvite)),
 

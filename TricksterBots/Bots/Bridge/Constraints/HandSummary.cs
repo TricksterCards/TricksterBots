@@ -74,6 +74,22 @@ namespace TricksterBots.Bots.Bridge
             return i1;
         }
 
+		protected static HashSet<int> CombineIntSet(HashSet<int> s1, HashSet<int> s2, CombineRule cr)
+		{
+			if (s1 == null)
+			{
+				return (cr == CombineRule.CommonOnly) ? null : s2;
+			}
+			if (s2 == null)
+			{
+				return (cr == CombineRule.CommonOnly) ? null: s1;
+			}
+			if (cr == CombineRule.Merge)
+			{
+				return new HashSet<int>(s1.Intersect(s2));
+			}
+			return new HashSet<int>(s1.Union(s2));
+		}
 
     }
 
@@ -129,10 +145,13 @@ namespace TricksterBots.Bots.Bridge
 				HandSummary.IsFlat = CombineBool(HandSummary.IsFlat, isFlat, CombineRule.Show);
 			}
 
-			public void ShowCountAces(int countAces)
+
+
+			public void ShowCountAces(HashSet<int> countAces)
 			{
-				HandSummary.CountAces = countAces;
+				HandSummary.CountAces = CombineIntSet(HandSummary.CountAces, countAces, CombineRule.Show);
 			}
+
 
 			public void ShowCountKings(int countKings)
 			{
@@ -184,10 +203,9 @@ namespace TricksterBots.Bots.Bridge
                 }
 
 			
-				public void ShowKeycards(int a, int b)
+				public void ShowKeyCards(HashSet<int> keyCards)
 				{
-					// TODO: What to do here?????
-					_suitSummary.Keycards = (a, b);
+					_suitSummary.KeyCards = CombineIntSet(_suitSummary.KeyCards, keyCards, CombineRule.Show);
 				}
 				
 				public void ShowHaveQueen(bool haveQueen)
@@ -244,7 +262,7 @@ namespace TricksterBots.Bots.Bridge
 				}
             }
 
-            public (int A, int B)? Keycards
+            public HashSet<int> KeyCards
             {
                 get; protected set;
             }
@@ -259,7 +277,7 @@ namespace TricksterBots.Bots.Bridge
 				this.DummyPoints = null;
                 this.LongHandPoints = null;
                 this._quality = null;
-                this.Keycards = null;
+                this.KeyCards = null;
 				this.HaveQueen = null;
 				this.Stopped = null;
             }
@@ -271,7 +289,7 @@ namespace TricksterBots.Bots.Bridge
                 this.DummyPoints = other.DummyPoints;
                 this.LongHandPoints = other.LongHandPoints;
                 this._quality = other._quality;
-				this.Keycards= other.Keycards;
+				this.KeyCards = other.KeyCards;
 				this.HaveQueen= other.HaveQueen;
 				this.Stopped = other.Stopped;
             }
@@ -284,6 +302,8 @@ namespace TricksterBots.Bots.Bridge
                 this._quality = CombineRange(this._quality, other._quality, cr);
                 this.HaveQueen = CombineBool(this.HaveQueen, other.HaveQueen, cr);
 				this.Stopped = CombineBool(this.Stopped, other.Stopped, cr);
+				this.KeyCards = CombineIntSet(this.KeyCards, other.KeyCards, cr);
+				/*
                 if (this.Keycards == null)
                 { 
                     this.Keycards = (cr == CombineRule.CommonOnly) ? null : other.Keycards;
@@ -301,6 +321,7 @@ namespace TricksterBots.Bots.Bridge
                         Debug.Assert(this.Keycards == other.Keycards);
                     }
                 }
+				*/
             }
 
 /*
@@ -349,7 +370,7 @@ namespace TricksterBots.Bots.Bridge
 		public bool? IsFlat { get; protected set; }
 
 		// TODO: Perhaps things like this:
-		public int? CountAces { get; protected set; }
+		public HashSet<int> CountAces { get; protected set; }
 			
 		public int? CountKings { get; protected set; }
 
@@ -419,7 +440,7 @@ namespace TricksterBots.Bots.Bridge
 			this.NoTrumpDummyPoints = CombineRange(this.NoTrumpDummyPoints, other.NoTrumpDummyPoints, cr);
 			this.IsBalanced = CombineBool(this.IsBalanced, other.IsBalanced, cr);
 			this.IsFlat = CombineBool(this.IsFlat, other.IsFlat, cr);
-			this.CountAces = CombineInt(this.CountAces, other.CountAces, cr);
+			this.CountAces = CombineIntSet(this.CountAces, other.CountAces, cr);
 			this.CountKings = CombineInt(this.CountKings, other.CountKings, cr);
 			foreach (var suit in BasicBidding.BasicSuits)
 			{

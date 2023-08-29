@@ -30,10 +30,10 @@ namespace TricksterBots.Bots.Bridge
                 PartnerBids(call, Call.Double, Answer),
                 Forcing(call, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 0, 4), Flat(false), ShowsNoSuit()),
                 Forcing(call, Points(ResponderRange.InviteOrBetter), Shape(Suit.Spades, 4), Shape(Suit.Hearts, 0, 4), Flat(false), ShowsNoSuit()),
-                Forcing(call, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5), ShowsNoSuit()),
-                Forcing(call, Points(ResponderRange.GameOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4), ShowsNoSuit())
+                Forcing(call, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 5), ShowsNoSuit()),
+                Forcing(call, Points(ResponderRange.InviteOrBetter), Shape(Suit.Hearts, 5), Shape(Suit.Spades, 4), ShowsNoSuit())
                 // TODO: The following rule is "Garbage Stayman"
-                ///	Forcing(2, Suit.Clubs, Points((0, 7)), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
+                // Forcing(2, Suit.Clubs, Points((0, 7)), Shape(Suit.Diamonds, 4, 5), Shape(Suit.Hearts, 4), Shape(Suit.Spades, 4)),
             };
             // TODO: Need to add rules for garbage stayman if that is on, and for 4-way transfers if that is on...
 		}

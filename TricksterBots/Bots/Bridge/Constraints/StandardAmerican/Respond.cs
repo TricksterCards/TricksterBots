@@ -23,7 +23,7 @@ namespace TricksterBots.Bots.Bridge
         static protected (int, int) RaiseTo3NT = (13, 16);
         static protected (int, int) Weak4Level = (0, 10);
         static protected (int, int) GameOrBetter = (13, 40);
-        static protected (int, int) WeakJumpRaise = (0, 5);
+        static protected (int, int) WeakJumpRaise = (0, 8); // TODO: Consider HCP vs DummyPoints...  For now this works.
         static protected (int, int) MinimumHand = (6, 10);
         static protected (int, int) MediumHand = (11, 13);
         static protected (int, int) ResponderRedouble = (10, 40);
@@ -277,13 +277,13 @@ namespace TricksterBots.Bots.Bridge
 
                 Forcing(2, Suit.Spades, CueBid(), RaisePartner(Suit.Clubs), DummyPoints(Suit.Clubs, LimitRaiseOrBetter)),
                 Forcing(2, Suit.Spades, CueBid(), RaisePartner(Suit.Diamonds), DummyPoints(Suit.Diamonds, LimitRaiseOrBetter)),
-                Forcing(2, Suit.Spades, Break(true, "CB"), CueBid(), RaisePartner(Suit.Hearts), DummyPoints(Suit.Hearts, LimitRaiseOrBetter)),
+                Forcing(2, Suit.Spades, CueBid(), RaisePartner(Suit.Hearts), DummyPoints(Suit.Hearts, LimitRaiseOrBetter)),
 
 
                 // TODO: Weak jumps here take precedence over simple raise
-
-				Nonforcing(3, Suit.Hearts, Fit(), Jump(1), DummyPoints(WeakJumpRaise), Shape(4)),
-                Nonforcing(3, Suit.Spades, Fit(), Jump(1), DummyPoints(WeakJumpRaise), Shape(4)),
+               
+				Nonforcing(3, Suit.Hearts, Fit(9), Jump(1), DummyPoints(WeakJumpRaise)),
+                Nonforcing(3, Suit.Spades, Fit(9), Jump(1), DummyPoints(WeakJumpRaise)),
 
 
                 // Now time for invitational bids.

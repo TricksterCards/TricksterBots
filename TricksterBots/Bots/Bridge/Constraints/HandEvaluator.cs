@@ -76,7 +76,7 @@ namespace TricksterBots.Bots.Bridge
 			hs.ShowIsBalanced(BasicBidding.IsBalanced(hand));
 			hs.ShowIsFlat(BasicBidding.Is4333(counts));
 			int countAces = hand.Count(c => c.rank == Rank.Ace);
-            hs.ShowCountAces(countAces);
+            hs.ShowCountAces(new HashSet<int> { countAces });
 			hs.ShowCountKings(hand.Count(c => c.rank == Rank.King));
             foreach (Suit suit in BasicBidding.BasicSuits)
 			{
@@ -92,7 +92,7 @@ namespace TricksterBots.Bots.Bridge
 				{
 					keyCards += 1;
 				}
-				hs.Suits[suit].ShowKeycards(keyCards, keyCards);
+				hs.Suits[suit].ShowKeyCards(new HashSet<int> { keyCards });
 				hs.Suits[suit].ShowHaveQueen(hand.Contains(new Card(suit, Rank.Queen)));
 				hs.Suits[suit].ShowStopped(Stopped(hand, suit, c));
 			}

@@ -24,12 +24,13 @@ namespace TricksterBots.Bots.Bridge
                 }
             }
 
+            // TODO: This name not the best...
             public void ShowTrump(Strain trumpStrain)
             {
                 // TODO: Need to think this out carefully.  What is someone chagnes it?
 
                 //PairAgreements.TrumpSuit = CombineBool(PairAgreements.TrumpSuit, trumpSuit, CombineRule.Show);
-                PairAgreements.TrumpStrain = trumpStrain;   // TODO: THIS IS NOT RIGHT!!!  CANT JUST OVERWRITE IT...
+                PairAgreements.AgreedStrain = trumpStrain;   // TODO: THIS IS NOT RIGHT!!!  CANT JUST OVERWRITE IT...
             }
             public void Combine(PairAgreements other, CombineRule combineRule)
             {
@@ -100,11 +101,24 @@ namespace TricksterBots.Bots.Bridge
             }
 
         }
-        public Strain? TrumpStrain { get; set; }
+        public Strain? AgreedStrain { get; private set; }
+
+        public Suit? TrumpSuit
+        {
+            get
+            {
+                if (AgreedStrain is Strain strain)
+                {
+                    return Call.StrainToSuit(strain);
+                }
+                return null;
+            }
+        }
+
         public Dictionary<Suit, SuitAgreements> Suits { get; }
         public PairAgreements()
         {
-            this.TrumpStrain = null;
+            this.AgreedStrain = null;
             this.Suits = new Dictionary<Suit, SuitAgreements>();
             foreach (var suit in BasicBidding.Strains)
             {
@@ -114,7 +128,7 @@ namespace TricksterBots.Bots.Bridge
         }
         public PairAgreements(PairAgreements other)
         {
-            this.TrumpStrain = other.TrumpStrain;
+            this.AgreedStrain = other.AgreedStrain;
             this.Suits = new Dictionary<Suit, SuitAgreements>();
             foreach (var suit in BasicBidding.Strains)
             {
@@ -127,9 +141,9 @@ namespace TricksterBots.Bots.Bridge
         {
             // TODO: Need to actually do something here. 
             // For now this works...
-            if (this.TrumpStrain == null && cr != CombineRule.CommonOnly)
+            if (this.AgreedStrain == null && cr != CombineRule.CommonOnly)
             {
-                this.TrumpStrain = other.TrumpStrain;
+                this.AgreedStrain = other.AgreedStrain;
             }
             foreach (var suit in BasicBidding.Strains)
             {
@@ -141,7 +155,7 @@ namespace TricksterBots.Bots.Bridge
    
         public bool Equals(PairAgreements other)
         {
-            if (this.TrumpStrain != other.TrumpStrain) return false;
+            if (this.AgreedStrain != other.AgreedStrain) return false;
             foreach (var suit in BasicBidding.Strains)
             {
                 if (!this.Suits[suit].Equals(other.Suits[suit])) return false;

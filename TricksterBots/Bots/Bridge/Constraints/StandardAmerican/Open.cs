@@ -43,7 +43,7 @@ namespace TricksterBots.Bots.Bridge
 			return new List<BidRule>
 			{
 				DefaultPartnerBids(Call.Double, Respond.OppsDoubled),
-                DefaultPartnerBids(new Bid(1, Suit.Unknown), Respond.OppsOvercalled),
+                DefaultPartnerBids(new Bid(2, Suit.Unknown), Respond.OppsOvercalled),
 
                 PartnerBids(1, Suit.Clubs, Call.Pass, Respond.Club),
 				PartnerBids(1, Suit.Diamonds, Call.Pass, Respond.Diamond),

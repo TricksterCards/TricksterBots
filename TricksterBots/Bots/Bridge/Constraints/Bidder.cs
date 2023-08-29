@@ -396,6 +396,10 @@ namespace TricksterBots.Bots.Bridge
 			return new JumpBid(jumpLevels);
 		}
 
+		public static Constraint Aces(params int[] count)
+		{
+			return new KeyCards(null, null, count);
+		}
 
 
 		public static Constraint CueBid(bool desiredValue = true)
