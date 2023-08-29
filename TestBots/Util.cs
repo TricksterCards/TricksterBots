@@ -55,9 +55,13 @@ namespace TestBots
             IEnumerable<TestPlayer> players,
             string trick = "",
             string notLegal = "",
-            Suit notLegalSuit = Suit.Unknown
+            Suit notLegalSuit = Suit.Unknown,
+            Suit trumpSuit = Suit.Unknown,
+            bool trumpAnytime = false
         )
         {
+            this.trumpSuit = trumpSuit;
+
             //  create a players collection for the valuable helpers
             var playersCollection = new PlayersCollectionBase(bot, players);
 
@@ -96,10 +100,12 @@ namespace TestBots
                 isPartnerTakingTrick = playersCollection.PartnersOf(playersCollection[0]).Any(p => p.Seat == seatTakingTrick);
                 trickTaker = playersCollection.Single(p => p.Seat == seatTakingTrick);
 
-                //  if we can follow suit, we must
+                //  if we can follow suit, we must (unless we have trump and can trump anytime)
                 var ledSuit = bot.EffectiveSuit(this.trick[0]);
-                if (legalCards.Any(c => bot.EffectiveSuit(c) == ledSuit))
-                    legalCards = legalCards.Where(c => bot.EffectiveSuit(c) == ledSuit).ToList();
+                var legalCardsFollowingSuit = legalCards.Where(c =>
+                    bot.EffectiveSuit(c) == ledSuit || (trumpAnytime && bot.EffectiveSuit(c) == trumpSuit)).ToList();
+                if (legalCardsFollowingSuit.Any())
+                    legalCards = legalCardsFollowingSuit;
             }
             else
             {

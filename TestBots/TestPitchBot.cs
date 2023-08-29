@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -22,6 +24,19 @@ namespace TestBots
             pitcherLeadsTrump = true,
             playTrump = PitchPlayTrump.Anytime,
             stickTheDealer = true,
+        };
+
+        private static readonly PitchOptions tenPointOptions = new PitchOptions
+        {
+            variation = PitchVariation.TenPoint,
+            gameOverScore = 32,
+            isPartnership = true,
+            lowGoesToTaker = false,
+            minBid = 5,
+            pitcherLeadsTrump = true,
+            playTrump = PitchPlayTrump.Only,
+            stickTheDealer = true,
+            tenOfTrumpReplacesGamePoint = true,
         };
 
         [TestMethod]
@@ -94,20 +109,53 @@ namespace TestBots
 
 
         [TestMethod]
-        [DataRow("JSQSAS", "5C7HJHKH", "JH")]
-        [DataRow("6DAD8H", "5CJHKH", "JH")]
-        public void TakeTrickWithPointerFromLastSeatIfPossible(string trick, string hand, string expected)
+        [DataRow("",       "5H9HJHQH", "5H", PitchVariation.FourPoint,  true, DisplayName = "Lead a low non-pointer if not holding high")]
+        [DataRow("",       "5H6H9HJH", "6H", PitchVariation.FourPoint,  true, DisplayName = "Lead higher of touching low cards")]
+        [DataRow("",       "2H4H9HJH", "4H", PitchVariation.FourPoint,  true, DisplayName = "Avoid leading capturable low")]
+        [DataRow("",       "2H4H9HJH", "2H", PitchVariation.FourPoint, false, DisplayName = "Lead non-capturable low")]
+        [DataRow("",       "3H7H9HJH", "7H", PitchVariation.FourPoint,  true, DisplayName = "Avoid leading possible capturable low")]
+        [DataRow("AS",     "5S2H7H9H", "7H", PitchVariation.FourPoint,  true, DisplayName = "Trump in above capturable low from 2nd seat")]
+        [DataRow("AS",     "5S2H2D2C", "5S", PitchVariation.FourPoint,  true, DisplayName = "Avoid trumping in with capturable low from 2nd seat")]
+        [DataRow("AS",     "5S2H7H9H", "2H", PitchVariation.FourPoint, false, DisplayName = "Trump in with non-capturable low from 2nd seat")]
+        [DataRow("ASQS",   "5S2H7H9H", "7H", PitchVariation.FourPoint,  true, DisplayName = "Trump in above capturable low from 3rd seat")]
+        [DataRow("ASQS",   "5S2H2D2C", "5S", PitchVariation.FourPoint,  true, DisplayName = "Avoid trumping in with capturable low from 3rd seat")]
+        [DataRow("ASQS",   "5S2H7H9H", "2H", PitchVariation.FourPoint, false, DisplayName = "Trump in with non-capturable low from 3rd seat")]
+        [DataRow("JSQSAS", "5C7HJHKH", "JH", PitchVariation.FourPoint,  true, DisplayName = "Trump in with a pointer from last seat")]
+        [DataRow("JSQSAS", "5C2HJHKH", "2H", PitchVariation.FourPoint,  true, DisplayName = "Trump in with lowest pointer from last seat")]
+        [DataRow("JSQSAS", "5C2HJHKH", "JH", PitchVariation.FourPoint, false, DisplayName = "Trump in with lowest capturable pointer from last seat")]
+        [DataRow("JSQSAS", "5S7HJHKH", "JH", PitchVariation.FourPoint,  true, DisplayName = "Trump in with a pointer from last seat (could follow)")]
+        [DataRow("JSQSAS", "5S2HJHKH", "2H", PitchVariation.FourPoint,  true, DisplayName = "Trump in with lowest pointer from last seat (could follow)")]
+        [DataRow("JSQSAS", "5S2HJHKH", "JH", PitchVariation.FourPoint, false, DisplayName = "Trump in with lowest capturable pointer from last seat (could follow)")]
+        [DataRow("6DAD8H", "5C7HJHKH", "JH", PitchVariation.FourPoint,  true, DisplayName = "Over-trump with a pointer from last seat")]
+        [DataRow("6DAD8H", "5C2HTHJH", "TH", PitchVariation. TenPoint,  true, DisplayName = "Over-trump with lowest pointer from last seat")]
+        public void PlayOfTheHand(string trick, string hand, string expected, PitchVariation variation, bool lowToTaker)
         {
+            PitchOptions baseOptions;
+            switch (variation)
+            {
+                case PitchVariation.FourPoint:
+                    baseOptions = fourPointDrawWithKittyOptions;
+                    break;
+                case PitchVariation.TenPoint:
+                    baseOptions = tenPointOptions;
+                    break;
+                default:
+                    throw new Exception($"Unsupported variation: {variation}");
+            }
+
+            var trump = Suit.Hearts;
+            var options = JsonConvert.DeserializeObject<PitchOptions>(JsonConvert.SerializeObject(baseOptions));
             var players = new[]
             {
-                new TestPlayer(GetBid(2, Suit.Hearts), hand),
+                new TestPlayer(GetBid(options.minBid, trump), hand),
                 new TestPlayer((int)PitchBid.NotPitching),
                 new TestPlayer((int)PitchBid.NotPitching),
                 new TestPlayer((int)PitchBid.NotPitching),
             };
 
-            var bot = new PitchBot(fourPointDrawWithKittyOptions, Suit.Hearts);
-            var cardState = new TestCardState<PitchOptions>(bot, players, trick);
+            options.lowGoesToTaker = lowToTaker;
+            var bot = new PitchBot(options, trump);
+            var cardState = new TestCardState<PitchOptions>(bot, players, trick, trumpSuit: trump, trumpAnytime: options.playTrump != PitchPlayTrump.FollowSuit);
             var suggestion = bot.SuggestNextCard(cardState);
 
             Assert.AreEqual(expected, $"{suggestion}");
@@ -115,7 +163,7 @@ namespace TestBots
 
         private static PitchOptions GetCallForBestOptions(int? callPartnerSeat = null)
         {
-            return new PitchOptions()
+            return new PitchOptions
             {
                 _callPartnerSeat = callPartnerSeat,
                 gameOverScore = 32,
