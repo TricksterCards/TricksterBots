@@ -410,7 +410,7 @@ namespace Trickster.Bots
         private Card LowestCardWorthFewestPoints(SuggestCardState<PitchOptions> state)
         {
             //  return the lowest card we have favoring non-trump
-            var sorted = state.legalCards.OrderBy(PlayCardSort).ThenBy(RankSort).ToList();
+            var sorted = state.legalCards.OrderBy(CaptureValue).ThenBy(RankSort).ToList();
             var candidate = sorted.First();
             if (EffectiveSuit(candidate) != state.trumpSuit || !options.lowGoesToTaker)
                 return candidate;
@@ -424,7 +424,7 @@ namespace Trickster.Bots
             //  otherwise check for a touching card just above it (using only visible cards to feel more "human")
             var visibleCards = state.trick.Concat(state.legalCards);
             var touchingCandidate =
-                sorted.FirstOrDefault(c => c != candidate && PlayCardSort(c) == PlayCardSort(candidate) && AreCardsEquivalent(c, candidate, visibleCards));
+                sorted.FirstOrDefault(c => c != candidate && CaptureValue(c) == CaptureValue(candidate) && AreCardsEquivalent(c, candidate, visibleCards));
             if (touchingCandidate != null)
                 return touchingCandidate;
 
@@ -434,7 +434,7 @@ namespace Trickster.Bots
 
             //  otherwise pick the next highest trump worth the same points
             var nextCandidate = sorted
-                .FirstOrDefault(c => c != candidate && PlayCardSort(c) == PlayCardSort(candidate) && RankSort(c) > RankSort(candidate));
+                .FirstOrDefault(c => c != candidate && CaptureValue(c) == CaptureValue(candidate) && RankSort(c) > RankSort(candidate));
             if (nextCandidate != null)
                 return nextCandidate;
 
@@ -835,13 +835,9 @@ namespace Trickster.Bots
             return players.PartnerOf(p1) == p2;
         }
 
-        private int PlayCardSort(Card card)
+        private int CaptureValue(Card card)
         {
-            //  we can play the two earlier if the point goes to the holder (not the taker)
-            if (!options.lowGoesToTaker && IsTrump(card) && card.rank == Rank.Two)
-                return 1;
-
-            return DiscardSort(card);
+            return CardPoints(card) * 100 + GamePointsX2(card);
         }
     }
 }
