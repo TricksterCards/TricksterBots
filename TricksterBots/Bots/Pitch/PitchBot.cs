@@ -365,7 +365,8 @@ namespace Trickster.Bots
 
             //  try giving our partner a point card without giving away an already known good card
             if (state.isPartnerTakingTrick)
-                return GoodCardToGiveToPartner(legalCards, knownCards);
+                return GoodCardToGiveToPartner(legalCards, knownCards)
+                       ?? LowestCardWorthFewestPoints(state);
 
             //  trump in with a low pointer if possible
             var lowestTrumpPointer = LowestMostValuablePointer(legalCards, knownCards, cardTakingTrick);
