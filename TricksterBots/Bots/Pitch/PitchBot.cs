@@ -251,7 +251,7 @@ namespace Trickster.Bots
 
             //  leading
             if (trick.Count == 0)
-                return SuggestLead(state);
+                return SuggestLead(state, players);
 
             var activePlayersCount = players.Count(p => p.IsActivelyPlaying);
 
@@ -337,11 +337,19 @@ namespace Trickster.Bots
             return LowestCardWorthFewestPoints(state);
         }
 
-        private Card SuggestLead(SuggestCardState<PitchOptions> state)
+        private Card SuggestLead(SuggestCardState<PitchOptions> state, PlayersCollectionBase players)
         {
             var legalCards = state.legalCards;
             var cardsPlayed = state.cardsPlayed;
             var sortedSuits = legalCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s));
+
+            //  lead known good trump if on the pitching team
+            if (IsPitching(state.player) || players.Any(p => IsPitching(p) && OnSameTeam(players, p, state.player)))
+            {
+                var highestKnownGoodTrump = legalCards.FirstOrDefault(c => IsTrump(c) && IsCardHigh(c, cardsPlayed));
+                if (highestKnownGoodTrump != null)
+                    return highestKnownGoodTrump;
+            }
 
             //  try to lead a known good card from the suit with the fewest cards
             foreach (var suit in sortedSuits)
