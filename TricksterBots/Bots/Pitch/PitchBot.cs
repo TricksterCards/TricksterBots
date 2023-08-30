@@ -382,7 +382,7 @@ namespace Trickster.Bots
                 return lowestTrumpPointer;
 
             //  try winning non-trump tricks by following suit (preferring higher game points)
-            if (trickSuit != trump && !state.trick.Any(IsTrump))
+            if (!state.trick.Any(IsTrump))
             {
                 var lowestWinner = legalCards
                     .Where(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(cardTakingTrick))
