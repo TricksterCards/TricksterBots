@@ -109,26 +109,30 @@ namespace TestBots
 
 
         [TestMethod]
-        [DataRow("",       "5H9HJHQH", "5H", PitchVariation.FourPoint,  true, DisplayName = "Lead a low non-pointer if not holding high")]
-        [DataRow("",       "5H6H9HJH", "6H", PitchVariation.FourPoint,  true, DisplayName = "Lead higher of touching low cards")]
-        [DataRow("",       "2H4H9HJH", "4H", PitchVariation.FourPoint,  true, DisplayName = "Avoid leading capturable low")]
-        [DataRow("",       "2H4H9HJH", "2H", PitchVariation.FourPoint, false, DisplayName = "Lead non-capturable low")]
-        [DataRow("",       "3H7H9HJH", "7H", PitchVariation.FourPoint,  true, DisplayName = "Avoid leading possible capturable low")]
-        [DataRow("AS",     "5S2H7H9H", "7H", PitchVariation.FourPoint,  true, DisplayName = "Trump in above capturable low from 2nd seat")]
-        [DataRow("AS",     "5S2H2D2C", "5S", PitchVariation.FourPoint,  true, DisplayName = "Avoid trumping in with capturable low from 2nd seat")]
-        [DataRow("AS",     "5S2H7H9H", "2H", PitchVariation.FourPoint, false, DisplayName = "Trump in with non-capturable low from 2nd seat")]
-        [DataRow("ASQS",   "5S2H7H9H", "7H", PitchVariation.FourPoint,  true, DisplayName = "Trump in above capturable low from 3rd seat")]
-        [DataRow("ASQS",   "5S2H2D2C", "5S", PitchVariation.FourPoint,  true, DisplayName = "Avoid trumping in with capturable low from 3rd seat")]
-        [DataRow("ASQS",   "5S2H7H9H", "2H", PitchVariation.FourPoint, false, DisplayName = "Trump in with non-capturable low from 3rd seat")]
-        [DataRow("JSQSAS", "5C7HJHKH", "JH", PitchVariation.FourPoint,  true, DisplayName = "Trump in with a pointer from last seat")]
-        [DataRow("JSQSAS", "5C2HJHKH", "2H", PitchVariation.FourPoint,  true, DisplayName = "Trump in with lowest pointer from last seat")]
-        [DataRow("JSQSAS", "5C2HJHKH", "JH", PitchVariation.FourPoint, false, DisplayName = "Trump in with lowest capturable pointer from last seat")]
-        [DataRow("JSQSAS", "5S7HJHKH", "JH", PitchVariation.FourPoint,  true, DisplayName = "Trump in with a pointer from last seat (could follow)")]
-        [DataRow("JSQSAS", "5S2HJHKH", "2H", PitchVariation.FourPoint,  true, DisplayName = "Trump in with lowest pointer from last seat (could follow)")]
-        [DataRow("JSQSAS", "5S2HJHKH", "JH", PitchVariation.FourPoint, false, DisplayName = "Trump in with lowest capturable pointer from last seat (could follow)")]
-        [DataRow("6DAD8H", "5C7HJHKH", "JH", PitchVariation.FourPoint,  true, DisplayName = "Over-trump with a pointer from last seat")]
-        [DataRow("6DAD8H", "5C2HTHJH", "TH", PitchVariation. TenPoint,  true, DisplayName = "Over-trump with lowest pointer from last seat")]
-        public void PlayOfTheHand(string trick, string hand, string expected, PitchVariation variation, bool lowToTaker)
+        [DataRow("",       "ADJHQHAH", "AH", PitchVariation.FourPoint,  true, 0, DisplayName = "Lead high trump if pitcher")]
+        [DataRow("",       "ADJHQHAH", "AH", PitchVariation.FourPoint,  true, 2, DisplayName = "Lead high trump if pitcher's partner")]
+        [DataRow("",       "ADJHQHAH", "AD", PitchVariation.FourPoint,  true, 1, DisplayName = "Avoid leading trump on defense")]
+        [DataRow("",       "5H9HJHQH", "5H", PitchVariation.FourPoint,  true, 0, DisplayName = "Lead a low non-pointer if not holding high")]
+        [DataRow("",       "5H6H9HJH", "6H", PitchVariation.FourPoint,  true, 0, DisplayName = "Lead higher of touching low cards")]
+        [DataRow("",       "2H4H9HJH", "4H", PitchVariation.FourPoint,  true, 0, DisplayName = "Avoid leading capturable low")]
+        [DataRow("",       "2H4H9HJH", "2H", PitchVariation.FourPoint, false, 0, DisplayName = "Lead non-capturable low")]
+        [DataRow("",       "3H7H9HJH", "7H", PitchVariation.FourPoint,  true, 0, DisplayName = "Avoid leading possible capturable low")]
+        [DataRow("AS",     "5S2H7H9H", "7H", PitchVariation.FourPoint,  true, 0, DisplayName = "Trump in above capturable low from 2nd seat")]
+        [DataRow("AS",     "5S2H2D2C", "5S", PitchVariation.FourPoint,  true, 0, DisplayName = "Avoid trumping in with capturable low from 2nd seat")]
+        [DataRow("AS",     "5S2H7H9H", "2H", PitchVariation.FourPoint, false, 0, DisplayName = "Trump in with non-capturable low from 2nd seat")]
+        [DataRow("ASQS",   "5S2H7H9H", "7H", PitchVariation.FourPoint,  true, 0, DisplayName = "Trump in above capturable low from 3rd seat")]
+        [DataRow("ASQS",   "5S2H2D2C", "5S", PitchVariation.FourPoint,  true, 0, DisplayName = "Avoid trumping in with capturable low from 3rd seat")]
+        [DataRow("ASQS",   "5S2H7H9H", "2H", PitchVariation.FourPoint, false, 0, DisplayName = "Trump in with non-capturable low from 3rd seat")]
+        [DataRow("JSQSAS", "5C7HJHKH", "JH", PitchVariation.FourPoint,  true, 0, DisplayName = "Trump in with a pointer from last seat")]
+        [DataRow("JSQSAS", "5C2HJHKH", "2H", PitchVariation.FourPoint,  true, 0, DisplayName = "Trump in with lowest pointer from last seat")]
+        [DataRow("JSQSAS", "5C2HJHKH", "JH", PitchVariation.FourPoint, false, 0, DisplayName = "Trump in with lowest capturable pointer from last seat")]
+        [DataRow("JSQSAS", "5S7HJHKH", "JH", PitchVariation.FourPoint,  true, 0, DisplayName = "Trump in with a pointer from last seat (could follow)")]
+        [DataRow("JSQSAS", "5S2HJHKH", "2H", PitchVariation.FourPoint,  true, 0, DisplayName = "Trump in with lowest pointer from last seat (could follow)")]
+        [DataRow("JSQSAS", "5S2HJHKH", "JH", PitchVariation.FourPoint, false, 0, DisplayName = "Trump in with lowest capturable pointer from last seat (could follow)")]
+        [DataRow("6DAD8H", "5C7HJHKH", "JH", PitchVariation.FourPoint,  true, 0, DisplayName = "Over-trump with a pointer from last seat")]
+        [DataRow("4CAC4H", "AS2C2H8H", "8H", PitchVariation.FourPoint,  true, 0, DisplayName = "Over-trump from last seat if trick is worth taking")]
+        [DataRow("6DAD8H", "5C2HTHJH", "TH", PitchVariation. TenPoint,  true, 0, DisplayName = "Over-trump with lowest pointer from last seat")]
+        public void PlayOfTheHand(string trick, string hand, string expected, PitchVariation variation, bool lowToTaker, int pitchingSeat)
         {
             PitchOptions baseOptions;
             switch (variation)
@@ -147,10 +151,10 @@ namespace TestBots
             var options = JsonConvert.DeserializeObject<PitchOptions>(JsonConvert.SerializeObject(baseOptions));
             var players = new[]
             {
-                new TestPlayer(GetBid(options.minBid, trump), hand),
-                new TestPlayer((int)PitchBid.NotPitching),
-                new TestPlayer((int)PitchBid.NotPitching),
-                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer(pitchingSeat == 0 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching, hand),
+                new TestPlayer(pitchingSeat == 1 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching),
+                new TestPlayer(pitchingSeat == 2 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching),
+                new TestPlayer(pitchingSeat == 3 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching),
             };
 
             options.lowGoesToTaker = lowToTaker;
