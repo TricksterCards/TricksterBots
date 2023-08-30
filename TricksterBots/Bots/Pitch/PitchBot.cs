@@ -636,7 +636,7 @@ namespace Trickster.Bots
                 //  account for capturable points potentially not being in play
                 capturablePoints /= 3; //  roughly approximate the 18/52 or 18/53 odds the card is in play
             }
-            else if (!HasPostBidDiscard && options.drawOption != PitchDrawOption.None && trumpInHand < 4)
+            else if (!HasPostBidDiscard && options.drawOption != PitchDrawOption.None && trumpInHand <= 4)
             {
                 //  account for defense having enough trump to withold capturable points
                 capturablePoints /= 2;

@@ -40,9 +40,14 @@ namespace TestBots
         };
 
         [TestMethod]
-        public void TestBids()
+        [DataRow("ACKC3S6H7HQH",  3, false)]
+        [DataRow("7D5S8SQSAS6H",  3, false)]
+        [DataRow("ACKCQCJC2CAH",  4, false)]
+        [DataRow("6C5C5S4S3D2D",  0, false)]
+        [DataRow("ACKCQCJC2CAH", 15,  true)]
+        public void TestBids(string handString, int expectedBid, bool offerShoot)
         {
-            var options = new PitchOptions()
+            var options = new PitchOptions
             {
                 variation = PitchVariation.FourPoint,
                 drawOption = PitchDrawOption.NonTrump,
@@ -50,18 +55,19 @@ namespace TestBots
                 isPartnership = true,
                 lowGoesToTaker = true,
                 minBid = 2,
-                offerShootBid = false,
+                offerShootBid = offerShoot,
                 pitcherLeadsTrump = true,
                 playTrump = PitchPlayTrump.Anytime,
                 stickTheDealer = true,
             };
 
-            Assert.AreEqual((int)PitchBid.Base + 3, GetSuggestedBid("ACKC3S6H7HQH", out var hand, options), $"Expect bid of 3 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual((int)PitchBid.Base + 4, GetSuggestedBid("ACKCQCJC2CAH", out hand, options), $"Expect bid of 4 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(BidBase.Pass, GetSuggestedBid("6C5C5S4S3D2D", out hand, options), $"Expect bid of Pass for hand {Util.PrettyHand(hand)}");
+            var bid = (int)PitchBid.Base + expectedBid;
+            if (expectedBid == 0)
+                bid = BidBase.Pass;
+            if (expectedBid == 15)
+                bid = (int)PitchBid.ShootMoonBid;
 
-            options.offerShootBid = true;
-            Assert.AreEqual((int)PitchBid.ShootMoonBid, GetSuggestedBid("ACKCQCJC2CAH", out hand, options), $"Expect bid of Shoot for hand {Util.PrettyHand(hand)}");
+            Assert.AreEqual(bid, GetSuggestedBid(handString, out var hand, options), $"Expect bid of {expectedBid} for hand {Util.PrettyHand(hand)}");
         }
 
         [TestMethod]
