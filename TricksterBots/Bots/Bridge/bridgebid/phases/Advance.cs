@@ -86,19 +86,21 @@ namespace Trickster.Bots
             else if (advance.declareBid.suit == Suit.Unknown)
             {
                 //  advancing in notrump, e.g. (1C)-1H-(P)-1N
-                advance.IsBalanced = true;
-                advance.Description = $"stopper in {opening.declareBid.suit}";
-                advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
-
                 if (advance.declareBid.level == overcall.declareBid.level)
                 {
                     advance.Points.Min = 6;
                     advance.Points.Max = 10;
+                    advance.IsBalanced = true;
+                    advance.Description = $"stopper in {opening.declareBid.suit}";
+                    advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
                 }
                 else if (advance.declareBid.level == overcall.declareBid.level + 1)
                 {
                     advance.Points.Min = 11;
                     advance.Points.Max = 12;
+                    advance.IsBalanced = true;
+                    advance.Description = $"stopper in {opening.declareBid.suit}";
+                    advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
                 }
             }
             else
