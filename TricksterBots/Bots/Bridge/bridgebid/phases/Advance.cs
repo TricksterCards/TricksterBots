@@ -44,7 +44,7 @@ namespace Trickster.Bots
                 //  a cuebid advance when overcall was also a cuebid is unknown (for now)
                 //  TODO: Determine if there are conditions where this makes sense
             }
-            else if (opening.declareBid.suit == advance.declareBid.suit)
+            else if (opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.level == opening.declareBid.level + 1)
             {
                 //  cuebid the oppenents' suit to show support with 10+ points
                 advance.BidConvention = BidConvention.Cuebid;
