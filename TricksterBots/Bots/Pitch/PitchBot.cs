@@ -412,7 +412,7 @@ namespace Trickster.Bots
             //  return the lowest card we have favoring non-trump
             var sorted = state.legalCards.OrderBy(IsTrump).ThenBy(CaptureValue).ThenBy(RankSort).ToList();
             var candidate = sorted.First();
-            if (EffectiveSuit(candidate) != state.trumpSuit || !options.lowGoesToTaker)
+            if (!IsTrump(candidate) || !options.lowGoesToTaker)
                 return candidate;
 
             //  if the candidate is already above the lowest played (or other held) trump, use it
