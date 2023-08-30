@@ -410,7 +410,7 @@ namespace Trickster.Bots
         private Card LowestCardWorthFewestPoints(SuggestCardState<PitchOptions> state)
         {
             //  return the lowest card we have favoring non-trump
-            var sorted = state.legalCards.OrderBy(CaptureValue).ThenBy(RankSort).ToList();
+            var sorted = state.legalCards.OrderBy(IsTrump).ThenBy(CaptureValue).ThenBy(RankSort).ToList();
             var candidate = sorted.First();
             if (EffectiveSuit(candidate) != state.trumpSuit || !options.lowGoesToTaker)
                 return candidate;
