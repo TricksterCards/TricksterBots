@@ -368,14 +368,32 @@ namespace Trickster.Bots
                 return GoodCardToGiveToPartner(legalCards, knownCards)
                        ?? LowestCardWorthFewestPoints(state);
 
-            //  trump in with a low pointer if possible
+            //  try winning the trick with a low pointer if possible
             var lowestTrumpPointer = LowestMostValuablePointer(legalCards, knownCards, cardTakingTrick);
             if (lowestTrumpPointer != null)
                 return lowestTrumpPointer;
 
-            var lowestWinner = legalCards.Where(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(cardTakingTrick)).OrderBy(RankSort).FirstOrDefault();
-            if (lowestWinner != null)
-                return lowestWinner;
+            //  try winning non-trump tricks by following suit (preferring higher game points)
+            if (trickSuit != trump && !state.trick.Any(IsTrump))
+            {
+                var lowestWinner = legalCards
+                    .Where(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(cardTakingTrick))
+                    .OrderByDescending(GamePointsX2)
+                    .ThenBy(RankSort)
+                    .FirstOrDefault();
+                if (lowestWinner != null)
+                    return lowestWinner;
+            }
+
+            //  if the trick is worth taking, try winning it with trump
+            if (IsTrickWorthTaking(state.trick))
+            {
+                var lowestTrumpWinner = !IsTrump(cardTakingTrick)
+                    ? legalCards.Where(IsTrump).FirstOrDefault()
+                    : legalCards.FirstOrDefault(c => IsTrump(c) && RankSort(c) > RankSort(cardTakingTrick));
+                if (lowestTrumpWinner != null)
+                    return lowestTrumpWinner;
+            }
 
             //  return the lowest card we have favoring non-trump
             return LowestCardWorthFewestPoints(state);
