@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -167,6 +168,25 @@ namespace Trickster.Bots
         protected int HighRankInSuit(Suit suit)
         {
             return highRankBySuit.TryGetValue(suit, out var r) ? r : (int)Rank.Ace;
+        }
+
+        protected bool AreCardsEquivalent(Card c1, Card c2, IEnumerable<Card> knownCards)
+        {
+            var suit = EffectiveSuit(c1);
+            if (suit != EffectiveSuit(c2))
+                return false;
+
+            var c1Rank = RankSort(c1);
+            var c2Rank = RankSort(c2);
+            var minRank = Math.Min(c1Rank, c2Rank);
+            var maxRank = Math.Max(c1Rank, c2Rank);
+            var delta = maxRank - minRank;
+            if (delta <= 1)
+                return true;
+
+            var nBetween = knownCards.Count(c => EffectiveSuit(c) == suit && RankSort(c) > minRank && RankSort(c) < maxRank);
+
+            return delta - nBetween <= 1;
         }
 
         protected bool IsCardHigh(Card highestCard, IEnumerable<Card> cardsPlayed)

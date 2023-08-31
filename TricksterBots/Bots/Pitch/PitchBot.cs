@@ -251,23 +251,13 @@ namespace Trickster.Bots
 
             //  leading
             if (trick.Count == 0)
-            {
-                var sortedSuits = legalCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s));
-
-                //  try to lead a known good card from the suit with the fewest cards
-                foreach (var suit in sortedSuits)
-                {
-                    var s = suit;
-                    var highCard = legalCards.Where(c => EffectiveSuit(c) == s).OrderBy(RankSort).Last();
-                    if (IsCardHigh(highCard, cardsPlayed))
-                        return highCard;
-                }
-
-                //  return the lowest card we have favoring non-trump
-                return legalCards.OrderBy(PlayCardSort).ThenBy(RankSort).First();
-            }
+                return SuggestLead(state, players);
 
             var activePlayersCount = players.Count(p => p.IsActivelyPlaying);
+
+            //  last to play
+            if (trick.Count == activePlayersCount - 1)
+                return SuggestCardFromLastSeat(state);
 
             var knownCards = new Hand(player.Hand);
             knownCards.AddRange(cardsPlayed);
@@ -277,8 +267,8 @@ namespace Trickster.Bots
             {
                 if (trick.Count < activePlayersCount - 1)
                 {
-                    //  we're not the last to play: is the card the partner is taking the trick with good amoung all the known cards including ours?
-                    if (!IsCardHigh(cardTakingTrick, knownCards))
+                    //  we're not the last to play: is the card the partner is taking the trick with good among all the known cards including ours?
+                    if (!IsCardHigh(cardTakingTrick, knownCards) || (!IsTrump(cardTakingTrick) && !players.LhoIsVoidInSuit(player, trump, knownCards)))
                     {
                         //  we don't know for sure that our partner is taking the trick so don't throw points his way, but consider taking the trick if we want
                         isPartnerTakingTrick = false;
@@ -288,19 +278,11 @@ namespace Trickster.Bots
 
             var trickSuit = EffectiveSuit(trick[0]);
 
+            //  we can follow suit
             if (legalCards.Any(c => EffectiveSuit(c) == trickSuit))
             {
-                //  we can follow suit
                 if ((trickSuit == trump || trick.All(c => EffectiveSuit(c) != trump)) && !isPartnerTakingTrick)
                 {
-                    //  if we're last to play, only play as high as needed to win the trick
-                    if (trick.Count == activePlayersCount - 1)
-                    {
-                        var lowestWinner = legalCards.Where(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(cardTakingTrick)).OrderBy(RankSort).FirstOrDefault();
-                        if (lowestWinner != null)
-                            return lowestWinner;
-                    }
-
                     //  tricksuit is trump or trick contains no trump; does our best follow card win?
                     var highFollow = legalCards.Where(c => EffectiveSuit(c) == trickSuit).OrderBy(RankSort).Last();
                     if (!trick.Any(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(highFollow)))
@@ -316,12 +298,13 @@ namespace Trickster.Bots
                 }
 
                 //  we can't win by following suit, so check if we can/should trump in
-                if (isPartnerTakingTrick || options.playTrump != PitchPlayTrump.Anytime || trickSuit == trump || !legalCards.Any(IsTrump))
+                if (isPartnerTakingTrick || options.playTrump != PitchPlayTrump.Anytime || trickSuit == trump ||
+                    !legalCards.Any(IsTrump))
                     //  play low
-                    return legalCards.OrderBy(PlayCardSort).ThenBy(RankSort).First();
+                    return LowestCardWorthFewestPoints(state);
             }
 
-            //  we can't follow suit (or don't need to), we have trump, our partner isn't taking the trick, and the trick is worth taking
+            //  we can't follow suit (or don't need to), we have trump, our partner isn't guaranteed to take the trick, and the trick is worth taking
             if (legalCards.Any(c => EffectiveSuit(c) == trump) && !isPartnerTakingTrick && IsTrickWorthTaking(trick))
             {
                 if (trick.Any(c => EffectiveSuit(c) == trump))
@@ -333,8 +316,12 @@ namespace Trickster.Bots
                 }
                 else
                 {
-                    //  trick does not contain trump; play our lowest trump
-                    return legalCards.Where(c => EffectiveSuit(c) == trump).OrderBy(PlayCardSort).ThenBy(RankSort).First();
+                    //  trick does not contain trump and we're not in last seat
+                    //  try to take it with a low trump that's not worth points (as we could be over-trumped yet)
+                    var lowNonPointerTrump = legalCards.Where(c => IsTrump(c) && CardPoints(c) == 0).OrderBy(RankSort)
+                        .FirstOrDefault();
+                    if (lowNonPointerTrump != null)
+                        return lowNonPointerTrump;
                 }
             }
 
@@ -347,7 +334,123 @@ namespace Trickster.Bots
             }
 
             //  return the lowest card we have favoring non-trump
-            return legalCards.OrderBy(PlayCardSort).ThenBy(RankSort).First();
+            return LowestCardWorthFewestPoints(state);
+        }
+
+        private Card SuggestLead(SuggestCardState<PitchOptions> state, PlayersCollectionBase players)
+        {
+            var legalCards = state.legalCards;
+            var cardsPlayed = state.cardsPlayed;
+            var sortedSuits = legalCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s));
+
+            //  lead known good trump if on the pitching team
+            if (IsPitching(state.player) || players.Any(p => IsPitching(p) && OnSameTeam(players, p, state.player)))
+            {
+                var highestKnownGoodTrump = legalCards.FirstOrDefault(c => IsTrump(c) && IsCardHigh(c, cardsPlayed));
+                if (highestKnownGoodTrump != null)
+                    return highestKnownGoodTrump;
+            }
+
+            //  try to lead a known good card from the suit with the fewest cards
+            foreach (var suit in sortedSuits)
+            {
+                var s = suit;
+                var highCard = legalCards.Where(c => EffectiveSuit(c) == s).OrderBy(RankSort).Last();
+                if (IsCardHigh(highCard, cardsPlayed))
+                    return highCard;
+            }
+
+            //  return the lowest card we have favoring non-trump
+            return LowestCardWorthFewestPoints(state);
+        }
+
+        private Card SuggestCardFromLastSeat(SuggestCardState<PitchOptions> state)
+        {
+            var legalCards = state.legalCards;
+            var knownCards = new Hand(state.player.Hand).AddCards(state.cardsPlayed);
+            var trickSuit = EffectiveSuit(state.trick[0]);
+            var cardTakingTrick = state.cardTakingTrick;
+
+            //  try giving our partner a point card without giving away an already known good card
+            if (state.isPartnerTakingTrick)
+                return GoodCardToGiveToPartner(legalCards, knownCards)
+                       ?? LowestCardWorthFewestPoints(state);
+
+            //  try winning the trick with a low pointer if possible
+            var lowestTrumpPointer = LowestMostValuablePointer(legalCards, knownCards, cardTakingTrick);
+            if (lowestTrumpPointer != null)
+                return lowestTrumpPointer;
+
+            //  try winning non-trump tricks by following suit (preferring higher game points)
+            if (!state.trick.Any(IsTrump))
+            {
+                var lowestWinner = legalCards
+                    .Where(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(cardTakingTrick))
+                    .OrderByDescending(GamePointsX2)
+                    .ThenBy(RankSort)
+                    .FirstOrDefault();
+                if (lowestWinner != null)
+                    return lowestWinner;
+            }
+
+            //  if the trick is worth taking, try winning it with trump
+            if (IsTrickWorthTaking(state.trick))
+            {
+                var lowestTrumpWinner = !IsTrump(cardTakingTrick)
+                    ? legalCards.Where(IsTrump).FirstOrDefault()
+                    : legalCards.FirstOrDefault(c => IsTrump(c) && RankSort(c) > RankSort(cardTakingTrick));
+                if (lowestTrumpWinner != null)
+                    return lowestTrumpWinner;
+            }
+
+            //  return the lowest card we have favoring non-trump
+            return LowestCardWorthFewestPoints(state);
+        }
+
+        private Card LowestCardWorthFewestPoints(SuggestCardState<PitchOptions> state)
+        {
+            //  return the lowest card we have favoring non-trump
+            var sorted = state.legalCards.OrderBy(IsTrump).ThenBy(CaptureValue).ThenBy(RankSort).ToList();
+            var candidate = sorted.First();
+            if (!IsTrump(candidate) || !options.lowGoesToTaker)
+                return candidate;
+
+            //  if the candidate is already above the lowest played (or other held) trump, use it
+            var playedOrHeldCards = state.cardsPlayed.Concat(state.trick).Concat(sorted).Where(c => c != candidate).ToList();
+            var lowestPlayedOrHeldTrump = playedOrHeldCards.Where(IsTrump).OrderBy(RankSort).FirstOrDefault();
+            if (lowestPlayedOrHeldTrump == null || RankSort(lowestPlayedOrHeldTrump) < RankSort(candidate))
+                return candidate;
+
+            //  otherwise check for a touching card just above it (using only visible cards to feel more "human")
+            var visibleCards = state.trick.Concat(state.legalCards);
+            var touchingCandidate =
+                sorted.FirstOrDefault(c => c != candidate && CaptureValue(c) == CaptureValue(candidate) && AreCardsEquivalent(c, candidate, visibleCards));
+            if (touchingCandidate != null)
+                return touchingCandidate;
+
+            //  otherwise if candidate is most likely not low, use it (5+ or post bid discard is used)
+            if (candidate.rank >= Rank.Five || HasPostBidDiscard)
+                return candidate;
+
+            //  otherwise pick the next highest trump worth the same points
+            var nextCandidate = sorted
+                .FirstOrDefault(c => c != candidate && CaptureValue(c) == CaptureValue(candidate) && RankSort(c) > RankSort(candidate));
+            if (nextCandidate != null)
+                return nextCandidate;
+
+            //  and if all else fails, just use it
+            return candidate;
+        }
+
+        private Card LowestMostValuablePointer(IEnumerable<Card> legalCards, IEnumerable<Card> knownCards, Card aboveCard = null)
+        {
+            return legalCards
+                .Where(c => CardPoints(c) > 0 && !IsCardHigh(c, knownCards))
+                .Where(c => aboveCard == null || EffectiveSuit(c) != EffectiveSuit(aboveCard) || RankSort(c) > RankSort(aboveCard))
+                .Where(c => c.rank != Rank.Queen && c.rank != Rank.King)
+                .OrderByDescending(CardPoints)
+                .ThenBy(RankSort)
+                .FirstOrDefault();
         }
 
         public override List<Card> SuggestPass(SuggestPassState<PitchOptions> state)
@@ -533,7 +636,7 @@ namespace Trickster.Bots
                 //  account for capturable points potentially not being in play
                 capturablePoints /= 3; //  roughly approximate the 18/52 or 18/53 odds the card is in play
             }
-            else if (!HasPostBidDiscard && options.drawOption != PitchDrawOption.None && trumpInHand < 4)
+            else if (!HasPostBidDiscard && options.drawOption != PitchDrawOption.None && trumpInHand <= 4)
             {
                 //  account for defense having enough trump to withold capturable points
                 capturablePoints /= 2;
@@ -687,8 +790,8 @@ namespace Trickster.Bots
 
         private Card GoodCardToGiveToPartner(IEnumerable<Card> legalCards, IEnumerable<Card> knownCards)
         {
-            //  don't give away the highest card in trump
-            var candidatesToGive = legalCards.Where(c => !IsTrump(c) || !IsCardHigh(c, knownCards)).ToList();
+            //  don't give away the highest cards in trump
+            var candidatesToGive = legalCards.Where(c => !IsTrump(c) || (!IsCardHigh(c, knownCards) && RankSort(c) < RankSort(new Card(trump, Rank.Queen)))).ToList();
 
             //  prefer to give away the card worth the most with the lowest rank (if ties)
             var best = candidatesToGive.Where(c => CardPoints(c) != 0).OrderByDescending(CardPoints).ThenBy(RankSort).FirstOrDefault() ??
@@ -732,13 +835,9 @@ namespace Trickster.Bots
             return players.PartnerOf(p1) == p2;
         }
 
-        private int PlayCardSort(Card card)
+        private int CaptureValue(Card card)
         {
-            //  we can play the two earlier if the point goes to the holder (not the taker)
-            if (!options.lowGoesToTaker && IsTrump(card) && card.rank == Rank.Two)
-                return 1;
-
-            return DiscardSort(card);
+            return CardPoints(card) * 100 + GamePointsX2(card);
         }
     }
 }
