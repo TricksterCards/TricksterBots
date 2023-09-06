@@ -52,13 +52,12 @@ namespace Trickster.Bots
                 //  TODO: validate knowing count of Aces will help decision to bid slam
                 bid.Validate = hand => false;
             }
-            else if (bid.declareBid.level == bid.GameLevel && (isNT && partnerSummary.IsBalanced || playerMinOfSuit > 0 || partnerMinOfSuit > 0))
+            else if (bid.declareBid.level == bid.GameLevel && ((isNT && partnerSummary.IsBalanced) || playerMinOfSuit > 0 || partnerMinOfSuit > 0))
             {
                 //  sign-off at game of a previously bid suit: 3NT, 4H, 4S, 5C, 5D
                 bid.Points.Min = bid.GamePoints - partnerSummary.Points.Min;
                 bid.BidMessage = BidMessage.Signoff;
                 bid.Description = "Sign-off at game";
-                bid.IsBalanced = isNT;
             }
             else if (bid.declareBid.level == (isNT ? 2 : 3))
             {
