@@ -62,14 +62,19 @@ namespace Trickster.Bots
                 legalBid.why = new InterpretedBid(legalBid.value, interpretedHistory, interpretedHistory.Count);
 
             //  get and sort all possible suggestions
-            var suggestions = legalBids.Where(b => b.why.Match(hand));
+            var suggestions = legalBids.Where(b => b.why.Match(hand)).ToList();
+
+            //  if nothing matched, include bids we were too strong for
+            if (!suggestions.Any())
+                suggestions = legalBids.Where(b => b.why.Match(hand, allowTooStrong: true)).ToList();
+
             if (legalBids[0].why.BidPhase == BidPhase.Opening)
                 //  when opening, prefer suggestions with higher minimum points first, then higher minimum cards
             {
                 suggestions = suggestions
                     .OrderByDescending(s => s.why.Priority)
                     .ThenByDescending(s => s.why.Points.Min)
-                    .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min));
+                    .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min)).ToList();
             }
             else
                 //  in other phases, prefer finding the best fit first (prioritizing majors), then higher minimum points
@@ -78,7 +83,7 @@ namespace Trickster.Bots
                     .OrderByDescending(s => s.why.Priority)
                     .ThenBy(s => s.why.HandShape.Any(hs => IsMajor(hs.Key) && hs.Value.Min > 3) ? 0 : 1)
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min))
-                    .ThenByDescending(s => s.why.Points.Min);
+                    .ThenByDescending(s => s.why.Points.Min).ToList();
             }
 
             //  then favor the most "descriptive" one
