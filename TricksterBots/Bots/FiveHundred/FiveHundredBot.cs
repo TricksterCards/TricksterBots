@@ -31,6 +31,11 @@ namespace Trickster.Bots
 
         private int KittySize => options.deckSize - 40;
 
+        public override bool CanSeeHand(PlayersCollectionBase players, PlayerBase player, PlayerBase target)
+        {
+            return player.Seat == target.Seat || (new FiveHundredBid(target.Bid).IsOpen && players.All(p => !p.IsActivelyPlaying || p.Hand.Length / 2 < 10));
+        }
+
         public override BidBase SuggestBid(SuggestBidState<FiveHundredOptions> state)
         {
             var (players, hand, legalBids, player) = (new PlayersCollectionBase(this, state.players), state.hand, state.legalBids, state.player);
