@@ -138,7 +138,8 @@ namespace TestBots
         [TestMethod]
         [DataRow("7S",   "", "ADKDQD8C7C6CHJ7S", "JD9D8D6D8HJSTS5S", 3)] // Don't lead suit where misere bidder is void
         [DataRow("6C",   "",       "ADKD8C7C6C",       "JSTS9D8D6D", 3)] // Don't lead boss until no other choice (at which point we claim)
-        [DataRow("9C", "6C",           "9C5C9S",           "JSTS6D", 1)] // Follow high if we know misere bidder is void
+        [DataRow("9C", "6C",           "9C5C9S",           "JSTS6D", 1)] // Follow high if we know misere bidder is void in led suit
+        [DataRow("5C", "6C",           "9C5C9S",           "JCTC6D", 1)] // Follow low if misere bidder still has led suit
         public void SetOpenMisere(string expectedCard, string trick, string hand, string misereHand, int misereSeat)
         {
             var otherHandLength = trick.Length > 0 ? hand.Length / 2 - 1 : hand.Length / 2;
