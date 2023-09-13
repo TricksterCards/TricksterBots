@@ -49,7 +49,7 @@ namespace Trickster.Bots
 
         public virtual bool CanSeeHand(PlayersCollectionBase players, PlayerBase player, PlayerBase target)
         {
-            return player.Seat == target.Seat;
+            return player.Seat == target.Seat || (target.Hand.Length > 0 && new Hand(target.Hand).All(c => c.rank != Rank.Unknown && c.suit != Suit.Unknown));
         }
 
         public abstract DeckType DeckType { get; }
