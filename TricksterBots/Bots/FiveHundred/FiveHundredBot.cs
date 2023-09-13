@@ -363,6 +363,12 @@ namespace Trickster.Bots
                     .Where(c => !avoidSuits.Contains(EffectiveSuit(c))) //  avoid leading a suit any nullo player is void in
                     .Where(c => !IsCardHigh(c, knownCards)) //  also avoid leading a card that is known to be high
                     .ToList();
+
+                //  fall back to avoiding cards known to be high, but allowing suits where nullo is void
+                //  (gives partner a chance to take the lead)
+                if (preferredLegalCards.Count == 0)
+                    preferredLegalCards = legalCards.Where(c => !IsCardHigh(c, knownCards)).ToList();
+
                 if (preferredLegalCards.Count > 0)
                     legalCards = preferredLegalCards;
 
