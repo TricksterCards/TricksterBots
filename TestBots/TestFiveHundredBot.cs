@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -114,7 +115,6 @@ namespace TestBots
             Assert.AreEqual("3D", $"{suggestion}");
         }
 
-
         [TestMethod]
         public void PlayUnderMisereIfPossibleWithJoker()
         {
@@ -133,6 +133,32 @@ namespace TestBots
             );
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("KC", $"{suggestion}");
+        }
+
+        [TestMethod]
+        [DataRow("7S",   "", "ADKDQD8C7C6CHJ7S", "JD9D8D6D8HJSTS5S", 3)] // Don't lead suit where misere bidder is void
+        [DataRow("6C",   "",       "ADKD8C7C6C",       "JSTS9D8D6D", 3)] // Don't lead boss until no other choice (at which point we claim)
+        [DataRow("9C", "6C",           "9C5C9S",           "JSTS6D", 1)] // Follow high if we know misere bidder is void in led suit
+        [DataRow("5C", "6C",           "9C5C9S",           "JCTC6D", 1)] // Follow low if misere bidder still has led suit
+        public void SetOpenMisere(string expectedCard, string trick, string hand, string misereHand, int misereSeat)
+        {
+            var otherHandLength = trick.Length > 0 ? hand.Length / 2 - 1 : hand.Length / 2;
+            var misereBid = FiveHundredBid.OpenMisereBidByPoints[FiveHundredOpenNulloPoints.FiveHundred];
+            var players = new[]
+            {
+                new TestPlayer(FiveHundredBid.NotContractorBid, hand),
+                new TestPlayer(misereSeat == 1 ? misereBid : BidBase.NotPlaying, misereSeat == 1 ? misereHand : "0?0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.NotContractorBid, string.Join("", Enumerable.Repeat("0?", otherHandLength))),
+                new TestPlayer(misereSeat == 3 ? misereBid : BidBase.NotPlaying, misereSeat == 3 ? misereHand : "0?0?0?0?0?0?0?0?0?0?"),
+            };
+            var bot = GetBot(Suit.Unknown, defaultOptions);
+            var cardState = new TestCardState<FiveHundredOptions>(
+                bot,
+                players,
+                trick: trick
+            );
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual(expectedCard, $"{suggestion}");
         }
 
         private static FiveHundredBot GetBot(Suit trumpSuit, FiveHundredOptions options)

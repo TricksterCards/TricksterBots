@@ -354,18 +354,29 @@ namespace Trickster.Bots
 
                 foreach (var suit in SuitRank.stdSuits)
                 {
-                    //  avoid leading a suit any nullo player is void in
                     if (nulloPlayers.Any(p => players.TargetIsVoidInSuit(player, p, suit, cardsPlayed)))
                         avoidSuits.Add(suit);
                 }
 
-                var preferredLegalCards = legalCards.Where(c => !avoidSuits.Contains(EffectiveSuit(c))).ToList();
+                var knownCards = cardsPlayed.Concat(legalCards).ToList();
+                var preferredLegalCards = legalCards
+                    .Where(c => !avoidSuits.Contains(EffectiveSuit(c))) //  avoid leading a suit any nullo player is void in
+                    .Where(c => !IsCardHigh(c, knownCards)) //  also avoid leading a card that is known to be high
+                    .ToList();
 
-                return TryDumpEm(trick, preferredLegalCards.Count > 0 ? preferredLegalCards : legalCards, players.Count);
+                //  fall back to avoiding cards known to be high, but allowing suits where nullo is void
+                //  (gives partner a chance to take the lead)
+                if (preferredLegalCards.Count == 0)
+                    preferredLegalCards = legalCards.Where(c => !IsCardHigh(c, knownCards)).ToList();
+
+                if (preferredLegalCards.Count > 0)
+                    legalCards = preferredLegalCards;
+
+                return TryDumpEm(trick, legalCards, players.Count);
             }
 
-            //  if we're not leading, but a nullo player has yet to play, play low
-            if (nulloPlayers.Any(p => p.Hand.Length == player.Hand.Length))
+            //  if we're not leading, but a nullo player has yet to play and isn't void in the led suit, play low
+            if (nulloPlayers.Any(p => p.Hand.Length == player.Hand.Length && !players.TargetIsVoidInSuit(player, p, trick[0], cardsPlayed)))
                 return TryDumpEm(trick, legalCards, players.Count);
 
             //  if a nullo player is taking the trick, try to get under them (but go high if we can't)

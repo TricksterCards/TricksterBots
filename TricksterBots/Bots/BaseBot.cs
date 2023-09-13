@@ -49,7 +49,15 @@ namespace Trickster.Bots
 
         public virtual bool CanSeeHand(PlayersCollectionBase players, PlayerBase player, PlayerBase target)
         {
-            return player.Seat == target.Seat;
+            //  a player can always see their own cards
+            if (player.Seat == target.Seat)
+                return true;
+
+            //  a player can see the hand of any other player for which the caller sent all known cards
+            if (!string.IsNullOrEmpty(target.Hand) && new Hand(target.Hand).All(c => c.rank != Rank.Unknown && c.suit != Suit.Unknown))
+                return true;
+
+            return false;
         }
 
         public abstract DeckType DeckType { get; }
