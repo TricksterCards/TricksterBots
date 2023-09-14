@@ -132,38 +132,33 @@ namespace TricksterBots.Bots.Bridge
 	// that takes a child constraint.
 
 	// IF and ONLY IF all child constraints are static then this constraint can
-	public class ConstraintGroup: Constraint
+	public class ConstraintGroup: StaticConstraint
 	{
 		public Constraint[] ChildConstraints { get; }
 		public ConstraintGroup(params Constraint[] childConstraints)
 		{
 			this.ChildConstraints = childConstraints;
-			this.StaticConstraint = true;
-			foreach (var constraint in ChildConstraints)
-			{
-				if (!constraint.StaticConstraint)
-				{
-					this.StaticConstraint = false;
-				}
-			}
 		}
 
 		// When this class is added directly to a rule then the child constraints are copied to the rule and
 		// this method is never called.  However, PositionProxy will call this method if it is ever passed
 		// a ConstraintGroup.  This will be fine since it only allows for static constraints and all of the 
 		// constraints for a group must be static for the group to be considered static.
-        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps)
         {
-			if (StaticConstraint)
+			foreach (var constraint in ChildConstraints)
 			{
-				foreach (var constraint in ChildConstraints)
+				if (constraint is StaticConstraint staticConstraint)
 				{
-					if (!constraint.Conforms(call, ps, hs)) return false;
+					if (!staticConstraint.Conforms(call, ps)) return false;
 				}
-				return true;
+				else
+				{
+					Debug.Fail("Dynamic constraints are not allowed for constraint groups that are not part of a rule");
+					return false;
+				}
 			}
-			Debug.Fail("Conforms should never be called on a non-static constraint group");
-			return false;
+			return true;
         }
     }
 

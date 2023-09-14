@@ -11,7 +11,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class HasShape : Constraint
+    public class HasShape : DynamicConstraint
     {
         protected Suit? _suit = null;
         protected int _min;
@@ -56,7 +56,7 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-    public class HasMinShape : Constraint
+    public class HasMinShape : DynamicConstraint
     {
         protected Suit? _suit;
         protected int _min;

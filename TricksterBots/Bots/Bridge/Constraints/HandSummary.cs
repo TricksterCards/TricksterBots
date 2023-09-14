@@ -495,6 +495,16 @@ namespace TricksterBots.Bots.Bridge
 			}
 		}
 */
+
+		private static bool EqualIntSet(HashSet<int> s1, HashSet<int> s2)
+		{
+			if (s1 == null)
+			{
+				return (s2 == null);
+			}
+			if (s2 == null) return false;
+			return s1.SetEquals(s2);
+		}
         public bool Equals(HandSummary other)
         {
 			if (this.Points != other.Points ||
@@ -504,7 +514,7 @@ namespace TricksterBots.Bots.Bridge
 				this.NoTrumpDummyPoints != other.NoTrumpDummyPoints ||
 				this.IsBalanced != other.IsBalanced ||
 				this.IsFlat != other.IsFlat ||
-				this.CountAces != other.CountAces ||
+				!EqualIntSet(this.CountAces, other.CountAces) ||
 				this.CountKings != other.CountKings) { return false; }
 			foreach (var suit in BasicBidding.BasicSuits)
 			{

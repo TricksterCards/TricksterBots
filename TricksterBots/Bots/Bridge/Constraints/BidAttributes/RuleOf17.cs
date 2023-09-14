@@ -7,7 +7,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class RuleOf17 : Constraint
+    public class RuleOf17 : DynamicConstraint
     {
         private Suit? _suit;
 

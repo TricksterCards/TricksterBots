@@ -7,21 +7,17 @@ using System.Threading.Tasks;
 
 namespace TricksterBots.Bots.Bridge
 { 
-	class PositionProxy : Constraint
+	class PositionProxy : StaticConstraint
 	{
 		private RelativePosition _relativePosition;
-		private Constraint _constraint;
+		private StaticConstraint _constraint;
 
 		public enum RelativePosition { Partner, LeftHandOpponent, RightHandOpponent }
 		public PositionProxy(RelativePosition relativePosition, Constraint constraint)
 		{
 			_relativePosition = relativePosition;
-			_constraint = constraint;
-            this.StaticConstraint = constraint.StaticConstraint;
-            if (!constraint.StaticConstraint || constraint as IShowsState != null)
-			{
-				throw new ArgumentException();
-			}
+			_constraint = constraint as StaticConstraint;
+			Debug.Assert(_constraint != null);
 		}
 
 
@@ -34,10 +30,10 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 
-		public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+		public override bool Conforms(Call call, PositionState ps)
 		{
 			var pos = GetPosition(ps);
-			return _constraint.Conforms(call, pos, pos.PublicHandSummary);
+			return _constraint.Conforms(call, pos);
 		}
 	}
 }

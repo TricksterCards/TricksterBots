@@ -12,7 +12,7 @@ namespace TricksterBots.Bots.Bridge
 	public enum SuitQuality { Poor = 0, Decent = 1, Good = 2, Excellent = 3, Solid = 4 }
 
 
-	public class HasQuality : Constraint
+	public class HasQuality : DynamicConstraint
 	{
 		protected Suit? _suit;
 		protected SuitQuality _min;

@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace TricksterBots.Bots.Bridge
 {
-    internal class Break : Constraint
+    internal class Break : DynamicConstraint
     {
+        // TODO: Implement static break class !!!
         public string Name { get; private set; }
         public int CountPublic = 0;
         public int CountPrivate = 0;
         public Break(bool isStatic, string name)
         {
-            this.StaticConstraint = isStatic;
             this.Name = name;
         }
         public override bool Conforms(Call call, PositionState ps, HandSummary hs)

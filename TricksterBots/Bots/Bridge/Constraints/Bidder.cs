@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 using Trickster.Bots;
 using Trickster.cloud;
 using static TricksterBots.Bots.Bridge.BidRule;
@@ -391,6 +392,21 @@ namespace TricksterBots.Bots.Bridge
 			return new ShowsTrump(Call.SuitToStrain(trumpSuit));
 		}
 
+		public static Constraint AgreedStrain(params Strain[] strains)
+		{
+			return new AgreedStrain(strains);
+		}
+
+		public static Constraint AgreedAnySuit()
+		{
+			return AgreedStrain(Strain.Clubs, Strain.Diamonds, Strain.Hearts, Strain.Spades);
+		}
+
+		public static Constraint ContractIsAgreedStrain()
+		{
+			return new ContractIsAgreedStrain();
+		}
+
 		public static Constraint Jump(params int[] jumpLevels)
 		{
 			return new JumpBid(jumpLevels);
@@ -399,6 +415,11 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint Aces(params int[] count)
 		{
 			return new KeyCards(null, null, count);
+		}
+
+		public static Constraint PairAces(params int[] count)
+		{
+			return new PairKeyCards(null, null, count);
 		}
 
 
@@ -442,6 +463,11 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint PairPoints(Suit? suit, (int Min, int Max) range)
 		{
 			return new PairShowsPoints(suit, range.Min, range.Max);
+		}
+
+		public static Constraint AgreedStrainPoints((int Min, int Max) range)
+		{
+			return new PairShowsPoints(range.Min, range.Max);
 		}
 
 		// For this to be true, the partner must have shown the suit, AND this position must have 

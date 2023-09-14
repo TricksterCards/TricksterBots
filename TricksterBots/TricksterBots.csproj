@@ -107,6 +107,7 @@
     <Compile Include="Bots\Bridge\bridgebid\phases\ResponderRebid.cs" />
     <Compile Include="Bots\Bridge\bridgebid\phases\Response.cs" />
     <Compile Include="Bots\Bridge\BridgeBot.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BidAttributes\AgreedStrain.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\KeyCards.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\HasShownSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\PairKeyCards.cs" />

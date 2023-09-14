@@ -7,16 +7,15 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class ConventionOn : Constraint
+    public class ConventionOn : StaticConstraint
     {
         private string _convention;
         public ConventionOn(string convention)
         {
             this._convention = convention;
-            this.StaticConstraint = true;
         }
 
-        public override bool Conforms(Call _ignored, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call _ignored, PositionState ps)
         {
             if (ps.BiddingState.Conventions.ContainsKey(_convention))
             {

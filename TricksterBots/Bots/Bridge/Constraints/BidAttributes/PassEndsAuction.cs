@@ -7,16 +7,15 @@ using System.Threading.Tasks;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class PassEndsAuction : Constraint
+    public class PassEndsAuction : StaticConstraint
     {
         private bool _desiredValue;
         public PassEndsAuction(bool desiredValue) 
         {
             this._desiredValue = desiredValue;
-            this.StaticConstraint = true;
         }
 
-        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps)
         {
             return (_desiredValue == ps.BiddingState.Contract.PassEndsAuction);
         }

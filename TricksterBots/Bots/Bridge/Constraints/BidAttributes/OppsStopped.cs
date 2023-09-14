@@ -9,7 +9,7 @@ using Trickster.cloud;
 namespace TricksterBots.Bots.Bridge
 {
 
-    public class HasOppsStopped : Constraint
+    public class HasOppsStopped : DynamicConstraint
     {
         protected bool _desiredValue;
         public HasOppsStopped(bool desiredValue)

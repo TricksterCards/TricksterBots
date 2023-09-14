@@ -7,16 +7,15 @@ using Trickster.Bots;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class Seat : Constraint
+	public class Seat : StaticConstraint
 	{
 		private int[] seats;
 		public Seat(params int[] seats)
 		{
 			this.seats = seats;
-			this.StaticConstraint = true;
 		}
 
-		public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+		public override bool Conforms(Call call, PositionState ps)
 		{
 			return seats.Contains(ps.Seat);
 		}

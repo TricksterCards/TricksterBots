@@ -9,14 +9,13 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class TakeoutSuit : Constraint, IShowsState
+    public class TakeoutSuit : DynamicConstraint, IShowsState
     {
         private Suit? _suit;
   
         public TakeoutSuit(Suit? suit)
         {
             this._suit = suit;
-            this.StaticConstraint = false;
         }
 
 

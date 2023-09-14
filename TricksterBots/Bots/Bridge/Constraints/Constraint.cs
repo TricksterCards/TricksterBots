@@ -24,8 +24,8 @@ namespace TricksterBots.Bots.Bridge
 
     public abstract class Constraint
     {
-        public bool StaticConstraint = false;
-        public abstract bool Conforms(Call call, PositionState ps, HandSummary hs);
+      //  public bool StaticConstraint = false;
+      //  public abstract bool Conforms(Call call, PositionState ps, HandSummary hs);
 
 
         public static Suit? GetSuit(Suit? s, Call call)
@@ -46,6 +46,17 @@ namespace TricksterBots.Bots.Bridge
         }
 
     }
+
+    public abstract class StaticConstraint: Constraint
+    {
+        public abstract bool Conforms(Call call, PositionState ps);
+    }
+
+    public abstract class DynamicConstraint: Constraint
+    {
+        public abstract bool Conforms(Call call, PositionState ps, HandSummary hs);
+    }
+
 
     public interface IShowsState 
     {

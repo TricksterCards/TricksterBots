@@ -7,17 +7,16 @@ using System.Threading.Tasks;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class BidRound : Constraint
+    public class BidRound : StaticConstraint
     {
         private int _bidRound;
         public BidRound(int round)
         {
             Debug.Assert(round > 0);
             this._bidRound = round;
-            this.StaticConstraint = true;
         }
 
-        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps)
         {
             return ps.BidRound == _bidRound;
         }

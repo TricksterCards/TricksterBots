@@ -5,7 +5,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class CueBid : Constraint
+    public class CueBid : StaticConstraint
     {
         private Suit? _suit;
         private bool _desiredValue;
@@ -13,9 +13,8 @@ namespace TricksterBots.Bots.Bridge
         {
             this._suit = suit;
             this._desiredValue = desiredValue;
-            this.StaticConstraint = true;
         }
-        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps)
         {
             var suit = _suit;
             if (suit == null && call is Bid bid)

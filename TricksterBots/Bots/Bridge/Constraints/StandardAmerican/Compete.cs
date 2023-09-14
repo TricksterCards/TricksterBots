@@ -26,9 +26,11 @@ namespace TricksterBots.Bots.Bridge
         // throug a static function.  These are all duplicated.  Can be appended to the end of another list.  
         // right now used by ResponderRebid.  
 
-        public static BidRule[] CompBids(PositionState _)
+        public static IEnumerable<BidRule> CompBids(PositionState ps)
         {
-            return new BidRule[]
+            var bids = new List<BidRule>();
+            bids.AddRange(Blackwood.InitiateConvention(ps));
+            bids.AddRange(new BidRule[]
             {
                 // Stilly buy highest priority bids for any hand...
                 Nonforcing(7, Suit.Clubs, Shape(13)),
@@ -74,8 +76,8 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(6, Suit.Hearts, Shape(12)),
                 Nonforcing(6, Suit.Spades, Shape(12)),
 
-            };
-
+            });
+            return bids;
         }
 
 

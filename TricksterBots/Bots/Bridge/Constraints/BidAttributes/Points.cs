@@ -11,7 +11,7 @@ namespace TricksterBots.Bots.Bridge
 {
 
 
-    public class HasPoints : Constraint
+    public class HasPoints : DynamicConstraint
     {
         protected int _min;
         protected int _max;

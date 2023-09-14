@@ -8,15 +8,14 @@ using System.Threading.Tasks;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class OppsContract : Constraint
+    public class OppsContract : StaticConstraint
     {
         bool _desired;
         public OppsContract(bool desired)
         {
             _desired = desired;
-            this.StaticConstraint = true;
         }
-        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps)
         {
             return _desired == ps.IsOpponentsContract;
         }

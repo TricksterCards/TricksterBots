@@ -7,7 +7,7 @@ using Trickster.Bots;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class IsFlat : Constraint
+	public class IsFlat : DynamicConstraint
 	{
 		protected bool _desiredValue;
 		public IsFlat(bool desiredValue = true)

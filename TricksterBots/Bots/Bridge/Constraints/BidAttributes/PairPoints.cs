@@ -9,15 +9,17 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class PairHasPoints : Constraint // TODO: Needs to show state too.  But for now passive..
+    public class PairHasPoints : DynamicConstraint // TODO: Needs to show state too.  But for now passive..
     {
         protected bool _useStartingPoints;
+        protected bool _useAgreedStrain;
         protected Suit? _suit;
         protected int _min;
         protected int _max;
         public PairHasPoints(Suit? suit, int min, int max)
         {
             this._useStartingPoints = false;
+            this._useAgreedStrain = false;
             this._suit = suit;
             this._min = min;
             this._max = max;
@@ -26,17 +28,26 @@ namespace TricksterBots.Bots.Bridge
 
         public PairHasPoints(int min, int max)
         {
-            this._useStartingPoints = true;
+            this._useStartingPoints = false;
+            this._useAgreedStrain = true;
             this._suit = null;
             this._min = min;
             this._max = max;    
         }
 
+        private Suit? GetSuit(PositionState ps, Suit? suit, Call call)
+        {
+            if (_useAgreedStrain)
+            {
+                return ps.PairState.Agreements.TrumpSuit;
+            }
+            return GetSuit(suit, call);
+        }
 
         protected (int Min, int Max) GetPoints(Call call, PositionState ps, HandSummary hs)
         {
             var points = hs.StartingPoints;
-            if (!_useStartingPoints && GetSuit(_suit, call) is Suit suit)
+            if (!_useStartingPoints && GetSuit(ps, _suit, call) is Suit suit)
             {
                 if (ps.PairState.Agreements.Suits[suit].LongHand == ps)
                 {
@@ -95,6 +106,8 @@ namespace TricksterBots.Bots.Bridge
     public class PairShowsPoints : PairHasPoints, IShowsState
     {
         public PairShowsPoints(Suit? suit, int min, int max) : base(suit, min, max) { }
+
+        public PairShowsPoints(int min, int max): base(min, max) { }
 
         void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {

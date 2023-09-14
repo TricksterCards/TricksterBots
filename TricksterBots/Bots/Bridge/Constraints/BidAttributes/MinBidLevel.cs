@@ -9,7 +9,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class BidAvailable : Constraint
+    public class BidAvailable : StaticConstraint
     {
         private Bid _bid;
         private bool _desiredValue;
@@ -17,10 +17,9 @@ namespace TricksterBots.Bots.Bridge
         public BidAvailable(int level, Suit suit, bool desiredValue)
         {
             this._bid = new Bid(level, suit);
-            this.StaticConstraint = true;
             _desiredValue = desiredValue;   
         }
-        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps)
         {
             return _desiredValue == ps.IsValidNextCall(_bid);
         }

@@ -11,7 +11,7 @@ namespace TricksterBots.Bots.Bridge
 {
 	// TODO: For now this just allows the last bid to be examined...  In the future may need to look back in
 	// bid history.  But this works for now...
-	public class BidHistory : Constraint
+	public class BidHistory : StaticConstraint
 	{
 		private int _bidIndex;
 		private Call _call;
@@ -30,10 +30,9 @@ namespace TricksterBots.Bots.Bridge
 			this._call = call;
 			this._desiredValue = desiredValue;
 
-			this.StaticConstraint = true;
 		}
 
-		public override bool Conforms(Call call, PositionState ps, HandSummary hs) 
+		public override bool Conforms(Call call, PositionState ps) 
 		{
 			var previousCall = ps.GetBidHistory(_bidIndex);
 			if (previousCall != null)

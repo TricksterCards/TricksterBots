@@ -7,16 +7,15 @@ using System.Threading.Tasks;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class JumpBid : Constraint
+	public class JumpBid : StaticConstraint
 	{
 		private int[] _jumpLevels;
 		public JumpBid(params int[] jumpLevels)
 		{
 			this._jumpLevels = jumpLevels;
-			this.StaticConstraint = true;
 		}
 
-		public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+		public override bool Conforms(Call call, PositionState ps)
 		{
 			if (call is Bid bid)
 			{

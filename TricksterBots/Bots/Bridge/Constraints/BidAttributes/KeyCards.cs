@@ -7,7 +7,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class KeyCards : Constraint, IShowsState
+	public class KeyCards : DynamicConstraint, IShowsState
 	{
 		HashSet<int> _count;
 		Suit? _trumpSuit;

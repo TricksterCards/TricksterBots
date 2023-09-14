@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TricksterBots.Bots.Bridge
 { 
-    public class Role : Constraint
+    public class Role : StaticConstraint
     {
         PositionRole _role;
         int _round;
@@ -18,10 +18,9 @@ namespace TricksterBots.Bots.Bridge
             _role = role;
             _round = round;
             _desiredValue = desiredValue;
-            this.StaticConstraint = true;
         }
 
-        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+        public override bool Conforms(Call call, PositionState ps)
         {
             return _desiredValue == (_role == ps.Role && (_round == 0 || ps.RoleRound == _round));
         }

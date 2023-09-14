@@ -9,7 +9,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class ShowsSuit : Constraint, IShowsState
+    public class ShowsSuit : DynamicConstraint, IShowsState
     {
         private Suit[] _suits;
         private bool _showBidSuit;

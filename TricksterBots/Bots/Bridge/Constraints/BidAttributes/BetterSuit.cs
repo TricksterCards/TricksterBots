@@ -10,7 +10,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class IsBetterSuit : Constraint
+	public class IsBetterSuit : DynamicConstraint
 	{
 		protected Suit? _better;
 		protected Suit? _worse;

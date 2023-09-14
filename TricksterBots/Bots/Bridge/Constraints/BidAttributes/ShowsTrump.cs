@@ -7,7 +7,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class ShowsTrump : Constraint, IShowsState
+    public class ShowsTrump : DynamicConstraint, IShowsState
     {
         private Strain? _trumpStrain;
         public ShowsTrump(Strain? trumpStrain)
@@ -26,8 +26,10 @@ namespace TricksterBots.Bots.Bridge
 
         void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
-            Strain strain = (Strain)GetStrain(_trumpStrain, call);
-            showAgreements.ShowTrump(strain);
+            if (GetStrain(_trumpStrain, call) is Strain strain)
+            {
+                showAgreements.ShowAgreedStrain(strain);
+            }
         }
     }
 }

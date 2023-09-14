@@ -8,7 +8,7 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	public class IsBalanced : Constraint
+	public class IsBalanced : DynamicConstraint
 	{
 		protected bool _desiredValue;
 		public IsBalanced(bool desiredValue)

@@ -25,7 +25,7 @@ namespace TricksterBots.Bots.Bridge
             }
 
             // TODO: This name not the best...
-            public void ShowTrump(Strain trumpStrain)
+            public void ShowAgreedStrain(Strain trumpStrain)
             {
                 // TODO: Need to think this out carefully.  What is someone chagnes it?
 

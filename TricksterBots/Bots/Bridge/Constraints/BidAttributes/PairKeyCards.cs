@@ -8,13 +8,13 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-	internal class PairKeyCards : Constraint
+	internal class PairKeyCards : DynamicConstraint
 	{
-		int _count;
+		int[] _count;
 		Suit? _trumpSuit;
 		bool? _hasQueen;
 		
-		public PairKeyCards(Suit? trumpSuit, bool? hasQueen, int count)
+		public PairKeyCards(Suit? trumpSuit, bool? hasQueen, params int[] count)
 		{
 			_trumpSuit = trumpSuit;
 			_hasQueen = hasQueen;
@@ -38,11 +38,11 @@ namespace TricksterBots.Bots.Bridge
 			if (ourKeyCards == null)
 			{
 				if (partnerKeyCards == null) return true;   // We know nothing..
-				return _count >= partnerKeyCards.Min();
+				return _count.Max() >= partnerKeyCards.Min();
 			}
 			if (partnerKeyCards == null)
 			{
-				return _count >= ourKeyCards.Min();
+				return _count.Max() >= ourKeyCards.Min();
 			}
 			if (_hasQueen != null)
 			{
@@ -52,7 +52,7 @@ namespace TricksterBots.Bots.Bridge
 			{
 				foreach (var partnerCount in partnerKeyCards)
 				{
-					if (ourCount + partnerCount == _count) return true;
+					if (_count.Contains(ourCount + partnerCount)) return true;
 				}
 			}
 			return false;

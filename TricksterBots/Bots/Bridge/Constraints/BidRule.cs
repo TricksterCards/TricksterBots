@@ -53,7 +53,8 @@ namespace TricksterBots.Bots.Bridge
 		{
 			foreach (Constraint constraint in _constraints)
 			{
-				if (constraint.StaticConstraint && !constraint.Conforms(Call, ps, null))
+				if (constraint is StaticConstraint staticConstraint &&
+					!staticConstraint.Conforms(Call, ps))
 				{
 					return false;
 				}
@@ -69,8 +70,11 @@ namespace TricksterBots.Bots.Bridge
         {
             foreach (Constraint constraint in _constraints)
             {
-                if (!constraint.StaticConstraint &&
-					!constraint.Conforms(Call, ps, hs)) { return false; }
+                if (constraint is DynamicConstraint dynamicConstraint &&
+					!dynamicConstraint.Conforms(Call, ps, hs)) 
+				{
+					return false;
+				}
             }
             return true;
         }
