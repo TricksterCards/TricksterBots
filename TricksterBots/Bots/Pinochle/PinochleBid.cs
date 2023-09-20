@@ -12,7 +12,11 @@ namespace Trickster.Bots
         private const int MaxDoubleDeckBid = (int)BidSpace.Pinochle + (int)NonPointBid.MaxDoubleDeckPoints * PointsMultiplier + PointsMultiplier - 1;
         private const int MaxSingleDeckBid = (int)BidSpace.Pinochle + (int)NonPointBid.MaxSingleDeckPoints * PointsMultiplier + PointsMultiplier - 1;
         private const int PointsMultiplier = 5;
+        private const int ShootBidsStart = MaxDoubleDeckBid + 1;
+        private const int NoShootBidsStart = ShootBidsStart + 10;
 
+        private static readonly Dictionary<Suit, int> NoShootBids = SuitRank.stdSuits.ToDictionary(s => s, s => NoShootBidsStart + (int)s);
+        private static readonly Dictionary<Suit, int> ShootBids = SuitRank.stdSuits.ToDictionary(s => s, s => ShootBidsStart + (int)s);
         private static readonly Dictionary<Suit, int> TrumpBids = SuitRank.stdSuits.ToDictionary(s => s, s => (int)BidSpace.Pinochle + (int)NonPointBid.TrumpBidsStart * PointsMultiplier + (int)s);
 
         private readonly int theBid;
@@ -36,6 +40,8 @@ namespace Trickster.Bots
         public bool IsMisDeal => BidIsMisDeal(theBid);
         public bool IsPassWithHelp => BidIsPassWithHelp(theBid);
         public bool IsPointsBid => BidIsPoints(theBid);
+        public bool IsNoShootBid => NoShootBids.Values.Contains(theBid);
+        public bool IsShootBid => ShootBids.Values.Contains(theBid);
         public bool IsTrumpBid => TrumpBids.Values.Contains(theBid);
         public static PinochleBid MisDealBid => NonPointsBid(NonPointBid.MisDealPoints);
 
@@ -55,6 +61,10 @@ namespace Trickster.Bots
                 return Suit.Unknown;
             }
         }
+
+        public Suit NoShootBidSuit => IsNoShootBid ? NoShootBids.Single(tb => tb.Value == theBid).Key : Suit.Unknown;
+
+        public Suit ShootBidSuit => IsShootBid ? ShootBids.Single(tb => tb.Value == theBid).Key : Suit.Unknown;
 
         public Suit TrumpBidSuit => IsTrumpBid ? TrumpBids.Single(tb => tb.Value == theBid).Key : Suit.Unknown;
 
@@ -119,6 +129,16 @@ namespace Trickster.Bots
         {
             return pb.theBid;
         }
+        
+        public static PinochleBid NoShootBidFromSuit(Suit s)
+        {
+            return new PinochleBid(NoShootBids[s]);
+        }
+        
+        public static PinochleBid ShootBidFromSuit(Suit s)
+        {
+            return new PinochleBid(ShootBids[s]);
+        }
 
         public static PinochleBid TrumpBidFromSuit(Suit s)
         {
@@ -138,6 +158,9 @@ namespace Trickster.Bots
 
             if (IsTrumpBid)
                 return Card.SuitSymbol(TrumpBidSuit);
+
+            if (IsShootBid)
+                return $"Shoot in {Card.SuitSymbol(ShootBidSuit)}";
 
             if (IsPointsBid)
                 return Trump != Suit.Unknown ? Card.SuitSymbol(Trump) : Points.ToString();
