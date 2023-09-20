@@ -42,6 +42,7 @@ namespace Trickster.Bots
         public bool IsPointsBid => BidIsPoints(theBid);
         public bool IsNoShootBid => NoShootBids.Values.Contains(theBid);
         public bool IsShootBid => ShootBids.Values.Contains(theBid);
+        public bool IsShootOrNoShootBid => IsShootBid || IsNoShootBid;
         public bool IsTrumpBid => TrumpBids.Values.Contains(theBid);
         public static PinochleBid MisDealBid => NonPointsBid(NonPointBid.MisDealPoints);
 
