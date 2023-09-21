@@ -222,7 +222,12 @@ namespace Trickster.Bots
 
             //  if this is the first trick and we called for a partner, lead our lowest, most valuable card
             //  this works because we called for a boss card from partner that they MUST play on the first trick
-            if (IsCallPartner && trick.Count == 0 && new Hand(player.Hand).Count == 6)
+            //  also, if this is the second trick and we are the called partner, lead back our lowest, most valuable card
+            //  this works because the pitcher likely holds the next highest boss card
+            if (
+                (IsCallPartner && trick.Count == 0 && new Hand(player.Hand).Count == 6) ||
+                (IsCallPartner && trick.Count == 0 && new Hand(player.Hand).Count == 5 && IsCalledPartner(player))
+            )
             {
                 var lowestValuableCard = legalCards
                     .Where(c => !IsCardHigh(c, legalCards))
