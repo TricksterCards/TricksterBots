@@ -156,13 +156,7 @@ namespace Trickster.Bots
             var summary = new InterpretedBid.TeamSummary(history, history.Count - 2);
             var suit = summary.HandShape.Where(hs => hs.Value.Min >= 8).Select(hs => hs.Key).FirstOrDefault();
 
-            //  if we don't have a fit, go back to partner's best suit at the lowest available level
-            if (suit == Suit.Unknown)
-                suit = summary.p1.HandShape.Where(hs => hs.Value.Min > 0).OrderByDescending(hs => hs.Value.Min).Select(hs => hs.Key).FirstOrDefault();
-
-            //  if we don't know partner's suit, bid our best suit at the lowest available level
-            if (suit == Suit.Unknown)
-                suit = summary.p2.HandShape.Where(hs => hs.Value.Min > 0).OrderByDescending(hs => hs.Value.Min).Select(hs => hs.Key).FirstOrDefault();
+            //  if we don't have a fit, FirstOrDefault causes us to fall back to NT at the lowest available level
 
             return legalBids.FirstOrDefault(b => b.why.bidIsDeclare && b.why.declareBid.suit == suit);
         }
