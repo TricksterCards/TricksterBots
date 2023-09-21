@@ -39,7 +39,7 @@ namespace Trickster.Bots
         public bool IsLikePass => BidIsLikePass(theBid);
         public bool IsMisDeal => BidIsMisDeal(theBid);
         public bool IsPassWithHelp => BidIsPassWithHelp(theBid);
-        public bool IsPointsBid => BidIsPoints(theBid) || IsShootBid;
+        public bool IsPointsBid => BidIsPoints(theBid);
         public bool IsNoShootBid => NoShootBids.Values.Contains(theBid);
         public bool IsShootBid => ShootBids.Values.Contains(theBid);
         public bool IsShootOrNoShootBid => IsShootBid || IsNoShootBid;
@@ -97,7 +97,8 @@ namespace Trickster.Bots
         public static bool BidIsPoints(int bid)
         {
             return (int)BidSpace.Pinochle <= bid && bid <= MaxSingleDeckBid ||
-                   FirstDoubleDeckOnlyBid <= bid && bid <= MaxDoubleDeckBid;
+                   FirstDoubleDeckOnlyBid <= bid && bid <= MaxDoubleDeckBid ||
+                   ShootBids.Values.Contains(bid);
         }
 
         public static PinochleBid FromPoints(int points)
