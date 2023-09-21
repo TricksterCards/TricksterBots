@@ -39,7 +39,7 @@ namespace Trickster.Bots
         public bool IsLikePass => BidIsLikePass(theBid);
         public bool IsMisDeal => BidIsMisDeal(theBid);
         public bool IsPassWithHelp => BidIsPassWithHelp(theBid);
-        public bool IsPointsBid => BidIsPoints(theBid);
+        public bool IsPointsBid => BidIsPoints(theBid) || IsShootBid;
         public bool IsNoShootBid => NoShootBids.Values.Contains(theBid);
         public bool IsShootBid => ShootBids.Values.Contains(theBid);
         public bool IsShootOrNoShootBid => IsShootBid || IsNoShootBid;
@@ -161,7 +161,10 @@ namespace Trickster.Bots
                 return Card.SuitSymbol(TrumpBidSuit);
 
             if (IsShootBid)
-                return $"Shoot in {Card.SuitSymbol(ShootBidSuit)}";
+                return $"Shooting in {Card.SuitSymbol(ShootBidSuit)}";
+
+            if (IsNoShootBid)
+                return "Not shooting";
 
             if (IsPointsBid)
                 return Trump != Suit.Unknown ? Card.SuitSymbol(Trump) : Points.ToString();
