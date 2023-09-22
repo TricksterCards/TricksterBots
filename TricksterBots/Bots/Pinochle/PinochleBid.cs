@@ -40,7 +40,6 @@ namespace Trickster.Bots
         public bool IsPassWithHelp => BidIsPassWithHelp(theBid);
         public bool IsPointsBid => BidIsPoints(theBid);
         public bool IsShootBid => BidIsShoot(theBid);
-        public bool IsShootOrNoShootBid => IsShootBid || IsNoShootBid;
         public bool IsTrumpBid => TrumpBids.Values.Contains(theBid);
 
         public static PinochleBid MisDealBid => NonPointsBid(NonPointBid.MisDealPoints);
