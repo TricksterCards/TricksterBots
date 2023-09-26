@@ -156,7 +156,7 @@ namespace Trickster.Bots
                 return Card.SuitSymbol(TrumpBidSuit);
 
             if (IsShootBid)
-                return $"Shooting in {Card.SuitSymbol(ShootBidSuit)}";
+                return $"{Card.SuitSymbol(ShootBidSuit)} Shoot";
 
             if (IsNoShootBid)
                 return "Not shooting";
