@@ -172,7 +172,7 @@ namespace Trickster.Bots
             return new PinochleBid((int)BidSpace.Pinochle + (int)points * PointsMultiplier);
         }
 
-        private static bool BidIsNoShoot(int bid)
+        public static bool BidIsNoShoot(int bid)
         {
             return bid == NoShootBid.theBid;
         }
