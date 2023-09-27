@@ -44,11 +44,8 @@ namespace Trickster.Bots
                 && !player.BidHistory.Any()
                 && hand.ContainsSuitAndRank(Suit.Joker, Rank.High))
             {
-                var sixNT = legalBids.FirstOrDefault(b =>
-                {
-                    var fhb = new FiveHundredBid(b.value);
-                    return fhb.Suit == Suit.Unknown && fhb.Tricks == 6;
-                });
+                var sixNTBid = new FiveHundredBid(Suit.Unknown, 6);
+                var sixNT = legalBids.FirstOrDefault(b => new FiveHundredBid(b.value) == sixNTBid);
                 if (sixNT != null)
                     return sixNT;
             }

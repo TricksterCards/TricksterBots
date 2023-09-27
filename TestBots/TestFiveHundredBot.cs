@@ -22,6 +22,8 @@ namespace TestBots
         [TestMethod]
         [DataRow("6NT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian)]
         [DataRow("iNT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.American)]
+        [DataRow("6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian)]
+        [DataRow("9♠", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.American)]
         public void Bid6NtWithJoker(string bid, string hand, FiveHundredVariation variation)
         {
             var options = new FiveHundredOptions
