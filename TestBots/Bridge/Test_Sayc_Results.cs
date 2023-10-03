@@ -1,4 +1,4 @@
-// last updated 9/6/2023 11:03 AM (-05:00)
+// last updated 9/20/2023 2:32 PM (-05:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -713,8 +713,8 @@ namespace TestBots
                     new SaycResult(false, -2),
                     new SaycResult(true, -2),
                     new SaycResult(false, -2),
-                    new SaycResult(false, -2),
-                    new SaycResult(false, -2),
+                    new SaycResult(true, 445),
+                    new SaycResult(false, 445),
                     new SaycResult(false, -2),
                     new SaycResult(false, 429)
                 }
