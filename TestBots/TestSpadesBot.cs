@@ -264,15 +264,27 @@ namespace TestBots
         }
 
         [TestMethod]
-        public void TestBids()
+        [DataRow( 4, "2D3D5D6D8DTD  QH 2S3S5S7S9SAS", -1, 0, DisplayName = "Bid 4 with AS and 3 opportunities to cut")]
+        [DataRow(13, "   2S3S4S5S6S7S8S9STSJSQSKSAS", -1, 0, DisplayName = "Bid 13 with all Spades")]
+        [DataRow(13, "  AH 3S4S5S6S7S8S9STSJSQSKSAS", -1, 0, DisplayName = "Bid 13 with highest Spades and one off-suit Ace")]
+        [DataRow(13, "AD AC AH 5S6S7S8S9STSJSQSKSAS", -1, 0, DisplayName = "Bid 13 with highest Spades and all off-suit Aces")]
+        [DataRow( 0, "2C3C4C5C6C7C8C 2D3D4D5D6D7D  ", -1, 0, DisplayName = "Bid Nil with all lowest off-suit cards")]
+        [DataRow( 1, "2C3C4C5C6C7C8C 2D3D4D5D6D7D  ",  0, 0, DisplayName = "Don't bid Nil if partner already bid Nil")]
+        [DataRow( 1, "2C3C4C5C6C7C8C 2D3D4D5D6D  AS", -1, 0, DisplayName = "Bid 1 instead of Nil with no pass")]
+        [DataRow( 0, "2C3C4C5C6C7C8C 2D3D4D5D6D  AS", -1, 1, DisplayName = "Bid Nil instead of 1 with 1-card pass")]
+        [DataRow( 2, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 0, DisplayName = "Bid 2 without a pass")]
+        [DataRow( 2, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 1, DisplayName = "Bid 2 with only a 1-card pass")]
+        [DataRow( 0, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 2, DisplayName = "Bid Nil instead of 2 with 2-card pass")]
+        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 0, DisplayName = "Bid 4 without a pass")]
+        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 1, DisplayName = "Bid 4 with only a 1-card pass")]
+        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 2, DisplayName = "Bid 4 with only a 2-card pass")]
+        [DataRow( 0, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 4, DisplayName = "Bid Nil instead of 4 with 4-card pass")]
+        [DataRow( 0, "2C3C4C 2D3DAD 2H3H4H ASKSQS3S", -1, 4, DisplayName = "Bid Nil instead of 4 with 4-card pass (case 2)")]
+        [DataRow( 5, "2C3C4C5C6C 2D3D4DAD  ASKSQSJS", -1, 4, DisplayName = "Bid 5 instead of Nil with 4-card pass")]
+        public void TestBids(int bid, string handStr, int partnerBid, int nilPass)
         {
-            Assert.AreEqual(4, GetSuggestedBid("2D3D5D6D8DTD  QH 2S3S5S7S9SAS", out var hand), $"Expect bid of 4 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(13, GetSuggestedBid("   2S3S4S5S6S7S8S9STSJSQSKSAS", out hand), $"Expect bid of 13 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(13, GetSuggestedBid("  AH 3S4S5S6S7S8S9STSJSQSKSAS", out hand), $"Expect bid of 13 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(13, GetSuggestedBid("AD AC AH 5S6S7S8S9STSJSQSKSAS", out hand), $"Expect bid of 13 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(0, GetSuggestedBid("2C3C4C5C6C7C8C 2D3D4D5D6D7D  ", out hand), $"Expect bid of Nil for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(1, GetSuggestedBid("2C3C4C5C6C7C8C 2D3D4D5D6D7D  ", out hand, 0),
-                $"Expect bid of 1 for hand {Util.PrettyHand(hand)} and partner bid Nil");
+            Assert.AreEqual(bid, GetSuggestedBid(handStr, out var hand, partnerBid, new SpadesOptions { nilPass = nilPass }),
+                $"Expect bid of {bid} for hand {Util.PrettyHand(hand)} if partner bid ${partnerBid} with {nilPass}-card Nil pass");
         }
 
         [TestMethod]
@@ -296,10 +308,13 @@ namespace TestBots
 
         private static SpadesBot GetBot(SpadesOptions options)
         {
+            if (options == null)
+                return GetBot();
+
             return new SpadesBot(options, Suit.Spades);
         }
 
-        private static int GetSuggestedBid(string handString, out Hand hand, int partnerBid = BidBase.NoBid)
+        private static int GetSuggestedBid(string handString, out Hand hand, int partnerBid = BidBase.NoBid, SpadesOptions options = null)
         {
             var players = new[]
             {
@@ -321,7 +336,7 @@ namespace TestBots
                 hand = hand
             };
 
-            return GetBot().SuggestBid(bidState).value;
+            return GetBot(options).SuggestBid(bidState).value;
         }
 
         private static string GetSuggestedPass(int bid)
