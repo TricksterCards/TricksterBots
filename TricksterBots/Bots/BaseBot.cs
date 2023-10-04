@@ -208,6 +208,27 @@ namespace Trickster.Bots
                    highRank - RankSort(highestCard);
         }
 
+        protected bool IsCardEffectivelyTheSame(Card card, Card target, IEnumerable<Card> knownCards)
+        {
+            if (!IsOfValue(card))
+                return false;
+
+            var suit = EffectiveSuit(target);
+            if (EffectiveSuit(card) != suit)
+                return false;
+
+            var cardRank = RankSort(card);
+            var targetRank = RankSort(target);
+            var highRank = Math.Max(cardRank, targetRank);
+            var lowRank = Math.Min(cardRank, targetRank);
+
+            return lowRank == highRank ||
+                   highRank - lowRank ==
+                   knownCards.Count(c => EffectiveSuit(c) == suit &&
+                                         RankSort(c) <= highRank &&
+                                         RankSort(c) > lowRank);
+        }
+
         protected void LogReturn(string message, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = null)
         {
             if (returnLog)

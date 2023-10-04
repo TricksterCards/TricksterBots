@@ -26,6 +26,55 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow("2H3H", "JH5H", "JH")]
+        [DataRow("3H2H", "JH5H", "JH")]
+        [DataRow("9HTH", "QHJH", "JH")]
+        [DataRow("9HTH", "KHJH", "KH")]
+        [DataRow("TH9H", "QH7H", "QH")]
+        [DataRow("TH9H", "JH7H", "7H")]
+        public void PlayHighFrom3rdSeat(string trick, string hand, string card)
+        {
+            var players = new[]
+            {
+                new TestPlayer(1, hand),
+                new TestPlayer(5),
+                new TestPlayer(1),
+                new TestPlayer(5)
+            };
+
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, trick);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual(card, suggestion.ToString());
+        }
+
+        [TestMethod]
+        public void PlayHighFrom3rdSeatWithPlayHistory()
+        {
+            var options = new SpadesOptions
+            {
+                minBid = 4,
+                nilOrZero = SpadesNilOrZero.Zero,
+                isPartnership = true,
+                tenForTwoHundred = true,
+                variation = SpadesVariation.JokerJokerDeuceDeuce
+            };
+
+            var players = new[]
+            {
+                new TestPlayer(5, "ASKSQSTS5S4S", handScore: 2, cardsTaken: "TH6H4H3HAC5CTC4C"),
+                new TestPlayer(2, handScore: 3, cardsTaken: "JDADTD3DKCJC6C3C7H8HKH3S"),
+                new TestPlayer(2, handScore: 2, cardsTaken: "9HAH5HQH9CQC7C8C"),
+                new TestPlayer(4, handScore: 0, cardsTaken: "")
+            };
+
+            var bot = GetBot(options);
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "7S6S");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QS", suggestion.ToString(), "Play high from 3rd seat");
+        }
+
+        [TestMethod]
         public void DontTakeBagsIfWeCantSetOpponents()
         {
             var players = new[]
