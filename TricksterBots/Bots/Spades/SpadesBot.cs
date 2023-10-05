@@ -149,9 +149,12 @@ namespace Trickster.Bots
             if (nTrumpToPass > passable)
                 return false;
 
-            var trumpToPass = hand.Where(IsTrump).OrderByDescending(RankSort).Take(nTrumpToPass);
-            passable -= nTrumpToPass;
-            hand = hand.Where(c => !trumpToPass.Contains(c)).ToList();
+            if (nTrumpToPass > 0)
+            {
+                var trumpToPass = hand.Where(IsTrump).OrderByDescending(RankSort).Take(nTrumpToPass);
+                passable -= nTrumpToPass;
+                hand = hand.Where(c => !trumpToPass.Contains(c)).ToList();
+            }
 
             if (est < maxEstForNil)
             {
