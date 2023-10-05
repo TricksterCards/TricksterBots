@@ -127,15 +127,38 @@ namespace Trickster.Bots
             return est;
         }
 
-        private bool TryNilBid(Hand hand, double est, out BidBase bid)
+        private bool TryNilBid(List<Card> hand, double est, out BidBase bid)
         {
+            bid = null;
+
             //  bid nil if we have a near-zero estimate, we don't have the highest card any suit
             var maxEstForNil = (options.variation == SpadesVariation.Suicide ? 7.0 : 1.0) + options.nilPass;
+            var passable = options.nilPass;
 
-            if (est < maxEstForNil && hand.All(c => RankSort(c) < HighRankInSuit(c)) && hand.Count(IsTrump) < 4)
+            var highestCards = hand.Where(c => RankSort(c) == HighRankInSuit(c)).ToList();
+            if (highestCards.Count > passable)
+                return false;
+
+            passable -= highestCards.Count;
+            hand = hand.Where(c => !highestCards.Contains(c)).ToList();
+
+            if (hand.Count(IsTrump) - passable >= 4)
+                return false;
+
+            var nTrumpToPass = hand.Count(IsTrump) - 3;
+            if (nTrumpToPass > passable)
+                return false;
+
+            if (nTrumpToPass > 0)
+            {
+                var trumpToPass = hand.Where(IsTrump).OrderByDescending(RankSort).Take(nTrumpToPass);
+                passable -= nTrumpToPass;
+                hand = hand.Where(c => !trumpToPass.Contains(c)).ToList();
+            }
+
+            if (est < maxEstForNil)
             {
                 //  and we don't have any unprotected high cards in any suit (e.g. K23 is good, but not K or K2)
-                var passable = options.nilPass;
                 if (SuitRank.stdSuits.All(s =>
                 {
                     var cardsInSuit = hand.Where(c => EffectiveSuit(c) == s).ToList();
@@ -160,7 +183,6 @@ namespace Trickster.Bots
                 }
             }
 
-            bid = null;
             return false;
         }
 
@@ -189,13 +211,16 @@ namespace Trickster.Bots
             var est = EstimatedTricks(hand);
 
             //  try to bid Nil if the biddable bids include Nil and partner didn't already bid nil
+            var partner = players.PartnerOf(player);
+            var partnerBidNil = partner != null && partner.Bid != BidBase.NoBid && new SpadesBid(partner.Bid).IsNil;
             if (biddableBids.Any(b => new SpadesBid(b).IsNil))
             {
-                var partner = players.PartnerOf(player);
-                var partnerBidNil = partner != null && partner.Bid != BidBase.NoBid && new SpadesBid(partner.Bid).IsNil;
                 if (!partnerBidNil && TryNilBid(hand, est, out var bid))
                     return bid;
             }
+
+            if ((partnerBidNil || partner?.Bid == BidBase.NoBid) && options.nilPass > 0)
+                est += options.nilPass / 2.0;
 
             if (options.variation == SpadesVariation.Whiz)
             {
@@ -212,8 +237,7 @@ namespace Trickster.Bots
             var maxBid = options.tenForTwoHundred ? Math.Min(10, MaxTricks) : MaxTricks;
             if (IsPartnership)
             {
-                var partner = players.PartnerOf(player);
-                if (partner.Bid != BidBase.NoBid)
+                if (partner != null && partner.Bid != BidBase.NoBid)
                     maxBid -= (new SpadesBid(partner.Bid).Tricks);
             }
 
