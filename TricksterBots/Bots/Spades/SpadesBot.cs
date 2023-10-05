@@ -494,6 +494,15 @@ namespace Trickster.Bots
 
                         if (IsCardHigh(highCard, cardsPlayed))
                             suggestion = highCard;
+
+                        //  in next-to-last seat in a partnership game, play our highest card (but lowest equivalent) if better than what's currently winning
+                        //  (and not effectively the same as partner's card)
+                        else if (IsPartnership && trick.Count == players.Count - 2 && RankSort(highCard) > RankSort(cardTakingTrick))
+                        {
+                            var knownCards = cardsPlayed.Concat(legalCards).ToList();
+                            if (!isPartnerTakingTrick || !IsCardEffectivelyTheSame(highCard, cardTakingTrick, knownCards))
+                                suggestion = legalCards.Where(c => IsCardEffectivelyTheSame(c, highCard, knownCards)).OrderBy(RankSort).First();
+                        }
                     }
                 }
             }
