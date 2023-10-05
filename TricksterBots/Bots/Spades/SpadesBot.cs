@@ -219,9 +219,8 @@ namespace Trickster.Bots
                     return bid;
             }
 
-            if ((partnerBidNil || partner?.Bid == BidBase.NoBid) && options.nilPass > 1)
-                // ReSharper disable once PossibleLossOfFraction
-                est += options.nilPass / 2;
+            if ((partnerBidNil || partner?.Bid == BidBase.NoBid) && options.nilPass > 0)
+                est += options.nilPass / 2.0;
 
             if (options.variation == SpadesVariation.Whiz)
             {
