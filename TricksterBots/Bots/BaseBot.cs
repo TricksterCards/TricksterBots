@@ -222,10 +222,12 @@ namespace Trickster.Bots
             var highRank = Math.Max(cardRank, targetRank);
             var lowRank = Math.Min(cardRank, targetRank);
 
-            return lowRank == highRank ||
-                   highRank - lowRank ==
+            if (highRank - lowRank <= 1)
+                return true;
+
+            return highRank - lowRank - 1 ==
                    knownCards.Count(c => EffectiveSuit(c) == suit &&
-                                         RankSort(c) <= highRank &&
+                                         RankSort(c) < highRank &&
                                          RankSort(c) > lowRank);
         }
 

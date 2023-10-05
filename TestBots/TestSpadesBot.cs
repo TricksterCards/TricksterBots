@@ -26,19 +26,22 @@ namespace TestBots
         }
 
         [TestMethod]
-        [DataRow("2H3H", "JH5H", "JH")]
-        [DataRow("3H2H", "JH5H", "JH")]
-        [DataRow("9HTH", "QHJH", "JH")]
-        [DataRow("9HTH", "KHJH", "KH")]
-        [DataRow("TH9H", "QH7H", "QH")]
-        [DataRow("TH9H", "JH7H", "7H")]
-        public void PlayHighFrom3rdSeat(string trick, string hand, string card)
+        [DataRow("2H3H", "JH5H",   "", "JH")]
+        [DataRow("3H2H", "JH5H",   "", "JH")]
+        [DataRow("9HTH", "QHJH",   "", "JH")]
+        [DataRow("9HTH", "KHJH",   "", "KH")]
+        [DataRow("TH9H", "QH7H",   "", "QH")]
+        [DataRow("TH9H", "JH7H",   "", "7H")]
+        [DataRow("9HTH", "JH7H",   "", "JH")]
+        [DataRow("7H8H", "QHTH",   "", "QH")]
+        [DataRow("7H8H", "QHTH", "JH", "TH")]
+        public void PlayHighFrom3rdSeat(string trick, string hand, string cardsTaken, string card)
         {
             var players = new[]
             {
                 new TestPlayer(1, hand),
                 new TestPlayer(5),
-                new TestPlayer(1),
+                new TestPlayer(1, cardsTaken: cardsTaken),
                 new TestPlayer(5)
             };
 

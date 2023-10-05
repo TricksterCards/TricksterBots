@@ -495,7 +495,7 @@ namespace Trickster.Bots
                         if (IsCardHigh(highCard, cardsPlayed))
                             suggestion = highCard;
 
-                        //  in next-to-last seat in a partnership game, play our highest card if better than what's currently winning
+                        //  in next-to-last seat in a partnership game, play our highest card (but lowest equivalent) if better than what's currently winning
                         //  (and not effectively the same as partner's card)
                         else if (IsPartnership && trick.Count == players.Count - 2 && RankSort(highCard) > RankSort(cardTakingTrick))
                         {
