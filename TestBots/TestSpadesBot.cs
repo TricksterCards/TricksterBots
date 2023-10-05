@@ -273,14 +273,18 @@ namespace TestBots
         [DataRow( 1, "2C3C4C5C6C7C8C 2D3D4D5D6D  AS", -1, 0, DisplayName = "Bid 1 instead of Nil with no pass")]
         [DataRow( 0, "2C3C4C5C6C7C8C 2D3D4D5D6D  AS", -1, 1, DisplayName = "Bid Nil instead of 1 with 1-card pass")]
         [DataRow( 2, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 0, DisplayName = "Bid 2 without a pass")]
-        [DataRow( 2, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 1, DisplayName = "Bid 2 with only a 1-card pass")]
+        [DataRow( 2, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 1, DisplayName = "Bid 2 with only 1-card pass")]
         [DataRow( 0, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 2, DisplayName = "Bid Nil instead of 2 with 2-card pass")]
         [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 0, DisplayName = "Bid 4 without a pass")]
-        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 1, DisplayName = "Bid 4 with only a 1-card pass")]
-        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 2, DisplayName = "Bid 4 with only a 2-card pass")]
+        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 1, DisplayName = "Bid 4 with only 1-card pass")]
+        [DataRow( 5, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 2, DisplayName = "Bid 5 instead of 4 with 2-card pass if partner hasn't bid yet")]
+        [DataRow( 5, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS",  0, 2, DisplayName = "Bid 5 instead of 4 with 2-card pass if partner bid Nil")]
+        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS",  3, 2, DisplayName = "Bid 4 with 2-card pass if partner bid non-Nil")]
         [DataRow( 0, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 4, DisplayName = "Bid Nil instead of 4 with 4-card pass")]
         [DataRow( 0, "2C3C4C 2D3DAD 2H3H4H ASKSQS3S", -1, 4, DisplayName = "Bid Nil instead of 4 with 4-card pass (case 2)")]
-        [DataRow( 5, "2C3C4C5C6C 2D3D4DAD  ASKSQSJS", -1, 4, DisplayName = "Bid 5 instead of Nil with 4-card pass")]
+        [DataRow( 6, "2C3C4C 2D3DAD 2H3H4H ASKSQS3S",  0, 4, DisplayName = "Bid 6 instead of 4 with 4-card pass if partner bid Nil")]
+        [DataRow( 7, "2C3C4C5C6C 2D3D4DAD  ASKSQSJS", -1, 4, DisplayName = "Bid 7 instead of 5 with 4-card pass if partner hasn't bid yet")]
+        [DataRow( 5, "2C3C4C5C6C 2D3D4DAD  ASKSQSJS",  5, 4, DisplayName = "Bid 5 with 4-card pass if partner bid non-Nil")]
         public void TestBids(int bid, string handStr, int partnerBid, int nilPass)
         {
             Assert.AreEqual(bid, GetSuggestedBid(handStr, out var hand, partnerBid, new SpadesOptions { nilPass = nilPass }),

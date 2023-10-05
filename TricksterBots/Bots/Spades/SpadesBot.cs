@@ -208,13 +208,17 @@ namespace Trickster.Bots
             var est = EstimatedTricks(hand);
 
             //  try to bid Nil if the biddable bids include Nil and partner didn't already bid nil
+            var partner = players.PartnerOf(player);
+            var partnerBidNil = partner != null && partner.Bid != BidBase.NoBid && new SpadesBid(partner.Bid).IsNil;
             if (biddableBids.Any(b => new SpadesBid(b).IsNil))
             {
-                var partner = players.PartnerOf(player);
-                var partnerBidNil = partner != null && partner.Bid != BidBase.NoBid && new SpadesBid(partner.Bid).IsNil;
                 if (!partnerBidNil && TryNilBid(hand, est, out var bid))
                     return bid;
             }
+
+            if ((partnerBidNil || partner?.Bid == BidBase.NoBid) && options.nilPass > 1)
+                // ReSharper disable once PossibleLossOfFraction
+                est += options.nilPass / 2;
 
             if (options.variation == SpadesVariation.Whiz)
             {
@@ -231,8 +235,7 @@ namespace Trickster.Bots
             var maxBid = options.tenForTwoHundred ? Math.Min(10, MaxTricks) : MaxTricks;
             if (IsPartnership)
             {
-                var partner = players.PartnerOf(player);
-                if (partner.Bid != BidBase.NoBid)
+                if (partner != null && partner.Bid != BidBase.NoBid)
                     maxBid -= (new SpadesBid(partner.Bid).Tricks);
             }
 
