@@ -66,6 +66,10 @@ namespace Trickster.Bots
                 if (opponentsBids.Any(b => b.IsContractor && b.Suit == suit))
                     tricksBySuit[suit] = 0;
 
+                //  avoid NT without the Joker (unless a partner has bid it)
+                else if (suit == Suit.Unknown && !hasJoker && !partnersBids.Any(b => b.IsContractor && b.Suit == suit))
+                    tricksBySuit[suit] = 0;
+
                 //  if any partner bid a suit, add our tricks to theirs (minus the two they expect from us)
                 else if (partnersBids.Any(b => b.IsContractor && b.Suit == suit) && !(playerLastBid.IsContractor && playerLastBid.Suit == suit))
                     tricksBySuit[suit] += partnersBids.Last(b => b.IsContractor && b.Suit == suit).Tricks - defaultPartnerTricks;
