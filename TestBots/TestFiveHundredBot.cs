@@ -20,12 +20,16 @@ namespace TestBots
         };
 
         [TestMethod]
-        [DataRow("6NT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian)]
-        [DataRow("iNT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.American)]
-        [DataRow("6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian)]
-        [DataRow("9♠", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.American)]
-        public void Bid6NtWithJoker(string bid, string hand, FiveHundredVariation variation)
+        [DataRow( "6NT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker in Australian (weak hand)")]
+        [DataRow( "iNT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.American,           null, DisplayName = "Bid iNT in American")]
+        [DataRow( "6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker in Australian (strong hand)")]
+        [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,         null, DisplayName = "Don't bid any NT without Joker in Australian (if partner hasn't bid)")]
+        [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,  Suit.Spades, DisplayName = "Don't bid any NT without Joker in Australian (if partner didn't bid NT)")]
+        [DataRow( "7NT", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian, Suit.Unknown, DisplayName = "Bid 7NT without Joker if strong in NT and partner bid 6NT")]
+        [DataRow(  "9♠", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.American,           null, DisplayName = "Bid natural instead of iNT in American with Joker")]
+        public void Bid6NtWithJoker(string bid, string hand, FiveHundredVariation variation, Suit? partnerBidSuit)
         {
+            var partnerBid = !partnerBidSuit.HasValue ? BidBase.NoBid : new FiveHundredBid(partnerBidSuit.Value, 6);
             var options = new FiveHundredOptions
             {
                 variation = variation,
@@ -35,15 +39,15 @@ namespace TestBots
             {
                 new TestPlayer(hand: hand, seat: 0),
                 new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 1),
-                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 2),
-                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 3)
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 2, bid: partnerBid),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 3, bid: BidBase.Pass)
             };
             var bot = GetBot(Suit.Unknown, options);
             var bidState = new SuggestBidState<FiveHundredOptions>
             {
                 dealerSeat = 3,
                 hand = new Hand(players[0].Hand),
-                legalBids = GetLegalBids(variation),
+                legalBids = GetLegalBids(variation, partnerBidSuit.HasValue ? 7 : 6),
                 options = options,
                 player = players[0],
                 players = players
