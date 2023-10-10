@@ -37,7 +37,7 @@ namespace Trickster.Bots
             }
         }
         
-        private double EstimatedTricks(Hand hand)
+        public double EstimatedTricks(Hand hand)
         {
             var est = 0.0;
             var noJokers = DeckType != DeckType.SpadesWithJokers;
