@@ -31,9 +31,21 @@ namespace TricksterBots.Bots.Bridge
             return new BidRule[] {
                 // TODO: What is the level of interference we can take
                 DefaultPartnerBids(new Bid(4, Suit.Unknown), Advance.FirstBid), 
-                Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(6, 11)),
-                Nonforcing(1, Suit.Hearts, Points(Overcall1Level), Shape(6, 11)),
-                Nonforcing(1, Suit.Spades, Points(Overcall1Level), Shape(6, 11)),
+
+
+                // Weak overcall takes precedence if good suit and low points
+				Nonforcing(2, Suit.Diamonds, Jump(1), CueBid(false), Points(OvercallWeak2Level), Shape(6), GoodSuit()),
+				Nonforcing(2, Suit.Hearts, Jump(1), CueBid(false), Points(OvercallWeak2Level), Shape(6), GoodSuit()),
+				Nonforcing(2, Suit.Spades, Jump(1), CueBid(false), Points(OvercallWeak2Level), Shape(6), GoodSuit()),
+
+				Nonforcing(3, Suit.Clubs, Jump(1), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
+				Nonforcing(3, Suit.Diamonds, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
+				Nonforcing(3, Suit.Hearts, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
+				Nonforcing(3, Suit.Spades, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
+
+				Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(6, 11)),
+				Nonforcing(1, Suit.Hearts, Points(Overcall1Level), Shape(6, 11)),
+				Nonforcing(1, Suit.Spades, Points(Overcall1Level), Shape(6, 11)),
 
                 // TODO: May want to consider more rules for 1-level overcall.  If you have 10 points an a crummy suit for example...
                 Nonforcing(1, Suit.Diamonds, Points(Overcall1Level), Shape(5), GoodSuit()),
@@ -44,20 +56,9 @@ namespace TricksterBots.Bots.Bridge
                 // TODO: NT Overcall needs to have suit stopped...
 
                 Nonforcing(2, Suit.Clubs, CueBid(false), Points(OvercallStrong2Level), Shape(5, 11)),
-
                 Nonforcing(2, Suit.Diamonds, Jump(0), CueBid(false), Points(OvercallStrong2Level), Shape(5, 11)),
-                Nonforcing(2, Suit.Diamonds, Jump(1), CueBid(false), Points(OvercallWeak2Level), Shape(6), GoodSuit()),
-
                 Nonforcing(2, Suit.Hearts, Jump(0), CueBid(false), Points(OvercallStrong2Level), Shape(5, 11)),
-                Nonforcing(2, Suit.Hearts, Jump(1), CueBid(false), Points(OvercallWeak2Level), Shape(6), GoodSuit()),
-
                 Nonforcing(2, Suit.Spades, Jump(0), CueBid(false), Points(OvercallStrong2Level), Shape(5, 11)),
-                Nonforcing(2, Suit.Spades, Jump(1), CueBid(false), Points(OvercallWeak2Level), Shape(6), GoodSuit()),
-
-                Nonforcing(3, Suit.Clubs, Jump(1), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
-				Nonforcing(3, Suit.Diamonds, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
-				Nonforcing(3, Suit.Hearts, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
-				Nonforcing(3, Suit.Spades, Jump(1, 2), CueBid(false), Points(OvercallWeak3Level), Shape(7), DecentSuit()),
 
 
             };
@@ -65,21 +66,26 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-       
 
-       
+
+        private static (int, int) SupportAdvancer = (12, 17);
 
         public static IEnumerable<BidRule> Rebid(PositionState _)
         {
             return new BidRule[] {
                 DefaultPartnerBids(new Bid(4, Suit.Hearts), Advance.Rebid),
 
+                Nonforcing(2, Suit.Hearts, Rebid(false), Fit(), Jump(0), Points(SupportAdvancer), ShowsTrump()),
+                Nonforcing(2, Suit.Spades, Rebid(false), Fit(), Jump(0), Points(SupportAdvancer), ShowsTrump()),
+                Nonforcing(3, Suit.Clubs, Rebid(false), Fit(), Jump(0), Points(SupportAdvancer), ShowsTrump()),
+                Nonforcing(3, Suit.Diamonds, Rebid(false), Fit(), Jump(0), Points(SupportAdvancer), ShowsTrump()),
+                Nonforcing(3, Suit.Hearts, Rebid(false), Fit(), Jump(0), Points(SupportAdvancer), ShowsTrump()),
+                Nonforcing(3, Suit.Spades, Rebid(false), Fit(), Jump(0), Points(SupportAdvancer), ShowsTrump()),
 
-                // TODO: NEED TO FORMALIZE THE POINT RANGES... FOR NOW JUST LOOK AT 3-LEVEL BIDS
-                Nonforcing(3, Suit.Clubs, Fit(), PairPoints((24, 25)), ShowsTrump()),
-                Nonforcing(3, Suit.Diamonds, Fit(), PairPoints((24, 25)), ShowsTrump()),
-                Nonforcing(3, Suit.Hearts, Fit(), PairPoints((24, 25)), ShowsTrump()),
-                Nonforcing(3, Suit.Spades, Fit(), PairPoints((24, 25)), ShowsTrump()),
+               
+                // TODO: Pass if appropriate
+                // TODO: Rebid 6+ card suit if appropriate
+                // TODO: Bid some level of NT if appropriate...
 
                 Signoff(3, Suit.Unknown, OppsStopped(), OppsStopped(), PairPoints((25, 30)) )
 

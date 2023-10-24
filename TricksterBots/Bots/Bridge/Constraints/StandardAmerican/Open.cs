@@ -26,6 +26,9 @@ namespace TricksterBots.Bots.Bridge
         public static (int, int) Maximum = (19, 21);
 
 
+		public static (int, int) PairGameInvite = (23, 24);
+		public static (int, int) PairGame = (25, 31);
+
         public static new BidChoices GetBidChoices(PositionState ps)
         {
             var choices = new BidChoices(ps);
@@ -87,18 +90,17 @@ namespace TricksterBots.Bots.Bridge
 			};
 		}
 
+		// ***** REBID ROUND 1
 
-        public static IEnumerable<BidRule> Rebid(PositionState ps)
+        public static IEnumerable<BidRule> RebidPartnerChangedSuits(PositionState ps)
 		{
 			var bids = new List<BidRule>()
 			{
 				DefaultPartnerBids(Bid.Double, Respond.Rebid),
 
-				// TODO: These seem silly.  Especially diamonds...
-				Nonforcing(1, Suit.Diamonds, Shape(4, 11)),
-				Nonforcing(1, Suit.Hearts, Shape(4, 11)),
-				Nonforcing(1, Suit.Spades, Shape(4, 11)),
-
+				//Nonforcing(1, Suit.Diamonds, Shape(4, 11)),
+				Nonforcing(1, Suit.Hearts, Shape(4)),
+				Nonforcing(1, Suit.Spades, Shape(4)),
 
 
 				// Responder changed suits and we have a fit.  Support at appropriate level.
@@ -153,7 +155,37 @@ namespace TricksterBots.Bots.Bridge
 			return bids;
 		}
 
+		public static IEnumerable<BidRule> RebidPartnerBidNT(PositionState ps, int level)
+		{
+			return RebidPartnerChangedSuits(ps);
+			// TODO: Do something more here
+		}
 
+
+		public static IEnumerable<BidRule> RebidPartnerRaisedMinor(PositionState ps)
+		{
+			// TODO: More to do here...
+			return Compete.CompBids(ps);
+		}
+
+		public static IEnumerable<BidRule> RebidPartnerRaisedMajor(PositionState ps)
+		{
+			var bids = new List<BidRule>()
+			{
+				PartnerBids(3, Suit.Hearts, new Bid(4, Suit.Diamonds), Respond.OpenerInvitedGame),
+				PartnerBids(2, Suit.Spades, new Bid(4, Suit.Hearts), Respond.OpenerInvitedGame),
+
+				Nonforcing(3, Suit.Hearts, Fit(), ShowsTrump(), PairPoints(PairGameInvite)),
+				Nonforcing(3, Suit.Spades, Fit(), ShowsTrump(), PairPoints(PairGameInvite)),
+
+                Nonforcing(4, Suit.Hearts, Fit(), ShowsTrump(), PairPoints(PairGame)),
+				Nonforcing(4, Suit.Spades, Fit(), ShowsTrump(), PairPoints(PairGame)),
+
+            };
+			// Competative bids include Blackwood...
+			bids.AddRange(Compete.CompBids(ps));
+			return bids;
+		}
 
 	}
 }

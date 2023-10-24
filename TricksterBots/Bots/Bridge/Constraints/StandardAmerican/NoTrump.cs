@@ -12,202 +12,204 @@ using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
+using static TricksterBots.Bots.Bridge.NoTrumpDescription;
 
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class OneNoTrumpBidder : Bidder
+
+    public class NoTrumpDescription : Bidder
     {
-        public enum NTType { Open1NT, Overcall1NT, Balancing1NT }
-        public enum OpenerRange { Open, DontAcceptInvite, AcceptInvite, LessThanSuperAccept, SuperAccept }
-        public enum ResponderRange { LessThanInvite, Invite, InviteOrBetter, Game, GameOrBetter, GameIfSuperAccept, SmallSlam }
-
-        private static Dictionary<OpenerRange, Constraint> Open1NTPoints = new Dictionary<OpenerRange, Constraint>
+        public struct OpenerRanges
         {
-            { OpenerRange.Open, And(HighCardPoints(15, 17), Points(15, 18)) },
-            { OpenerRange.DontAcceptInvite, And(HighCardPoints(15, 15), Points(15, 16)) },
-            { OpenerRange.AcceptInvite, And(HighCardPoints(16, 17), Points(16, 18)) },
-            { OpenerRange.LessThanSuperAccept, And(HighCardPoints(15, 16), Points(15, 17)) },
-            { OpenerRange.SuperAccept, And(HighCardPoints(17, 17), Points(17, 18)) }
-        };
-
-
-        private static Dictionary<ResponderRange, Constraint> Respond1NTPoints = new Dictionary<ResponderRange, Constraint>
+            public Constraint Open;
+            public Constraint DontAcceptInvite;
+            public Constraint AcceptInvite;
+            public Constraint LessThanSuperAccept;
+            public Constraint SuperAccept;
+        }
+        public struct ResponderRanges
         {
-            { ResponderRange.LessThanInvite, Points(0, 8) },
-            { ResponderRange.Invite, Points(8, 9) },
-            { ResponderRange.InviteOrBetter, HighCardPoints(8, 40) },
-            { ResponderRange.Game, Points(10, 15) },
-            { ResponderRange.GameOrBetter, Points(10, 100) },  
-            { ResponderRange.GameIfSuperAccept, Points(6, 15) },
-            { ResponderRange.SmallSlam, Points(18, 19) }
-        };
-        // TODO: Need to incorporate the "OR" thingie...
-        /*
-        private static Dictionary<ResponderRange, Constraint> Respond1NTPoints = new Dictionary<ResponderRange, Constraint>
-        {
-            { ResponderRange.LessThanInvite, Points(0, 7) },
-            { ResponderRange.Invite, Points(8, 9) },
-            { ResponderRange.InviteOrBetter, Points(8, 40) },
-            { ResponderRange.Game, Points(10, 15) },
-            { ResponderRange.GameOrBetter, Points(10, 40) },
-            { ResponderRange.GameIfSuperAccept, Points(6, 20) }
-        };
-        */
-        private static Dictionary<OpenerRange, Constraint> Overcall1NTPoints = new Dictionary<OpenerRange, Constraint>
-        {
-            { OpenerRange.Open, And(HighCardPoints(15, 18), Points(15, 19)) },
-            { OpenerRange.DontAcceptInvite, And(HighCardPoints(15, 15), Points(15, 16)) },
-            { OpenerRange.AcceptInvite, And(HighCardPoints(16, 18), Points(16, 19)) },
-            { OpenerRange.LessThanSuperAccept, And(HighCardPoints(15, 16), Points(15, 17)) },
-            { OpenerRange.SuperAccept, And(HighCardPoints(17, 18), Points(17, 19)) }
-        };
 
-        private static Dictionary<ResponderRange, Constraint> Advance1NTPoints = new Dictionary<ResponderRange, Constraint>
-        {
-            { ResponderRange.LessThanInvite, And(HighCardPoints(0, 7), Points(0, 8)) },
-            { ResponderRange.Invite, And(HighCardPoints(8, 9), Points(8, 10)) },
-            { ResponderRange.InviteOrBetter, And(HighCardPoints(8, 40), Points(8, 100)) },
-            { ResponderRange.Game, And(HighCardPoints(10, 15), Points(10, 15)) },
-            { ResponderRange.GameOrBetter, And(HighCardPoints(10, 40), Points(10, 40)) },
-            { ResponderRange.GameIfSuperAccept, And(HighCardPoints(6, 20), Points(6, 20)) },
-            { ResponderRange.SmallSlam, Points(18, 19) }
-        };
+            public Constraint LessThanInvite;
+            public Constraint InviteGame;
+            public Constraint InviteOrBetter;
+            public Constraint Game;
+            public Constraint GameOrBetter;
+            public Constraint GameIfSuperAccept;
+            public Constraint InviteSlam;
+            public Constraint SmallSlam;
+            public Constraint GrandSlam;
 
-
-        private static Dictionary<OpenerRange, Constraint> BalancingOvercall1NTPoints = new Dictionary<OpenerRange, Constraint>
-        {
-            { OpenerRange.Open, And(HighCardPoints(13, 15), Points(13, 16)) },
-            { OpenerRange.DontAcceptInvite, And(HighCardPoints(15, 15), Points(15, 16)) },
-            { OpenerRange.AcceptInvite, And(HighCardPoints(16, 18), Points(16, 19)) },
-            // We never want to super accept so make the superAccept range huge and the less than range cover everything...
-            { OpenerRange.LessThanSuperAccept, And(HighCardPoints(13, 15), Points(13, 16)) },
-            { OpenerRange.SuperAccept, And(HighCardPoints(40, 40), Points(40, 40)) }
-        };
-
-
-        private static Dictionary<ResponderRange, Constraint> BalancingAdvance1NTPoints = new Dictionary<ResponderRange, Constraint>
-        {
-            { ResponderRange.LessThanInvite, And(HighCardPoints(0, 9), Points(0, 10)) },
-            { ResponderRange.Invite, And(HighCardPoints(10, 11), Points(10, 12)) },
-            { ResponderRange.InviteOrBetter, And(HighCardPoints(10, 40), Points(10, 100)) },
-            { ResponderRange.Game, And(HighCardPoints(12, 15), Points(12, 15)) },
-            { ResponderRange.GameOrBetter, And(HighCardPoints(12, 40), Points(12, 40)) },
-            // Balancing 1NT does not super accept so make these values impossible
-            { ResponderRange.GameIfSuperAccept, And(HighCardPoints(40, 40), Points(40, 40)) },
-            { ResponderRange.SmallSlam, Points(40, 40) }  // This can't happen - we're a passed hand
-        };
-
-
-        private static Dictionary<NTType, Dictionary<OpenerRange, Constraint>> openerRanges = new Dictionary<NTType, Dictionary<OpenerRange, Constraint>>
-        {
-            { NTType.Open1NT, Open1NTPoints },
-            { NTType.Overcall1NT, Overcall1NTPoints },
-            { NTType.Balancing1NT, BalancingOvercall1NTPoints }
-        };
-
-        private static Dictionary<NTType, Dictionary<ResponderRange, Constraint>> responderRanges = new Dictionary<NTType, Dictionary<ResponderRange, Constraint>>
-        {
-            { NTType.Open1NT, Respond1NTPoints },
-            { NTType.Overcall1NT, Advance1NTPoints },
-            { NTType.Balancing1NT, BalancingAdvance1NTPoints }
-        };
-
-        public NTType OpenType { get; private set; }
-
-        public OneNoTrumpBidder(NTType type)
-        {
-            this.OpenType = type;
+            public Constraint GameAsDummy;
+            public Constraint InviteAsDummy;
         }
 
-        public Constraint Points(OpenerRange range)
-        {
-            return openerRanges[OpenType][range];
-        }
+        public String OpenType;
 
-        public Constraint Points(ResponderRange range)
-        {
-            return responderRanges[OpenType][range];
-        }
+        public OpenerRanges OR;
+        public ResponderRanges RR;
 
-        public Constraint DummyPoints(ResponderRange range)
-        {
-            // TODO: THIS IS ALL MESSED UP - FIX IT!!!  
-            // TODO: Clean up.  Make a table
-            if (range == ResponderRange.Invite) return DummyPoints(8, 9);
-            if (range == ResponderRange.InviteOrBetter) return DummyPoints(8, 15);
-            if (range == ResponderRange.Game) return DummyPoints(10,  100);
-            Debug.Fail("Should never get to here - Range not supported");
-            return DummyPoints(0, 0);
-        }
+    }
 
-        public static BidRule[] GetOpenRules(PositionState ps)
+    public class Open1NTDescription : NoTrumpDescription
+    {
+        public Open1NTDescription()
         {
-            return new OneNoTrumpBidder(NTType.Open1NT)._GetOpenRules(ps);
-        }
+            OpenType = "Open1NT";
+            
+            OR.Open = And(HighCardPoints(15, 17), Points(15, 18));
+            
+            OR.DontAcceptInvite = And(HighCardPoints(15, 15), Points(15, 16));
+            OR.AcceptInvite = And(HighCardPoints(16, 17), Points(16, 18));
+            OR.LessThanSuperAccept = And(HighCardPoints(15, 16), Points(15, 17));
+            OR.SuperAccept = And(HighCardPoints(17, 17), Points(17, 18));
+           
 
-        public static BidRule[] GetOvercallRules(PositionState ps)
-        {
-            return new OneNoTrumpBidder(NTType.Overcall1NT)._GetOvercallRules(ps);
-        }
+            RR.LessThanInvite = Points(0, 7);
+            RR.InviteGame = Points(8, 9);
+            RR.InviteOrBetter = Points(8, 40);
+            RR.Game = Points(10, 15);
+            RR.GameOrBetter = Points(10, 40);
+            RR.GameIfSuperAccept = Points(6, 15);
+            RR.InviteSlam = Points(16, 17);
+            RR.SmallSlam = Points(18, 19);
+            RR.GrandSlam = Points(20, 40);
 
-        public static BidRule[] GetBalancingRules(PositionState ps)
-        {
-            // TODO: This is not exactly right.  Actual rules should specify that opps suit is stopped.  Does not need to be balanced, but helps.
-            // TODO: Anyway, this needs to be rethought...
-            return new OneNoTrumpBidder(NTType.Balancing1NT)._GetBalancingRules(ps);
+            // TODO: This dummy stuff seems poorly thought out.  Perhaps just plain old points...
+            RR.GameAsDummy = DummyPoints(10, 15);
+            RR.InviteAsDummy = DummyPoints(8, 9);
         }
+    }
 
-        public BidRule[] _GetOpenRules(PositionState ps)
-        {
-            return new BidRule[]
-            {
-                PartnerBids(1, Suit.Unknown, GoodThrough(ps, OpenType.ToString()), ConventionalResponses),
-                Nonforcing(1, Suit.Unknown, Points(OpenerRange.Open), Balanced())
-            };
-        }
+	public class Overcall1NTDescription : NoTrumpDescription
+	{
+		public Overcall1NTDescription()
+		{
+			OpenType = "Overcall1NT";
 
-        public BidRule[] _GetOvercallRules(PositionState ps)
-        {
-            // TODO: Add stopped contract.Suit
-            if (ps.BiddingState.Contract.PassEndsAuction)
-            {
-                return new BidRule[0];
-            }
-            return new BidRule[]
-            {
-                PartnerBids(1, Suit.Unknown, GoodThrough(ps, OpenType.ToString()), ConventionalResponses),
-                // TODO: Perhaps more rules here for balancing but for now this is fine -- Balanced() is not necessary
-                Nonforcing(1, Suit.Unknown, Points(OpenerRange.Open), Balanced(), OppsStopped(), PassEndsAuction(false))
-            };
-        }
+			OR.Open =               And(HighCardPoints(15, 18), Points(15, 19));
+			OR.DontAcceptInvite =   And(HighCardPoints(15, 15), Points(15, 16));
+			OR.AcceptInvite =       And(HighCardPoints(16, 18), Points(16, 19));
+			OR.LessThanSuperAccept= And(HighCardPoints(15, 16), Points(15, 17));
+			OR.SuperAccept =        And(HighCardPoints(18, 19), Points(18, 20));
 
-        public BidRule[] _GetBalancingRules(PositionState ps)
+
+			RR.LessThanInvite =     Points(0, 7);
+			RR.InviteGame =         Points(8, 9);
+			RR.InviteOrBetter =     Points(8, 40);
+			RR.Game =               Points(10, 15);
+			RR.GameOrBetter =       Points(10, 40);
+			RR.GameIfSuperAccept =  Points(6, 15);
+            RR.InviteSlam =         Points(16, 17);
+			RR.SmallSlam =          Points(18, 19);
+			RR.GrandSlam =          Points(20, 40);
+
+			RR.GameAsDummy = DummyPoints(10, 15);
+			RR.InviteAsDummy = DummyPoints(8, 9);
+
+		}
+	}
+
+
+	public class Balancing1NTDescription : NoTrumpDescription
+	{
+		public Balancing1NTDescription()
+		{
+			OpenType = "Balancing1NT";
+
+			OR.Open = And(HighCardPoints(13, 15), Points(13, 16));
+			OR.DontAcceptInvite = And(HighCardPoints(13, 14), Points(13, 15));
+			OR.AcceptInvite = And(HighCardPoints(15, 15), Points(15, 16));
+            OR.LessThanSuperAccept = HighCardPoints(13, 15);    // NEVER super accept...
+            OR.SuperAccept = HighCardPoints(40, 40);            // NEVER super accept
+
+
+
+
+            // TODO: Review all of the balancing ranges..  They seem busted...
+
+            RR.LessThanInvite = Points(0, 10);
+            RR.InviteGame = Points(11, 12);
+			RR.InviteOrBetter = Points(11, 40);
+
+            // ALL OF THE FOLLOWINg WILL NEVER HAPPEN - PASSED HAND IMPOSSIBLE ....
+			RR.Game = Points(13, 15);
+			RR.GameOrBetter = Points(10, 40);
+            RR.GameIfSuperAccept = Points(40, 40);
+			RR.InviteSlam = Points(40, 40);
+			RR.SmallSlam = Points(40, 40);
+			RR.GrandSlam = Points(40, 40);
+
+			RR.GameAsDummy = DummyPoints(13, 15);
+			RR.InviteAsDummy = DummyPoints(11, 12);
+
+		}
+	}
+
+
+	public class OneNoTrumpBidder : Bidder
+    {
+
+		public static OneNoTrumpBidder Open = new OneNoTrumpBidder(new Open1NTDescription());
+        public static OneNoTrumpBidder Overcall = new OneNoTrumpBidder(new Overcall1NTDescription());
+        public static OneNoTrumpBidder Balancing = new OneNoTrumpBidder(new Balancing1NTDescription());
+
+
+        public NoTrumpDescription NTD;
+        
+        protected OneNoTrumpBidder(NoTrumpDescription ntd)
+        { 
+            NTD = ntd;
+        }  
+
+        public IEnumerable<BidRule> Bids(PositionState ps)
         {
-            if (ps.BiddingState.Contract.PassEndsAuction)
+            if (ps.Role == PositionRole.Opener && ps.RoleRound == 1)
             {
                 return new BidRule[]
                 {
-                    PartnerBids(1, Suit.Unknown, GoodThrough(ps, OpenType.ToString()), ConventionalResponses),
-                    // TODO: Perhaps more rules here for balancing but for now this is fine -- Balanced() is not necessary
-                    Nonforcing(1, Suit.Unknown, Points(OpenerRange.Open), PassEndsAuction(true))
+                    PartnerBids(1, Suit.Unknown, Call.Double, ConventionalResponses),
+                    Nonforcing(1, Suit.Unknown, NTD.OR.Open, Balanced())
                 };
             }
+            if (ps.Role == PositionRole.Overcaller && ps.RoleRound == 1)
+            {
+				if (ps.BiddingState.Contract.PassEndsAuction && NTD.OpenType == "Balancing1NT")
+				{
+                    return new BidRule[]
+                    {
+                        PartnerBids(1, Suit.Unknown, Call.Double, ConventionalResponses),
+                        // TODO: Perhaps more rules here for balancing but for now this is fine -- Balanced() is not necessary
+                        Nonforcing(1, Suit.Unknown, NTD.OR.Open, PassEndsAuction(true))
+                    };
+				}
+                else if (NTD.OpenType == "Overcall1NT")
+                {
+                    return new BidRule[]
+                    {
+                        PartnerBids(1, Suit.Unknown, Call.Double, ConventionalResponses),
+                        Nonforcing(1, Suit.Unknown, NTD.OR.Open, Balanced(), OppsStopped(), PassEndsAuction(false))
+                    };
+                }
+			}
             return new BidRule[0];
-        }
+		}
 
 
         // If this 
         private BidChoices ConventionalResponses(PositionState ps)
         {
             var choices = new BidChoices(ps);
-            choices.AddRules(StaymanBidder.InitiateConvention(OpenType));
-            choices.AddRules(TransferBidder.InitiateConvention(OpenType));
-            choices.AddRules(Natural1NT.Respond(OpenType));
+            choices.AddRules(StaymanBidder.InitiateConvention(NTD));
+            choices.AddRules(TransferBidder.InitiateConvention(NTD));
+            choices.AddRules(Gerber.InitiateConvention(ps));
+            choices.AddRules(Natural1NT.Respond(NTD));
             return choices;
         }
 
     }
+
 
     public class NoTrump : Bidder
     {
@@ -216,19 +218,21 @@ namespace TricksterBots.Bots.Bridge
         {
             var bids = new List<BidRule>();
 
-            bids.AddRange(OneNoTrumpBidder.GetOpenRules(ps));
-            bids.AddRange(TwoNoTrumpBidder.GetOpenRules(ps));
+            bids.AddRange(OneNoTrumpBidder.Open.Bids(ps));
+            bids.AddRange(TwoNoTrump.Open.Bids(ps));
 
             return bids;
         }
+
+
         public static IEnumerable<BidRule> StrongOvercall(PositionState ps)
         {          
-            return OneNoTrumpBidder.GetOvercallRules(ps);
+            return OneNoTrumpBidder.Overcall.Bids(ps);
         }
 
         public static IEnumerable<BidRule> BalancingOvercall(PositionState ps)
         {
-            return OneNoTrumpBidder.GetBalancingRules(ps);
+            return OneNoTrumpBidder.Balancing.Bids(ps);
         }
 
       
@@ -238,13 +242,13 @@ namespace TricksterBots.Bots.Bridge
 
     public class Natural1NT : OneNoTrumpBidder
     {
-        public Natural1NT(NTType type) : base(type)
+        public Natural1NT(NoTrumpDescription ntd) : base(ntd)
         {
         }
 
-        public static IEnumerable<BidRule> Respond(NTType type)
+        public static IEnumerable<BidRule> Respond(NoTrumpDescription ntd)
         {
-            return new Natural1NT(type).NaturalResponse();
+            return new Natural1NT(ntd).NaturalResponse();
         }
 
 
@@ -255,21 +259,23 @@ namespace TricksterBots.Bots.Bridge
             {
 
                 DefaultPartnerBids(Bid.Pass, OpenerRebid),
-                Signoff(2, Suit.Clubs, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
-                Signoff(2, Suit.Diamonds, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
-                Signoff(2, Suit.Hearts, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
-                Signoff(2, Suit.Spades, Shape(5, 11), Points(ResponderRange.LessThanInvite)),
+                Signoff(2, Suit.Clubs, Shape(5, 11), NTD.RR.LessThanInvite),
+                Signoff(2, Suit.Diamonds, Shape(5, 11), NTD.RR.LessThanInvite),
+                Signoff(2, Suit.Hearts, Shape(5, 11), NTD.RR.LessThanInvite),
+                Signoff(2, Suit.Spades, Shape(5, 11), NTD.RR.LessThanInvite),
 
-                Invitational(2, Suit.Unknown, Break(true, "2NT"), Points(ResponderRange.Invite), LongestMajor(4)),
+                Invitational(2, Suit.Unknown, NTD.RR.InviteGame, LongestMajor(4)),
                 // TODO: These natural bids are not exactly right....
-                Forcing(3, Suit.Hearts, Points(ResponderRange.GameOrBetter), Shape(5, 11)),
-                Forcing(3, Suit.Spades, Points(ResponderRange.GameOrBetter), Shape(5, 11)),
-                Signoff(3, Suit.Unknown, Points(ResponderRange.Game), LongestMajor(4)),
+                Forcing(3, Suit.Hearts, NTD.RR.GameOrBetter, Shape(5, 11)),
+                Forcing(3, Suit.Spades, NTD.RR.GameOrBetter, Shape(5, 11)),
+                Signoff(3, Suit.Unknown, NTD.RR.Game, LongestMajor(4)),
 
-                Signoff(6, Suit.Unknown, Flat(), Points(ResponderRange.SmallSlam)),
-                Signoff(6, Suit.Unknown, Balanced(), Shape(Suit.Hearts, 2, 3), Shape(Suit.Spades, 2, 3), Points(ResponderRange.SmallSlam)),
+                Invitational(4, Suit.Unknown, NTD.RR.InviteSlam), // TODO: Any shape stuff here???
 
-                Signoff(Bid.Pass, Points(ResponderRange.LessThanInvite)),
+                Signoff(6, Suit.Unknown, Flat(), NTD.RR.SmallSlam),
+                Signoff(6, Suit.Unknown, Balanced(), Shape(Suit.Hearts, 2, 3), Shape(Suit.Spades, 2, 3), NTD.RR.SmallSlam),
+
+                Signoff(Bid.Pass, NTD.RR.LessThanInvite),
 
 
             };
@@ -281,16 +287,16 @@ namespace TricksterBots.Bots.Bridge
             {
                 DefaultPartnerBids(Bid.Pass, ResponderRebid),
 
-                Signoff(Bid.Pass, Points(OpenerRange.DontAcceptInvite), Partner(LastBid(2, Suit.Unknown))),
-                Signoff(Bid.Pass, Partner(LastBid(2, Suit.Clubs))),
-                Signoff(Bid.Pass, Partner(LastBid(2, Suit.Diamonds))),
-                Signoff(Bid.Pass, Partner(LastBid(2, Suit.Hearts))),
-                Signoff(Bid.Pass, Partner(LastBid(2, Suit.Spades))),
+                Signoff(Call.Pass, NTD.OR.DontAcceptInvite, Partner(LastBid(2, Suit.Unknown))),
+                Signoff(Call.Pass, Partner(LastBid(2, Suit.Clubs))),
+                Signoff(Call.Pass, Partner(LastBid(2, Suit.Diamonds))),
+                Signoff(Call.Pass, Partner(LastBid(2, Suit.Hearts))),
+                Signoff(Call.Pass, Partner(LastBid(2, Suit.Spades))),
 
-                Forcing(3, Suit.Hearts, Partner(LastBid(2, Suit.Unknown)), Points(OpenerRange.AcceptInvite), Shape(5)),
-                Forcing(3, Suit.Spades, Partner(LastBid(2, Suit.Unknown)), Points(OpenerRange.AcceptInvite), Shape(5)),
+                Forcing(3, Suit.Hearts, Partner(LastBid(2, Suit.Unknown)), NTD.OR.AcceptInvite, Shape(5)),
+                Forcing(3, Suit.Spades, Partner(LastBid(2, Suit.Unknown)), NTD.OR.AcceptInvite, Shape(5)),
 
-                Signoff(3, Suit.Unknown, Points(OpenerRange.AcceptInvite), Partner(LastBid(2, Suit.Unknown))),
+                Signoff(3, Suit.Unknown, NTD.OR.AcceptInvite, Partner(LastBid(2, Suit.Unknown))),
                 Signoff(3, Suit.Unknown, Partner(LastBid(3, Suit.Hearts)), Shape(Suit.Hearts, 0, 2)),
                 Signoff(3, Suit.Unknown, Partner(LastBid(3, Suit.Spades)), Shape(Suit.Spades, 0, 2)),
 
@@ -315,64 +321,5 @@ namespace TricksterBots.Bots.Bridge
     }
 
     // ********************************* MAYBE NEW FILE ********************
-    public class TwoNoTrumpBidder : Bidder
-    {
-        protected static Constraint OpenPoints = And(HighCardPoints(20, 21), Points(20, 22));
-        protected static Constraint RespondNoGame = And(HighCardPoints(0, 4), Points(0, 4));
-        protected static Constraint RespondGame = Points(5, 10);
-        //    public static Constraint RespondGameOrBetter = Points(5, 40);
-
-
-        public static BidRule[] GetOpenRules(PositionState ps)
-        {
-
-            return new BidRule[]
-            {
-                // TODO: Systems on/off through here --- just like 1NT.....
-                PartnerBids(2, Suit.Unknown, Bid.Double, Respond),
-                Nonforcing(2, Suit.Unknown, OpenPoints, Balanced())
-            };
-        }
-
-
-        private static BidChoices Respond(PositionState ps)
-        {
-            // TODO: Make these redirect rules conditional on some global state.  Conditions can be:
-            //  Off
-            //  Pass
-            //  X
-            //  3C
-            // So basically just a condition based on the RHO bid and a global somewhere that has these bid options...
-            var choices = new BidChoices(ps);
-            choices.AddRules(Stayman2NT.InitiateConvention);
-            choices.AddRules(Transfer2NT.InitiateConvention);
-            choices.AddRules(Natural2NT.NaturalResponse);
-            return choices;
-        }
-
-    }
-
-    public class Natural2NT : TwoNoTrumpBidder
-    {
   
-
-        public static IEnumerable<BidRule> NaturalResponse(PositionState ps)
-        {
-            return new BidRule[]
-            {
-                Signoff(Bid.Pass, RespondNoGame),
-
-                // TODO: Perhaps bid BestSuit() of all the signoff suits... 
-                Signoff(3, Suit.Clubs, RespondNoGame, Shape(5, 11), LongestMajor(4)),
-                Signoff(3, Suit.Diamonds, RespondNoGame, Shape(5, 11), LongestMajor(4)),
-                Signoff(3, Suit.Hearts, RespondNoGame, Shape(5, 11)),
-                Signoff(3, Suit.Spades, RespondNoGame, Shape(5, 11)),
-
-                Signoff(3, Suit.Unknown, RespondGame, LongestMajor(4)),
-
-                Signoff(4, Suit.Hearts, RespondGame, Shape(5, 11), BetterThan(Suit.Spades)),
-                Signoff(4, Suit.Spades, RespondGame, Shape(5, 11), BetterOrEqualTo(Suit.Hearts)),
-            };
-         }
-    }
 }

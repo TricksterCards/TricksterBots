@@ -81,7 +81,10 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return _PartnerBids(call, goodThrough, (ps) => { return new BidChoices(ps, brf); }, new Constraint[0]);
 		}
-
+		public static BidRule PartnerBids(Call call, Call goodThrough, BidChoicesFactory choicesFactory)
+		{
+			return _PartnerBids(call, goodThrough, choicesFactory, new Constraint[0]);
+		}
 		private static BidRule _PartnerBids(Call call, Call goodThrough, BidChoicesFactory choicesFactory, params Constraint[] constraints)
 		{
 			return new PartnerBidRule(call, goodThrough, choicesFactory, constraints);
@@ -205,12 +208,12 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint Balanced(bool desired = true) { return new ShowsBalanced(desired); }
 		public static Constraint Flat(bool desired = true) { return new ShowsFlat(desired); }
 
-		public static Constraint LastBid(int level, Suit suit, bool desired = true)
+		public static StaticConstraint LastBid(int level, Suit suit, bool desired = true)
 		{
 			return new BidHistory(0, new Bid(level, suit), desired);
 		}
 
-		public static Constraint Rebid(bool desired = true)
+		public static StaticConstraint Rebid(bool desired = true)
 		{
 			return new BidHistory(0, null, desired);
 		}
@@ -422,6 +425,15 @@ namespace TricksterBots.Bots.Bridge
 			return new PairKeyCards(null, null, count);
 		}
 
+		public static Constraint Kings(params int[] count)
+		{
+			return new Kings(count);
+		}
+
+		public static Constraint PairKings(params int[] count)
+		{
+			return new PairKings(count);
+		}
 
 		public static Constraint CueBid(bool desiredValue = true)
 		{
@@ -454,6 +466,8 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return Fit(8, null, desiredValue);
 		}
+
+
 
 		public static Constraint PairPoints((int Min, int Max) range)
 		{
@@ -500,8 +514,12 @@ namespace TricksterBots.Bots.Bridge
 		}
 
 		public static Constraint Break(bool isStatic, string name)
-		{
-			return new Break(isStatic, name);
+		{	
+			if (isStatic)
+			{
+				return new StaticBreak(name);
+			}
+			return new Break(name);
 		}
 
 
@@ -531,6 +549,15 @@ namespace TricksterBots.Bots.Bridge
 		public static Constraint OppsContract(bool desired = true)
 		{ 
 			return new OppsContract(desired); 
+		}
+		public static StaticConstraint OppsContract(int level)
+		{
+			return new OppsContract(true, level);
+		}
+
+		public static DynamicConstraint RuleOf9()
+		{
+			return new RuleOf9();
 		}
 
 		public static Constraint ConventionOn(string convention)

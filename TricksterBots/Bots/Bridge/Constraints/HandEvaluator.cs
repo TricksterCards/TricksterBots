@@ -77,7 +77,8 @@ namespace TricksterBots.Bots.Bridge
 			hs.ShowIsFlat(BasicBidding.Is4333(counts));
 			int countAces = hand.Count(c => c.rank == Rank.Ace);
             hs.ShowCountAces(new HashSet<int> { countAces });
-			hs.ShowCountKings(hand.Count(c => c.rank == Rank.King));
+			int countKings = hand.Count(c => c.rank == Rank.King);
+			hs.ShowCountKings(new HashSet<int> { countKings });
             foreach (Suit suit in BasicBidding.BasicSuits)
 			{
 				var dp = hcp + AudreyDummyPoints(hand, suit);
@@ -95,6 +96,19 @@ namespace TricksterBots.Bots.Bridge
 				hs.Suits[suit].ShowKeyCards(new HashSet<int> { keyCards });
 				hs.Suits[suit].ShowHaveQueen(hand.Contains(new Card(suit, Rank.Queen)));
 				hs.Suits[suit].ShowStopped(Stopped(hand, suit, c));
+
+				// Compute "rule of 9" score for the suit.  This is the count of cards + count of all cards higher
+				// than 10 in that suit.
+				int rule9 = c;
+				foreach (Card card in hand)
+				{
+					if (card.suit == suit && (card.IsHonorRank || card.rank == Rank.Ten))
+					{
+						rule9++;
+					}
+				}
+				hs.Suits[suit].ShowRuleOf9Points(rule9);
+
 			}
 		}
 	}

@@ -28,13 +28,13 @@ namespace TricksterBots.Bots.Bridge
             if (_showBidSuit &&
                 GetSuit(null, call) is Suit suit)
             {
-                showAgreements.Suits[suit].ShowLongHand(ps);
+                showAgreements.Strains[Call.SuitToStrain(suit)].ShowLongHand(ps);
             }
             if (_suits != null)
             {
                 foreach (var s in _suits)
                 {
-                    showAgreements.Suits[s].ShowLongHand(ps);
+                    showAgreements.Strains[Call.SuitToStrain(s)].ShowLongHand(ps);
                 }
             }
         }

@@ -58,4 +58,36 @@ namespace TricksterBots.Bots.Bridge
 			return false;
 		}
 	}
+
+	public class PairKings : DynamicConstraint
+	{
+		private int[] _count;
+		public PairKings(params int[] count)
+		{
+			_count = count;
+		}
+
+		public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+		{
+			var ourKings = hs.CountKings;
+			var partnerKings = ps.Partner.PublicHandSummary.CountKings;
+			if (ourKings == null)
+			{
+				if (partnerKings == null) return true;   // We know nothing..
+				return _count.Max() >= partnerKings.Min();
+			}
+			if (partnerKings == null)
+			{
+				return _count.Max() >= ourKings.Min();
+			}
+			foreach (var ourCount in ourKings)
+			{
+				foreach (var partnerCount in partnerKings)
+				{
+					if (_count.Contains(ourCount + partnerCount)) return true;
+				}
+			}
+			return false;
+		}
+	}
 }

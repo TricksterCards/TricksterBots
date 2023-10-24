@@ -19,7 +19,7 @@ namespace TricksterBots.Bots.Bridge
         {
             if (GetSuit(_suit, call) is Suit suit)
             {
-                return ps.PairState.Agreements.Suits[suit].LongHand == ps;
+                return ps.PairState.Agreements.Strains[Call.SuitToStrain(suit)].LongHand == ps;
             }
             Debug.Fail("No suit for call in HasShownSuit constraint.");
             return false;

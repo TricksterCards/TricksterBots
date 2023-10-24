@@ -30,6 +30,7 @@ namespace TricksterBots.Bots.Bridge
         {
             var bids = new List<BidRule>();
             bids.AddRange(Blackwood.InitiateConvention(ps));
+            bids.AddRange(Gerber.InitiateConvention(ps));
             bids.AddRange(new BidRule[]
             {
                 // Stilly buy highest priority bids for any hand...
@@ -68,7 +69,7 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(5, Suit.Diamonds, Fit(), PairPoints(CompeteTo5), ShowsTrump()),
 
                 // TODO: Penalty doubles for game contracts.
-                
+                Signoff(Call.Double, OppsContract(), PairPoints((12, 40)), RuleOf9()),
 
                 // TODO: Priority for these???
                 Nonforcing(6, Suit.Clubs, Shape(12)),

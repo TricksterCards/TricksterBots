@@ -12,15 +12,15 @@ namespace TricksterBots.Bots.Bridge
         public class ShowState
         {
             public PairAgreements PairAgreements { get; protected set; }
-            public Dictionary<Suit, SuitAgreements.ShowState> Suits { get; protected set; }
+            public Dictionary<Strain, SuitAgreements.ShowState> Strains { get; protected set; }
 
             public ShowState(PairAgreements startState = null)
             {
                 PairAgreements = startState == null ? new PairAgreements() : new PairAgreements(startState);
-                this.Suits = new Dictionary<Suit, SuitAgreements.ShowState>();
-                foreach (var strain in BasicBidding.Strains)
+                this.Strains = new Dictionary<Strain, SuitAgreements.ShowState>();
+                foreach (Strain strain in Enum.GetValues(typeof(Strain)))
                 {
-                    this.Suits[strain] = new SuitAgreements.ShowState(PairAgreements.Suits[strain]);
+                    this.Strains[strain] = new SuitAgreements.ShowState(PairAgreements.Strains[strain]);
                 }
             }
 
@@ -43,6 +43,8 @@ namespace TricksterBots.Bots.Bridge
         // Anything else about global agreements that are not specific to the hand.
         public class SuitAgreements: IEquatable<SuitAgreements>
         {
+            private PairAgreements _pairAgreements;
+            private Strain _strain;
             public class ShowState
             {
                 public SuitAgreements SuitAgreements { get; protected set; }
@@ -56,6 +58,8 @@ namespace TricksterBots.Bots.Bridge
                 public void ShowLongHand(PositionState longHand)
                 {
                     SuitAgreements.LongHand = longHand;
+                    // TODO: This is ugly too.   Review 
+                    SuitAgreements._pairAgreements.LastShownStrain = SuitAgreements._strain;
                 }
 
 
@@ -69,12 +73,16 @@ namespace TricksterBots.Bots.Bridge
                     return LongHand.Partner;
                 }
             }
-            public SuitAgreements()
+            public SuitAgreements(PairAgreements pairAgreements, Strain strain)
             {
+                this._pairAgreements = pairAgreements;
+                this._strain = strain;
                 this.LongHand = null;   // This sets Dummy too...
             }
-            public SuitAgreements(SuitAgreements other)
+            public SuitAgreements(PairAgreements pairAgreements, Strain strain, SuitAgreements other)
             {
+                this._pairAgreements = pairAgreements;
+                this._strain = strain;
                 this.LongHand = other.LongHand;
             }
 
@@ -91,7 +99,7 @@ namespace TricksterBots.Bots.Bridge
                     {
                         this.LongHand = null;
                     }
-
+                   
                 }
                 else if (this.LongHand == null)
                 {
@@ -102,6 +110,9 @@ namespace TricksterBots.Bots.Bridge
 
         }
         public Strain? AgreedStrain { get; private set; }
+
+        // TODO: This is ugly an not combined properly.  Review all uses of this
+        public Strain? LastShownStrain { get; private set; }
 
         public Suit? TrumpSuit
         {
@@ -115,39 +126,45 @@ namespace TricksterBots.Bots.Bridge
             }
         }
 
-        public Dictionary<Suit, SuitAgreements> Suits { get; }
+        public Dictionary<Strain, SuitAgreements> Strains { get; }
         public PairAgreements()
         {
             this.AgreedStrain = null;
-            this.Suits = new Dictionary<Suit, SuitAgreements>();
-            foreach (var suit in BasicBidding.Strains)
+            this.Strains = new Dictionary<Strain, SuitAgreements>();
+            foreach (Strain strain in Enum.GetValues(typeof(Strain)))
             {
-                this.Suits[suit] = new SuitAgreements();
+                this.Strains[strain] = new SuitAgreements(this, strain);
             }
 
         }
         public PairAgreements(PairAgreements other)
         {
             this.AgreedStrain = other.AgreedStrain;
-            this.Suits = new Dictionary<Suit, SuitAgreements>();
-            foreach (var suit in BasicBidding.Strains)
+            this.Strains = new Dictionary<Strain, SuitAgreements>();
+            foreach (Strain strain in Enum.GetValues(typeof(Strain)))
             {
-                this.Suits[suit] = new SuitAgreements(other.Suits[suit]);
+                this.Strains[strain] = new SuitAgreements(this, strain, other.Strains[strain]);
 
             }
         }
 
         protected void Combine(PairAgreements other, CombineRule cr)
         {
+            // TODO: THIS IS BROKEN.  FOR NOW JUST USE THE LAST ONE SHOWN-
+            if (cr == CombineRule.Show || cr == CombineRule.Merge)
+            {
+                this.LastShownStrain = other.LastShownStrain;
+            }
+
             // TODO: Need to actually do something here. 
             // For now this works...
             if (this.AgreedStrain == null && cr != CombineRule.CommonOnly)
             {
                 this.AgreedStrain = other.AgreedStrain;
             }
-            foreach (var suit in BasicBidding.Strains)
+            foreach (Strain strain in Enum.GetValues(typeof(Strain)))
             {
-                Suits[suit].Combine(other.Suits[suit], cr);
+                Strains[strain].Combine(other.Strains[strain], cr);
             }
             // TODO: What to do if trump overridden?  Seems possible, but we really need the idea of "LAST ONE DECIDED"
 
@@ -156,9 +173,9 @@ namespace TricksterBots.Bots.Bridge
         public bool Equals(PairAgreements other)
         {
             if (this.AgreedStrain != other.AgreedStrain) return false;
-            foreach (var suit in BasicBidding.Strains)
+            foreach (Strain strain in Enum.GetValues(typeof(Strain)))
             {
-                if (!this.Suits[suit].Equals(other.Suits[suit])) return false;
+                if (!this.Strains[strain].Equals(other.Strains[strain])) return false;
             }
             return true;
         }

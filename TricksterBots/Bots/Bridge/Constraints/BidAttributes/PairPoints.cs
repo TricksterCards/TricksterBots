@@ -9,14 +9,17 @@ using Trickster.cloud;
 
 namespace TricksterBots.Bots.Bridge
 {
-    public class PairHasPoints : DynamicConstraint // TODO: Needs to show state too.  But for now passive..
+    // This class is used for PairHasShownPoints and PairShowsPoints.  HasShown is a static constraint, while
+    // the Shows class is a dynamic constaint that also shows state.  This class implements all of the logic, while
+    // the two constraint class simply implement the approriate Constraint methods and delegate to this class.
+    public class PairPoints
     {
         protected bool _useStartingPoints;
         protected bool _useAgreedStrain;
         protected Suit? _suit;
         protected int _min;
         protected int _max;
-        public PairHasPoints(Suit? suit, int min, int max)
+        public PairPoints(Suit? suit, int min, int max)
         {
             this._useStartingPoints = false;
             this._useAgreedStrain = false;
@@ -26,38 +29,38 @@ namespace TricksterBots.Bots.Bridge
             Debug.Assert(max >= min);
         }
 
-        public PairHasPoints(int min, int max)
+        public PairPoints(int min, int max)
         {
             this._useStartingPoints = false;
             this._useAgreedStrain = true;
             this._suit = null;
             this._min = min;
-            this._max = max;    
+            this._max = max;
         }
 
-        private Suit? GetSuit(PositionState ps, Suit? suit, Call call)
+        public Suit? GetSuit(PositionState ps, Suit? suit, Call call)
         {
             if (_useAgreedStrain)
             {
                 return ps.PairState.Agreements.TrumpSuit;
             }
-            return GetSuit(suit, call);
+            return Constraint.GetSuit(suit, call);
         }
 
-        protected (int Min, int Max) GetPoints(Call call, PositionState ps, HandSummary hs)
+        public (int Min, int Max) GetPoints(Call call, PositionState ps, HandSummary hs)
         {
             var points = hs.StartingPoints;
             if (!_useStartingPoints && GetSuit(ps, _suit, call) is Suit suit)
             {
-                if (ps.PairState.Agreements.Suits[suit].LongHand == ps)
+                if (ps.PairState.Agreements.Strains[Call.SuitToStrain(suit)].LongHand == ps)
                 {
                     points = hs.Suits[suit].LongHandPoints;
                 }
-                else if (ps.PairState.Agreements.Suits[suit].Dummy == ps)
+                else if (ps.PairState.Agreements.Strains[Call.SuitToStrain(suit)].Dummy == ps)
                 {
                     points = hs.Suits[suit].DummyPoints;
                 }
-               
+
             }
             if (points == null)
             {
@@ -65,7 +68,51 @@ namespace TricksterBots.Bots.Bridge
             }
             return (points == null) ? (0, 100) : ((int, int))points;
         }
+
+        public bool DynamicallyConforms(Call call, PositionState ps, HandSummary hs)
+        {
+            var positionPoints = GetPoints(call, ps, hs);
+            var pointsPartner = GetPoints(call, ps.Partner, ps.Partner.PublicHandSummary);
+            return (positionPoints.Max + pointsPartner.Min >= _min && positionPoints.Min + pointsPartner.Min <= _max);
+        }
+
+        public bool StaticallyConforms(Call call, PositionState ps)
+        {
+            var positionPoints = GetPoints(call, ps, ps.PublicHandSummary);
+            var pointsPartner = GetPoints(call, ps.Partner, ps.Partner.PublicHandSummary);
+            var minPoints = positionPoints.Min + pointsPartner.Min;
+            return (minPoints >= _min && minPoints <= _max);
+        }
+
+        public void ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+        {
+            var pointsThis = GetPoints(call, ps, ps.PublicHandSummary);
+            var pointsPartner = GetPoints(call, ps.Partner, ps.Partner.PublicHandSummary);
+            var suit = Constraint.GetSuit(_suit, call);
+            int showMin = Math.Max(_min - pointsPartner.Min, 0);
+            int showMax = Math.Max(_max - pointsPartner.Min, 0);
+            if (this._useStartingPoints || suit == null || ps.PairState.Agreements.Strains[Call.SuitToStrain(suit)].LongHand == null)
+            {
+                showHand.ShowStartingPoints(showMin, showMax);
+            }
+            else if (ps.PairState.Agreements.Strains[Call.SuitToStrain(suit)].LongHand == ps)
+            {
+                showHand.Suits[(Suit)suit].ShowLongHandPoints(showMin, showMax);
+            }
+            else
+            {
+                showHand.Suits[(Suit)suit].ShowDummyPoints(showMin, showMax);
+            }
+        }
+
         /*
+        public (int Min, int Max) GetPoints(Call call, PositionState ps, HandSummary hs)
+        {
+			var positionPoints = GetPoints(call, ps, hs);
+			var pointsPartner = GetPoints(call, ps.Partner, ps.Partner.PublicHandSummary);
+            return (positionPoints.Min + pointsPartner.Min,  positionPoints.Max + pointsPartner.Max);
+		}
+        
         protected (int MinThis, int MaxThis, int MinPartner, int MaxPartner) GetPoints(Bid bid, PositionState ps, HandSummary hs)
         {
             // Assume we will have to use starting points.  Override if appropriate
@@ -95,39 +142,48 @@ namespace TricksterBots.Bots.Bridge
             return (thisPoints.Min, thisPoints.Max, partnerPoints.Min, partnerPoints.Max);
         }
         */
-        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
-        {
-            var pointsThis = GetPoints(call, ps, hs);
-            var pointsPartner = GetPoints(call, ps.Partner, ps.Partner.PublicHandSummary);
-            return (pointsThis.Max + pointsPartner.Min >= _min && pointsThis.Min + pointsPartner.Min <= _max);
-        }
     }
 
-    public class PairShowsPoints : PairHasPoints, IShowsState
+	public class PairHasShownPoints : StaticConstraint
     {
-        public PairShowsPoints(Suit? suit, int min, int max) : base(suit, min, max) { }
+		private PairPoints _pairPoints;
+		public PairHasShownPoints(Suit? suit, int min, int max)
+		{
+			this._pairPoints = new PairPoints(suit, min, max);
+		}
 
-        public PairShowsPoints(int min, int max): base(min, max) { }
+		public PairHasShownPoints(int min, int max)
+		{
+			this._pairPoints = new PairPoints(min, max);
+		}
+
+		public override bool Conforms(Call call, PositionState ps)
+		{
+			return _pairPoints.StaticallyConforms(call, ps);
+		}
+	}
+
+    public class PairShowsPoints : DynamicConstraint, IShowsState
+    {
+        private PairPoints _pairPoints;
+        public PairShowsPoints(Suit? suit, int min, int max)
+        {
+            this._pairPoints = new PairPoints(suit, min, max);
+        }
+
+        public PairShowsPoints(int min, int max)
+        {
+            this._pairPoints = new PairPoints(min, max);
+        }
+
+        public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+        {
+            return _pairPoints.DynamicallyConforms(call, ps, hs);
+        }
 
         void IShowsState.ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
         {
-            var pointsThis = GetPoints(call, ps, ps.PublicHandSummary);
-            var pointsPartner = GetPoints(call, ps.Partner, ps.Partner.PublicHandSummary);
-            var suit = GetSuit(_suit, call);
-            int showMin = Math.Max(_min - pointsPartner.Min, 0);
-            int showMax = Math.Max(_max - pointsPartner.Min, 0);
-            if (this._useStartingPoints || suit == null|| ps.PairState.Agreements.Suits[(Suit)suit].LongHand == null)
-            {
-                showHand.ShowStartingPoints(showMin, showMax);
-            }
-            else if (ps.PairState.Agreements.Suits[(Suit)suit].LongHand == ps)
-            {
-                showHand.Suits[(Suit)suit].ShowLongHandPoints(showMin, showMax);
-            }
-            else
-            {
-                showHand.Suits[(Suit)suit].ShowDummyPoints(showMin, showMax);
-            }
+            _pairPoints.ShowState(call, ps, showHand, showAgreements);
         }
     }
 }

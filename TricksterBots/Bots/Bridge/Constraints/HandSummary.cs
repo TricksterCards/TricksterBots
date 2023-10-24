@@ -153,9 +153,9 @@ namespace TricksterBots.Bots.Bridge
 			}
 
 
-			public void ShowCountKings(int countKings)
+			public void ShowCountKings(HashSet<int> countKings)
 			{
-				HandSummary.CountKings = countKings;
+				HandSummary.CountKings = CombineIntSet(HandSummary.CountKings, countKings, CombineRule.Show);
 			}
 
 			public void Combine(HandSummary other, CombineRule combineRule)
@@ -217,6 +217,10 @@ namespace TricksterBots.Bots.Bridge
 					_suitSummary.Stopped = CombineBool(_suitSummary.Stopped, stopped, CombineRule.Show);
 				}
 
+				public void ShowRuleOf9Points(int points)
+				{
+					_suitSummary.RuleOf9Points = CombineInt(_suitSummary.RuleOf9Points, points, CombineRule.Show);
+				}
             }
 
             internal (int Min, int Max)? _quality;
@@ -225,6 +229,8 @@ namespace TricksterBots.Bots.Bridge
             public (int Min, int Max)? DummyPoints { get; protected set; }
 
             public (int Min, int Max)? LongHandPoints { get; protected set; }
+
+			public int? RuleOf9Points { get; protected set; }
 
 
 			public (int Min, int Max) GetShape()
@@ -280,6 +286,7 @@ namespace TricksterBots.Bots.Bridge
                 this.KeyCards = null;
 				this.HaveQueen = null;
 				this.Stopped = null;
+				this.RuleOf9Points = null;
             }
             // TODO: There are other properties like "Stopped", "Has Ace", that can go here...
 
@@ -292,6 +299,7 @@ namespace TricksterBots.Bots.Bridge
 				this.KeyCards = other.KeyCards;
 				this.HaveQueen= other.HaveQueen;
 				this.Stopped = other.Stopped;
+				this.RuleOf9Points= other.RuleOf9Points;
             }
 		
             internal void Combine(SuitSummary other, CombineRule cr)
@@ -303,6 +311,7 @@ namespace TricksterBots.Bots.Bridge
                 this.HaveQueen = CombineBool(this.HaveQueen, other.HaveQueen, cr);
 				this.Stopped = CombineBool(this.Stopped, other.Stopped, cr);
 				this.KeyCards = CombineIntSet(this.KeyCards, other.KeyCards, cr);
+				this.RuleOf9Points = CombineInt(this.RuleOf9Points, other.RuleOf9Points, cr);
 				/*
                 if (this.Keycards == null)
                 { 
@@ -340,7 +349,8 @@ namespace TricksterBots.Bots.Bridge
                 return (this.Shape == other.Shape &&
 					    this.DummyPoints == other.DummyPoints &&
 						this.LongHandPoints == other.LongHandPoints &&
-						this._quality == other._quality);
+						this._quality == other._quality &&
+						this.RuleOf9Points == other.RuleOf9Points);
 				// TODO: HaveQueen??? Stopped???
             }
         }
@@ -372,7 +382,7 @@ namespace TricksterBots.Bots.Bridge
 		// TODO: Perhaps things like this:
 		public HashSet<int> CountAces { get; protected set; }
 			
-		public int? CountKings { get; protected set; }
+		public HashSet<int> CountKings { get; protected set; }
 
 		public Dictionary<Suit, SuitSummary> Suits { get; protected set; }
 
@@ -441,7 +451,7 @@ namespace TricksterBots.Bots.Bridge
 			this.IsBalanced = CombineBool(this.IsBalanced, other.IsBalanced, cr);
 			this.IsFlat = CombineBool(this.IsFlat, other.IsFlat, cr);
 			this.CountAces = CombineIntSet(this.CountAces, other.CountAces, cr);
-			this.CountKings = CombineInt(this.CountKings, other.CountKings, cr);
+			this.CountKings = CombineIntSet(this.CountKings, other.CountKings, cr);
 			foreach (var suit in BasicBidding.BasicSuits)
 			{
 				this.Suits[suit].Combine(other.Suits[suit], cr);
@@ -515,7 +525,7 @@ namespace TricksterBots.Bots.Bridge
 				this.IsBalanced != other.IsBalanced ||
 				this.IsFlat != other.IsFlat ||
 				!EqualIntSet(this.CountAces, other.CountAces) ||
-				this.CountKings != other.CountKings) { return false; }
+				!EqualIntSet(this.CountKings, other.CountKings)) { return false; }
 			foreach (var suit in BasicBidding.BasicSuits)
 			{
 				if (!this.Suits[suit].Equals(other.Suits[suit])) return false;

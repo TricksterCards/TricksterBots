@@ -13,11 +13,11 @@ namespace TricksterBots.Bots.Bridge
 {
     public class TakeoutDouble: Bidder
     {
-        private static (int, int) TakeoutRange = (11, 16);
+        private static (int, int) TakeoutRange = (12, 16);
         private static (int, int) StrongTakeout = (17, 100);
         private static (int, int) MinimumTakeout = (11, 16);
-        private static (int, int) MediumTakeout = (17, 18);
-        private static (int, int) MaximumTakeout = (19, 100);
+        private static (int, int) MediumTakeout = (17, 19);
+        private static (int, int) MaximumTakeout = (20, 100);
 
 
 
@@ -27,35 +27,47 @@ namespace TricksterBots.Bots.Bridge
             if (ps.IsOpponentsContract)
             {
                 var contractBid = ps.BiddingState.Contract.Bid;
-                // TODO: Higher levels...
-                if (contractBid.Level == 1 && contractBid.Suit is Suit suit)
+                if (contractBid.Level <= 3 && contractBid.Suit is Suit suit)
                 {
-                    bids.AddRange(Takeout(suit));
+                    bids.AddRange(Takeout(ps, contractBid.Level));
                 }
             }
             return bids;
         }
 
 
-        private static BidRule[] Takeout(Suit suit)
+        private static IEnumerable<BidRule> Takeout(PositionState ps, int Level)
         {
-            // TODO: Should this be 2 or 1 for MinBidLevel?  Or is this really based on opponent bids?
-            // TODO: Ugly way to avoid bidding this over NT...
-            var rule = Forcing(Bid.Double, Points(TakeoutRange), Shape(suit, 0, 4), BidAvailable(4, Suit.Clubs));
-            foreach (var otherSuit in BasicBidding.BasicSuits)
+            var bids = new List<BidRule>
             {
-                if (otherSuit != suit)
+                PartnerBids(Call.Double, Call.Pass, Respond),
+                Forcing(Bid.Double, Points(StrongTakeout))
+			};
+
+
+			var rule = Forcing(Bid.Double, Points(TakeoutRange), BidAvailable(4, Suit.Clubs));
+			var oppsSummary = PairSummary.Opponents(ps);
+			foreach (var s in BasicBidding.BasicSuits)
+			{
+                if (oppsSummary.ShownSuits.Contains(s))
                 {
-                    // TODO: Is this reasonable?  6+ card suit needs to be bid.  Not takeout.   
-                    rule.AddConstraint(Shape(otherSuit, 3, 4));
+                    rule.AddConstraint(Shape(s, 0, 4));
                 }
-            }
-            return new BidRule[]
-            {
-                Forcing(Bid.Double, Points(StrongTakeout)),
-                rule,
-                DefaultPartnerBids(Bid.Pass, Respond)
-            };
+                else
+                {
+					rule.AddConstraint(Shape(s, 3, 4));
+				}
+			}
+			bids.Add(rule);
+              
+            // TODO: Should this be 2 or 1 for MinBidLevel?  Or is this really based on opponent bids?
+            // If opponenets have shown a weak hand...
+            // If opponents have shown a strong hand...
+            // If opponents have bid twice...
+
+ 
+            return bids;
+
         }
 
         public static (int, int) MinLevel = (0, 8);
@@ -71,6 +83,8 @@ namespace TricksterBots.Bots.Bridge
             choices.AddRules(new BidRule[]
             {
                 DefaultPartnerBids(goodThrough: new Bid(4, Suit.Hearts), DoublerRebid),
+
+                Signoff(Call.Pass, RuleOf9()),
                 // TODO: FOR NOW WE WILL JUST BID AT THE NEXT LEVEL REGARDLESS OF POINTS...
                 // TODO: Need LongestSuit()...
                 // TODO: Should this be TakeoutSuit()...
@@ -97,7 +111,7 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(4, Suit.Spades, TakeoutSuit(), Points(GameLevel)),
 
                 Signoff(3, Suit.Unknown, Balanced(), OppsStopped(), Points(Game3NT))
-            });
+            }) ;
             // Many strong bids can be done with pure competition.
             // TODO: Think through this - is this really what we want?
            //  FOR NOW TAKE THIS OUT AND TRY TO COVER THE BASES... choices.AddRules(Compete.CompBids);
@@ -132,6 +146,17 @@ namespace TricksterBots.Bots.Bridge
                 Invitational(3, Suit.Spades,   RaisePartner(), DummyPoints(MediumTakeout)),
                 Invitational(3, Suit.Spades,   RaisePartner(2), DummyPoints(MaximumTakeout)),
                 // TODO: Bid new suits for strong hands...  Bid NT?  
+
+                // TODO: Forcing?  What to do here...
+                // TODO: What is the lowest suit we could do here?  1C X Pass 1D is all I can think of...
+                Invitational(1, Suit.Hearts, Shape(5, 11), Points(MediumTakeout)),
+                Invitational(1, Suit.Spades, Shape(5, 11), Points(MediumTakeout)),
+                Invitational(2, Suit.Clubs, Shape(5, 11), Points(MediumTakeout)),
+                Invitational(2, Suit.Diamonds, Shape(5, 11), Points(MediumTakeout)),
+                Invitational(2, Suit.Hearts, Jump(0), Shape(5, 11), Points(MediumTakeout)),
+                Invitational(2, Suit.Spades, Jump(0), Shape(5, 11), Points(MediumTakeout)),
+
+                // TODO: Need stronger bids here...
 
                 Signoff(Call.Pass, Points(MinimumTakeout)),
 

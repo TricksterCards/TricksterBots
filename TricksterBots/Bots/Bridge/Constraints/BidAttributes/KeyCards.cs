@@ -55,4 +55,31 @@ namespace TricksterBots.Bots.Bridge
 			}	
 		}
 	}
+
+
+	public class Kings : DynamicConstraint, IShowsState
+	{
+		HashSet<int> _count;
+
+		public Kings(params int[] count)
+		{
+			_count = new HashSet<int>(count);
+		}
+
+
+
+		public override bool Conforms(Call call, PositionState ps, HandSummary hs)
+		{
+			if (hs.CountKings is HashSet<int> countKings) {
+				return _count.Intersect(countKings).Count() > 0;
+			}
+			return true;	// If we don't know then we don't know...
+		}
+
+		public void ShowState(Call call, PositionState ps, HandSummary.ShowState showHand, PairAgreements.ShowState showAgreements)
+		{
+			showHand.ShowCountKings(_count);
+		}
+	}
+
 }

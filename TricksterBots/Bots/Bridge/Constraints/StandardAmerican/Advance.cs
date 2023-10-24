@@ -13,9 +13,9 @@ namespace TricksterBots.Bots.Bridge
         public static (int, int) AdvanceNewSuit1Level = (6, 40); // TODO: Highest level for this?
         public static (int, int) NewSuit2Level = (11, 40); // Same here...
         public static (int, int) AdvanceTo1NT = (6, 10);
-        public static (int, int) WeakJumpRaise = (0, 11);   // TODO: What is the high end of jump raise weak
-        public static (int, int) Raise = (6, 9);
-        public static (int, int) AdvanceCuebid = (10, 40);
+        public static (int, int) WeakJumpRaise = (0, 8);   // TODO: What is the high end of jump raise weak
+        public static (int, int) Raise = (6, 10);
+        public static (int, int) AdvanceCuebid = (11, 40);
 
 
         public static IEnumerable<BidRule> FirstBid(PositionState ps)
@@ -31,15 +31,15 @@ namespace TricksterBots.Bots.Bridge
                                         // Weak jumps to game are highter priority than simple raises.
                     // Fill this out better but for now just go on law of total trump, jumping if weak.  
                     Nonforcing(4, Suit.Clubs, Jump(1, 2), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
-                    Nonforcing(4, Suit.Diamonds, Jump(1, 2), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
-                    Nonforcing(4, Suit.Hearts, Jump(1, 2), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
-                    Nonforcing(4, Suit.Spades, Jump(1, 2), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
+                    Nonforcing(4, Suit.Diamonds, Jump(1, 2, 3), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
+                    Nonforcing(4, Suit.Hearts, Jump(1, 2, 3), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
+                    Nonforcing(4, Suit.Spades, Break(false, "4SWeek"), Jump(1, 2, 3), Fit(10), DummyPoints(WeakJumpRaise), ShowsTrump()),
 
 
                     // If we have support for partner
-                    Nonforcing(2, Suit.Diamonds,  Partner(HasShownSuit()), Fit(), DummyPoints(Raise), ShowsTrump()),
-                    Nonforcing(2, Suit.Hearts,    Partner(HasShownSuit()), Fit(), DummyPoints(Raise), ShowsTrump()),
-                    Nonforcing(2, Suit.Spades,    Partner(HasShownSuit()), Fit(), DummyPoints(Raise), ShowsTrump()),
+                    Nonforcing(2, Suit.Diamonds,  Fit(), DummyPoints(Raise), ShowsTrump()),
+                    Nonforcing(2, Suit.Hearts,    Fit(), DummyPoints(Raise), ShowsTrump()),
+                    Nonforcing(2, Suit.Spades,    Fit(), DummyPoints(Raise), ShowsTrump()),
 
 
                     Nonforcing(1, Suit.Hearts, Points(AdvanceNewSuit1Level), Shape(5), GoodSuit()),

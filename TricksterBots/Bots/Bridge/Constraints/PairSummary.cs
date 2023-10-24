@@ -61,9 +61,22 @@ namespace TricksterBots.Bots.Bridge
             // TODO: There are other properties like "Stopped", "Has Ace", that can go here...
         }
 
-        public static (int Min, int Max) AddRange((int Min, int Max) r1, (int Min, int Max) r2, int max)
+        
+
+        public static (int Min, int Max) AddRange((int Min, int Max)? r1, (int Min, int Max)? r2, int max)
         {
-            return (Math.Min(max, r1.Min + r2.Min), Math.Min(max, r1.Max + r2.Max));
+            if (r1 == null)
+            {
+                if (r2 == null) return (0, max);
+                return ((int, int))r2;
+            }
+            if (r2 == null)
+            {
+                return ((int, int))r1;
+            }
+            (int Min, int Max) range1 = ((int Min, int Max))r1;
+            (int Min, int Max) range2 = ((int Min, int Max))r2;
+            return (Math.Min(max, range1.Min + range2.Min), Math.Min(max, range1.Max + range2.Max));
         }
 
         private static (int Min, int Max) IntersectRange((int Min, int Max) r1, (int Min, int Max) r2)
@@ -71,16 +84,17 @@ namespace TricksterBots.Bots.Bridge
             return (Math.Max(r1.Min, r2.Min), Math.Min(r1.Max, r2.Max));
         }
 
-    //    public (int Min, int Max) Points;
+        public (int Min, int Max) Points;
         // TODO: What about these points?  Are they really necessay
        // public (int Min, int Max) HighCardPoints;
         //public (int Min, int Max) StartingPoints;
         public Dictionary<Suit, SuitSummary> Suits;
-        public List<Suit> ShownSuits = new List<Suit>();
+        public HashSet<Suit> ShownSuits = new HashSet<Suit>();
+        public HashSet<Strain> ShownStrains = new HashSet<Strain>();
 
         public PairSummary(HandSummary hs1, HandSummary hs2, PairAgreements pa)
         {
-         //   this.Points = AddRange(hs1.GetPoints(), hs2.GetPoints(), 100);
+            this.Points = AddRange(hs1.Points, hs2.Points, 100);
           //  this.HighCardPoints = AddRange(hs1.GetHighCardPoints(), hs2.GetHighCardPoints(), 40);
            // this.StartingPoints = AddRange(hs1.GetStartingPoints(), hs2.GetStartingPoints(), 100);
      //       this.CountAces = other.CountAces;
@@ -89,11 +103,13 @@ namespace TricksterBots.Bots.Bridge
             foreach (Suit suit in BasicBidding.BasicSuits)
             {
                 Suits[suit] = new SuitSummary(hs1.Suits[suit], hs2.Suits[suit]);
-                if (pa.Suits[suit].LongHand != null)
+                if (pa.Strains[Call.SuitToStrain(suit)].LongHand != null)
                 { 
                     ShownSuits.Add(suit);
+                    ShownStrains.Add(Call.SuitToStrain(suit));
                 }
             }
+            // TODO: Need to show NT if that has been bid...  ShownStrains.Add(...)
         }
 
         public PairSummary(PositionState ps) : this(ps.PublicHandSummary, ps.Partner.PublicHandSummary, ps.PairState.Agreements) { }

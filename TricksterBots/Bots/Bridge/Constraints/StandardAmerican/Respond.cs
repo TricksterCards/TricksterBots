@@ -29,6 +29,7 @@ namespace TricksterBots.Bots.Bridge
         static protected (int, int) ResponderRedouble = (10, 40);
         static protected (int, int) ResponderRedoubleHCP = (10, 40);
 
+        static protected (int, int) PairGame = (26, 31);
 
 
         protected static BidRule[] NewMinorSuit2Level(Suit openersSuit)
@@ -62,14 +63,40 @@ namespace TricksterBots.Bots.Bridge
             };
         }
 
-        protected static BidRule[] NoTrumpResponses(PositionState ps)
+        private static BidRule[] RespondNT(int level, params Suit[] denies)
         {
+            var rule = Invitational(level, Suit.Unknown);
+            if (level == 1)
+            {
+                foreach (Suit suit in denies)
+                {
+                    rule.AddConstraint(Shape(suit, 0, 3));
+                }
+                rule.AddConstraint(Points(Respond1NT));
+            }
+            else
+            {
+                // TODO: Is this right?  I think a 5+ card suit should always be bid...
+                foreach (Suit suit in BasicBidding.BasicSuits)
+                {
+                    rule.AddConstraint(Shape(suit, 0, 4));
+                }
+                rule.AddConstraint(Points(level == 2 ? RaiseTo2NT : RaiseTo3NT));
+            }
             return new BidRule[]
             {
-                Nonforcing(1, Suit.Unknown, Points(Respond1NT)),
-                Nonforcing(2, Suit.Unknown, Points(RaiseTo2NT), Balanced()),
-                Nonforcing(3, Suit.Unknown, Points(RaiseTo3NT), Balanced())
+                PartnerBids(level, Suit.Unknown, Bid.Double, p => Open.RebidPartnerBidNT(p, level)),
+                rule
             };
+        }
+
+        protected static IEnumerable<BidRule> NoTrumpResponses(PositionState ps, params Suit[] denies)
+        {
+            var bids = new List<BidRule>();
+			bids.AddRange(RespondNT(1, denies));
+			bids.AddRange(RespondNT(2, denies));
+			bids.AddRange(RespondNT(3, denies));
+            return bids;
         }
 
 
@@ -80,9 +107,11 @@ namespace TricksterBots.Bots.Bridge
         {
             var bids = new List<BidRule>
             {
-                DefaultPartnerBids(Bid.Double, Open.Rebid),
+				DefaultPartnerBids(Bid.Double, Open.RebidPartnerChangedSuits),
+				PartnerBids(2, Suit.Clubs, Bid.Double, Open.RebidPartnerRaisedMinor),
+				PartnerBids(3, Suit.Clubs, Bid.Double, Open.RebidPartnerRaisedMinor),
 
-                Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
+				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
                 Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(6), LongestMajor(5)),
                 Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(7, 11), LongestMajor(6)),
 
@@ -96,29 +125,26 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(1, Suit.Spades, Points(Respond1Level), Shape(6, 11), Shape(Suit.Diamonds, 0, 6), Shape(Suit.Hearts, 0, 6)),
 
 
-                Invitational(2, Suit.Clubs, Points(Raise1), Shape(5), LongestMajor(3)),
+                Invitational(2, Suit.Clubs, ShowsTrump(), Points(Raise1), Shape(5), LongestMajor(3)),
 
-                Forcing(2, Suit.Diamonds, Points(SlamInterest), Shape(5, 11)),
-
-                Forcing(2, Suit.Hearts, Points(SlamInterest), Shape(5, 11)),
-
+                // Slam interest
                 Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
+				Forcing(2, Suit.Hearts, Points(SlamInterest), Shape(5, 11)),
+				Forcing(2, Suit.Diamonds, Points(SlamInterest), Shape(5, 11)),
 
+				Invitational(3, Suit.Clubs, ShowsTrump(), Points(LimitRaise), Shape(5), LongestMajor(3)),
 
-                Invitational(3, Suit.Clubs, Points(LimitRaise), Shape(5), LongestMajor(3)),
-
-                Signoff(4, Suit.Clubs, Points(Weak4Level), Shape(6, 11)),
+                Signoff(4, Suit.Clubs, ShowsTrump(), Points(Weak4Level), Shape(6, 11)),
 
                 // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-                Signoff(4, Suit.Hearts, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
+                Signoff(4, Suit.Hearts, ShowsTrump(), Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-                Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
-
+                Signoff(4, Suit.Spades, ShowsTrump(), Points(Weak4Level), Shape(7, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
                 Signoff(Bid.Pass, Points(RespondPass)),
             };
-            bids.AddRange(NoTrumpResponses(ps));
+            bids.AddRange(NoTrumpResponses(ps, Suit.Diamonds, Suit.Hearts, Suit.Spades));
             return bids;
         }
 
@@ -126,7 +152,9 @@ namespace TricksterBots.Bots.Bridge
         {
             var bids = new List<BidRule>
             {
-                DefaultPartnerBids(Bid.Double, Open.Rebid),
+				DefaultPartnerBids(Bid.Double, Open.RebidPartnerChangedSuits),
+				PartnerBids(2, Suit.Diamonds, Bid.Double, Open.RebidPartnerRaisedMinor),
+				PartnerBids(3, Suit.Diamonds, Bid.Double, Open.RebidPartnerRaisedMinor),
 
 				// TODO: More formal redouble???
 				Forcing(Bid.Redouble, Points((10, 100)), HighCardPoints((10, 100))),
@@ -167,20 +195,25 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(Bid.Pass, Points(RespondPass)),
             };
-            bids.AddRange(NoTrumpResponses(ps));
+            bids.AddRange(NoTrumpResponses(ps,Suit.Hearts, Suit.Spades));
             return bids;
         }
         public static IEnumerable<BidRule> Heart(PositionState ps)
         {
             var bids = new List<BidRule>
             {
-                DefaultPartnerBids(Bid.Double, Open.Rebid),
+				DefaultPartnerBids(Bid.Double, Open.RebidPartnerChangedSuits),
+				PartnerBids(2, Suit.Hearts, Bid.Double, Open.RebidPartnerRaisedMajor),
+				PartnerBids(3, Suit.Hearts, Bid.Double, Open.RebidPartnerRaisedMajor),
+				PartnerBids(4, Suit.Hearts, Bid.Double, Open.RebidPartnerRaisedMajor),
 
-                Invitational(2, Suit.Hearts, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
+                // TODO: Need higher priority bids showing spades when bid hand ---
 
+				Invitational(2, Suit.Hearts, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
                 Invitational(3, Suit.Hearts,DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
+				Signoff(4, Suit.Hearts, DummyPoints(Suit.Hearts, Weak4Level), Shape(5, 8)),
 
-                Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
+				Forcing(2, Suit.Spades, Points(SlamInterest), Shape(5, 11)),
 
                 Forcing(1, Suit.Spades, Points(Respond1Level), Shape(4, 11), Shape(Suit.Hearts, 0, 2)),
                 Forcing(1, Suit.Spades, DummyPoints(Suit.Hearts, LimitRaise), Shape(4, 11), Shape(Suit.Hearts, 3)),
@@ -190,7 +223,6 @@ namespace TricksterBots.Bots.Bridge
 
                 // TODO: This is all common wacky bids from thsi point on.  Need to append at the bottom of this function
 
-                Signoff(4, Suit.Hearts, DummyPoints(Suit.Hearts, Weak4Level), Shape(5, 8)),
 
                 Signoff(4, Suit.Spades, Points(Weak4Level), Shape(7, 11)),
 
@@ -198,7 +230,7 @@ namespace TricksterBots.Bots.Bridge
 
             };
             bids.AddRange(NewMinorSuit2Level(Suit.Hearts));
-            bids.AddRange(NoTrumpResponses(ps));
+            bids.AddRange(NoTrumpResponses(ps, Suit.Spades));
             return bids;
         }
 
@@ -206,14 +238,15 @@ namespace TricksterBots.Bots.Bridge
         {
             var bids = new List<BidRule>
             {
-                DefaultPartnerBids(Bid.Double, Open.Rebid),
+                DefaultPartnerBids(Bid.Double, Open.RebidPartnerChangedSuits),
+				PartnerBids(2, Suit.Spades, Bid.Double, Open.RebidPartnerRaisedMajor),
+				PartnerBids(3, Suit.Spades, Bid.Double, Open.RebidPartnerRaisedMajor),
+                PartnerBids(4, Suit.Spades, Bid.Double, Open.RebidPartnerRaisedMajor),
 
 				// Highest priority is to show support...
                 Invitational(3, Suit.Spades, DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
                 Invitational(2, Suit.Spades, DummyPoints(Raise1), Shape(3, 8), ShowsTrump()),
-
-				// TODO: Should Respond 1NT be lower priority or should raises be higher?
-				Nonforcing(1, Suit.Unknown, Points(Respond1NT), Balanced()),
+				Signoff(4, Suit.Spades, DummyPoints(Weak4Level), Shape(5, 8)),
 
                 // Two level minor bids are handled by NewMinorSuit2Level...
                 // THIS IS HIGHER PRIORITY THAN SHOWING MINORS NO MATTER WHAT THE LENGTH...
@@ -224,7 +257,6 @@ namespace TricksterBots.Bots.Bridge
 
                 Signoff(4, Suit.Hearts, Points(Weak4Level), Shape(7, 11)),
 
-                Signoff(4, Suit.Spades, DummyPoints(Weak4Level), Shape(5, 8)),
 
                 Signoff(Bid.Pass, Points(RespondPass)),
 
@@ -255,7 +287,8 @@ namespace TricksterBots.Bots.Bridge
         public static BidChoices OppsOvercalled(PositionState ps)
         {
             var choices = new BidChoices(ps);
-            choices.DefaultPartnerBids.AddFactory(Call.Double, (p) => { return new BidChoices(p, Open.Rebid); });
+            // TODO:  Need to do better thann this for bid rules.
+            choices.DefaultPartnerBids.AddFactory(Call.Double, (p) => { return new BidChoices(p, Compete.CompBids); });
 
             choices.AddRules(NegativeDouble.InitiateConvention);
             choices.AddRules(new BidRule[]
@@ -307,7 +340,7 @@ namespace TricksterBots.Bots.Bridge
 
             });
             // TODO: Need to have opponents stopped?  Maybe those bids go higher up ...
-            choices.AddRules(NoTrumpResponses);
+            choices.AddRules(NoTrumpResponses(ps));
 
             return choices;
         }
@@ -383,5 +416,15 @@ namespace TricksterBots.Bots.Bridge
             return bids;
         }
 
+        public static IEnumerable<BidRule> OpenerInvitedGame(PositionState ps)
+        {
+            var bids = new List<BidRule>()
+            {
+                Signoff(4, Suit.Hearts, Fit(), PairPoints(PairGame)),
+                Signoff(4, Suit.Spades, Fit(), PairPoints(PairGame))
+            };
+            // TODO: Competative bids here too?  Seems silly since restricted raise
+            return bids;
+        }
     }
 }
