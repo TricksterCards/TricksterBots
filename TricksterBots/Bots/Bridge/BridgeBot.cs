@@ -64,11 +64,15 @@ namespace Trickster.Bots
             //  get and sort all possible suggestions
             var suggestions = legalBids.Where(b => b.why.Match(hand)).ToList();
 
-            //  if nothing matched, include bids we were too strong for
+            //  if nothing matched, include bids we were too strong for (preferring strongest bids)
             if (!suggestions.Any())
-                suggestions = legalBids.Where(b => b.why.Match(hand, allowTooStrong: true)).ToList();
-
-            if (legalBids[0].why.BidPhase == BidPhase.Opening)
+            {
+                suggestions = legalBids.Where(b => b.why.Match(hand, allowTooStrong: true))
+                    .OrderByDescending(s => s.why.Points.Max)
+                    .ThenByDescending(s => s.why.Priority)
+                    .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min)).ToList();
+            }
+            else if (legalBids[0].why.BidPhase == BidPhase.Opening)
                 //  when opening, prefer suggestions with higher minimum points first, then higher minimum cards
             {
                 suggestions = suggestions
