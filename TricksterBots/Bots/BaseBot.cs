@@ -49,7 +49,15 @@ namespace Trickster.Bots
 
         public virtual bool CanSeeHand(PlayersCollectionBase players, PlayerBase player, PlayerBase target)
         {
-            return player.Seat == target.Seat;
+            //  a player can always see their own cards
+            if (player.Seat == target.Seat)
+                return true;
+
+            //  a player can see the hand of any other player for which the caller sent all known cards
+            if (!string.IsNullOrEmpty(target.Hand) && new Hand(target.Hand).All(c => c.rank != Rank.Unknown && c.suit != Suit.Unknown))
+                return true;
+
+            return false;
         }
 
         public abstract DeckType DeckType { get; }
@@ -198,6 +206,29 @@ namespace Trickster.Bots
             return RankSort(highestCard) == highRank ||
                    cardsPlayed.Count(c => EffectiveSuit(c) == EffectiveSuit(highestCard) && RankSort(c) > RankSort(highestCard)) ==
                    highRank - RankSort(highestCard);
+        }
+
+        protected bool IsCardEffectivelyTheSame(Card card, Card target, IEnumerable<Card> knownCards)
+        {
+            if (!IsOfValue(card))
+                return false;
+
+            var suit = EffectiveSuit(target);
+            if (EffectiveSuit(card) != suit)
+                return false;
+
+            var cardRank = RankSort(card);
+            var targetRank = RankSort(target);
+            var highRank = Math.Max(cardRank, targetRank);
+            var lowRank = Math.Min(cardRank, targetRank);
+
+            if (highRank - lowRank <= 1)
+                return true;
+
+            return highRank - lowRank - 1 ==
+                   knownCards.Count(c => EffectiveSuit(c) == suit &&
+                                         RankSort(c) < highRank &&
+                                         RankSort(c) > lowRank);
         }
 
         protected void LogReturn(string message, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = null)

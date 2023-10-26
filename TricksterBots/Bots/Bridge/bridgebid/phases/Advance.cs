@@ -85,8 +85,16 @@ namespace Trickster.Bots
             }
             else if (advance.declareBid.suit == Suit.Unknown)
             {
+                if (advance.declareBid.level == 4)
+                {
+                    advance.BidConvention = BidConvention.Blackwood;
+                    advance.BidMessage = BidMessage.Forcing;
+                    advance.Description = "asking for Aces";
+                    //  TODO: validate knowing count of Aces will help decision to bid slam
+                    advance.Validate = hand => false;
+                }
                 //  advancing in notrump, e.g. (1C)-1H-(P)-1N
-                if (advance.declareBid.level == overcall.declareBid.level)
+                else if (advance.declareBid.level == overcall.declareBid.level)
                 {
                     advance.Points.Min = 6;
                     advance.Points.Max = 10;

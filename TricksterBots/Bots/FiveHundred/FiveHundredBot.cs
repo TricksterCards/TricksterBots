@@ -39,6 +39,17 @@ namespace Trickster.Bots
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
             var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
 
+            //  in Australian: if we haven't bid yet, we have a Joker, and we can bid 6NT, do so
+            if (options.variation == FiveHundredVariation.Australian
+                && !player.BidHistory.Any()
+                && hand.ContainsSuitAndRank(Suit.Joker, Rank.High))
+            {
+                var sixNTBid = new FiveHundredBid(Suit.Unknown, 6);
+                var sixNT = legalBids.FirstOrDefault(b => new FiveHundredBid(b.value) == sixNTBid);
+                if (sixNT != null)
+                    return sixNT;
+            }
+
             //  calculate the raw number of tricks we can take with a given trump suit
             var tricksBySuit = FiveHundredBid.suitRank.Keys.ToDictionary(s => s, s => CountTricks(hand, s));
             var hasJoker = hand.Any(c => c.suit == Suit.Joker);
@@ -53,6 +64,10 @@ namespace Trickster.Bots
 
                 //  if opponents bid a suit, stay clear of it
                 if (opponentsBids.Any(b => b.IsContractor && b.Suit == suit))
+                    tricksBySuit[suit] = 0;
+
+                //  avoid NT without the Joker (unless a partner has bid it)
+                else if (suit == Suit.Unknown && !hasJoker && !partnersBids.Any(b => b.IsContractor && b.Suit == suit))
                     tricksBySuit[suit] = 0;
 
                 //  if any partner bid a suit, add our tricks to theirs (minus the two they expect from us)
@@ -354,18 +369,29 @@ namespace Trickster.Bots
 
                 foreach (var suit in SuitRank.stdSuits)
                 {
-                    //  avoid leading a suit any nullo player is void in
                     if (nulloPlayers.Any(p => players.TargetIsVoidInSuit(player, p, suit, cardsPlayed)))
                         avoidSuits.Add(suit);
                 }
 
-                var preferredLegalCards = legalCards.Where(c => !avoidSuits.Contains(EffectiveSuit(c))).ToList();
+                var knownCards = cardsPlayed.Concat(legalCards).ToList();
+                var preferredLegalCards = legalCards
+                    .Where(c => !avoidSuits.Contains(EffectiveSuit(c))) //  avoid leading a suit any nullo player is void in
+                    .Where(c => !IsCardHigh(c, knownCards)) //  also avoid leading a card that is known to be high
+                    .ToList();
 
-                return TryDumpEm(trick, preferredLegalCards.Count > 0 ? preferredLegalCards : legalCards, players.Count);
+                //  fall back to avoiding cards known to be high, but allowing suits where nullo is void
+                //  (gives partner a chance to take the lead)
+                if (preferredLegalCards.Count == 0)
+                    preferredLegalCards = legalCards.Where(c => !IsCardHigh(c, knownCards)).ToList();
+
+                if (preferredLegalCards.Count > 0)
+                    legalCards = preferredLegalCards;
+
+                return TryDumpEm(trick, legalCards, players.Count);
             }
 
-            //  if we're not leading, but a nullo player has yet to play, play low
-            if (nulloPlayers.Any(p => p.Hand.Length == player.Hand.Length))
+            //  if we're not leading, but a nullo player has yet to play and isn't void in the led suit, play low
+            if (nulloPlayers.Any(p => p.Hand.Length == player.Hand.Length && !players.TargetIsVoidInSuit(player, p, trick[0], cardsPlayed)))
                 return TryDumpEm(trick, legalCards, players.Count);
 
             //  if a nullo player is taking the trick, try to get under them (but go high if we can't)
