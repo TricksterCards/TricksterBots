@@ -39,6 +39,17 @@ namespace Trickster.Bots
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
             var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
 
+            //  in Australian: if we haven't bid yet, we have a Joker, and we can bid 6NT, do so
+            if (options.variation == FiveHundredVariation.Australian
+                && !player.BidHistory.Any()
+                && hand.ContainsSuitAndRank(Suit.Joker, Rank.High))
+            {
+                var sixNTBid = new FiveHundredBid(Suit.Unknown, 6);
+                var sixNT = legalBids.FirstOrDefault(b => new FiveHundredBid(b.value) == sixNTBid);
+                if (sixNT != null)
+                    return sixNT;
+            }
+
             //  calculate the raw number of tricks we can take with a given trump suit
             var tricksBySuit = FiveHundredBid.suitRank.Keys.ToDictionary(s => s, s => CountTricks(hand, s));
             var hasJoker = hand.Any(c => c.suit == Suit.Joker);
@@ -53,6 +64,10 @@ namespace Trickster.Bots
 
                 //  if opponents bid a suit, stay clear of it
                 if (opponentsBids.Any(b => b.IsContractor && b.Suit == suit))
+                    tricksBySuit[suit] = 0;
+
+                //  avoid NT without the Joker (unless a partner has bid it)
+                else if (suit == Suit.Unknown && !hasJoker && !partnersBids.Any(b => b.IsContractor && b.Suit == suit))
                     tricksBySuit[suit] = 0;
 
                 //  if any partner bid a suit, add our tricks to theirs (minus the two they expect from us)

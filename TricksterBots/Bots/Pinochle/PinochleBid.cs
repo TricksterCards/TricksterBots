@@ -13,6 +13,8 @@ namespace Trickster.Bots
         private const int MaxSingleDeckBid = (int)BidSpace.Pinochle + (int)NonPointBid.MaxSingleDeckPoints * PointsMultiplier + PointsMultiplier - 1;
         private const int PointsMultiplier = 5;
 
+        //  shoot and select trump bids encode the suit
+        private static readonly Dictionary<Suit, int> ShootBids = SuitRank.stdSuits.ToDictionary(s => s, s => (int)NonPointBid.ShootBidsStart + (int)s);
         private static readonly Dictionary<Suit, int> TrumpBids = SuitRank.stdSuits.ToDictionary(s => s, s => (int)BidSpace.Pinochle + (int)NonPointBid.TrumpBidsStart * PointsMultiplier + (int)s);
 
         private readonly int theBid;
@@ -34,19 +36,27 @@ namespace Trickster.Bots
         public bool IsDefender => BidIsDefender(theBid);
         public bool IsLikePass => BidIsLikePass(theBid);
         public bool IsMisDeal => BidIsMisDeal(theBid);
+        public bool IsNoShootBid => BidIsNoShoot(theBid);
         public bool IsPassWithHelp => BidIsPassWithHelp(theBid);
         public bool IsPointsBid => BidIsPoints(theBid);
+        public bool IsShootBid => BidIsShoot(theBid);
         public bool IsTrumpBid => TrumpBids.Values.Contains(theBid);
+
         public static PinochleBid MisDealBid => NonPointsBid(NonPointBid.MisDealPoints);
-
         public static PinochleBid PassWithHelpBid => NonPointsBid(NonPointBid.PassWithHelpPoints);
+        public static PinochleBid NoShootBid = NonPointsBid(NonPointBid.NoShootBid);
 
-        public int Points => IsPointsBid ? (theBid - (int)BidSpace.Pinochle) / PointsMultiplier : 0;
+        public int Points => IsPointsBid && !IsShootBid ? (theBid - (int)BidSpace.Pinochle) / PointsMultiplier : 0;
+
+        public Suit ShootBidSuit => IsShootBid ? ShootBids.Single(tb => tb.Value == theBid).Key : Suit.Unknown;
 
         public Suit Trump
         {
             get
             {
+                if (IsShootBid)
+                    return ShootBidSuit;
+
                 var suit = IsPointsBid ? (Suit)((theBid - (int)BidSpace.Pinochle) % PointsMultiplier) : Suit.Unknown;
 
                 if (Suit.Unknown <= suit && suit <= Suit.Joker)
@@ -85,8 +95,9 @@ namespace Trickster.Bots
 
         public static bool BidIsPoints(int bid)
         {
-            return (int)BidSpace.Pinochle <= bid && bid <= MaxSingleDeckBid ||
-                   FirstDoubleDeckOnlyBid <= bid && bid <= MaxDoubleDeckBid;
+            return ((int)BidSpace.Pinochle <= bid && bid <= MaxSingleDeckBid) ||
+                   (FirstDoubleDeckOnlyBid <= bid && bid <= MaxDoubleDeckBid) ||
+                   BidIsShoot(bid);
         }
 
         public static PinochleBid FromPoints(int points)
@@ -103,8 +114,8 @@ namespace Trickster.Bots
         {
             var pb = new PinochleBid(bid);
 
-            cantakepoints = pb.IsLikePass || pb.IsDefender || pb.IsPointsBid;
-            expectedpoints = pb.IsPointsBid ? pb.Points : (int?)null;
+            cantakepoints = pb.IsLikePass || pb.IsDefender || (pb.IsPointsBid && !pb.IsShootBid);
+            expectedpoints = pb.IsPointsBid && !pb.IsShootBid ? pb.Points : (int?)null;
             level = pb.IsPointsBid ? 1 : (int?)null;
 
             return pb.ToString();
@@ -118,6 +129,11 @@ namespace Trickster.Bots
         public static implicit operator int(PinochleBid pb)
         {
             return pb.theBid;
+        }
+
+        public static PinochleBid ShootBidFromSuit(Suit s)
+        {
+            return new PinochleBid(ShootBids[s]);
         }
 
         public static PinochleBid TrumpBidFromSuit(Suit s)
@@ -139,6 +155,12 @@ namespace Trickster.Bots
             if (IsTrumpBid)
                 return Card.SuitSymbol(TrumpBidSuit);
 
+            if (IsShootBid)
+                return $"{Card.SuitSymbol(ShootBidSuit)} Shoot";
+
+            if (IsNoShootBid)
+                return "Not shooting";
+
             if (IsPointsBid)
                 return Trump != Suit.Unknown ? Card.SuitSymbol(Trump) : Points.ToString();
 
@@ -148,6 +170,16 @@ namespace Trickster.Bots
         private static PinochleBid NonPointsBid(NonPointBid points)
         {
             return new PinochleBid((int)BidSpace.Pinochle + (int)points * PointsMultiplier);
+        }
+
+        public static bool BidIsNoShoot(int bid)
+        {
+            return bid == NoShootBid.theBid;
+        }
+
+        public static bool BidIsShoot(int bid)
+        {
+            return ShootBids.Values.Contains(bid);
         }
 
         //  note about these values. For single-deck, we limit bidding to 990. For double-deck, we allow bidding to continue to 5000.
@@ -162,7 +194,9 @@ namespace Trickster.Bots
             TrumpBidsStart,
             MisDealPoints = TrumpBidsStart + 5, // 999
             FirstDoubleDeckOnlyPoints,
-            MaxDoubleDeckPoints = 5000
+            MaxDoubleDeckPoints = 5000,
+            NoShootBid,
+            ShootBidsStart  // takes 5 spots
         }
     }
 }

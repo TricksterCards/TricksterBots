@@ -96,6 +96,30 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow("3H", "4H3H2HTS9S")]
+        [DataRow("3H", "JH3H2HTS9S")]
+        [DataRow("JH", "JH4H2HTS9S")]
+        [DataRow("HJ", "JDHJ2HTS9S")]
+        [DataRow("JH", "AHJH2HTS9S")]
+        public void LeadBackPointsSecondTrickInCallPartner(string card, string hand)
+        {
+            var players = new[]
+            {
+                new TestPlayer((int)PitchBid.NotPitching, hand),
+                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer(GetBid(5, Suit.Hearts)),
+            };
+
+            var bot = new PitchBot(GetCallForBestOptions(callPartnerSeat: 0), Suit.Hearts);
+            var cardState = new TestCardState<PitchOptions>(bot, players, "");
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            Assert.AreEqual(card, $"{suggestion}");
+        }
+
+        [TestMethod]
         public void DuckIfPartnerTakingTrick()
         {
             var players = new[]

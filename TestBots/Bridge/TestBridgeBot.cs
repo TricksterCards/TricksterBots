@@ -15,7 +15,7 @@ namespace TestBots
     [TestClass]
     public class TestBridgeBot
     {
-        private static Dictionary<char, Suit> LetterToSuit = new Dictionary<char, Suit> {
+        private static readonly Dictionary<char, Suit> LetterToSuit = new Dictionary<char, Suit> {
             { 'S', Suit.Spades },
             { 'H', Suit.Hearts },
             { 'D', Suit.Diamonds },
@@ -23,7 +23,7 @@ namespace TestBots
             { 'N', Suit.Unknown }
         };
 
-        private static Dictionary<char, char> SuitSymbolToLetter = new Dictionary<char, char> {
+        private static readonly Dictionary<char, char> SuitSymbolToLetter = new Dictionary<char, char> {
             { '♠', 'S' },
             { '♥', 'H' },
             { '♦', 'D' },
@@ -120,7 +120,7 @@ namespace TestBots
                     var pr = previousResults[i];
                     var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
                     var passed = suggestion == test.expectedBid;
-                    results[testItem.Key].Add(new SaycResult(passed, suggestion));
+                    results[testItem.Key].Add(new SaycResult(passed, suggestion, test.expectedBid));
 
                     if (pr.passed != passed || pr.suggested != suggestion)
                     {
@@ -191,7 +191,7 @@ namespace TestBots
             return new DeclareBid(level, suit, doubleOrRe);
         }
 
-        private static string BidString(int bidValue)
+        public static string BidString(int bidValue)
         {
             switch (bidValue)
             {
@@ -333,7 +333,7 @@ namespace TestBots
             }
         }
 
-        private static string UnknownCards(int length = 13)
+        private static string UnknownCards(int length)
         {
             return string.Concat(Enumerable.Repeat("0U", length));
         }
@@ -360,12 +360,12 @@ namespace TestBots
 
             foreach (var result in results)
             {
-                var s = result.Value.Select(r => $"new SaycResult({r.passed.ToString().ToLowerInvariant()}, {r.suggested})");
+                var s = result.Value.Select(r => $"new SaycResult({r.passed.ToString().ToLowerInvariant()}, {r.suggested}, {r.expected}),{r.csComment}");
 
                 sb.AppendLine($@"             {{
                 ""{result.Key}"", new[]
                 {{
-                    {string.Join($",{Environment.NewLine}                    ", s)}
+                    {string.Join($"{Environment.NewLine}                    ", s)}
                 }}
              }},");
             }

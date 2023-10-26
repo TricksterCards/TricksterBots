@@ -17,6 +17,12 @@ namespace Trickster.Bots
         {
             var (legalBids, players, player, hand) = (state.legalBids, new PlayersCollectionBase(this, state.players), state.player, state.hand);
 
+            if (legalBids.Any(b => PinochleBid.BidIsNoShoot(b.value)))
+            {
+                //  we're asking the player to shoot or not shoot. for now, always answer no shoot.
+                return PinochleBid.NoShootBid;
+            }
+
             var passBid = legalBids.FirstOrDefault(b => b.value == BidBase.Pass);
 
             //  don't bid up your partner if the opponents have passed and we can pass

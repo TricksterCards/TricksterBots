@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using Trickster.Bots;
 using Trickster.cloud;
@@ -17,6 +18,43 @@ namespace TestBots
             isPartnership = false,
             players = 3
         };
+
+        [TestMethod]
+        [DataRow( "6NT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker in Australian (weak hand)")]
+        [DataRow( "iNT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.American,           null, DisplayName = "Bid iNT in American")]
+        [DataRow( "6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker in Australian (strong hand)")]
+        [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,         null, DisplayName = "Don't bid any NT without Joker in Australian (if partner hasn't bid)")]
+        [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,  Suit.Spades, DisplayName = "Don't bid any NT without Joker in Australian (if partner didn't bid NT)")]
+        [DataRow( "7NT", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian, Suit.Unknown, DisplayName = "Bid 7NT without Joker if strong in NT and partner bid 6NT")]
+        [DataRow(  "9♠", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.American,           null, DisplayName = "Bid natural instead of iNT in American with Joker")]
+        public void Bid6NtWithJoker(string bid, string hand, FiveHundredVariation variation, Suit? partnerBidSuit)
+        {
+            var partnerBid = !partnerBidSuit.HasValue ? BidBase.NoBid : new FiveHundredBid(partnerBidSuit.Value, 6);
+            var options = new FiveHundredOptions
+            {
+                variation = variation,
+                whenNullo = FiveHundredWhenNullo.Off,
+            };
+            var players = new[]
+            {
+                new TestPlayer(hand: hand, seat: 0),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 1),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 2, bid: partnerBid),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 3, bid: BidBase.Pass)
+            };
+            var bot = GetBot(Suit.Unknown, options);
+            var bidState = new SuggestBidState<FiveHundredOptions>
+            {
+                dealerSeat = 3,
+                hand = new Hand(players[0].Hand),
+                legalBids = GetLegalBids(variation, partnerBidSuit.HasValue ? 7 : 6),
+                options = options,
+                player = players[0],
+                players = players
+            };
+            var suggestion = bot.SuggestBid(bidState);
+            Assert.AreEqual(bid, suggestion.value == BidBase.Pass ? "Pass" : new FiveHundredBid(suggestion.value).ToString());
+        }
 
         [TestMethod]
         public void SoloDucksIfEffectivePartnerTakingTrick()
@@ -164,6 +202,22 @@ namespace TestBots
         private static FiveHundredBot GetBot(Suit trumpSuit, FiveHundredOptions options)
         {
             return new FiveHundredBot(options, trumpSuit);
+        }
+
+        private static List<BidBase> GetLegalBids(FiveHundredVariation variation, int start = FiveHundredBid.MinTricks)
+        {
+            var bids = new List<BidBase>();
+
+            for (var nTricks = start; nTricks <= FiveHundredBid.MaxTricks; ++nTricks)
+            {
+                var inkle = variation == FiveHundredVariation.American && nTricks == FiveHundredBid.MinTricks;
+                bids.AddRange(FiveHundredBid.suitRank.OrderBy(sr => sr.Value)
+                    .Select(sr => new BidBase(new FiveHundredBid(sr.Key, nTricks, inkle))));
+            }
+
+            bids.Add(new BidBase(BidBase.Pass));
+
+            return bids;
         }
     }
 }
