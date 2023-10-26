@@ -40,16 +40,20 @@ namespace TestBots
         };
 
         [TestMethod]
-        [DataRow("ACKC3S6H7HQH",  3, false)]
-        [DataRow("7D5S8SQSAS6H",  3, false)]
-        [DataRow("ACKCQCJC2CAH",  4, false)]
-        [DataRow("6C5C5S4S3D2D",  0, false)]
-        [DataRow("ACKCQCJC2CAH", 15,  true)]
-        public void TestBids(string handString, int expectedBid, bool offerShoot)
+        [DataRow("ACKC3S6H7HQH",  3, false, PitchVariation.FourPoint)]
+        [DataRow("7D5S8SQSAS6H",  3, false, PitchVariation.FourPoint)]
+        [DataRow("ACKCQCJC2CAH",  4, false, PitchVariation.FourPoint)]
+        [DataRow("6C5C5S4S3D2D",  0, false, PitchVariation.FourPoint)]
+        [DataRow("ACKCQCJC2CAH", 15,  true, PitchVariation.FourPoint)]
+        [DataRow("KCQCJCJS3C2C",  8, false, PitchVariation.TenPoint )]
+        [DataRow("JCJSHJLJTC2C",  6, false, PitchVariation.TenPoint )]
+        [DataRow("JCJS5C4C3C2C",  6, false, PitchVariation.TenPoint )]
+        public void TestBids(string handString, int expectedBid, bool offerShoot, PitchVariation variation)
         {
-            var options = new PitchOptions
+            var isTenPoint = variation == PitchVariation.TenPoint;
+            var options = isTenPoint ? tenPointOptions : new PitchOptions
             {
-                variation = PitchVariation.FourPoint,
+                variation = variation,
                 drawOption = PitchDrawOption.NonTrump,
                 gameOverScore = 15,
                 isPartnership = true,
@@ -67,7 +71,9 @@ namespace TestBots
             if (expectedBid == 15)
                 bid = (int)PitchBid.ShootMoonBid;
 
-            Assert.AreEqual(bid, GetSuggestedBid(handString, out var hand, options), $"Expect bid of {expectedBid} for hand {Util.PrettyHand(hand)}");
+            var suggestion = GetSuggestedBid(handString, out var hand, options);
+            var suggestionValue = suggestion >= (int)PitchBid.Base ? suggestion - (int)PitchBid.Base : suggestion;
+            Assert.AreEqual(bid, suggestion, $"Expect bid of {expectedBid} for hand {Util.PrettyHand(hand)}, but got {suggestionValue}");
         }
 
         [TestMethod]
@@ -113,7 +119,7 @@ namespace TestBots
             };
 
             var bot = new PitchBot(GetCallForBestOptions(callPartnerSeat: 0), Suit.Hearts);
-            var cardState = new TestCardState<PitchOptions>(bot, players, "");
+            var cardState = new TestCardState<PitchOptions>(bot, players);
             var suggestion = bot.SuggestNextCard(cardState);
 
             Assert.AreEqual(card, $"{suggestion}");

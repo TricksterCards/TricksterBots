@@ -540,7 +540,7 @@ namespace Trickster.Bots
             //  take inventory of the relevant cards in our hand
             var trumpInHand = Math.Min(6, hand.Count(c => EffectiveSuit(c, t) == t));
             var ace = hand.Any(c => c.rank == Rank.Ace && c.suit == t);
-            var offace = hand.Any(c => c.rank == Rank.Jack && c.suit != t && EffectiveSuit(c, t) == t);
+            var offace = hand.Any(c => c.rank == Rank.Ace && c.suit != t && EffectiveSuit(c, t) == t);
             var king = hand.Any(c => c.rank == Rank.King && c.suit == t);
             var queen = hand.Any(c => c.rank == Rank.Queen && c.suit == t);
             var jack = hand.Any(c => c.rank == Rank.Jack && c.suit == t);
