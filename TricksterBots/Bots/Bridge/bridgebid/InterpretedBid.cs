@@ -186,7 +186,7 @@ namespace Trickster.Bots
             return 1;
         }
 
-        public bool Match(Hand hand)
+        public bool Match(Hand hand, bool allowTooStrong = false)
         {
             if (AlternateMatches != null && AlternateMatches(hand))
                 return true;
@@ -212,7 +212,7 @@ namespace Trickster.Bots
                     throw new Exception("Unknown point type");
             }
 
-            if (Points.Min > points || points > Points.Max)
+            if (Points.Min > points || (points > Points.Max && !allowTooStrong))
                 return false;
 
             var counts = BasicBidding.CountsBySuit(hand);
