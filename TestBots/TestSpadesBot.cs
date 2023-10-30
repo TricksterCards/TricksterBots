@@ -343,6 +343,37 @@ namespace TestBots
                 $"Expect bid of {bid} for hand {Util.PrettyHand(hand)} if partner bid ${partnerBid} with {nilPass}-card Nil pass");
         }
 
+
+
+        [TestMethod]
+        public void DontBidNilAfterBlindNil()
+        {
+            var handString = "2C3C4C5C6C7C8C 2D3D4D5D6D7D  ";
+            var players = new[]
+            {
+                new TestPlayer(seat: 0, hand: handString.Replace(" ", string.Empty)),
+                new TestPlayer(seat: 1),
+                new TestPlayer(seat: 2),
+                new TestPlayer(seat: 3, bid: 20 /* Blind Nil */)
+            };
+
+            var legalBids = new List<BidBase>();
+            for (var v = 0; v <= 13; ++v) legalBids.Add(new BidBase(v));
+
+            var hand = new Hand(players[0].Hand);
+            var bidState = new SuggestBidState<SpadesOptions>
+            {
+                player = players[0],
+                players = players,
+                legalBids = legalBids,
+                hand = hand
+            };
+
+            var suggestion = GetBot().SuggestBid(bidState).value;
+
+            Assert.AreEqual(1, suggestion, "Don't bid Nil after Blind Nil");
+        }
+
         [TestMethod]
         public void TestPassNilBid()
         {
