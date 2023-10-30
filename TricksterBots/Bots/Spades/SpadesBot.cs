@@ -213,10 +213,10 @@ namespace Trickster.Bots
             //  try to bid Nil if the biddable bids include Nil, partner didn't already bid nil, and noone has bid Blind Nil
             var partner = players.PartnerOf(player);
             var partnerBidNil = partner != null && partner.Bid != BidBase.NoBid && new SpadesBid(partner.Bid).IsNil;
-            var someoneBidBlindNil = players.Any(p => p.Bid != BidBase.NoBid && new SpadesBid(p.Bid).IsBlindNil);
-            if (biddableBids.Any(b => new SpadesBid(b).IsNil) && !someoneBidBlindNil)
+            if (biddableBids.Any(b => new SpadesBid(b).IsNil))
             {
-                if (!partnerBidNil && TryNilBid(hand, est, out var bid))
+                var someoneBidBlindNil = players.Any(p => p.Bid != BidBase.NoBid && new SpadesBid(p.Bid).IsBlindNil);
+                if (!partnerBidNil && !someoneBidBlindNil && TryNilBid(hand, est, out var bid))
                     return bid;
             }
 
