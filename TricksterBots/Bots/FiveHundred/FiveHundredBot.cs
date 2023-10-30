@@ -108,7 +108,9 @@ namespace Trickster.Bots
 
             //  only bid as high as necessary to win the game
             var highBid = players.Select(p => new FiveHundredBid(p.Bid)).OrderByDescending(b => b).First();
-            if (suggestion != null && BidValue(highBid) + player.GameScore >= options.gameOverScore)
+            var highBidIsPastGameOver = BidValue(highBid) + player.GameScore >= options.gameOverScore;
+            var suggestionIsPastGameOver = suggestion != null && BidValue(new FiveHundredBid(suggestion.value)) + player.GameScore >= options.gameOverScore;
+            if (suggestion != null && (highBidIsPastGameOver || suggestionIsPastGameOver))
             {
                 var partners = players.PartnersOf(player);
                 var teamHasHighBid = players.Any(p => p.Seat == player.Seat || partners.Any(partner => p.Seat == partner.Seat));
@@ -116,7 +118,7 @@ namespace Trickster.Bots
                 var opponentsHavePassed = players.Opponents(player).All(p => p.Bid == BidBase.Pass);
 
                 //  pass if our team has the high bid and opponents have all passed or we'll get the chance to bid again
-                if (teamHasHighBid && (opponentsHavePassed || canReenterBidding))
+                if (teamHasHighBid && highBidIsPastGameOver && (opponentsHavePassed || canReenterBidding))
                     return new BidBase(BidBase.Pass);
 
                 //  otherwise bid, but only as high as needed to win the game

@@ -24,6 +24,7 @@ namespace TestBots
         [TestMethod]
         [DataRow( "10♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian,   0, "Pass", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid high with a good fit with partner")]
         [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Don't bid higher than needed to win")]
+        [DataRow(  "9♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 120, "Pass", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid just high enough to win the game")]
         [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480,     "", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Keep bidding if opponents might overbid but no higher than necessary")]
         [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480,     "", "7D", "Pass", BidAfterPass.Always, DisplayName = "Don't bid higher than partner if we can reenter bidding")]
         [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D",   "7H",  BidAfterPass.Never, DisplayName = "Overbid opponents but no higher than necessary")]
