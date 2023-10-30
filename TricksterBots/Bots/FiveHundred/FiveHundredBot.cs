@@ -107,13 +107,13 @@ namespace Trickster.Bots
             var suggestion = shouldSignal && bestFHB != null ? matches.FirstOrDefault(b => new FiveHundredBid(b.value).Suit == bestFHB.Suit) : best;
 
             //  only bid as high as necessary to win the game
-            var highBid = players.Select(p => new FiveHundredBid(p.Bid)).OrderByDescending(b => b).First();
-            var highBidIsPastGameOver = BidValue(highBid) + player.GameScore >= options.gameOverScore;
             var suggestionIsPastGameOver = suggestion != null && BidValue(new FiveHundredBid(suggestion.value)) + player.GameScore >= options.gameOverScore;
-            if (suggestion != null && (highBidIsPastGameOver || suggestionIsPastGameOver))
+            if (suggestion != null && suggestionIsPastGameOver)
             {
                 var partners = players.PartnersOf(player);
-                var teamHasHighBid = players.Any(p => p.Seat == player.Seat || partners.Any(partner => p.Seat == partner.Seat));
+                var highBid = players.Select(p => new FiveHundredBid(p.Bid)).OrderByDescending(b => b).First();
+                var highBidIsPastGameOver = BidValue(highBid) + player.GameScore >= options.gameOverScore;
+                var teamHasHighBid = players.Any(p => p.Bid == highBid && (p.Seat == player.Seat || partners.Any(partner => p.Seat == partner.Seat)));
                 var canReenterBidding = options.bidAfterPass != BidAfterPass.Never;
                 var opponentsHavePassed = players.Opponents(player).All(p => p.Bid == BidBase.Pass);
 

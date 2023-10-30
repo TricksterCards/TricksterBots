@@ -28,6 +28,7 @@ namespace TestBots
         [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480,     "", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Keep bidding if opponents might overbid but no higher than necessary")]
         [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480,     "", "7D", "Pass", BidAfterPass.Always, DisplayName = "Don't bid higher than partner if we can reenter bidding")]
         [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D",   "7H",  BidAfterPass.Never, DisplayName = "Overbid opponents but no higher than necessary")]
+        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D",   "7H", BidAfterPass.Always, DisplayName = "Overbid opponents even if we can reenter bidding")]
         public void TestBiddingNearGameOver(string bid, string hand, FiveHundredVariation variation, int score, string lhoBidStr, string partnerBidStr, string rhoBidStr, BidAfterPass bidAfterPass)
         {
             var lhoBid = new FiveHundredBid(GetBid(lhoBidStr));
