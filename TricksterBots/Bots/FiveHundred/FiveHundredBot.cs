@@ -390,6 +390,9 @@ namespace Trickster.Bots
 
         private int BidValue(FiveHundredBid theBid)
         {
+            if (!theBid.IsContractor)
+                return 0;
+
             if (theBid.IsLikeNullo)
                 return theBid.IsOpen ? options.OpenNulloPoints : options.NulloPoints;
 
