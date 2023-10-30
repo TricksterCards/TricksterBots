@@ -117,7 +117,7 @@ namespace Trickster.Bots
                 var canReenterBidding = options.bidAfterPass != BidAfterPass.Never;
                 var opponentsHavePassed = players.Opponents(player).All(p => p.Bid == BidBase.Pass);
 
-                //  pass if our team has the high bid and opponents have all passed or we'll get the chance to bid again
+                //  pass if our team has the high bid, it's past the game over score, and opponents have all passed or we'll get the chance to bid again
                 if (teamHasHighBid && highBidIsPastGameOver && (opponentsHavePassed || canReenterBidding))
                     return new BidBase(BidBase.Pass);
 
