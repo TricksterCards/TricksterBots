@@ -38,21 +38,24 @@ namespace Trickster.Bots
             var partnersBids = players.PartnersOf(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
             var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
+            var estimatedKittyTricks = (int)Math.Round(KittySize / 3.0);
+            var minimumToBid6NT = 6 - defaultPartnerTricks - estimatedKittyTricks;
 
-            //  in Australian: if we haven't bid yet, we have a Joker, and we can bid 6NT, do so
+            //  calculate the raw number of tricks we can take with a given trump suit
+            var tricksBySuit = FiveHundredBid.suitRank.Keys.ToDictionary(s => s, s => CountTricks(hand, s));
+            var hasJoker = hand.Any(c => c.suit == Suit.Joker);
+
+            //  in Australian: if we haven't bid yet, we have a Joker, and we can bid 6NT, do so (if our hand has at least some strength)
             if (options.variation == FiveHundredVariation.Australian
                 && !player.BidHistory.Any()
-                && hand.ContainsSuitAndRank(Suit.Joker, Rank.High))
+                && hasJoker
+                && tricksBySuit[Suit.Unknown] >= minimumToBid6NT)
             {
                 var sixNTBid = new FiveHundredBid(Suit.Unknown, 6);
                 var sixNT = legalBids.FirstOrDefault(b => new FiveHundredBid(b.value) == sixNTBid);
                 if (sixNT != null)
                     return sixNT;
             }
-
-            //  calculate the raw number of tricks we can take with a given trump suit
-            var tricksBySuit = FiveHundredBid.suitRank.Keys.ToDictionary(s => s, s => CountTricks(hand, s));
-            var hasJoker = hand.Any(c => c.suit == Suit.Joker);
 
             //  then add adjustments based on hand shape, other players, and the kitty
             foreach (var suit in FiveHundredBid.suitRank.Keys)
@@ -74,10 +77,10 @@ namespace Trickster.Bots
                 else if (partnersBids.Any(b => b.IsContractor && b.Suit == suit) && !(playerLastBid.IsContractor && playerLastBid.Suit == suit))
                     tricksBySuit[suit] += partnersBids.Last(b => b.IsContractor && b.Suit == suit).Tricks - defaultPartnerTricks;
 
-                //  otherwise assume two tricks from partner plus one/two from the kitty (depending on size)
+                //  otherwise assume two tricks from partner plus one/two from the kitty (depending on size) unless already estimating 8+
                 //  also progressively reduce how many additional tricks we'll assume as our own trick count increases
-                else
-                    tricksBySuit[suit] += (int)Math.Floor((defaultPartnerTricks + Math.Round(KittySize / 3.0)) * Math.Min(4.0 / tricksBySuit[suit], 1.0));
+                else if (tricksBySuit[suit] < 8)
+                    tricksBySuit[suit] += (int)Math.Floor((defaultPartnerTricks + estimatedKittyTricks) * Math.Min(4.0 / tricksBySuit[suit], 1.0));
 
                 //  don't bid above 8 without the joker
                 if (tricksBySuit[suit] >= 9 && !hasJoker)
@@ -282,11 +285,12 @@ namespace Trickster.Bots
             var handBySuit = SuitRank.stdSuits.ToDictionary(s => s, s => hand.Where(c => EffectiveSuit(c, trumpSuit) == s).OrderBy(c => RankSort(c, trumpSuit)).ToList());
 
             var tricks = 0;
+            var nJokers = hand.Count(c => c.suit == Suit.Joker);
 
             if (trumpSuit == Suit.Unknown)
             {
                 //  in no-trump, count 1 trick for each joker
-                tricks += hand.Count(c => c.suit == Suit.Joker);
+                tricks += nJokers;
             }
             else
             {
@@ -316,7 +320,7 @@ namespace Trickster.Bots
 
                 var highRank = RankSort(deck.Last(), trumpSuit);
                 var nextHighestRank = highRank;
-                var hasStopper = false;
+                var hasStopper = nJokers > 0; //  if we have a Joker, we have a stopper for every suit
 
                 while (cards.Any())
                 {
@@ -335,7 +339,7 @@ namespace Trickster.Bots
 
                     tricks++;
                     hasStopper = true;
-                    nextHighestRank = targetRank;
+                    nextHighestRank = targetRank - 1;
                     cards.Remove(targetCard);
                     cards.RemoveRange(0, gaps);
                 }

@@ -20,13 +20,15 @@ namespace TestBots
         };
 
         [TestMethod]
-        [DataRow( "6NT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker in Australian (weak hand)")]
+        [DataRow("Pass", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Don't bid 6NT with Joker and a weak hand in Australian")]
+        [DataRow("Pass", "HJAS4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a near weak hand in Australian")]
+        [DataRow( "6NT", "HJASKSAH4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a medium hand in Australian")]
         [DataRow( "iNT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.American,           null, DisplayName = "Bid iNT in American")]
-        [DataRow( "6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker in Australian (strong hand)")]
+        [DataRow( "6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a strong hand in Australian")]
         [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,         null, DisplayName = "Don't bid any NT without Joker in Australian (if partner hasn't bid)")]
         [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,  Suit.Spades, DisplayName = "Don't bid any NT without Joker in Australian (if partner didn't bid NT)")]
         [DataRow( "7NT", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian, Suit.Unknown, DisplayName = "Bid 7NT without Joker if strong in NT and partner bid 6NT")]
-        [DataRow(  "9♠", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.American,           null, DisplayName = "Bid natural instead of iNT in American with Joker")]
+        [DataRow(  "9♠", "HJJSJCASKSQSTS9S7S4D", FiveHundredVariation.American,           null, DisplayName = "Bid natural instead of iNT in American with Joker")]
         public void Bid6NtWithJoker(string bid, string hand, FiveHundredVariation variation, Suit? partnerBidSuit)
         {
             var partnerBid = !partnerBidSuit.HasValue ? BidBase.NoBid : new FiveHundredBid(partnerBidSuit.Value, 6);
