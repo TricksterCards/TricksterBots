@@ -106,6 +106,32 @@ namespace Trickster.Bots
             var shouldSignal = options.variation == FiveHundredVariation.Australian && players.PartnersOf(player).Any(p => p.Bid != BidBase.Pass) && player.BidHistory.Count == 0;
             var suggestion = shouldSignal && bestFHB != null ? matches.FirstOrDefault(b => new FiveHundredBid(b.value).Suit == bestFHB.Suit) : best;
 
+            //  only bid as high as necessary to win the game
+            var suggestionIsPastGameOver = suggestion != null && BidValue(new FiveHundredBid(suggestion.value)) + player.GameScore >= options.gameOverScore;
+            if (suggestion != null && suggestionIsPastGameOver)
+            {
+                var partners = players.PartnersOf(player);
+                var highBid = players.Select(p => new FiveHundredBid(p.Bid)).OrderByDescending(b => b).First();
+                var highBidIsPastGameOver = BidValue(highBid) + player.GameScore >= options.gameOverScore;
+                var teamHasHighBid = players.Any(p => p.Bid == highBid && (p.Seat == player.Seat || partners.Any(partner => p.Seat == partner.Seat)));
+                var canReenterBidding = options.bidAfterPass != BidAfterPass.Never;
+                var opponentsHavePassed = players.Opponents(player).All(p => p.Bid == BidBase.Pass);
+
+                //  pass if our team has the high bid, it's past the game over score, and opponents have all passed or we'll get the chance to bid again
+                if (teamHasHighBid && highBidIsPastGameOver && (opponentsHavePassed || canReenterBidding))
+                    return new BidBase(BidBase.Pass);
+
+                //  otherwise bid, but only as high as needed to win the game
+                suggestion = matches.FirstOrDefault(b =>
+                {
+                    var fhb = new FiveHundredBid(b.value);
+                    if (fhb.Suit != bestFHB.Suit)
+                        return false;
+
+                    return BidValue(fhb) + player.GameScore >= options.gameOverScore;
+                });
+            }
+
             return suggestion ?? new BidBase(BidBase.Pass);
         }
 
@@ -360,6 +386,18 @@ namespace Trickster.Bots
             //  active nullo players are those that either bid nullo (can be multiple if playing solo)
             //  OR partners of nullo bidders who are still in the game (will be face-up dummy hands played by the nullo bidder)
             return player.Bid == BidBase.Dummy || new FiveHundredBid(player.Bid).IsLikeNullo;
+        }
+
+        private int BidValue(FiveHundredBid theBid)
+        {
+            if (!theBid.IsContractor)
+                return 0;
+
+            if (theBid.IsLikeNullo)
+                return theBid.IsOpen ? options.OpenNulloPoints : options.NulloPoints;
+
+            //  Avondale scoring from https://en.wikipedia.org/wiki/500_(card_game)
+            return 20 + FiveHundredBid.suitRank[theBid.Suit] * 20 + (theBid.Tricks - 6) * 100;
         }
 
         private Card TryBustNullo(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, PlayerBase trickTaker)

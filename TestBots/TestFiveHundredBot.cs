@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -18,6 +20,50 @@ namespace TestBots
             isPartnership = false,
             players = 3
         };
+
+        [TestMethod]
+        [DataRow( "10♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian,   0, "Pass", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid high with a good fit with partner")]
+        [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Don't bid higher than needed to win")]
+        [DataRow(  "9♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 120, "Pass", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid just high enough to win the game")]
+        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480,     "", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Keep bidding if opponents might overbid but no higher than necessary")]
+        [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480,     "", "7D", "Pass", BidAfterPass.Always, DisplayName = "Don't bid higher than partner if we can reenter bidding")]
+        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D",   "7H",  BidAfterPass.Never, DisplayName = "Overbid opponents but no higher than necessary")]
+        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D",   "7H", BidAfterPass.Always, DisplayName = "Overbid opponents even if we can reenter bidding")]
+        public void TestBiddingNearGameOver(string bid, string hand, FiveHundredVariation variation, int score, string lhoBidStr, string partnerBidStr, string rhoBidStr, BidAfterPass bidAfterPass)
+        {
+            var lhoBid = new FiveHundredBid(GetBid(lhoBidStr));
+            var partnerBid = new FiveHundredBid(GetBid(partnerBidStr));
+            var rhoBid = new FiveHundredBid(GetBid(rhoBidStr));
+            var options = new FiveHundredOptions
+            {
+                bidAfterPass = bidAfterPass,
+                variation = variation,
+                whenNullo = FiveHundredWhenNullo.Off,
+            };
+            var players = new[]
+            {
+                new TestPlayer(hand: hand, seat: 0, bid: new FiveHundredBid(Suit.Unknown, 6), gameScore: score),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 1, bid: lhoBid),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 2, bid: partnerBid, gameScore: score),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 3, bid: rhoBid)
+            };
+            
+            foreach (var p in players.Where(p => p.Bid != BidBase.NoBid))
+                p.BidHistory.Add(p.Bid);
+
+            var bot = GetBot(Suit.Unknown, options);
+            var bidState = new SuggestBidState<FiveHundredOptions>
+            {
+                dealerSeat = 3,
+                hand = new Hand(players[0].Hand),
+                legalBids = GetLegalBids(variation, partnerBid.IsContractor ? partnerBid.Tricks + 1 : 6),
+                options = options,
+                player = players[0],
+                players = players
+            };
+            var suggestion = bot.SuggestBid(bidState);
+            Assert.AreEqual(bid, suggestion.value == BidBase.Pass ? "Pass" : new FiveHundredBid(suggestion.value).ToString());
+        }
 
         [TestMethod]
         [DataRow("Pass", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Don't bid 6NT with Joker and a weak hand in Australian")]
@@ -199,6 +245,24 @@ namespace TestBots
             );
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual(expectedCard, $"{suggestion}");
+        }
+
+        private static int GetBid(string bid)
+        {
+            if (string.IsNullOrEmpty(bid))
+                return BidBase.NoBid;
+
+            if (bid == "Pass")
+                return BidBase.Pass;
+
+            var level = int.Parse(Regex.Match(bid, @"\d+").Value);
+            var suitString = Regex.Match(bid, @"\D+").Value;
+            var suitNames = Enum.GetNames(typeof(Suit));
+            var suitValues = Enum.GetValues(typeof(Suit));
+            var suitIndex = Array.FindIndex(suitNames, n => n.StartsWith(suitString));
+            var suit = suitIndex == -1 ? Suit.Unknown : (Suit)suitValues.GetValue(suitIndex);
+
+            return new FiveHundredBid(suit, level);
         }
 
         private static FiveHundredBot GetBot(Suit trumpSuit, FiveHundredOptions options)
