@@ -113,7 +113,23 @@ namespace Trickster.Bots
             var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, legalBids.Any(b => b.value == BidBase.Pass));
             var canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
 
+            if (!canBidSuggestion && IsAloneBid(suggestion))
+            {
+                suggestion = DowngradeAloneBid(suggestion);
+                canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
+            }
+
             return canBidSuggestion ? suggestion : legalBids.FirstOrDefault(b => b.value == BidBase.Pass) ?? legalBids.First();
+        }
+
+        private static bool IsAloneBid(BidBase bid)
+        {
+            return bid.value >= (int)EuchreBid.MakeAlone && bid.value < (int)EuchreBid.Defend;
+        }
+
+        private static BidBase DowngradeAloneBid(BidBase bid)
+        {
+            return !IsAloneBid(bid) ? bid : new BidBase(bid.value - (int)EuchreBid.MakeAlone + (int)EuchreBid.Make);
         }
 
         //  overload called above and for unit tests
