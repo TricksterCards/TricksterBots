@@ -109,6 +109,31 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void TrumpBossEvenIfLhoIsVoid()
+        {
+            var options = new FiveHundredOptions
+            {
+                deckSize = 46,
+                variation = FiveHundredVariation.American,
+            };
+            var players = new[]
+            {
+                new TestPlayer(new FiveHundredBid(GetBid("7NT")),   "HJKSQSTSJH9HKC"),
+                new TestPlayer(FiveHundredBid.NotContractorBid,     "0?0?0?0?0?0?0?", cardsTaken: "ADLJKD9D") { VoidSuits = new List<Suit> { Suit.Diamonds }},
+                new TestPlayer(FiveHundredBid.ContractorPartnerBid, "0?0?0?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.NotContractorBid,     "0?0?0?0?0?0?", cardsTaken: "ACJC6C4C"),
+            };
+            var bot = GetBot(Suit.Unknown, options);
+            var cardState = new TestCardState<FiveHundredOptions>(
+                bot,
+                players,
+                trick: "QD"
+            );
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("HJ", $"{suggestion}");
+        }
+
+        [TestMethod]
         public void SoloDucksIfEffectivePartnerTakingTrick()
         {
             var players = new[]
