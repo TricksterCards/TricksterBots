@@ -22,14 +22,16 @@ namespace TestBots
         };
 
         [TestMethod]
-        [DataRow( "10♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian,   0, "Pass", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid high with a good fit with partner")]
-        [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Don't bid higher than needed to win")]
-        [DataRow(  "9♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 120, "Pass", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid just high enough to win the game")]
-        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480,     "", "7D", "Pass",  BidAfterPass.Never, DisplayName = "Keep bidding if opponents might overbid but no higher than necessary")]
-        [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480,     "", "7D", "Pass", BidAfterPass.Always, DisplayName = "Don't bid higher than partner if we can reenter bidding")]
-        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D",   "7H",  BidAfterPass.Never, DisplayName = "Overbid opponents but no higher than necessary")]
-        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 480, "Pass", "7D",   "7H", BidAfterPass.Always, DisplayName = "Overbid opponents even if we can reenter bidding")]
-        public void TestBiddingNearGameOver(string bid, string hand, FiveHundredVariation variation, int score, string lhoBidStr, string partnerBidStr, string rhoBidStr, BidAfterPass bidAfterPass)
+        [DataRow( "10♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3,   0, "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid high with a good fit with partner")]
+        [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480, "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Don't bid higher than needed to win")]
+        [DataRow(  "9♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 120, "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid just high enough to win the game")]
+        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480,     "",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Keep bidding if opponents might overbid but no higher than necessary")]
+        [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480,     "",   "7D", "Pass", BidAfterPass.Always, DisplayName = "Don't bid higher than partner if we can reenter bidding")]
+        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480, "Pass",   "7D",   "7H",  BidAfterPass.Never, DisplayName = "Overbid opponents but no higher than necessary")]
+        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480, "Pass",   "7D",   "7H", BidAfterPass.Always, DisplayName = "Overbid opponents even if we can reenter bidding")]
+        [DataRow("Pass", "HJKSJSTS6H5HKC7CKDQD",   FiveHundredVariation.American, 5,   0,     "", "Pass",   "8H",  BidAfterPass.Never, DisplayName = "Pass with insufficient strength to overbid opponents")]
+        [DataRow( "7NT", "HJQSKH6HQC5C4CQD7D6D",   FiveHundredVariation.American, 5,   0,     "",     "",     "",  BidAfterPass.Never, DisplayName = "Only count the Joker as stopper once in NT")]
+        public void TestBidding(string bid, string hand, FiveHundredVariation variation, int kittySize, int score, string lhoBidStr, string partnerBidStr, string rhoBidStr, BidAfterPass bidAfterPass)
         {
             var lhoBid = new FiveHundredBid(GetBid(lhoBidStr));
             var partnerBid = new FiveHundredBid(GetBid(partnerBidStr));
@@ -37,6 +39,7 @@ namespace TestBots
             var options = new FiveHundredOptions
             {
                 bidAfterPass = bidAfterPass,
+                deckSize = 40 + kittySize,
                 variation = variation,
                 whenNullo = FiveHundredWhenNullo.Off,
             };
@@ -56,7 +59,7 @@ namespace TestBots
             {
                 dealerSeat = 3,
                 hand = new Hand(players[0].Hand),
-                legalBids = GetLegalBids(variation, partnerBid.IsContractor ? partnerBid.Tricks + 1 : 6),
+                legalBids = GetLegalBids(variation, rhoBid.IsContractor ? rhoBid : partnerBid.IsContractor ? partnerBid : lhoBid.IsContractor ? lhoBid : new FiveHundredBid(BidBase.NoBid)),
                 options = options,
                 player = players[0],
                 players = players
@@ -67,10 +70,11 @@ namespace TestBots
 
         [TestMethod]
         [DataRow("Pass", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Don't bid 6NT with Joker and a weak hand in Australian")]
-        [DataRow("Pass", "HJAS4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a near weak hand in Australian")]
+        [DataRow( "6NT", "HJAS4S5H4HKD4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a near weak hand in Australian")]
         [DataRow( "6NT", "HJASKSAH4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a medium hand in Australian")]
         [DataRow( "iNT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.American,           null, DisplayName = "Bid iNT in American")]
         [DataRow( "6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a strong hand in Australian")]
+        [DataRow("10NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.American,   Suit.Unknown, DisplayName = "Bid 10NT with Joker and a strong hand in Americat")]
         [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,         null, DisplayName = "Don't bid any NT without Joker in Australian (if partner hasn't bid)")]
         [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,  Suit.Spades, DisplayName = "Don't bid any NT without Joker in Australian (if partner didn't bid NT)")]
         [DataRow( "7NT", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian, Suit.Unknown, DisplayName = "Bid 7NT without Joker if strong in NT and partner bid 6NT")]
@@ -270,7 +274,20 @@ namespace TestBots
             return new FiveHundredBot(options, trumpSuit);
         }
 
-        private static List<BidBase> GetLegalBids(FiveHundredVariation variation, int start = FiveHundredBid.MinTricks)
+        private static List<BidBase> GetLegalBids(FiveHundredVariation variation, FiveHundredBid afterBid)
+        {
+            if ((int)afterBid == BidBase.NoBid)
+                return GetLegalBids(variation);
+
+            if (afterBid.Suit == Suit.Unknown)
+                return GetLegalBids(variation, afterBid.Tricks + 1);
+
+            var nextSuitRank = FiveHundredBid.suitRank[afterBid.Suit] + 1;
+            var nextSuit = FiveHundredBid.suitRank.FirstOrDefault(sr => sr.Value == nextSuitRank).Key;
+            return GetLegalBids(variation, afterBid.Tricks, nextSuit);
+        }
+
+        private static List<BidBase> GetLegalBids(FiveHundredVariation variation, int start = FiveHundredBid.MinTricks, Suit startSuit = Suit.Spades)
         {
             var bids = new List<BidBase>();
 
@@ -278,6 +295,7 @@ namespace TestBots
             {
                 var inkle = variation == FiveHundredVariation.American && nTricks == FiveHundredBid.MinTricks;
                 bids.AddRange(FiveHundredBid.suitRank.OrderBy(sr => sr.Value)
+                    .Where(sr => nTricks > start || sr.Value >= FiveHundredBid.suitRank[startSuit])
                     .Select(sr => new BidBase(new FiveHundredBid(sr.Key, nTricks, inkle))));
             }
 

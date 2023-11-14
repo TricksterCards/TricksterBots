@@ -38,7 +38,7 @@ namespace Trickster.Bots
             var partnersBids = players.PartnersOf(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
             var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
-            var estimatedKittyTricks = (int)Math.Round(KittySize / 3.0);
+            var estimatedKittyTricks = (int)Math.Floor(KittySize / 3.0);
             var minimumToBid6NT = 6 - defaultPartnerTricks - estimatedKittyTricks;
 
             //  calculate the raw number of tricks we can take with a given trump suit
@@ -339,6 +339,7 @@ namespace Trickster.Bots
             }
 
             //  then calculate the winners for each suit, accounting for gaps
+            var remainingJokers = nJokers;
             foreach (var suit in SuitRank.stdSuits)
             {
                 var deck = deckBySuit[suit];
@@ -346,7 +347,7 @@ namespace Trickster.Bots
 
                 var highRank = RankSort(deck.Last(), trumpSuit);
                 var nextHighestRank = highRank;
-                var hasStopper = nJokers > 0; //  if we have a Joker, we have a stopper for every suit
+                var hasStopper = false;
 
                 while (cards.Any())
                 {
@@ -360,18 +361,29 @@ namespace Trickster.Bots
                     var gaps = deck.Count(c => targetRank < RankSort(c, trumpSuit) && RankSort(c, trumpSuit) <= nextHighestRank && !cards.Contains(c));
                     var below = cards.Count(c => RankSort(c, trumpSuit) < targetRank);
 
+                    var usingJokerAsStopper = false;
                     if (gaps > below)
-                        break;
+                    {
+                        //  Jokers can be a stopper for any suit in NT (but can only be used to stop once)
+                        if (trumpSuit == Suit.Unknown && remainingJokers > 0 && gaps - 1 <= below)
+                        {
+                            usingJokerAsStopper = true;
+                            remainingJokers--;
+                        }
+                        else
+                            break;
+                    }
 
                     tricks++;
                     hasStopper = true;
                     nextHighestRank = targetRank - 1;
                     cards.Remove(targetCard);
-                    cards.RemoveRange(0, gaps);
+                    if (!usingJokerAsStopper)
+                        cards.RemoveRange(0, gaps);
                 }
 
                 //  if we're looking at no-trump and we don't have a stopper in all suits, bail
-                if (trumpSuit == Suit.Unknown && !hasStopper)
+                if (trumpSuit == Suit.Unknown && !hasStopper && nJokers == 0)
                     return 0;
             }
 
