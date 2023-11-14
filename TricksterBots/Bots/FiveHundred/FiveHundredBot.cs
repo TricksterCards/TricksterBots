@@ -38,7 +38,7 @@ namespace Trickster.Bots
             var partnersBids = players.PartnersOf(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
             var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
-            var estimatedKittyTricks = (int)Math.Floor(KittySize / 3.0);
+            var estimatedKittyTricks = KittySize > 3 ? 1 : 0;
             var minimumToBid6NT = 6 - defaultPartnerTricks - estimatedKittyTricks;
 
             //  calculate the raw number of tricks we can take with a given trump suit
@@ -383,7 +383,7 @@ namespace Trickster.Bots
                 }
 
                 //  if we're looking at no-trump and we don't have a stopper in all suits, bail
-                if (trumpSuit == Suit.Unknown && !hasStopper && nJokers == 0)
+                if (trumpSuit == Suit.Unknown && !hasStopper && remainingJokers <= 0)
                     return 0;
             }
 

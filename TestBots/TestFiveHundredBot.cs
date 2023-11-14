@@ -70,7 +70,7 @@ namespace TestBots
 
         [TestMethod]
         [DataRow("Pass", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Don't bid 6NT with Joker and a weak hand in Australian")]
-        [DataRow( "6NT", "HJAS4S5H4HKD4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a near weak hand in Australian")]
+        [DataRow( "6NT", "HJAS4S5H4HKD4DKC5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a near weak hand in Australian")]
         [DataRow( "6NT", "HJASKSAH4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a medium hand in Australian")]
         [DataRow( "iNT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.American,           null, DisplayName = "Bid iNT in American")]
         [DataRow( "6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a strong hand in Australian")]
