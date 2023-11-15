@@ -387,9 +387,9 @@ namespace Trickster.Bots
                 {
                     //  we can't follow suit but we have trump
 
-                    if (IsPartnership && trickCount == 1 && players.LhoIsVoidInSuit(player, firstCardInTrick, cardsPlayed))
+                    if (IsPartnership && trickCount == 1 && players.LhoIsVoidInSuit(player, firstCardInTrick, cardsPlayed) && !IsCardHigh(cardTakingTrick, cardsPlayed))
                     {
-                        //  second to play and left hand opponent is void in the led suit - don't trump-in; leave it to our partner
+                        //  second to play and left hand opponent is void in the led suit - don't trump-in; leave it to our partner unless led card is boss
                     }
                     else if (isPartnerTakingTrick && (lastToPlay || IsCardHigh(cardTakingTrick, cardsPlayed.Concat(new Hand(player.Hand)))))
                     {

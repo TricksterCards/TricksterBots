@@ -38,7 +38,7 @@ namespace Trickster.Bots
             var partnersBids = players.PartnersOf(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
             var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
-            var estimatedKittyTricks = (int)Math.Round(KittySize / 3.0);
+            var estimatedKittyTricks = 1;
             var minimumToBid6NT = 6 - defaultPartnerTricks - estimatedKittyTricks;
 
             //  calculate the raw number of tricks we can take with a given trump suit
