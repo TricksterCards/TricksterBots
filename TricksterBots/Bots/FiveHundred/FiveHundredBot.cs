@@ -346,7 +346,7 @@ namespace Trickster.Bots
 
                 var highRank = RankSort(deck.Last(), trumpSuit);
                 var nextHighestRank = highRank;
-                var hasStopper = nJokers > 0;
+                var hasStopper = nJokers > 0; //  if we have a Joker, we have a stopper for every suit
 
                 while (cards.Any())
                 {
