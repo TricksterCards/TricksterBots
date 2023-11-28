@@ -65,6 +65,7 @@ namespace TestBots
 
         [TestMethod]
         [DataRow("8S",   "KSTS", "QS8S", DisplayName = "Don't play QS if partner taking trick with higher spade")]
+        [DataRow("AS",   "KSTS", "QSAS", DisplayName = "Don't play QS if partner taking trick with higher spade, even holding AS")]
         [DataRow("8S", "4SKSTS", "QS8S", DisplayName = "Don't play QS if last to play and partner taking trick")]
         public void PlayOfHandAfterFirstTrick(string card, string trick, string hand)
         {
