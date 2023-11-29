@@ -47,8 +47,6 @@ namespace Trickster.Bots
             return player.Seat == target.Seat || target.Bid == BidBase.Dummy && target.Hand.Length < 26 || player.Bid == BidBase.Dummy && target.Seat == players.PartnerOf(player).Seat;
         }
 
-
-        //
         private static string BidString(int bidValue)
         {
             switch (bidValue)
@@ -65,8 +63,6 @@ namespace Trickster.Bots
             }
         }
 
-
-        // 
         public override BidBase SuggestBid(SuggestBidState<BridgeOptions> state)
         {
             var (players, dealerSeat, hand) = (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand);
@@ -112,10 +108,10 @@ namespace Trickster.Bots
             return bid;
         }
 
-        public BidBase SuggestRLBid(BridgeBidHistory history, Hand hand)
+        public static BidBase SuggestRLBid(BridgeBidHistory history, Hand hand)
         {
             var historyStrings = new List<string>();
-            for (int ix = 0; ix < history.Count; ix++)
+            for (var ix = 0; ix < history.Count; ix++)
                 historyStrings.Add(BidString(history[ix]));
 
             // TODO: Hack to just pass thie stuff on to the bid test....
@@ -126,12 +122,18 @@ namespace Trickster.Bots
 
             var bid = biddingState.SuggestBid(historyStrings.ToArray());
 
-            if (bid == "Pass") return new BidBase(BidBase.Pass);
-            if (bid == "X") return new BidBase(BridgeBid.Double);
-            if (bid == "XX") return new BidBase(BridgeBid.Redouble);
+            switch (bid)
+            {
+                case "Pass":
+                    return new BidBase(BidBase.Pass);
+                case "X":
+                    return new BidBase(BridgeBid.Double);
+                case "XX":
+                    return new BidBase(BridgeBid.Redouble);
+            }
 
-            Bid b = Call.FromString(bid) as Bid;
-            Suit suit = b.Suit == null ? Suit.Unknown : (Suit)b.Suit;
+            var b = Call.FromString(bid) as Bid;
+            var suit = b.Suit ?? Suit.Unknown;
             return new DeclareBid(b.Level, suit);
         }
 
