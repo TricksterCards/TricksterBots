@@ -18,7 +18,7 @@ namespace TestBots
     [TestClass]
     public class TestBridgeBot
     {
-        private static Dictionary<char, Suit> LetterToSuit = new Dictionary<char, Suit> {
+        private static readonly Dictionary<char, Suit> LetterToSuit = new Dictionary<char, Suit> {
             { 'S', Suit.Spades },
             { 'H', Suit.Hearts },
             { 'D', Suit.Diamonds },
@@ -26,7 +26,7 @@ namespace TestBots
             { 'N', Suit.Unknown }
         };
 
-        private static Dictionary<char, char> SuitSymbolToLetter = new Dictionary<char, char> {
+        private static readonly Dictionary<char, char> SuitSymbolToLetter = new Dictionary<char, char> {
             { '♠', 'S' },
             { '♥', 'H' },
             { '♦', 'D' },
@@ -61,17 +61,21 @@ namespace TestBots
         [TestMethod]
         public void FuzzPlays()
         {
-            /*
+            var failures = new List<string>();
             foreach (var test in Fuzz.GeneratePlayTests(100000))
             {
-                RunPlayTest(test);
+                var failure = RunPlayTest(test);
+                if (failure != null)
+                    failures.Add(failure);
             }
-            */
+            if (failures.Count > 0)
+                Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
         }
 
         [TestMethod]
         public void SaycTestFiles()
         {
+            var failures = new List<string>();
             var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             // ReSharper disable once AssignNullToNotNullAttribute
             var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "SAYC"), "*.pbn");
@@ -79,6 +83,7 @@ namespace TestBots
             {
                 var text = File.ReadAllText(file);
                 var tests = PBN.ImportTests(text);
+                var filename = Path.GetFileName(file);
 
                 var testsPassing = 0;
                 var testsFailing = 0;
@@ -87,22 +92,19 @@ namespace TestBots
                 {
                     if (!string.IsNullOrEmpty(test.bid))
                     {
-                        if (RunBidTest(new BidTest(test)))
-                        {
-                            testsPassing++;
-                        }
-                        else
-                        {
-                            testsFailing++;
-                        }
+                        var failure = RunBidTest(new BidTest(test));
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
                     }
                     else if (!string.IsNullOrEmpty(test.play))
                     {
-                        RunPlayTest(test);
+                        var failure = RunPlayTest(test);
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
                     }
                     else
                     {
-                        throw new ArgumentException("Test must have either an expected bid or expected play.");
+                        failures.Add($"{filename}: '{test.type}' must have either an expected bid or expected play.");
                     }
                 }
 
@@ -116,6 +118,8 @@ namespace TestBots
                 }
 
             }
+            if (failures.Count > 0)
+                Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
         }
 
         [TestMethod]
@@ -143,7 +147,7 @@ namespace TestBots
                     var pr = previousResults[i];
                     var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
                     var passed = suggestion == test.expectedBid;
-                    results[testItem.Key].Add(new SaycResult(passed, suggestion));
+                    results[testItem.Key].Add(new SaycResult(passed, suggestion, test.expectedBid));
 
                     if (pr.passed != passed || pr.suggested != suggestion)
                     {
@@ -215,7 +219,7 @@ namespace TestBots
             return new DeclareBid(level, suit, doubleOrRe);
         }
 
-        private static string BidString(int bidValue)
+        public static string BidString(int bidValue)
         {
             switch (bidValue)
             {
@@ -236,48 +240,33 @@ namespace TestBots
             return passed ? "passed" : "failed";
         }
 
-        private static bool RunBidTest(BidTest test)
+        private static string RunBidTest(BidTest test)
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
             var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
-      //      Assert.AreEqual(test.expectedBid, suggestion,
-       //         $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})"
-       //     );
 
-            // NOW TRY OUR HACKED BID THINGING....
-            var historyStrings = new List<string>();
-            foreach (var b in test.bidHistory)
-            {
-                historyStrings.Add(BidString(b));
-            }
-            // TODO: Hack to just pass thie stuff on to the bid test....
-            Hand[] hands = { null, null, null, null };
-            var i = historyStrings.Count % 4;
-            hands[i] = test.hand;
-            var biddingState = new BiddingState(hands, Direction.North, "EW");
-
-            string expected = BidString(test.expectedBid);
-            var bid = biddingState.SuggestBid(historyStrings.ToArray());
-
-            if (bid != expected)
-            {
-                Debug.WriteLine($"FAILED: '{test.type}' suggested {bid} but expected {expected}");
-            }
-            return (bid == expected);
-
-
+            if (test.expectedBid != suggestion)
+                return $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})";
+            else
+                return null;
         }
 
-        private static void RunPlayTest(BasicTests.BasicTest test)
+        private static string RunPlayTest(BasicTests.BasicTest test)
         {
             var contract = GetContract(test);
+            var cardsPlayedInOrder = "";
             var dummyHand = string.IsNullOrEmpty(test.dummy) && test.hand.Length == 13 * 2 ? UnknownCards(13) : test.dummy;
             var players = new[] { new TestPlayer(), new TestPlayer(), new TestPlayer(), new TestPlayer() };
             for (var i = 0; i < 4; i++)
             {
-                var seatRelativeToFirstLead = (test.plays.Length + i) % 4;
-                players[i].Bid = seatRelativeToFirstLead == 1 ? BidBase.Dummy : seatRelativeToFirstLead % 2 == 0 ? BridgeBid.Defend : (int)contract;
-                players[i].Seat = (test.declarerSeat + 1 + i) % 4;
+                players[i].Seat = (test.declarerSeat + i) % 4;
+
+                if (players[i].Seat == test.declarerSeat)
+                    players[i].Bid = (int)contract;
+                else if (players[i].Seat == (test.declarerSeat + 2) % 4)
+                    players[i].Bid = BidBase.Dummy;
+                else
+                    players[i].Bid = BridgeBid.Defend;
             }
 
             // resort the players in seat order to simplify adding data
@@ -288,6 +277,15 @@ namespace TestBots
             for (var i = 0; i < test.plays.Length; i += 4)
             {
                 var trick = test.plays.Skip(i).Take(4).ToList();
+                for (var j = 0; j < trick.Count; j++)
+                {
+                    var card = trick[j];
+                    var seat = (nextSeat + j) % 4;
+                    var player = players[seat];
+                    cardsPlayedInOrder += $"{seat}{card}";
+                    if (j > 0 && card[1] != trick[0][1])
+                        player.VoidSuits.Add(LetterToSuit[trick[0][1]]);
+                }
                 if (trick.Count == 4)
                 {
                     var topCard = PBN.GetTopCard(trick, test.contract[1]);
@@ -307,6 +305,8 @@ namespace TestBots
                     player.Hand = test.hand;
                 else if (player.Bid == BidBase.Dummy)
                     player.Hand = dummyHand;
+                else if (nextSeat == (player.Seat + 2) % 4 && players[(player.Seat + 2) % 4].Bid == BidBase.Dummy)
+                    player.Hand = dummyHand; // Show declarer's hand to dummy if it's dummy's turn to play
                 else // TODO: calculate correct length based on who's played in the current trick
                     player.Hand = UnknownCards(test.hand.Length / 2); 
             }
@@ -339,22 +339,29 @@ namespace TestBots
                 var bot = GetBot(contract.suit);
                 var trickLength = test.plays.Length % 4;
                 var trick = string.Join("", test.plays.Skip(test.plays.Length - trickLength));
-                var cardState = new TestCardState<BridgeOptions>(bot, players, trick) { trumpSuit = contract.suit };
+                var cardState = new TestCardState<BridgeOptions>(bot, players, trick) {
+                    cardsPlayedInOrder = cardsPlayedInOrder,
+                    trumpSuit = contract.suit,
+                };
                 var suggestion = bot.SuggestNextCard(cardState);
                 if (!string.IsNullOrEmpty(test.play))
                 {
-                    Assert.AreEqual(test.play, suggestion.ToString(),
-                        $"Test '{test.type}' suggested {suggestion} but expected {test.play}"
-                    );
+                    if (test.play != suggestion.ToString())
+                        return $"Test '{test.type}' suggested {suggestion} but expected {test.play}";
+                    else
+                        return null;
                 }
                 else
                 {
-                    Assert.IsNotNull(suggestion);
+                    if (suggestion == null)
+                        return $"Test '{test.type}' failed to return a suggestion";
+                    else
+                        return null;
                 }
             }
         }
 
-        private static string UnknownCards(int length = 13)
+        private static string UnknownCards(int length)
         {
             return string.Concat(Enumerable.Repeat("0U", length));
         }
@@ -381,12 +388,12 @@ namespace TestBots
 
             foreach (var result in results)
             {
-                var s = result.Value.Select(r => $"new SaycResult({r.passed.ToString().ToLowerInvariant()}, {r.suggested})");
+                var s = result.Value.Select(r => $"new SaycResult({r.passed.ToString().ToLowerInvariant()}, {r.suggested}, {r.expected}),{r.csComment}");
 
                 sb.AppendLine($@"             {{
                 ""{result.Key}"", new[]
                 {{
-                    {string.Join($",{Environment.NewLine}                    ", s)}
+                    {string.Join($"{Environment.NewLine}                    ", s)}
                 }}
              }},");
             }

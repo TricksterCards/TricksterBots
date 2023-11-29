@@ -1,0 +1,16 @@
+
+% Try not to discard from a suit where doing so would invalidate a stopper
+
+[Event "Avoid invalidating stoppers when discarding"]
+[Deal "N:KT654.K8.Q43.AKJ .AJ976.JT965.Q98 - -"]
+[Contract "3D"]
+[Play "W"]
+SA S4 H6 -
+
+% Try to keep an equal number of cards in dummy's longest suit
+
+[Event "Keep equal number of cards in dummy's longest suit"]
+[Deal "N:KT65.K.Q432.KQT7 .AJ97.JT965.J986 - -"]
+[Contract "3D"]
+[Play "W"]
+SA S5 H7 -

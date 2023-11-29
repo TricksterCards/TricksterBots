@@ -133,7 +133,7 @@ namespace Trickster.Bots
                     //  12+ points: get the partnership to game
                     var minCards = BridgeBot.IsMajor(advance.declareBid.suit) ? 4 : 5;
                     advance.Points.Min = 12;
-                    advance.HandShape[advance.declareBid.suit].Min = 5;
+                    advance.HandShape[advance.declareBid.suit].Min = minCards;
                     advance.Description = $"{minCards}+ {advance.declareBid.suit}";
                 }
             }

@@ -1,0 +1,435 @@
+%
+% Leads
+%
+
+% Suit contracts:
+% If dummy has shortness and fewer trumps than declarer,
+% play a trump to prevent ruffing in dummy
+
+[Event "Lead on Defense: Trump if dummy is short with fewer trumps than declarer"]
+[Deal "W:- 65.AKQ.J432.T532 QJT.T.T987.98764 -"]
+[Contract "3S"]
+[Auction "W"]
+2S Pass 3S Pass
+Pass Pass
+[Play "N"]
+HA HT H3 H2
+S5 -  -  -
+
+% If we have one trump left, we should lead it to take two of defender's trumps (if both declarer and dummy still have trump)
+
+[Event "Lead on Defense: Lead last trump if declarer and dummy aren't void"]
+[Deal "N:5.AKQJ.J432.T532 QJT.T987.AKQ.987 - -"]
+[Contract "2S"]
+[Play "N"]
+HA H9 H3 H2
+S5 -  -  -
+
+% Other defensive rules against both suit and notrump:
+% If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
+% and the player behind dummy does not have K,
+% try to win tricks quickly
+
+[Event "Lead on Defense: Win tricks quickly if dummy has long, good side suit"]
+[Deal "N:65.AKQ.J432.T532 QJT.T9.AKQ87.987 - -"]
+[Contract "2S"]
+[Play "N"]
+HA H9 H3 H2
+HK -  -  -
+
+% Prefer leading a sequence of your own
+
+[Event "Lead on Defense: 1st preference - lead own sequence"]
+[Deal "N:A65.KQ6.J432.953 - - JT9.987.8765.AKJ"]
+[Contract "2S"]
+[Play "S"]
+D3 D7 DJ DQ
+S2 S8 SA S3
+-  -  HK -
+
+% Otherwise give priority to returning partner's suit (especially in NT),
+% Returning partner's initially led suit: low from three
+
+[Event "Lead on Defense: 2nd preference - return partner's suit"]
+[Deal "N:65.K65.J432.T532 - - JT98.987.987.987"]
+[Contract "2NT"]
+[Play "S"]
+D6 D7 DJ D5
+-  -  D2 -
+
+[Event "Lead on Defense: 2nd preference - return partner's suit (case 2)"]
+[Deal "N:65.KJ6.Q432.T532 - - JT98.987.987.987"]
+[Contract "2S"]
+[Play "S"]
+D3 D7 DQ D5
+-  -  D2 -
+
+% Leading dummy's weakest suit is a good fallback
+
+[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (Suit)"]
+[Deal "N:A65.Q65.J.976543 - - JT9874.982.7.AKJ"]
+[Contract "2S"]
+[Play "S"]
+D3 D7 DJ DQ
+S2 S8 SA S3
+-  -  H5 -
+
+% Ensure we don't pick trump as dummy's weakest suit
+
+[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (Suit case 2)"]
+[Deal "N:8.Q53.KQ84.T7643 KT75.K7642.63.Q2 - -"]
+[Auction "N"]
+Pass Pass 1S 2D
+Pass Pass Pass
+[Contract "2D"]
+[Play "N"]
+S8 S5 SJ S2
+H3 S7 SA S6
+D4 ST S4 S9
+C4 -  -  -
+
+[Event "Lead on Defense: 3rd preference - lead dummy's weakest suit (NT)"]
+[Deal "N:Q652.Q652.Q652.A - - 873.J94.A94.KJT4"]
+[Contract "2NT"]
+[Play "S"]
+C3 C4 CA C5
+-  -  S2 -
+
+[Event "Lead on Defense: 3rd-preference - lead dummy's weakest suit (NT case 2)"]
+[Deal "N:654.K.J5432.T532 - - JT98.876.9876.87"]
+[Contract "2NT"]
+[Play "S"]
+H3 H4 HK H6
+-  -  C2  -
+
+% Returning partner's initially led suit: high-low from two
+
+[Event "Lead on Defense: Returning partner's suit - high from two"]
+[Deal "N:654.K65.J63.T532 - - JT98.987.987.987"]
+[Contract "2NT"]
+[Play "S"]
+D6 D7 DJ D5
+-  -  D6 -
+
+% Returning partner's initially led suit: third best from four
+
+[Event "Lead on Defense: Returning partner's suit - 3rd best from four"]
+[Deal "N:65.K65.JT432.532 - - JT98.987.987.987"]
+[Contract "2NT"]
+[Play "S"]
+D6 D7 DT D5
+-  -  D3 -
+
+% Returning partner's initially led suit: second highest from four small (9 and under)
+
+[Event "Lead on Defense: Returning partner's suit - 2nd highest from four small"]
+[Deal "N:65.K65.J5432.532 - - JT98.987.987.987"]
+[Contract "2NT"]
+[Play "S"]
+D6 D7 DJ D5
+-  -  D4 -
+
+% General principle: if you have a trick that is now good as the defender,
+% and it is the "setting trick" aka the trick to defeat the contract,
+% take it.
+
+[Event "Lead on Defense: Take the setting trick"]
+[Deal "N:65.K65.AK32.T532 - - JT98.987.987.987"]
+[Contract "6NT"]
+[Play "S"]
+D6 D7 DK D5
+-  -  DA -
+
+% View AQ as a sequence once the K is played (and similar positions)
+
+[Event "Lead on Defense: Top of Effective Non-Doubleton Sequence"]
+[Deal "W:5.JT765.KQ.T7653 - - -"]
+[Contract "3S"]
+[Play "W"]
+HJ H9 H8 H2
+HT -  -  -
+
+
+
+%
+% Second hand rules
+%
+
+% Playing low is generally best.
+
+[Event "2nd Hand Defense: Play low"]
+[Deal "N:A65.JT985.J43.T4 QT9.432.KQ765.98 - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ H2 H4 HQ
+S5 -  -  S8
+
+% Trump in if the first card played is known to be high.
+
+[Event "2nd Hand Defense: Trump in if first card played is high"]
+[Deal "N:.JT985.J432.T432 QT9.432.KQ765.98 - -"]
+[Contract "2C"]
+[Play "N"]
+HJ H2 H4 HQ
+C2 -  -  SA
+
+% Trump in if dummy hasn't played and we can see they have high
+
+[Event "2nd Hand Defense: Trump in if dummy is next and has high"]
+[Deal "N:.JT985.J432.T432 AT9.432.KQ765.98 - -"]
+[Contract "2C"]
+[Play "N"]
+HJ H2 H4 HQ
+C2 -  -  S3
+
+% Trump in if partner is void in suit and trump
+
+[Event "2nd Hand Defense: Trump in if partner is void in suit and trump"]
+[Deal "N:Q.JT98.J432.T432 T98.432.KQ765.98 - -"]
+[Contract "2C"]
+[Play "N"]
+HJ H2 H4 HQ
+C2 C8 H5 CA
+SQ S9 H6 SA
+C3 -  -  S3
+
+% General principle: if you have a trick that is now good as the defender,
+% and it is the "setting trick" aka the trick to defeat the contract,
+% take it.
+
+[Event "2nd Hand Defense: Take the setting trick"]
+[Deal "N:65.K65.AJ32.T532 - - JT98.987.987.A87"]
+[Contract "7NT"]
+[Play "S"]
+CK CA C2 C4
+-  D7 DA -
+
+% Other defensive rules against both suit and notrump:
+% If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
+% and the player behind dummy does not have K,
+% try to win tricks quickly
+
+[Event "2nd Hand Defense: Win tricks quickly if dummy has long, good side suit"]
+[Deal "N:654.AQ.J432.T532 QJT.K9.AKQ87.987 - -"]
+[Contract "2S"]
+[Play "N"]
+C2 C7 CK CA
+HA -  -  H5
+
+% If an honor is led, cover with an honor (so if they lead the J, cover with the Q)
+
+[Event "2nd Hand Defense: Cover led honor"]
+[Deal "N:Q65.JT985.J43.T4 AT9.432.KQ765.98 - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ H2 H4 HQ
+SQ -  -  SJ
+
+% Exception: if dummy can be seen with the rest of the missing cards
+% (so don't cover J if dummy has AK1098)
+
+[Event "2nd Hand Defense: Don't cover honor if Dummy has missing cards"]
+[Deal "N:Q65.JT985.J43.T4 AKT98.432.K65.98 - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ H2 H4 HQ
+S5 -  -  SJ
+
+% But do cover if dummy has AK102
+
+[Event "2nd Hand Defense: Cover led honor if Dummy has only some missing cards"]
+[Deal "N:Q65.JT985.J43.T4 AKT2.432.K765.98 - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ H2 H4 HQ
+SQ -  -  SJ
+
+% Exception: if lead is from dummy and they play an honor,
+% do not cover unless dummy does not also have a touching honor.
+% In other words, from Qxx, do not cover J from dummy if dummy has J10x
+
+[Event "2nd Hand Defense: Don't cover dummy-led honor if dummy has touching honor"]
+[Deal "N:Q65.JT985.J43.T4 - - JT2.Q432.K765.98"]
+[Contract "3NT"]
+[Play "S"]
+H4 HQ H5 H3
+-  SJ S5 -
+
+% But do cover if J is played and dummy has J32.
+
+[Event "2nd Hand Defense: Cover dummy-led honor if dummy lacks touching honor"]
+[Deal "N:Q65.JT985.J43.T4 - - J32.Q432.K765.98"]
+[Contract "3NT"]
+[Play "S"]
+H4 HQ H5 H3
+-  SJ SQ -
+
+% An exception to the exception: if you have two honors higher than dummy, cover on the first.
+% So if J10x and you have KQ9, you'd cover the J with the Q and then the 10 with the K)
+
+[Event "2nd Hand Defense: Cover first honor if holding two honors higher than dummy"]
+[Deal "N:KQ9.JT985.J43.94 - - JT2.Q432.K765.T8"]
+[Contract "3NT"]
+[Play "S"]
+H4 HQ H5 H3
+S4 SJ SQ SA
+C2 CT C4 C3
+-  ST SK -
+
+% Don't play below dummy if dummy has a singleton
+
+[Event "2nd Hand Defense: Play above visible singleton in dummy"]
+[Deal "S:K98.KJT6.AK6532. - - A654.A753.87.853"]
+[Contract "3H"]
+[Play "E"]
+C3 S8 CJ CK
+C5 S9 C2 CA
+SA -  -  S2
+
+[Event "2nd Hand Defense: Off-suit boss is not sure trick if trump played"]
+[Deal "E:KQ95.T82.JT97.QJ - - A732.Q543.KQ2.T7"]
+[Contract "3C"]
+[Auction "E"]
+Pass Pass 1C Pass
+1S Pass 2C Pass
+3C Pass Pass Pass
+[Play "N"]
+DK D7 D4 D3
+H3 H2 HJ HA
+C7 CJ C4 C2
+CT CQ C6 C3
+HQ H8 H6 H7
+H4 HT HK H9
+D2 D9 DA D6
+DQ DT D5 C5
+H5 -  -  CA
+
+
+
+%
+% Third hand rules
+%
+
+% Generally third and fourth hand play as high as necessary.
+% That means that if dummy has Qxx, and you play third after dummy plays a low card from KJx, you'd play J.
+
+[Event "3rd Hand Defense: Play as high as necessary"]
+[Deal "N:KQ9.KJ5.J432.943 - - JT2.Q43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H2 H3 HJ -
+
+[Event "3rd Hand Defense: Play as high as necessary (RHO taking, dummy can't beat as LHO)"]
+[Deal "E:Q42.K75.AK83.764 753.3.QJ642.QT52 - -"]
+[Contract "3NT"]
+[Play "E"]
+D3 D2 DT D7
+HK -  H4 H8
+
+% General principle: if you have a trick that is now good as the defender,
+% and it is the "setting trick" aka the trick to defeat the contract,
+% take it.
+
+[Event "3rd Hand Defense: Take the setting trick"]
+[Deal "N:65.K65.AJ32.T532 - - JT98.987.987.A87"]
+[Contract "7NT"]
+[Play "S"]
+CK C7 C2 C4
+D4 D7 DA -
+
+% Other defensive rules against both suit and notrump:
+% If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
+% and the player behind dummy does not have K,
+% try to win tricks quickly
+
+[Event "3rd Hand Defense: Win tricks quickly if dummy has long, good side suit"]
+[Deal "N:654.AQ.J432.T532 QJT.K9.AKQ87.987 - -"]
+[Contract "2S"]
+[Play "N"]
+C2 C7 CA CK
+HA -  H3 H7
+
+% If you have touching honors, play the lower one
+
+[Event "3rd Hand Defense: Play lower of touching honors"]
+[Deal "N:KQ9.KJT.J432.943 - - JT2.Q43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H2 H3 HT -
+
+% If J is in dummy, and we're playing 3rd with KQT (or KQTx)
+% * If dummy played J, we'd play Q
+
+[Event "3rd Hand Defense: Cover honor played by dummy (case 2)"]
+[Deal "N:KQ9.KQT5.432.943 - - JT2.J43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H2 HJ HQ -
+
+% If J is in dummy, and we're playing 3rd with KQT (or KQTx)
+% * If dummy did not play J, we'd play T
+
+[Event "3rd Hand Defense: Play lower of touching honors (case 2)"]
+[Deal "N:KQ9.KQT5.432.943 - - JT2.J43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H2 H3 HT -
+
+% If partner is winning with an honor, play low
+
+[Event "3rd Hand Defense: Play low if partner is winning with an honor"]
+[Deal "N:KQ9.JT2.J432.943 - - JT2.Q43.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+HK H3 H2 -
+
+% If partner is winning with 9 and dummy did not have J and we're playing 3rd with KQTx, we'd play Q
+% General rule: we're trying to push declarer to have to play their higher cards to win the trick
+
+[Event "3rd Hand Defense: Push declarer to play higher cards"]
+[Deal "N:K9.KQT5.J432.943 - - JT2.843.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H9 H3 HQ -
+
+% Third hand play rules: if the second card played will win the trick, play a higher card.
+
+[Event "3rd Hand Defense: Cover second card if it's winning"]
+[Deal "N:K98.752.J432.943 - - JT2.864.K765.T87"]
+[Contract "3NT"]
+[Play "S"]
+H3 H4 H5 -
+
+[Event "3rd Hand Defense: Cover second card if it's winning (case 2)"]
+[Deal "N:- - Q976.K62.AKQJ3.T AJT.AJ.T5.J86542"]
+[Contract "4S"]
+[Play "E"]
+C7 CT CJ -
+
+% If the second card played will win the trick, trump in if possible.
+
+[Event "3rd Hand Defense: Trump in over second card if it's winning"]
+[Deal "N:K987..J8432.9543 - - JT2.864.K765.T87"]
+[Contract "3S"]
+[Play "S"]
+H3 H4 S7 -
+
+[Event "3rd Hand Defense: Play an honor after dummy if noone's played an honor to the trick"]
+[Deal "E:9643.Q5.9652.A98 - - KT82.74.KQJ4.743"]
+[Contract "4H"]
+[Play "W"]
+C5 C3 CA -
+
+[Event "3rd Hand Defense: Play low if we can't beat the card winning the trick"]
+[Deal "W:AQT7.J.AKQT2.T64 - - 9542.KT42.95.K98"]
+[Contract "1NT"]
+[Play "S"]
+H2 HJ HA H5
+C8 -  C2 CA
+
+[Event "3rd Hand Defense: Play minimum winner if dummy is next and void"]
+[Deal "W:AQT7.J.AKQT2.T64 - - 9542.KT42.95.K98"]
+[Contract "1NT"]
+[Play "S"]
+H2 HJ HA H5
+HT -  H7 H8

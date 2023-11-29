@@ -29,7 +29,12 @@ namespace Trickster.Bots
 
         public bool LhoIsVoidInSuit(PlayerBase player, Card card, IEnumerable<Card> cardsPlayed)
         {
-            return TargetIsVoidInSuit(player, Lho(player), card, cardsPlayed);
+            return LhoIsVoidInSuit(player, gameBot.EffectiveSuit(card), cardsPlayed);
+        }
+
+        public bool LhoIsVoidInSuit(PlayerBase player, Suit suit, IEnumerable<Card> cardsPlayed)
+        {
+            return TargetIsVoidInSuit(player, Lho(player), suit, cardsPlayed);
         }
 
         public List<PlayerBase> Opponents(PlayerBase player)
@@ -78,15 +83,25 @@ namespace Trickster.Bots
 
         public bool RhoIsVoidInSuit(PlayerBase player, Card card, IEnumerable<Card> cardsPlayed)
         {
-            return TargetIsVoidInSuit(player, Rho(player), card, cardsPlayed);
+            return RhoIsVoidInSuit(player, gameBot.EffectiveSuit(card), cardsPlayed);
+        }
+
+        public bool RhoIsVoidInSuit(PlayerBase player, Suit suit, IEnumerable<Card> cardsPlayed)
+        {
+            return TargetIsVoidInSuit(player, Rho(player), suit, cardsPlayed);
         }
 
         public bool TargetIsVoidInSuit(PlayerBase player, PlayerBase target, Card card, IEnumerable<Card> cardsPlayed)
         {
-            if (gameBot.CanSeeHand(this, player, target))
-                return new Hand(target.Hand).All(c => gameBot.EffectiveSuit(c) != gameBot.EffectiveSuit(card));
+            return TargetIsVoidInSuit(player, target, gameBot.EffectiveSuit(card), cardsPlayed);
+        }
 
-            return target.VoidSuits.Contains(gameBot.EffectiveSuit(card)) || PlayerHasAllRemainingInSuit(player, card, cardsPlayed);
+        public bool TargetIsVoidInSuit(PlayerBase player, PlayerBase target, Suit suit, IEnumerable<Card> cardsPlayed)
+        {
+            if (gameBot.CanSeeHand(this, player, target))
+                return new Hand(target.Hand).All(c => gameBot.EffectiveSuit(c) != suit);
+
+            return target.VoidSuits.Contains(suit) || PlayerHasAllRemainingInSuit(player, suit, cardsPlayed);
         }
 
         private PlayerBase OppositeOf(PlayerBase player)
@@ -94,9 +109,8 @@ namespace Trickster.Bots
             return this.First(p => p.Seat == (player.Seat + Count / 2) % Count);
         }
 
-        private bool PlayerHasAllRemainingInSuit(PlayerBase player, Card card, IEnumerable<Card> cardsPlayed)
+        private bool PlayerHasAllRemainingInSuit(PlayerBase player, Suit suit, IEnumerable<Card> cardsPlayed)
         {
-            var suit = gameBot.EffectiveSuit(card);
             var totalCardsInSuit = DeckBuilder.BuildDeck(gameBot.DeckType).Count(c => gameBot.EffectiveSuit(c) == suit);
             return totalCardsInSuit ==
                    this.Where(p => gameBot.CanSeeHand(this, player, p)).Sum(p => new Hand(p.Hand).Count(c => gameBot.EffectiveSuit(c) == suit))

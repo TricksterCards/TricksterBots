@@ -1,0 +1,18 @@
+
+[Event "Avoid advancing an overcall without support"]
+[Deal "W:- J984.KJ5.8643.64 - -"]
+[Auction "W"]
+1H Pass 1S 2C
+3H Pass
+
+[Event "Allow cuebids when advancing at 1+ opener's level"]
+[Deal "E:J87632.QJ863.4.A - - -"]
+[Auction "E"]
+Pass 3D 3S Pass
+4D
+
+[Event "Avoid cuebids when advancing beyond 1+ opener's level"]
+[Deal "E:J87632.QJ863.4.A - - -"]
+[Auction "E"]
+Pass 3D 3S 5D
+Pass

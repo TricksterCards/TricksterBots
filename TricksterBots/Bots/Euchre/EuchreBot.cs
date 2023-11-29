@@ -113,7 +113,23 @@ namespace Trickster.Bots
             var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, legalBids.Any(b => b.value == BidBase.Pass));
             var canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
 
+            if (!canBidSuggestion && IsAloneBid(suggestion))
+            {
+                suggestion = DowngradeAloneBid(suggestion);
+                canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
+            }
+
             return canBidSuggestion ? suggestion : legalBids.FirstOrDefault(b => b.value == BidBase.Pass) ?? legalBids.First();
+        }
+
+        private static bool IsAloneBid(BidBase bid)
+        {
+            return bid.value >= (int)EuchreBid.MakeAlone && bid.value < (int)EuchreBid.Defend;
+        }
+
+        private static BidBase DowngradeAloneBid(BidBase bid)
+        {
+            return !IsAloneBid(bid) ? bid : new BidBase(bid.value - (int)EuchreBid.MakeAlone + (int)EuchreBid.Make);
         }
 
         //  overload called above and for unit tests
@@ -201,8 +217,11 @@ namespace Trickster.Bots
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
 
             var playerBid = BidBid(player);
-            var partnerIsMaker = players.PartnersOf(player).Any(p => BidBid(p) == EuchreBid.Make);
+            var partners = players.PartnersOf(player);
+            var partnerIsMaker = partners.Any(p => BidBid(p) == EuchreBid.Make);
             var weAreMaker = playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone || partnerIsMaker;
+            var isDefending = !weAreMaker && !partnerIsMaker;
+            var cardsPlayedPlusHand = cardsPlayed.Concat(new Hand(player.Hand));
 
             var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).First();
 
@@ -215,9 +234,8 @@ namespace Trickster.Bots
                 if (sortedTrump.Count > 0 && partnerIsMaker && cardsPlayed.Count(IsTrump) < 3)
                 {
                     //  we have a trump to play, our partner is the maker, and not much trump has been played thus far:
-                    //  lead our high trump if it's good or our low trump if not
-                    var highTrump = sortedTrump.Last();
-                    return IsCardHigh(highTrump, cardsPlayed) ? highTrump : sortedTrump.First();
+                    //  lead our highest trump to help partner
+                    return sortedTrump.Last();
                 }
 
                 //  Lead trump if you called it and have three or more trump
@@ -226,6 +244,15 @@ namespace Trickster.Bots
                     //  we have three or more trump and we're the maker: lead our high trump if it's good or our low trump if not
                     var highTrump = sortedTrump.Last();
                     return IsCardHigh(highTrump, cardsPlayed) ? highTrump : sortedTrump.First();
+                }
+
+                //  Lead last trump if you called it, have already taken 3 tricks, and partner is void or not playing.
+                //  Increases chances of taking all 5 tricks by forcing opponents to discard a high off-suit card.
+                var alreadyMadeBid = weAreMaker && 3 <= player.HandScore + partners.Sum(p => p.HandScore);
+                var partnersAreNotPlayingOrVoid = partners.All(p => p.Bid == BidBase.NotPlaying || players.TargetIsVoidInSuit(player, p, trump, cardsPlayed));
+                if (sortedTrump.Count == 1 && alreadyMadeBid && partnersAreNotPlayingOrVoid)
+                {
+                    return sortedTrump.Last();
                 }
 
                 //  Never lead your last trump unless you have the high remaining card in an off suit
@@ -279,7 +306,7 @@ namespace Trickster.Bots
                             //  we're last to play; let our partner have it
                             return lowestCard;
 
-                        if (!IsCardHigh(cardTakingTrick, cardsPlayed.Concat(new Hand(player.Hand))) && IsCardHigh(highFollow, cardsPlayed))
+                        if (!IsCardHigh(cardTakingTrick, cardsPlayedPlusHand) && IsCardHigh(highFollow, cardsPlayed))
                             //  partner might lose the trick, but we have the highest card; play it
                             return highFollow;
                     }
@@ -300,8 +327,33 @@ namespace Trickster.Bots
                 return lowestCard;
             }
 
-            //  we can't follow suit but we have trump
-            if (legalCards.Any(IsTrump))
+            bool NeedToProtectOffJack()
+            {
+                if (!isDefending || isLastToPlay)
+                    return false;
+
+                // no need to protect if we don't have exactly two trump (more and we can still protect, less and we can't protect anyway)
+                if (legalCards.Count(IsTrump) != 2)
+                    return false;
+
+                // it's only worth protecting the left if a guaranteed trick would be a stopper or the last trick to Euchre
+                if (player.HandScore != 0 && player.HandScore != 2)
+                    return false;
+
+                // if we don't have the left or it's already high, there's nothing to protect
+                var offJack = legalCards.FirstOrDefault(c => IsTrump(c) && c.rank == Rank.Jack && c.suit != trump);
+                if (offJack == null || IsCardHigh(offJack, cardsPlayedPlusHand))
+                    return false;
+
+                // protect the left unless we know LHO is void in trump (so they can't over-trump us)
+                if (players.LhoIsVoidInSuit(player, trump, cardsPlayed))
+                    return false;
+
+                return true;
+            }
+
+            //  we can't follow suit but we have trump (and don't need to protect the off jack)
+            if (legalCards.Any(IsTrump) && !NeedToProtectOffJack())
             {
                 //  the trick already contains trump
                 if (trick.Any(IsTrump))
