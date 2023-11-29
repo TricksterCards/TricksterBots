@@ -62,6 +62,32 @@ namespace TestBots
             Assert.AreEqual("TS", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected lowest spade (ten)");
         }
 
+
+        [TestMethod]
+        [DataRow("8S",   "KSTS", "QS8S", DisplayName = "Don't play QS if partner taking trick with higher spade")]
+        [DataRow("AS",   "KSTS", "QSAS", DisplayName = "Don't play QS if partner taking trick with higher spade, even holding AS")]
+        [DataRow("8S", "4SKSTS", "QS8S", DisplayName = "Don't play QS if last to play and partner taking trick")]
+        public void PlayOfHandAfterFirstTrick(string card, string trick, string hand)
+        {
+            var players = new[]
+            {
+                new TestPlayer(hand: hand, cardsTaken: "2CACKCQC"),
+                new TestPlayer(),
+                new TestPlayer(),
+                new TestPlayer()
+            };
+
+            var options = new HeartsOptions
+            {
+                isPartnership = true
+            };
+
+            var bot = GetBot(options);
+            var cardState = new TestCardState<HeartsOptions>(bot, players, trick);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual(card, suggestion.ToString());
+        }
+
         private static HeartsBot GetBot()
         {
             return GetBot(new HeartsOptions());
