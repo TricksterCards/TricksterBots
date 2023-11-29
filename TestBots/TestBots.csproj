@@ -127,7 +127,7 @@
     <Content Include="Bridge\SAYC\Blackwood.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Bridge\SAYC\Failures.pbn">
+    <Content Include="Bridge\SAYC\Forcing.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
