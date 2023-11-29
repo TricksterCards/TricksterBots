@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,8 +9,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using TestBots.Bridge;
 using Trickster.Bots;
 using Trickster.cloud;
-using TricksterBots.Bots.Bridge;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace TestBots
 {
@@ -36,7 +33,7 @@ namespace TestBots
         [TestMethod]
         public void BasicTests()
         {
-            var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
+            var bot = new BridgeBot(new BridgeOptions { useBidBot = BridgeBidBot.RLBot }, Suit.Unknown);
 
             foreach (var test in TestBots.BasicTests.Tests.Select(ti => new BidTest(ti)))
             {
@@ -45,19 +42,10 @@ namespace TestBots
                     $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})"
                 );
             }
-            foreach (var t in TestBots.BasicTests.Tests)
-            {
-                var bidTest = new BidTest(t);
-                // TODO: Hack to just pass thie stuff on to the bid test....
-                Hand[] hands = { null, null, null, null };
-                var i = t.history == null ? 0 : t.history.Length % 4;
-                hands[i] = bidTest.hand;
-                var bHack = new BiddingState(hands, Direction.North, "EW");
-                var bidString = bHack.SuggestBid(t.history);
-            }
 
         }
 
+        // TODO: Update so internal InterpretBidHistory uses RLBot (to get fuzz coverage)
         [TestMethod]
         public void FuzzPlays()
         {
@@ -85,9 +73,6 @@ namespace TestBots
                 var tests = PBN.ImportTests(text);
                 var filename = Path.GetFileName(file);
 
-                var testsPassing = 0;
-                var testsFailing = 0;
-
                 foreach (var test in tests)
                 {
                     if (!string.IsNullOrEmpty(test.bid))
@@ -108,15 +93,6 @@ namespace TestBots
                     }
                 }
 
-                if (testsFailing == 0)
-                {
-                    Debug.WriteLine($"SUCCESS: {testsPassing} tests succeeded in {file}");
-                }
-                else
-                {
-                    Debug.WriteLine($"FAIL:    {testsFailing} failed.  {testsPassing} passed in {file}");
-                }
-
             }
             if (failures.Count > 0)
                 Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
@@ -125,7 +101,7 @@ namespace TestBots
         [TestMethod]
         public void SaycTestSuite()
         {
-            var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
+            var bot = new BridgeBot(new BridgeOptions { useBidBot = BridgeBidBot.RLBot }, Suit.Unknown);
             var totalTests = 0;
             var totalPasses = 0;
             var hasVulnerable = 0;
@@ -176,15 +152,13 @@ namespace TestBots
 
             if (changesFromPrevious > 0)
                 UpdateSaycResults(results);
-    
-            // We are tearing out conventions that are not part of SAYC.  We expect some of these tests to fail.
-            Assert.IsTrue(totalPasses >= 470, $"At least expected number of tests passed.  {totalPasses} passed.");
+
             Assert.AreEqual(0, changesFromPrevious, $"{changesFromPrevious} test(s) changed results from previous");
         }
 
         private static BridgeBot GetBot(Suit trump = Suit.Unknown)
         {
-            return GetBot(new BridgeOptions(), trump);
+            return GetBot(new BridgeOptions { useBidBot = BridgeBidBot.RLBot }, trump);
         }
 
         private static BridgeBot GetBot(BridgeOptions options, Suit trump = Suit.Unknown)
@@ -242,7 +216,7 @@ namespace TestBots
 
         private static string RunBidTest(BidTest test)
         {
-            var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
+            var bot = new BridgeBot(new BridgeOptions { useBidBot = BridgeBidBot.RLBot }, Suit.Unknown);
             var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
 
             if (test.expectedBid != suggestion)

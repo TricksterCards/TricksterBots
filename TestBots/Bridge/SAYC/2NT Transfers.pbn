@@ -1,123 +1,42 @@
-% PBN 2.1
-% EXPORT
-%Content-type: text/x-pbn; charset=ISO-8859-1
-%Creator: BridgeComposer Version 5.101.1
-%Created: Tue Jan 10 11:46:51 2023 -0800
-%BCOptions Center STBorder STShade
-%BidAndCardSpacing Thin
-%BoardsPerPage 1
-%CardTableColors #008000,#ffffff,#aaaaaa
-%DDAFormat 0
-%DefaultPagination 0
-%EventSpacing 0
-%Font:CardTable "Arial",11,400,0
-%Font:Commentary "Times New Roman",12,400,0
-%Font:Diagram "Times New Roman",12,400,0
-%Font:Event "Times New Roman",12,400,0
-%Font:FixedPitch "Courier New",10,400,0
-%Font:HandRecord "Arial",11,400,0
-%GutterSize 500,500
-%HRTitleDate 0
-%HRTitleEvent ""
-%HRTitleSetID ""
-%HRTitleSetIDPrefix ""
-%HRTitleSite ""
-%HtmlClubs entity,"https://bridgecomposer.com/suitimg/c.gif"
-%HtmlDiamonds entity,"https://bridgecomposer.com/suitimg/d.gif"
-%HtmlHearts entity,"https://bridgecomposer.com/suitimg/h.gif"
-%HtmlNavBar 0.75,#cfe2f3
-%HtmlSpades entity,"https://bridgecomposer.com/suitimg/s.gif"
-%Margins 1000,1000,1000,1000
-%PaperSize 1,0,0,2
-%ParaIndent 0
-%PipColors #000000,#ff0000,#ff0000,#000000
-%PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
-%ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 3
-%ShowBoardLabels 2
-%ShowCardTable 2
-%TSTCustomSortOrder Default
-%TSTReport List
-%TSTReportOrder ByNumber
-%TSTReportShade Yes
+% Cleaned by CleanPBN on 11/29/2023 at 11:52 AM
 [Event "2NT - Transfer to Spades, Signoff"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:J54.AKJ.AQJ.KQT4 KQ7.954.K642.765 T9832.QT2.T8.832 A6.8763.9753.AJ9"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "3S"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 2NT Pass 3H Pass
 3S Pass Pass Pass
 
 [Event "2NT - Transfer to Hearts, Game, Play in Hearts"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:AJ2.KQJ.J986.AKJ Q863.862.KQT.543 KT4.AT943.53.876 975.75.A742.QT92"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "4H"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 2NT Pass 3D Pass
 3H Pass 3NT Pass
 4H Pass Pass Pass
 
 [Event "2NT, Transfer to Hearts, Game in 3NT"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "S"]
 [Vulnerable "None"]
 [Deal "S:A97.87654.87.A95 542.QJT.KT62.642 QJ86.AK.AQJ.QJ73 KT3.932.9543.KT8"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "3NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "S"]
 Pass Pass 2NT Pass
 3D Pass 3H Pass
 3NT Pass Pass Pass
 
 [Event "2NT, Transfer to spades, Force game with 6 spades"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:Q4.KJT7.AKQJ.KQ7 T76.A84.543.AT86 KJ9852.Q96.96.93 A3.532.T872.J542"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "4S"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 2NT Pass 3H Pass
 3S Pass 4S Pass

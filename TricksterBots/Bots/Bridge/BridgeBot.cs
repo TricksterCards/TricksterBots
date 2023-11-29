@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Trickster.cloud;
-using static System.Net.Mime.MediaTypeNames;
 using TricksterBots.Bots.Bridge;
 
 namespace Trickster.Bots
@@ -74,33 +72,14 @@ namespace Trickster.Bots
             var (players, dealerSeat, hand) = (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand);
             var history = new BridgeBidHistory(players, dealerSeat);
 
-            // NOW TRY OUR HACKED BID THINGING....
-            var historyStrings = new List<string>();
-            for (int ix  = 0; ix < history.Count; ix++)
-            {
-                historyStrings.Add(BidString(history[ix]));
-            }
-            // TODO: Hack to just pass thie stuff on to the bid test....
-            Hand[] hands = { null, null, null, null };
-            var i = historyStrings.Count % 4;
-            hands[i] = state.hand;
-            var biddingState = new BiddingState(hands, Direction.North, "EW");
-
-            var bid = biddingState.SuggestBid(historyStrings.ToArray());
-
-            if (bid == "Pass") return new DeclareBid(BidBase.Pass);
-            if (bid == "X") return new DeclareBid(BridgeBid.Double);
-            if (bid == "XX") return new DeclareBid(BridgeBid.Redouble);
-
-            Bid b = Call.FromString(bid) as Bid;
-            Suit suit = b.Suit == null ? Suit.Unknown : (Suit)b.Suit;
-            return new DeclareBid(b.Level, suit);
-            // TODO: HACK IT IN HERE!!!
-            //return SuggestBid(history, hand);
+            return SuggestBid(history, hand);
         }
 
         public BidBase SuggestBid(BridgeBidHistory history, Hand hand)
         {
+            if (options.useBidBot == BridgeBidBot.RLBot)
+                return SuggestRLBid(history, hand);
+
             var interpretedHistory = InterpretedBid.InterpretHistory(history);
             var legalBids = AllPossibleBids().Where(history.IsBidLegal).ToList();
 
@@ -131,6 +110,29 @@ namespace Trickster.Bots
             var bid = suggestions.FirstOrDefault() ?? FindBestFit(legalBids, interpretedHistory) ?? legalBids.First(b => b.value == BidBase.Pass);
 
             return bid;
+        }
+
+        public BidBase SuggestRLBid(BridgeBidHistory history, Hand hand)
+        {
+            var historyStrings = new List<string>();
+            for (int ix = 0; ix < history.Count; ix++)
+                historyStrings.Add(BidString(history[ix]));
+
+            // TODO: Hack to just pass thie stuff on to the bid test....
+            Hand[] hands = { null, null, null, null };
+            var i = historyStrings.Count % 4;
+            hands[i] = hand;
+            var biddingState = new BiddingState(hands, Direction.North, "EW");
+
+            var bid = biddingState.SuggestBid(historyStrings.ToArray());
+
+            if (bid == "Pass") return new BidBase(BidBase.Pass);
+            if (bid == "X") return new BidBase(BridgeBid.Double);
+            if (bid == "XX") return new BidBase(BridgeBid.Redouble);
+
+            Bid b = Call.FromString(bid) as Bid;
+            Suit suit = b.Suit == null ? Suit.Unknown : (Suit)b.Suit;
+            return new DeclareBid(b.Level, suit);
         }
 
         public override List<Card> SuggestDiscard(SuggestDiscardState<BridgeOptions> state)
