@@ -115,6 +115,12 @@ namespace TestBots
                     var t1 = tests[i];
                     var t2 = tests2[i];
 
+                    if (t1.nPlayers != t2.nPlayers)
+                        msgs.Add($"Tests[{i}].nPlayers = {t1.nPlayers} but Tests2[{i}].nPlayers = {t2.nPlayers}.");
+
+                    if (t1.nCardsPerPlayer != t2.nCardsPerPlayer)
+                        msgs.Add($"Tests[{i}].nCardsPerPlayer = {t1.nCardsPerPlayer} but Tests2[{i}].nCardsPerPlayer = {t2.nCardsPerPlayer}.");
+
                     if (t1.bid != t2.bid)
                         msgs.Add($"Tests[{i}].bid = {t1.bid} but Tests2[{i}].bid = {t2.bid}.");
 
