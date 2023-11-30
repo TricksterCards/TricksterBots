@@ -28,3 +28,18 @@ Pass Pass 2C Pass
 Pass Pass 1C Pass
 1H Pass 2D
 
+[Event "Trickster Cards: Practice Bridge"]
+[Date "2023.11.30"]
+[West "Violet"]
+[North "Cecilia"]
+[East "Lauretta"]
+[South "Tony"]
+[Dealer "W"]
+[Vulnerable "None"]
+[Deal "W:QT6.42.KJ53.K872 972.AK875.Q4.AQ4 83.T963.T87.J963 AKJ54.QJ.A962.T5"]
+[Declarer "N"]
+[Contract "2S"]
+[Auction "W"]
+Pass 1NT Pass 2H
+Pass 2S Pass 3NT
+Pass 4S Pass Pass
