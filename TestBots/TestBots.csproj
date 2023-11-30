@@ -63,6 +63,7 @@
     <Compile Include="Bridge\TestBridgeBot.cs" />
     <Compile Include="Bridge\Test_Sayc.cs" />
     <Compile Include="Bridge\Test_Sayc_Results.cs" />
+    <Compile Include="PBNPlus.cs" />
     <Compile Include="TestFiveHundredBot.cs" />
     <Compile Include="TestHeartsBot.cs" />
     <Compile Include="TestOhHellBot.cs" />

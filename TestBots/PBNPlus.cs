@@ -3,73 +3,89 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-// ReSharper disable StringIndexOfIsCultureSpecific.1
-
 namespace TestBots.Bridge
 {
-    internal class PBN
+    internal class PBNPlus
     {
-        public const string Sides = "NESW";
-        public const string SuitLetters = "SHDC";
-        public const string CardRanks = " 23456789TJQKA";
-        public const string UnknownCard = "0U";
+        private const string CardRanks = " 23456789TJQKALHEWR";
+        private const string SuitLetters = "SHDCJ";
+        private const string UnknownCard = "0U";
+        private static readonly Regex rxDealerSeat = new Regex("^(?<side>N|E|W|S|SE|SW|NE|NW):", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static int CardRank(string card)
+        private static readonly Dictionary<int, List<string>> sidesByNumPlayers = new Dictionary<int, List<string>>
         {
-            return CardRanks.IndexOf(card[0]);
+            { 2, new List<string> { "S", "N" } },
+            { 3, new List<string> { "S", "W", "E" } },
+            { 4, new List<string> { "S", "W", "N", "E" } },
+            { 5, new List<string> { "S", "SW", "NW", "NE", "SE" } },
+            { 6, new List<string> { "S", "SW", "NW", "N", "NE", "SE" } }
+        };
+
+        public static string GetTopCard(List<string> trick, char trump)
+        {
+            var ledSuit = trick[0][1];
+            return trick.Where(c => c[1] == trump).OrderByDescending(CardRank).FirstOrDefault()
+                   ?? trick.Where(c => c[1] == ledSuit).OrderByDescending(CardRank).First();
         }
 
         public static BasicTests.BasicTest[] ImportTests(string text)
         {
             var tests = new List<BasicTests.BasicTest>();
-            var contract = "";
+            var contract = string.Empty;
             var dealerSeat = 0;
             var hands = new List<string>();
             var history = new List<string>();
             var tags = TokenizeTags(text);
-            var name = "";
+            var name = string.Empty;
+            var nPlayers = 0; // filled in after importing hands
+            var nCardsPerPlayer = 0; // filled in after importing hands
 
             foreach (var tag in tags)
-            {
                 switch (tag.Name)
                 {
                     case "Event":
                         name = tag.Description;
                         break;
                     case "Deal":
-                        contract = "";
-                        dealerSeat = Sides.IndexOf(tag.Description.Substring(0, 1).ToUpper());
-                        hands = ImportHands(dealerSeat, tag.Description);
+                        contract = string.Empty;
+
+                        var dealerSideMatch = rxDealerSeat.Match(tag.Description);
+                        var dealerSideString = dealerSideMatch.Success ? dealerSideMatch.Groups["side"].Value : string.Empty;
+                        var dealerSkip = dealerSideMatch.Success ? dealerSideMatch.Value.Length : 0;
+
+                        hands = ImportHands(dealerSeat, tag.Description.Substring(dealerSkip));
+                        nPlayers = hands.Count;
+                        nCardsPerPlayer = hands.Max(h => h.Length / 2);
+                        dealerSeat = GetSide(dealerSideString.ToUpperInvariant(), nPlayers);
                         history = new List<string>();
                         break;
                     case "Auction":
                     {
-                        dealerSeat = Sides.IndexOf(tag.Description.ToUpper());
+                        dealerSeat = GetSide(tag.Description.ToUpperInvariant(), nPlayers);
                         var bids = ImportBids(tag.Data);
                         history = new List<string>();
                         for (var i = 0; i < bids.Count; i++)
                         {
                             var bid = bids[i];
-                            var seat = (dealerSeat + i) % 4;
+                            var seat = (dealerSeat + i) % nPlayers;
                             var hand = hands[seat];
-                            var seatName = Sides[seat];
-                            var bidNumber = 1 + i / 4;
+                            var seatName = GetSideName(seat, nPlayers);
+                            var bidNumber = 1 + i / nPlayers;
                             if (!IsUnknownHand(hand))
-                            {
                                 tests.Add(
                                     new BasicTests.BasicTest
                                     {
-                                        nPlayers = 4,
-                                        nCardsPerPlayer = 13,
+                                        nPlayers = nPlayers,
+                                        nCardsPerPlayer = nCardsPerPlayer,
                                         history = history.ToArray(),
                                         hand = hand,
                                         bid = bid,
                                         type = $"{name} (Seat {seatName}, Bid {bidNumber})"
                                     }
                                 );
-                            }
                             history.Add(bid);
                         }
+
                         break;
                     }
                     case "Contract":
@@ -77,59 +93,90 @@ namespace TestBots.Bridge
                         break;
                     case "Play":
                     {
-                        var leadSeat = Sides.IndexOf(tag.Description.ToUpper());
-                        var declarerSeat = (4 + leadSeat - 1) % 4;
-                        var dummySeat = (leadSeat + 1) % 4;
+                        var leadSeat = GetSide(tag.Description.ToUpperInvariant(), nPlayers);
+                        var declarerSeat = (nPlayers + leadSeat - 1) % nPlayers;
+                        var dummySeat = (leadSeat + 1) % nPlayers;
                         var trick = new List<string>();
                         var trump = contract[1];
-                        var plays = ImportPlays(trump, tag.Data);
+                        var plays = ImportPlays(trump, tag.Data, nPlayers);
                         for (var i = 0; i < plays.Count; i++)
                         {
                             var play = plays[i];
-                            var seat = (leadSeat + i) % 4;
+                            var seat = (leadSeat + i) % nPlayers;
                             var hand = hands[seat];
-                            var seatName = Sides[seat];
-                            var playNumber = 1 + i / 4;
+                            var seatName = GetSideName(seat, nPlayers);
+                            var playNumber = 1 + i / nPlayers;
                             // Don't validate plays for unknown hands
                             // And don't validate dummy plays when declarer's hand is unknown
-                            if (!IsUnknownHand(hand) && !(seat == dummySeat && IsUnknownHand(hands[(dummySeat + 2) % 4])))
-                            {
+                            if (!IsUnknownHand(hand) && !(seat == dummySeat && IsUnknownHand(hands[(dummySeat + 2) % nPlayers])))
                                 tests.Add(
                                     new BasicTests.BasicTest
                                     {
-                                        nPlayers = 4,
-                                        nCardsPerPlayer = 13,
+                                        nPlayers = nPlayers,
+                                        nCardsPerPlayer = nCardsPerPlayer,
                                         contract = contract,
                                         dealerSeat = dealerSeat,
                                         declarerSeat = declarerSeat,
                                         history = history.ToArray(),
-                                        dummy = i > 0 ? seat == dummySeat ? hands[declarerSeat] : hands[dummySeat] : "",
+                                        dummy = i > 0 ? seat == dummySeat ? hands[declarerSeat] : hands[dummySeat] : string.Empty,
                                         hand = hand,
                                         play = play,
                                         plays = plays.GetRange(0, i).ToArray(),
                                         type = $"{name} (Seat {seatName}, Trick {playNumber})"
                                     }
                                 );
-                            }
                             trick.Add(play);
                             // Remove played card from hand
                             var regex = new Regex(IsUnknownHand(hand) ? UnknownCard : play);
-                            hands[seat] = regex.Replace(hands[seat], "", 1);
+                            hands[seat] = regex.Replace(hands[seat], string.Empty, 1);
                             // Update lead seat if end of trick
-                            if (i % 4 == 3)
+                            if (i % nPlayers == 3)
                             {
                                 var card = GetTopCard(trick, trump);
                                 leadSeat = (leadSeat + trick.IndexOf(card)) % 4;
                                 trick.Clear();
                             }
                         }
+
                         break;
                     }
                 }
-            }
 
             // Ignore all other tags
             return tests.ToArray();
+        }
+
+        private static int CardRank(string card)
+        {
+            return CardRanks.IndexOf(card[0]);
+        }
+
+        private static int GetSide(string sideString, int nPlayers)
+        {
+            if (sidesByNumPlayers.TryGetValue(nPlayers, out var sides))
+            {
+                var side = sides.IndexOf(sideString);
+
+                if (side == -1)
+                    throw new Exception($"Side string {sideString} not valid for {nPlayers} players");
+
+                return side;
+            }
+
+            throw new Exception($"{nPlayers} is not a valid number of players");
+        }
+
+        private static string GetSideName(int seat, int nPlayers)
+        {
+            if (sidesByNumPlayers.TryGetValue(nPlayers, out var sides))
+            {
+                if (seat < sides.Count)
+                    return sides[seat];
+
+                throw new Exception($"Seat {seat} not valid for {nPlayers} players");
+            }
+
+            throw new Exception($"{nPlayers} is not a valid number of players");
         }
 
         private static List<string> ImportBids(List<string> bidLines)
@@ -142,39 +189,53 @@ namespace TestBots.Bridge
 
         private static List<string> ImportHands(int dealerSeat, string handsString)
         {
-            var hands = new List<string> { "", "", "", "" };
-            var handStrings = handsString.Substring(2).Split(' ');
-            for (var i = 0; i < handStrings.Length; i++)
+            var handStrings = handsString.Split(' ');
+            var nPlayers = handStrings.Length;
+
+            var hands = new List<string>();
+            for (var h = 0; h < nPlayers; ++h) hands.Add(string.Empty);
+
+            for (var i = 0; i < nPlayers; i++)
             {
-                var seat = (dealerSeat + i) % 4;
+                //  TODO: check this. I don't think this isn't to spec. south is always listed first, not the dealer
+                var seat = (dealerSeat + i) % nPlayers;
                 var handString = handStrings[i];
-                if (handString == "-")
+                var hand = string.Empty;
+
+                if (handString != "-")
                 {
-                    hands[seat] = string.Join("", Enumerable.Repeat(UnknownCard, 13));
-                    continue;
+                    var suits = handString.Split('.');
+
+                    for (var j = 0; j < suits.Length; j++)
+                    {
+                        foreach (var card in suits[j])
+                            hand = $"{card}{SuitLetters[j]}" + hand; // Put high cards on right to match Trickster Cards production behavior
+                    }
                 }
 
-                var hand = "";
-                var suits = handString.Split('.');
-
-                for (var j = 0; j < suits.Length; j++)
-                    foreach (var card in suits[j])
-                        hand = $"{card}{SuitLetters[j]}" + hand; // Put high cards on right to match Trickster Cards production behavior
-
                 hands[seat] = hand;
+            }
+
+            var nCardsPerPlayer = hands.Max(h => h.Length / 2);
+
+            //  fill in the hands that were unspecified with unknown cards
+            for (var i = 0; i < hands.Count; ++i)
+            {
+                if (hands[i] == string.Empty)
+                    hands[i] = string.Join(string.Empty, Enumerable.Repeat(UnknownCard, nCardsPerPlayer));
             }
 
             // validate known hands are of the correct length with no shared cards
             var knownHands = hands.Where(h => !IsUnknownHand(h)).ToList();
             foreach (var hand in knownHands)
             {
-                if (hand.Length != 13 * 2)
-                    throw new ArgumentException($"Hand without exactly 13 cards found in '{handsString}'");
+                if (hand.Length != nCardsPerPlayer * 2)
+                    throw new ArgumentException($"Hand without exactly {nCardsPerPlayer} cards found in '{handsString}'");
 
                 if (hands.Count(h => h == hand) > 1)
                     throw new ArgumentException($"Multiple identical hands found in '{handsString}'");
 
-                for (var i = 0; i < hand.Length; i+=2)
+                for (var i = 0; i < hand.Length; i += 2)
                 {
                     var card = hand.Substring(i, 2);
                     if (knownHands.Any(h => h != hand && h.Contains(card)))
@@ -185,26 +246,19 @@ namespace TestBots.Bridge
             return hands;
         }
 
-        public static string GetTopCard(List<string> trick, char trump)
-        {
-            var ledSuit = trick[0][1];
-            return trick.Where(c => c[1] == trump).OrderByDescending(CardRank).FirstOrDefault()
-                ?? trick.Where(c => c[1] == ledSuit).OrderByDescending(CardRank).First();
-        }
-
-        private static List<string> ImportPlays(char trump, List<string> playLines)
+        private static List<string> ImportPlays(char trump, List<string> playLines, int nPlayers)
         {
             var plays = new List<string>();
             var leadSeat = 0;
             foreach (var line in playLines)
             {
-                var cardPlays = line.ToUpper().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                var cards = cardPlays.Select(cp => cp.Length == 2 ? string.Concat(cp[1], cp[0]) : "").ToList();
+                var cardPlays = line.ToUpperInvariant().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var cards = cardPlays.Select(cp => cp.Length == 2 ? string.Concat(cp[1], cp[0]) : string.Empty).ToList();
 
                 var trick = new List<string>();
-                for (var i = 0; i < 4; i++)
+                for (var i = 0; i < nPlayers; i++)
                 {
-                    var seat = (leadSeat + i) % 4;
+                    var seat = (leadSeat + i) % nPlayers;
                     if (!string.IsNullOrEmpty(cards[seat]))
                     {
                         trick.Add(cards[seat]);
