@@ -29,7 +29,8 @@ namespace TestBots.Bridge
                     dummy = dummy,
                     hand = string.Join("", hand),
                     history = history,
-                    plays = plays
+                    plays = plays,
+                    type = $"Fuzz {i}",
                 });
             }
 
@@ -103,7 +104,7 @@ namespace TestBots.Bridge
             {
                 if (bids[i][1] == contract[1])
                 {
-                    declarerSeat = i;
+                    declarerSeat = i % 4;
                     break;
                 }
             }
@@ -158,6 +159,7 @@ namespace TestBots.Bridge
                     var card = legalCards[random.Next(legalCards.Count)];
                     trick += card;
                     plays.Add(card);
+                    hand.Remove(card);
 
                     var rank = PBN.CardRanks.IndexOf(card[0]);
                     var topRank = PBN.CardRanks.IndexOf(topCard[0]);
@@ -190,6 +192,7 @@ namespace TestBots.Bridge
                     ledSuit = card[1];
                     nextPlaySeat = (nextPlaySeat + 1) % 4;
                     plays.Add(card);
+                    hand.Remove(card);
                 }
             }
             return plays.ToArray();

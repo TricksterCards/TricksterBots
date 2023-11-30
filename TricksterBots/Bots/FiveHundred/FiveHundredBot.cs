@@ -38,10 +38,24 @@ namespace Trickster.Bots
             var partnersBids = players.PartnersOf(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
             var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
+            var estimatedKittyTricks = 1;
+            var minimumToBid6NT = 6 - defaultPartnerTricks - estimatedKittyTricks;
 
             //  calculate the raw number of tricks we can take with a given trump suit
             var tricksBySuit = FiveHundredBid.suitRank.Keys.ToDictionary(s => s, s => CountTricks(hand, s));
             var hasJoker = hand.Any(c => c.suit == Suit.Joker);
+
+            //  in Australian: if we haven't bid yet, we have a Joker, and we can bid 6NT, do so (if our hand has at least some strength)
+            if (options.variation == FiveHundredVariation.Australian
+                && !player.BidHistory.Any()
+                && hasJoker
+                && tricksBySuit[Suit.Unknown] >= minimumToBid6NT)
+            {
+                var sixNTBid = new FiveHundredBid(Suit.Unknown, 6);
+                var sixNT = legalBids.FirstOrDefault(b => new FiveHundredBid(b.value) == sixNTBid);
+                if (sixNT != null)
+                    return sixNT;
+            }
 
             //  then add adjustments based on hand shape, other players, and the kitty
             foreach (var suit in FiveHundredBid.suitRank.Keys)
@@ -55,14 +69,18 @@ namespace Trickster.Bots
                 if (opponentsBids.Any(b => b.IsContractor && b.Suit == suit))
                     tricksBySuit[suit] = 0;
 
+                //  avoid NT without the Joker (unless a partner has bid it)
+                else if (suit == Suit.Unknown && !hasJoker && !partnersBids.Any(b => b.IsContractor && b.Suit == suit))
+                    tricksBySuit[suit] = 0;
+
                 //  if any partner bid a suit, add our tricks to theirs (minus the two they expect from us)
                 else if (partnersBids.Any(b => b.IsContractor && b.Suit == suit) && !(playerLastBid.IsContractor && playerLastBid.Suit == suit))
                     tricksBySuit[suit] += partnersBids.Last(b => b.IsContractor && b.Suit == suit).Tricks - defaultPartnerTricks;
 
-                //  otherwise assume two tricks from partner plus one/two from the kitty (depending on size)
+                //  otherwise assume two tricks from partner plus one/two from the kitty (depending on size) unless already estimating 8+
                 //  also progressively reduce how many additional tricks we'll assume as our own trick count increases
-                else
-                    tricksBySuit[suit] += (int)Math.Floor((defaultPartnerTricks + Math.Round(KittySize / 3.0)) * Math.Min(4.0 / tricksBySuit[suit], 1.0));
+                else if (tricksBySuit[suit] < 8)
+                    tricksBySuit[suit] += (int)Math.Floor((defaultPartnerTricks + estimatedKittyTricks) * Math.Min(4.0 / tricksBySuit[suit], 1.0));
 
                 //  don't bid above 8 without the joker
                 if (tricksBySuit[suit] >= 9 && !hasJoker)
@@ -87,6 +105,32 @@ namespace Trickster.Bots
             var bestFHB = best != null ? new FiveHundredBid(best.value) : null;
             var shouldSignal = options.variation == FiveHundredVariation.Australian && players.PartnersOf(player).Any(p => p.Bid != BidBase.Pass) && player.BidHistory.Count == 0;
             var suggestion = shouldSignal && bestFHB != null ? matches.FirstOrDefault(b => new FiveHundredBid(b.value).Suit == bestFHB.Suit) : best;
+
+            //  only bid as high as necessary to win the game
+            var suggestionIsPastGameOver = suggestion != null && BidValue(new FiveHundredBid(suggestion.value)) + player.GameScore >= options.gameOverScore;
+            if (suggestion != null && suggestionIsPastGameOver)
+            {
+                var partners = players.PartnersOf(player);
+                var highBid = players.Select(p => new FiveHundredBid(p.Bid)).OrderByDescending(b => b).First();
+                var highBidIsPastGameOver = BidValue(highBid) + player.GameScore >= options.gameOverScore;
+                var teamHasHighBid = players.Any(p => p.Bid == highBid && (p.Seat == player.Seat || partners.Any(partner => p.Seat == partner.Seat)));
+                var canReenterBidding = options.bidAfterPass != BidAfterPass.Never;
+                var opponentsHavePassed = players.Opponents(player).All(p => p.Bid == BidBase.Pass);
+
+                //  pass if our team has the high bid, it's past the game over score, and opponents have all passed or we'll get the chance to bid again
+                if (teamHasHighBid && highBidIsPastGameOver && (opponentsHavePassed || canReenterBidding))
+                    return new BidBase(BidBase.Pass);
+
+                //  otherwise bid, but only as high as needed to win the game
+                suggestion = matches.FirstOrDefault(b =>
+                {
+                    var fhb = new FiveHundredBid(b.value);
+                    if (fhb.Suit != bestFHB.Suit)
+                        return false;
+
+                    return BidValue(fhb) + player.GameScore >= options.gameOverScore;
+                });
+            }
 
             return suggestion ?? new BidBase(BidBase.Pass);
         }
@@ -144,12 +188,11 @@ namespace Trickster.Bots
             if (trump == Suit.Unknown && trick.Count == 0 && legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))
                 legalCards = legalCards.Where(c => c.suit != Suit.Joker).ToList();
 
-            var bid = new FiveHundredBid(player.Bid);
-            if (bid.IsLikeNullo || options.nulloPlaysPartner && players.PartnersOf(player).Any(p => new FiveHundredBid(p.Bid).IsLikeNullo && player.HandScore + p.HandScore == 0))
+            if (IsNulloPlayer(player))
                 return TryDumpEm(trick, legalCards, players.Count);
 
-            if (players.Opponents(player).Any(p => new FiveHundredBid(p.Bid).IsLikeNullo && p.HandScore == 0))
-                return TryBustNullo(player, trick, legalCards, cardsPlayed, players, cardTakingTrick);
+            if (players.Opponents(player).Any(p => new FiveHundredBid(p.Bid).IsLikeNullo))
+                return TryBustNullo(player, trick, legalCards, cardsPlayed, players, trickTaker);
 
             // 3-player only: team up with the other opponent if declarer is in the lead (unless we're the declarer)
             var effectivePlayers = players;
@@ -165,6 +208,7 @@ namespace Trickster.Bots
                 }
             }
 
+            var bid = new FiveHundredBid(player.Bid);
             return TryTakeEm(player, trick, legalCards, cardsPlayed, effectivePlayers, isEffectivePartnerTakingTrick, cardTakingTrick, !bid.IsContractor && !bid.IsContractorPartner);
         }
 
@@ -267,11 +311,12 @@ namespace Trickster.Bots
             var handBySuit = SuitRank.stdSuits.ToDictionary(s => s, s => hand.Where(c => EffectiveSuit(c, trumpSuit) == s).OrderBy(c => RankSort(c, trumpSuit)).ToList());
 
             var tricks = 0;
+            var nJokers = hand.Count(c => c.suit == Suit.Joker);
 
             if (trumpSuit == Suit.Unknown)
             {
                 //  in no-trump, count 1 trick for each joker
-                tricks += hand.Count(c => c.suit == Suit.Joker);
+                tricks += nJokers;
             }
             else
             {
@@ -301,7 +346,7 @@ namespace Trickster.Bots
 
                 var highRank = RankSort(deck.Last(), trumpSuit);
                 var nextHighestRank = highRank;
-                var hasStopper = false;
+                var hasStopper = nJokers > 0; //  if we have a Joker, we have a stopper for every suit
 
                 while (cards.Any())
                 {
@@ -320,7 +365,7 @@ namespace Trickster.Bots
 
                     tricks++;
                     hasStopper = true;
-                    nextHighestRank = targetRank;
+                    nextHighestRank = targetRank - 1;
                     cards.Remove(targetCard);
                     cards.RemoveRange(0, gaps);
                 }
@@ -333,50 +378,70 @@ namespace Trickster.Bots
             return tricks;
         }
 
-        private Card TryBustNullo(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, Card cardTakingTrick)
+        private static bool IsNulloPlayer(PlayerBase player)
         {
-            //  we'll target the first nullo-bidder counter-clockwise from us (so RHO, then across, then LHO)
-            var targetNulloBidder = players.Opponents(player).Where(p => new FiveHundredBid(p.Bid).IsLikeNullo && p.HandScore == 0).OrderBy(p => player.Seat - p.Seat).First();
-            var targetsPartners = players.PartnersOf(targetNulloBidder); // will be empty in non-partnership games
+            if (!player.IsActivelyPlaying)
+                return false;
+
+            //  active nullo players are those that either bid nullo (can be multiple if playing solo)
+            //  OR partners of nullo bidders who are still in the game (will be face-up dummy hands played by the nullo bidder)
+            return player.Bid == BidBase.Dummy || new FiveHundredBid(player.Bid).IsLikeNullo;
+        }
+
+        private int BidValue(FiveHundredBid theBid)
+        {
+            if (!theBid.IsContractor)
+                return 0;
+
+            if (theBid.IsLikeNullo)
+                return theBid.IsOpen ? options.OpenNulloPoints : options.NulloPoints;
+
+            //  Avondale scoring from https://en.wikipedia.org/wiki/500_(card_game)
+            return 20 + FiveHundredBid.suitRank[theBid.Suit] * 20 + (theBid.Tricks - 6) * 100;
+        }
+
+        private Card TryBustNullo(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, PlayerBase trickTaker)
+        {
+            var nulloPlayers = players.Where(IsNulloPlayer).ToList();
 
             if (trick.Count == 0)
             {
                 //  we're leading: try to pick something intelligent
                 var avoidSuits = new List<Suit>();
 
-                var isTargetsPartnerVoidInTrump = targetsPartners.All(target => players.TargetIsVoidInSuit(player, target, new Card(trump, Rank.Ace), cardsPlayed));
-
                 foreach (var suit in SuitRank.stdSuits)
                 {
-                    //  avoid leading a suit the nullo bidder is void in
-                    if (players.TargetIsVoidInSuit(player, targetNulloBidder, new Card(suit, Rank.Ace), cardsPlayed))
-                        avoidSuits.Add(suit);
-
-                    //  also avoid suits the nullo bidder's partner is void in unless the partner is also void in trump
-                    if (!isTargetsPartnerVoidInTrump && targetsPartners.All(target => players.TargetIsVoidInSuit(player, target, new Card(suit, Rank.Ace), cardsPlayed)))
+                    if (nulloPlayers.Any(p => players.TargetIsVoidInSuit(player, p, suit, cardsPlayed)))
                         avoidSuits.Add(suit);
                 }
 
-                var preferredLegalCards = legalCards.Where(c => !avoidSuits.Contains(EffectiveSuit(c))).ToList();
+                var knownCards = cardsPlayed.Concat(legalCards).ToList();
+                var preferredLegalCards = legalCards
+                    .Where(c => !avoidSuits.Contains(EffectiveSuit(c))) //  avoid leading a suit any nullo player is void in
+                    .Where(c => !IsCardHigh(c, knownCards)) //  also avoid leading a card that is known to be high
+                    .ToList();
 
-                return TryDumpEm(trick, preferredLegalCards.Count > 0 ? preferredLegalCards : legalCards, players.Count);
+                //  fall back to avoiding cards known to be high, but allowing suits where nullo is void
+                //  (gives partner a chance to take the lead)
+                if (preferredLegalCards.Count == 0)
+                    preferredLegalCards = legalCards.Where(c => !IsCardHigh(c, knownCards)).ToList();
+
+                if (preferredLegalCards.Count > 0)
+                    legalCards = preferredLegalCards;
+
+                return TryDumpEm(trick, legalCards, players.Count);
             }
 
-            //  we're not leading: check the trick to determine what to do
-            var targetOffset = (player.Seat - targetNulloBidder.Seat + options.players) % options.players;
-            if (trick.Count > targetOffset)
-            {
-                //  nullo bidder has played and is taking the trick:
-                //  try to get under them, but go high if we can't
-                if (trick[trick.Count - targetOffset].SameAs(cardTakingTrick))
-                    return TryDumpEm(trick, legalCards, players.Count, true);
+            //  if we're not leading, but a nullo player has yet to play and isn't void in the led suit, play low
+            if (nulloPlayers.Any(p => p.Hand.Length == player.Hand.Length && !players.TargetIsVoidInSuit(player, p, trick[0], cardsPlayed)))
+                return TryDumpEm(trick, legalCards, players.Count);
 
-                //  play our highest card, preferring trump; this improves our ability to duck under the nullo bidder later
-                return legalCards.Where(IsTrump).OrderByDescending(RankSort).FirstOrDefault() ?? legalCards.OrderByDescending(RankSort).First();
-            }
+            //  if a nullo player is taking the trick, try to get under them (but go high if we can't)
+            if (nulloPlayers.Any(p => p.Seat == trickTaker.Seat))
+                return TryDumpEm(trick, legalCards, players.Count, takeWithHigh: true);
 
-            //  nullo bidder has not played: try to end up under them
-            return TryDumpEm(trick, legalCards, players.Count);
+            //  play our highest card, preferring trump; this improves our ability to duck under nullo players later
+            return legalCards.Where(IsTrump).OrderByDescending(RankSort).FirstOrDefault() ?? legalCards.OrderByDescending(RankSort).First();
         }
 
         private class EffectivePartnerPlayersCollection : PlayersCollectionBase

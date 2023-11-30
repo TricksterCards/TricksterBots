@@ -1,81 +1,20 @@
-% PBN 2.1
-% EXPORT
-%Content-type: text/x-pbn; charset=ISO-8859-1
-%Creator: BridgeComposer Version 5.101.2
-%Created: Wed May 24 15:22:48 2023 -0700
-%BCOptions Center STBorder STShade
-%BidAndCardSpacing Thin
-%BoardsPerPage 1
-%CardTableColors #008000,#ffffff,#aaaaaa
-%DDAFormat 0
-%DefaultPagination 0
-%EventSpacing 0
-%Font:CardTable "Arial",11,400,0
-%Font:Commentary "Times New Roman",12,400,0
-%Font:Diagram "Times New Roman",12,400,0
-%Font:Event "Times New Roman",12,400,0
-%Font:FixedPitch "Courier New",10,400,0
-%Font:HandRecord "Arial",11,400,0
-%GutterSize 500,500
-%HRTitleDate 0
-%HRTitleEvent ""
-%HRTitleSetID ""
-%HRTitleSetIDPrefix ""
-%HRTitleSite ""
-%HtmlClubs entity,"https://bridgecomposer.com/suitimg/c.gif"
-%HtmlDiamonds entity,"https://bridgecomposer.com/suitimg/d.gif"
-%HtmlHearts entity,"https://bridgecomposer.com/suitimg/h.gif"
-%HtmlNavBar 0.75,#cfe2f3
-%HtmlSpades entity,"https://bridgecomposer.com/suitimg/s.gif"
-%Margins 1000,1000,1000,1000
-%PaperSize 1,0,0,2
-%ParaIndent 0
-%PipColors #000000,#ff0000,#ff0000,#000000
-%PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
-%ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 1
-%ShowBoardLabels 2
-%ShowCardTable 2
-%TSTCustomSortOrder Default
-%TSTReport List
-%TSTReportOrder ByNumber
-%TSTReportShade Yes
+% Cleaned by CleanPBN on 11/29/2023 at 11:52 AM
 [Event "Balancing all pass"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:KT84.A42.J83.KQJ A65.T6.AT6.76532 J932.J875.K42.T8 Q7.KQ93.Q975.A94"]
-[Scoring ""]
 [Declarer "W"]
 [Contract "1N"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1C Pass Pass 1NT
 Pass Pass Pass
 
 [Event "Balancing, Stayman by Advancer"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:KT84.A42.J83.KQJ A652.T6.AK6.7653 J93.J875.T42.T82 Q7.KQ93.Q975.A94"]
-[Scoring ""]
 [Declarer "W"]
 [Contract "2NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1C Pass Pass 1NT
 Pass 2C Pass 2H

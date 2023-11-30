@@ -1,80 +1,19 @@
-% PBN 2.1
-% EXPORT
-%Content-type: text/x-pbn; charset=ISO-8859-1
-%Creator: BridgeComposer Version 5.101.2
-%Created: Sun Jan  1 22:12:01 2023 -0800
-%BCOptions Center STBorder STShade
-%BidAndCardSpacing Thin
-%BoardsPerPage 1
-%CardTableColors #008000,#ffffff,#aaaaaa
-%DDAFormat 0
-%DefaultPagination 0
-%EventSpacing 0
-%Font:CardTable "Arial",11,400,0
-%Font:Commentary "Times New Roman",12,400,0
-%Font:Diagram "Times New Roman",12,400,0
-%Font:Event "Times New Roman",12,400,0
-%Font:FixedPitch "Courier New",10,400,0
-%Font:HandRecord "Arial",11,400,0
-%GutterSize 500,500
-%HRTitleDate 0
-%HRTitleEvent ""
-%HRTitleSetID ""
-%HRTitleSetIDPrefix ""
-%HRTitleSite ""
-%HtmlClubs entity,"https://bridgecomposer.com/suitimg/c.gif"
-%HtmlDiamonds entity,"https://bridgecomposer.com/suitimg/d.gif"
-%HtmlHearts entity,"https://bridgecomposer.com/suitimg/h.gif"
-%HtmlNavBar 0.75,#cfe2f3
-%HtmlSpades entity,"https://bridgecomposer.com/suitimg/s.gif"
-%Margins 1000,1000,1000,1000
-%PaperSize 1,0,0,2
-%ParaIndent 0
-%PipColors #000000,#ff0000,#ff0000,#000000
-%PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
-%ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 1
-%ShowBoardLabels 2
-%ShowCardTable 2
-%TSTCustomSortOrder Default
-%TSTReport List
-%TSTReportOrder ByNumber
-%TSTReportShade Yes
+% Cleaned by CleanPBN on 11/29/2023 at 11:52 AM
 [Event "Open 2NT - Pass Out"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:AKJ7.QJ2.KQJ.KJT 852.T53.732.AQ82 643.K984.T84.943 QT9.A76.A965.765"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "2NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 2NT Pass Pass Pass
 
 [Event "2NT - 3NT - No 4-card major"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "W"]
 [Vulnerable "None"]
 [Deal "W:KT72.75.J85.KT87 AQJ.AKQJ9.962.QJ 854.862.AT4.A432 963.T43.KQ73.965"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "3NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "W"]
 Pass 2NT Pass 3NT
 Pass Pass Pass

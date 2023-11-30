@@ -1,166 +1,54 @@
-% PBN 2.1
-% EXPORT
-%Content-type: text/x-pbn; charset=ISO-8859-1
-%Creator: BridgeComposer Version 5.101.1
-%Created: Mon Sep 25 22:37:47 2023 -0700
-%BCOptions Center STBorder STShade
-%BidAndCardSpacing Thin
-%BoardsPerPage 1
-%CardTableColors #008000,#ffffff,#aaaaaa
-%DDAFormat 0
-%DefaultPagination 0
-%EventSpacing 0
-%Font:CardTable "Arial",11,400,0
-%Font:Commentary "Times New Roman",12,400,0
-%Font:Diagram "Times New Roman",12,400,0
-%Font:Event "Times New Roman",12,400,0
-%Font:FixedPitch "Courier New",10,400,0
-%Font:HandRecord "Arial",11,400,0
-%GutterSize 500,500
-%HRTitleDate 0
-%HRTitleEvent ""
-%HRTitleSetID ""
-%HRTitleSetIDPrefix ""
-%HRTitleSite ""
-%HtmlClubs entity,"https://bridgecomposer.com/suitimg/c.gif"
-%HtmlDiamonds entity,"https://bridgecomposer.com/suitimg/d.gif"
-%HtmlHearts entity,"https://bridgecomposer.com/suitimg/h.gif"
-%HtmlNavBar 0.75,#cfe2f3
-%HtmlSpades entity,"https://bridgecomposer.com/suitimg/s.gif"
-%Margins 1000,1000,1000,1000
-%PaperSize 1,0,0,2
-%ParaIndent 0
-%PipColors #000000,#ff0000,#ff0000,#000000
-%PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
-%ScoreTableColors #e6e6e6,#000000
-%SelectedBoard 16
-%ShowBoardLabels 2
-%ShowCardTable 2
-%TSTCustomSortOrder Default
-%TSTReport List
-%TSTReportOrder ByNumber
-%TSTReportShade Yes
-%[Event "Bid of Spades upgrades responder to game"]
-%[Site ""]
-%[Date ""]
-%[Board ""]
-%[West ""]
-%[North ""]
-%[East ""]
-%[South ""]
-%[Dealer "N"]
-%[Vulnerable "None"]
-%[Deal "N:AK64.KQ65.QJ.984 Q8.J983.A762.Q62 T732..T843.AKJT7 J95.AT742.K95.53"]
-%[Scoring ""]
-%[Declarer "N"]
-%[Contract "4S"]
-%[Result ""]
-%[BCFlags "1f"]
-%[Auction "N"]
-%1NT Pass 2C Pass
-%2H Pass 2NT Pass
-%3S Pass 4S Pass
-%Pass Pass
+% Cleaned by CleanPBN on 11/29/2023 at 11:52 AM
 [Event "1NT Opening - Stayman - No Major - Invite - Refused"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:K43.QJ3.AK32.Q85 T98.A74.865.A742 AJ65.T985.JT4.KT Q72.K62.Q97.J963"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "2NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2D Pass 2NT Pass
 Pass Pass
 
 [Event "1NT Open - Stayman - No Major - Game"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:K43.QJ3.AK32.Q85 972.KT6.986.A976 AJ65.A985.JT4.KT QT8.742.Q75.J432"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "3NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2D Pass 3NT Pass
 Pass Pass
 
 [Event "1NT - Stayman - Spade Fit - Game Invite - Refused"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:AK98.J4.KJ74.QJT Q7.KQT9.QT62.964 JT32.8765.A3.K32 654.A32.985.A875"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "3S"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2S Pass 3S Pass
 Pass Pass
 
 [Event "1NT - Stayman - Spade Fit - Game in Spades"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:AK98.J4.KJ74.QJT 3.KT32.QT65.A985 QJT2.8765.A3.K32 7654.AQ9.982.764"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "4S"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2S Pass 4S Pass
 Pass Pass
 
 [Event "Stayman, Fit Hearts, Invite, Accept"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "W"]
 [Vulnerable "None"]
 [Deal "W:Q92.K94.Q87.Q876 A843.A763.A9.A94 765.T8.K652.KJ53 KJT.QJ52.JT43.T2"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "4H"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "W"]
 Pass 1NT Pass 2C
 Pass 2H Pass 3H
@@ -168,251 +56,128 @@ Pass 4H Pass Pass
 Pass
 
 [Event "Stayman, Hearts, Invite 2NT, Spades, Dummy points make game in Spades"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "S"]
 [Vulnerable "None"]
 [Deal "S:QJ84..T7653.KQT5 532.Q8432.A2.A74 K976.AKJ6.QJ.J83 AT.T975.K984.962"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "4S"]
-[Result ""]
 [Auction "S"]
 Pass Pass 1NT Pass
 2C Pass 2H Pass
 2NT Pass 3S Pass
 4S Pass Pass Pass
-[BCFlags "1f"]
-4
 
 [Event "Stayman not used with 4333 - Invite"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:K32.JT4.AQJ.AT96 T975.A96.943.K75 QJ6.K873.765.QJ8 A84.Q52.KT82.432"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "2NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2NT Pass
 Pass Pass
 
 [Event "Stayman not used 4333 - Invite accepted"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:A98.A73.AJT.A642 QT4.KJ95.984.T97 J652.842.KQ3.QJ3 K73.QT6.7652.K85"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "3NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2NT Pass
 3NT Pass Pass Pass
 
 [Event "Stayman not used - Game"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "W"]
 [Vulnerable "None"]
 [Deal "W:QT72.742.A84.T75 KJ6.AJ5.QT65.KJ6 93.9863.K92.A832 A854.KQT.J73.Q94"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "3NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "W"]
 Pass 1NT Pass 3NT
 Pass Pass Pass
 
 [Event "5/4 Majors.  Stayman.  Game in 5-card major"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:A75.KQ4.JT862.AQ J98.62.AQ53.9842 KQ42.AJT87.4.JT6 T63.953.K97.K753"]
-[Scoring ""]
 [Declarer "S"]
 [Contract "4H"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2D Pass 3H Pass
 4H Pass Pass Pass
 
 [Event "5/4 Majors.  Stayman.  Game in 4 card major."]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:QJ2.QJ76.AQ6.K95 987.92.T952.AQT3 K6543.AKT4.J7.J8 AT.853.K843.7642"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "4H"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2H Pass 4H Pass
 Pass Pass
 
 [Event "5/4 Majors.  Stayman.  No fit found.  Play 3NT"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:KT7.KJ.AJ76.KQ64 Q82.T86.QT2.JT32 A943.A9742.94.A8 J65.Q53.K853.975"]
-[Scoring ""]
-[Declarer ""]
-[Contract ""]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2D Pass 3H Pass
 3NT Pass Pass Pass
 
 [Event "Stayman, 4-4 majors.  Game in spades"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:J754.QT64.QJ.AKQ K962.A83.86.JT42 AQ83.J9.KT7532.3 T.K752.A94.98765"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "4S"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2H Pass 3NT Pass
 4S Pass Pass Pass
 
 [Event "Non-Forcing Stayman, 5/4, Reject invitation"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:KT5.AK8.KT965.Q5 A6.765.873.AT763 QJ732.JT43.A2.42 984.Q92.QJ4.KJ98"]
-[Scoring ""]
 [Declarer "S"]
 [Contract "2S"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2D Pass 2S Pass
 Pass Pass
 
 [Event "Invitatinal 5/4, Invite accepted in Hearts"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:JT2.A93.AJ.AQJ76 98.JT2.KT754.KT2 AQ73.Q8765.32.83 K654.K4.Q986.954"]
-[Scoring ""]
 [Declarer "S"]
 [Contract "4H"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2D Pass 2H Pass
 4H Pass Pass Pass
 
 [Event "Invitational 5/4, Rejected, Play in 2NT"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:KQ.AKJ.T9764.Q92 A63.965.QJ5.J654 T8542.T832.A2.A7 J97.Q74.K83.KT83"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "2NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2D Pass 2S Pass
 2NT Pass Pass Pass
 
 [Event "Invitational 5/4, Accept invitation, play in 3NT"]
-[Site ""]
-[Date ""]
-[Board ""]
-[West ""]
-[North ""]
-[East ""]
-[South ""]
 [Dealer "N"]
 [Vulnerable "None"]
 [Deal "N:AQJ.A4.T732.KQT6 762.T72.K64.A832 T943.KQJ95.Q8.95 K85.863.AJ95.J74"]
-[Scoring ""]
 [Declarer "N"]
 [Contract "3NT"]
-[Result ""]
-[BCFlags "1f"]
 [Auction "N"]
 1NT Pass 2C Pass
 2D Pass 2H Pass

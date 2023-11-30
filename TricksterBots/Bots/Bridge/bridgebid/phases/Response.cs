@@ -112,6 +112,207 @@ namespace Trickster.Bots
             }
         }
 
+        private static void InterpretResponseTo1NT(InterpretedBid response)
+        {
+            //  TODO (SAYC Booklet):
+            //  If an opponent bids over your 1NT opener (except double), conventional responses like Stayman and transfers are “off.”
+            //  Bids are natural except for a cuebid, which may be used with game forcing strength as a substitute for Stayman. 
+            //  
+            //  If the opponents intervene over a conventional response, bids carry the same meaning as if there were no intervention.
+            //  A bid says, “I’m bidding voluntarily, so I have a real fit with you.”
+
+            switch (response.declareBid.level)
+            {
+                case 2:
+                    if (response.declareBid.suit == Suit.Unknown)
+                    {
+                        //  1N-2N
+                        response.BidPointType = BidPointType.Hcp;
+                        response.Points.Min = 8;
+                        response.Points.Max = 9;
+                        response.IsBalanced = true;
+                        response.Description = string.Empty;
+                    }
+                    else
+                    {
+                        //  1N-2C (overridden by Stayman)
+                        //  1N-2D (overridden by JacobyTransfer)
+                        //  1N-2H (overridden by JacobyTransfer)
+                        //  1N-2S (overridden by Relay)
+                        response.BidMessage = BidMessage.Signoff;
+                        response.Points.Max = 7;
+                        response.HandShape[response.declareBid.suit].Min = 5;
+                        response.Description = $"5+ {response.declareBid.suit}";
+                    }
+
+                    break;
+
+                case 3:
+                    if (response.declareBid.suit == Suit.Unknown)
+                    {
+                        //  1N-3N
+                        response.BidMessage = BidMessage.Signoff;
+                        response.BidPointType = BidPointType.Hcp;
+                        response.Points.Min = 10;
+                        response.Points.Max = 15;
+                        response.IsBalanced = true;
+                        response.Description = string.Empty;
+                    }
+                    else if (BridgeBot.IsMajor(response.declareBid.suit))
+                    {
+                        //  1N-3H
+                        //  1N-3S
+                        response.BidMessage = BidMessage.Forcing;
+                        response.Points.Min = 16;
+                        response.HandShape[response.declareBid.suit].Min = 6;
+                        response.Description = $"6+ {response.declareBid.suit}; slam interest";
+                    }
+                    else
+                    {
+                        //  1N-3C
+                        //  1N-3D
+                        response.Points.Min = 8;
+                        response.Points.Max = 9;
+                        response.IsGood = true;
+                        response.HandShape[response.declareBid.suit].Min = 6;
+                        response.Description = $"Good 6+ card {response.declareBid.suit} suit";
+                    }
+
+                    break;
+
+                case 4:
+                    if (response.declareBid.suit == Suit.Unknown)
+                    {
+                        //  1N-4N
+                        response.Points.Min = 16;
+                        response.Points.Max = 17;
+                        response.BidPointType = BidPointType.Hcp;
+                        response.Description = "Slam invitational";
+                    }
+                    else if (BridgeBot.IsMajor(response.declareBid.suit))
+                    {
+                        //  1N-4H
+                        //  1N-4S
+                        response.BidMessage = BidMessage.Signoff;
+                        response.Points.Min = 10;
+                        response.Points.Max = 15;
+                        response.HandShape[response.declareBid.suit].Min = 6;
+                        response.Description = $"6+ {response.declareBid.suit}";
+                    }
+
+                    //  1N-4C (see Gerber)
+                    //  1N-4D (unused)
+                    break;
+
+                case 6:
+                    if (response.declareBid.suit == Suit.Unknown)
+                    {
+                        //  1N-6N
+                        response.Points.Min = 18;
+                        response.Points.Max = 19;
+                        response.BidPointType = BidPointType.Hcp;
+                        response.BidMessage = BidMessage.Signoff;
+                        response.IsBalanced = true;
+                    }
+
+                    break;
+            }
+        }
+
+        private static void InterpretResponseTo2NT(InterpretedBid response)
+        {
+            switch (response.declareBid.level)
+            {
+                case 3:
+                    if (response.declareBid.suit == Suit.Unknown)
+                    {
+                        //  2N-3N
+                        response.BidMessage = BidMessage.Signoff;
+                        response.BidPointType = BidPointType.Hcp;
+                        response.Points.Min = 4;
+                        response.Points.Max = 10;
+                        response.IsBalanced = true;
+                        response.Description = string.Empty;
+                    }
+                    else
+                    {
+                        //  2N-3C (overridden by Stayman)
+                        //  2N-3D (overridden by JacobyTransfer)
+                        //  2N-3H (overridden by JacobyTransfer)
+                        //  2N-3S
+                        response.BidMessage = BidMessage.Forcing;
+                        response.Points.Min = 4;
+                        response.Points.Max = 10;
+                        response.HandShape[response.declareBid.suit].Min = 5;
+                        response.Description = $"5+ {response.declareBid.suit}";
+                    }
+
+                    break;
+
+                case 4:
+                    if (response.declareBid.suit == Suit.Unknown)
+                    {
+                        //  2N-4N
+                        response.Points.Min = 11;
+                        response.Points.Max = 12;
+                        response.BidPointType = BidPointType.Hcp;
+                        response.Description = "Slam invitational";
+                    }
+                    else if (BridgeBot.IsMajor(response.declareBid.suit))
+                    {
+                        //  2N-4H
+                        //  2N-4S
+                        response.BidMessage = BidMessage.Signoff;
+                        response.Points.Min = 4;
+                        response.Points.Max = 10;
+                        response.HandShape[response.declareBid.suit].Min = 6;
+                        response.Description = $"6+ {response.declareBid.suit}";
+                    }
+
+                    //  2N-4C (see Gerber)
+                    //  2N-4D (unused)
+                    break;
+
+                case 6:
+                    if (response.declareBid.suit == Suit.Unknown)
+                    {
+                        //  2N-6N
+                        response.Points.Min = 13;
+                        response.Points.Max = 15;
+                        response.BidPointType = BidPointType.Hcp;
+                        response.BidMessage = BidMessage.Signoff;
+                        response.IsBalanced = true;
+                    }
+
+                    break;
+            }
+        }
+
+        private static void InterpretResponseTo3NT(InterpretedBid response)
+        {
+            if (response.declareBid.level > 4)
+                return;
+
+            if (response.declareBid.suit == Suit.Unknown)
+            {
+                //  3N-4N
+                response.Points.Min = 6;
+                response.Points.Max = 7;
+                response.BidPointType = BidPointType.Hcp;
+                response.Description = "Slam invitational";
+            }
+            else if (BridgeBot.IsMajor(response.declareBid.suit))
+            {
+                //  3N-4D (overridden by JacobyTransfer)
+                //  3N-4H (overridden by JacobyTransfer)
+                response.BidMessage = BidMessage.Signoff;
+                response.HandShape[response.declareBid.suit].Min = 6;
+                response.Description = $"6+ {response.declareBid.suit}";
+            }
+            //  3N-4C (see Gerber)
+            //  3N-4D (unused)
+        }
+
         private static void InterpretResponseToMajor(InterpretedBid opening, InterpretedBid overcall, InterpretedBid response)
         {
             switch (response.declareBid.level)
@@ -239,6 +440,7 @@ namespace Trickster.Bots
                             response.Points.Max = 15;
                             response.BidPointType = BidPointType.Hcp;
                             response.IsBalanced = true;
+                            response.HandShape[opening.declareBid.suit].Min = 2;
                             response.Description = $"2+ {opening.declareBid.suit}";
                             break;
                     }
