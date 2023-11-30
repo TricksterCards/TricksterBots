@@ -131,7 +131,7 @@ namespace TestBots.Bridge
         private static List<string> ImportBids(List<string> bidLines)
         {
             return string.Join(" ", bidLines)
-                .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(bid => bid.Replace('S', '♠').Replace('H', '♥').Replace('D', '♦').Replace('C', '♣'))
                 .ToList();
         }
@@ -161,7 +161,7 @@ namespace TestBots.Bridge
             }
 
             // validate known hands are of the correct length with no shared cards
-            var knownHands = hands.Where(h => !IsUnknownHand(h));
+            var knownHands = hands.Where(h => !IsUnknownHand(h)).ToList();
             foreach (var hand in knownHands)
             {
                 if (hand.Length != 13 * 2)
@@ -194,7 +194,7 @@ namespace TestBots.Bridge
             var leadSeat = 0;
             foreach (var line in playLines)
             {
-                var cardPlays = line.ToUpper().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var cardPlays = line.ToUpper().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 var cards = cardPlays.Select(cp => cp.Length == 2 ? string.Concat(cp[1], cp[0]) : "").ToList();
 
                 var trick = new List<string>();
