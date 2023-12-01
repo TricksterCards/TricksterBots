@@ -91,7 +91,7 @@ namespace TestBots.Bridge
 
                         var leadSeat = GetSide(tag.Description.ToUpperInvariant(), nPlayers);
                         var declarerSeat = (nPlayers + leadSeat - 1) % nPlayers;
-                        var dummySeat = (declarerSeat + 2) % nPlayers;
+                        var dummySeat = (leadSeat + 1) % nPlayers;  // why not (declarerSeat + 2) % nPlayers ?
                         var trick = new List<string>();
                         var trump = contract[1];
                         var plays = ImportPlays(trump, tag.Data, nPlayers);
