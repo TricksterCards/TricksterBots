@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -48,15 +49,7 @@ namespace TestBots.Bridge
                         break;
                     case "Deal":
                         contract = string.Empty;
-
-                        var dealerSideMatch = rxDealerSeat.Match(tag.Description);
-                        var dealerSideString = dealerSideMatch.Success ? dealerSideMatch.Groups["side"].Value : string.Empty;
-                        var dealerSkip = dealerSideMatch.Success ? dealerSideMatch.Value.Length : 0;
-
-                        hands = ImportHands(dealerSeat, tag.Description.Substring(dealerSkip));
-                        nPlayers = hands.Count;
-                        nCardsPerPlayer = hands.Max(h => h.Length / 2);
-                        dealerSeat = GetSide(dealerSideString.ToUpperInvariant(), nPlayers);
+                        (dealerSeat, hands, nPlayers, nCardsPerPlayer) = ImportHands(tag.Description);
                         history = new List<string>();
                         break;
                     case "Auction":
@@ -93,12 +86,16 @@ namespace TestBots.Bridge
                         break;
                     case "Play":
                     {
+                        Debug.Assert(2 <= nPlayers && nPlayers <= 6, $"nPlayers is {nPlayers}, which is not valid");
+                        Debug.Assert(nCardsPerPlayer > 0, $"nCardsPerPlayer is {nCardsPerPlayer}, which is not valid");
+
                         var leadSeat = GetSide(tag.Description.ToUpperInvariant(), nPlayers);
                         var declarerSeat = (nPlayers + leadSeat - 1) % nPlayers;
-                        var dummySeat = (leadSeat + 1) % nPlayers;
+                        var dummySeat = (declarerSeat + 2) % nPlayers;
                         var trick = new List<string>();
                         var trump = contract[1];
                         var plays = ImportPlays(trump, tag.Data, nPlayers);
+
                         for (var i = 0; i < plays.Count; i++)
                         {
                             var play = plays[i];
@@ -106,6 +103,7 @@ namespace TestBots.Bridge
                             var hand = hands[seat];
                             var seatName = GetSideName(seat, nPlayers);
                             var playNumber = 1 + i / nPlayers;
+
                             // Don't validate plays for unknown hands
                             // And don't validate dummy plays when declarer's hand is unknown
                             if (!IsUnknownHand(hand) && !(seat == dummySeat && IsUnknownHand(hands[(dummySeat + 2) % nPlayers])))
@@ -125,10 +123,13 @@ namespace TestBots.Bridge
                                         type = $"{name} (Seat {seatName}, Trick {playNumber})"
                                     }
                                 );
+
                             trick.Add(play);
+
                             // Remove played card from hand
                             var regex = new Regex(IsUnknownHand(hand) ? UnknownCard : play);
                             hands[seat] = regex.Replace(hands[seat], string.Empty, 1);
+
                             // Update lead seat if end of trick
                             if (i % nPlayers == 3)
                             {
@@ -187,10 +188,15 @@ namespace TestBots.Bridge
                 .ToList();
         }
 
-        private static List<string> ImportHands(int dealerSeat, string handsString)
+        private static (int dealerSeat, List<string> hands, int nPlayers, int nCardsPerPlayer) ImportHands(string handsString)
         {
-            var handStrings = handsString.Split(' ');
+            var dealerSideMatch = rxDealerSeat.Match(handsString);
+            var dealerSideString = dealerSideMatch.Success ? dealerSideMatch.Groups["side"].Value : string.Empty;
+            var dealerSkip = dealerSideMatch.Success ? dealerSideMatch.Value.Length : 0;
+
+            var handStrings = handsString.Substring(dealerSkip).Split(' ');
             var nPlayers = handStrings.Length;
+            var dealerSeat = GetSide(dealerSideString.ToUpperInvariant(), nPlayers);
 
             var hands = new List<string>();
             for (var h = 0; h < nPlayers; ++h) hands.Add(string.Empty);
@@ -207,10 +213,8 @@ namespace TestBots.Bridge
                     var suits = handString.Split('.');
 
                     for (var j = 0; j < suits.Length; j++)
-                    {
                         foreach (var card in suits[j])
                             hand = $"{card}{SuitLetters[j]}" + hand; // Put high cards on right to match Trickster Cards production behavior
-                    }
                 }
 
                 hands[seat] = hand;
@@ -220,10 +224,8 @@ namespace TestBots.Bridge
 
             //  fill in the hands that were unspecified with unknown cards
             for (var i = 0; i < hands.Count; ++i)
-            {
                 if (hands[i] == string.Empty)
                     hands[i] = string.Join(string.Empty, Enumerable.Repeat(UnknownCard, nCardsPerPlayer));
-            }
 
             // validate known hands are of the correct length with no shared cards
             var knownHands = hands.Where(h => !IsUnknownHand(h)).ToList();
@@ -243,7 +245,7 @@ namespace TestBots.Bridge
                 }
             }
 
-            return hands;
+            return (dealerSeat, hands, nPlayers, nCardsPerPlayer);
         }
 
         private static List<string> ImportPlays(char trump, List<string> playLines, int nPlayers)
