@@ -203,7 +203,7 @@ namespace TestBots.Bridge
 
             for (var i = 0; i < nPlayers; i++)
             {
-                //  TODO: check this. I don't think this isn't to spec. south is always listed first, not the dealer
+                //  I don't think this isn't to spec. south is always listed first, not the dealer
                 var seat = (dealerSeat + i) % nPlayers;
                 var handString = handStrings[i];
                 var hand = string.Empty;
