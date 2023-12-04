@@ -69,10 +69,10 @@ namespace TestBots
             {
                 var text = File.ReadAllText(file);
                 var tests = PBN.ImportTests(text);
-                var tests2 = PBNPlus.ImportTests(text);
+                //var tests2 = PTN.ImportTests(text);
                 var filename = Path.GetFileName(file);
 
-                CompareTests(tests, tests2, filename);
+                //CompareTests(tests, tests2, filename);
 
                 foreach (var test in tests)
                 {
@@ -98,22 +98,23 @@ namespace TestBots
                 Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
         }
 
-        private static void CompareTests(BasicTests.BasicTest[] tests, BasicTests.BasicTest[] tests2, string filename)
+/*
+        private static void CompareTests(BasicTests.BasicTest[] pbnTest, BasicTests.BasicTest[] ptnTest, string filename)
         {
             var msgs = new List<string>();
 
-            if (tests.Length != tests2.Length)
+            if (pbnTest.Length != ptnTest.Length)
             {
-                msgs.Add($"From {filename}: Tests has {tests.Length} tests but Tests2 has {tests2.Length} tests.");
-                msgs.Add($"Tests has types {string.Join(", ", tests.Select(t => t.type ?? string.Empty))}");
-                msgs.Add($"Tests2 has types {string.Join(", ", tests2.Select(t => t.type ?? string.Empty))}");
+                msgs.Add($"From {filename}: Tests has {pbnTest.Length} tests but Tests2 has {ptnTest.Length} tests.");
+                msgs.Add($"Tests has types {string.Join(", ", pbnTest.Select(t => t.type ?? string.Empty))}");
+                msgs.Add($"Tests2 has types {string.Join(", ", ptnTest.Select(t => t.type ?? string.Empty))}");
             }
             else
             {
-                for (var i = 0; i < tests.Length; ++i)
+                for (var i = 0; i < pbnTest.Length; ++i)
                 {
-                    var t1 = tests[i];
-                    var t2 = tests2[i];
+                    var t1 = pbnTest[i];
+                    var t2 = ptnTest[i];
 
                     if (t1.nPlayers != t2.nPlayers)
                         msgs.Add($"Tests[{i}].nPlayers = {t1.nPlayers} but Tests2[{i}].nPlayers = {t2.nPlayers}.");
@@ -156,6 +157,7 @@ namespace TestBots
             Logger.LogMessage(
                 msgs.Count == 0 ? $"Identical results for {filename}" : $"Differences from {filename}:{Environment.NewLine}\t{string.Join($"{Environment.NewLine}\t", msgs)}");
         }
+*/
 
         [TestMethod]
         public void SaycTestSuite()

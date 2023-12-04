@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace TestBots.Bridge
 {
-    internal class PBNPlus
+    internal class PTN
     {
         private const string CardRanks = " 23456789TJQKALHEWR";
         private const string SuitLetters = "SHDCJ";
