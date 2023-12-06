@@ -68,11 +68,8 @@ namespace TestBots
             foreach (var file in files)
             {
                 var text = File.ReadAllText(file);
-                var tests = PBN.ImportTests(text);
-                //var tests2 = PTN.ImportTests(text);
+                var tests = PTN.ImportTests(text);
                 var filename = Path.GetFileName(file);
-
-                //CompareTests(tests, tests2, filename);
 
                 foreach (var test in tests)
                 {
@@ -97,67 +94,6 @@ namespace TestBots
             if (failures.Count > 0)
                 Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
         }
-
-/*
-        private static void CompareTests(BasicTests.BasicTest[] pbnTest, BasicTests.BasicTest[] ptnTest, string filename)
-        {
-            var msgs = new List<string>();
-
-            if (pbnTest.Length != ptnTest.Length)
-            {
-                msgs.Add($"From {filename}: Tests has {pbnTest.Length} tests but Tests2 has {ptnTest.Length} tests.");
-                msgs.Add($"Tests has types {string.Join(", ", pbnTest.Select(t => t.type ?? string.Empty))}");
-                msgs.Add($"Tests2 has types {string.Join(", ", ptnTest.Select(t => t.type ?? string.Empty))}");
-            }
-            else
-            {
-                for (var i = 0; i < pbnTest.Length; ++i)
-                {
-                    var t1 = pbnTest[i];
-                    var t2 = ptnTest[i];
-
-                    if (t1.nPlayers != t2.nPlayers)
-                        msgs.Add($"Tests[{i}].nPlayers = {t1.nPlayers} but Tests2[{i}].nPlayers = {t2.nPlayers}.");
-
-                    if (t1.nCardsPerPlayer != t2.nCardsPerPlayer)
-                        msgs.Add($"Tests[{i}].nCardsPerPlayer = {t1.nCardsPerPlayer} but Tests2[{i}].nCardsPerPlayer = {t2.nCardsPerPlayer}.");
-
-                    if (t1.bid != t2.bid)
-                        msgs.Add($"Tests[{i}].bid = {t1.bid} but Tests2[{i}].bid = {t2.bid}.");
-
-                    if (t1.contract != t2.contract)
-                        msgs.Add($"Tests[{i}].contract = {t1.contract} but Tests2[{i}].contract = {t2.contract}.");
-
-                    if (t1.dummy != t2.dummy)
-                        msgs.Add($"Tests[{i}].dummy = {t1.dummy} but Tests2[{i}].dummy = {t2.dummy}.");
-
-                    if (t1.hand != t2.hand)
-                        msgs.Add($"Tests[{i}].hand = {t1.hand} but Tests2[{i}].hand = {t2.hand}.");
-
-                    if (t1.play != t2.play)
-                        msgs.Add($"Tests[{i}].play = {t1.play} but Tests2[{i}].play = {t2.play}.");
-
-                    if (t1.type != t2.type)
-                        msgs.Add($"Tests[{i}].type = {t1.type} but Tests2[{i}].type = {t2.type}.");
-
-                    if (t1.dealerSeat != t2.dealerSeat)
-                        msgs.Add($"Tests[{i}].dealerSeat = {t1.dealerSeat} but Tests2[{i}].dealerSeat = {t2.dealerSeat}.");
-
-                    if (t1.declarerSeat != t2.declarerSeat)
-                        msgs.Add($"Tests[{i}].declarerSeat = {t1.declarerSeat} but Tests2[{i}].declarerSeat = {t2.declarerSeat}.");
-
-                    if (string.Join(",", t1.history ?? Array.Empty<string>()) != string.Join(",", t2.history ?? Array.Empty<string>()))
-                        msgs.Add($"Tests[{i}].history = {string.Join(",", t1.history ?? Array.Empty<string>())} but Tests2[{i}].history = {string.Join(",", t2.history ?? Array.Empty<string>())}.");
-
-                    if (string.Join(",", t1.plays ?? Array.Empty<string>()) != string.Join(",", t2.plays ?? Array.Empty<string>()))
-                        msgs.Add($"Tests[{i}].plays = {string.Join(",", t1.plays ?? Array.Empty<string>())} but Tests2[{i}].plays = {string.Join(",", t2.plays ?? Array.Empty<string>())}.");
-                }
-            }
-
-            Logger.LogMessage(
-                msgs.Count == 0 ? $"Identical results for {filename}" : $"Differences from {filename}:{Environment.NewLine}\t{string.Join($"{Environment.NewLine}\t", msgs)}");
-        }
-*/
 
         [TestMethod]
         public void SaycTestSuite()
@@ -324,7 +260,7 @@ namespace TestBots
                 }
                 if (trick.Count == 4)
                 {
-                    var topCard = PBN.GetTopCard(trick, test.contract[1]);
+                    var topCard = PTN.GetTopCard(trick, test.contract[1]);
                     nextSeat = (nextSeat + trick.IndexOf(topCard)) % 4;
                     players[nextSeat].CardsTaken += string.Join("", trick);
                 }
