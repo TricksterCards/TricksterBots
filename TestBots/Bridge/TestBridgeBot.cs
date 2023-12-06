@@ -71,6 +71,12 @@ namespace TestBots
                 var tests = PTN.ImportTests(text);
                 var filename = Path.GetFileName(file);
 
+                if (!tests.All(t => t.nPlayers == 4 && t.nCardsPerPlayer == 13))
+                {
+                    failures.Add($"{filename}: Not all tests have 4 players with 13 cards each");
+                    continue;
+                }
+
                 foreach (var test in tests)
                 {
                     if (!string.IsNullOrEmpty(test.bid))
