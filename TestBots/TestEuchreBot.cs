@@ -320,80 +320,85 @@ namespace TestBots
         }
 
         [TestMethod]
-        public void TestAvoidBid()
+        [DataRow("Pass", " 9C 9S 9HAHJD", "QH", DisplayName="Should pass if three-suited and weak, even with three trump")]
+        [DataRow("Pass", "9C 9D 9H JCJS", "9S", DisplayName="Should pass if four-suited and weak, even with both Jacks")]
+        [DataRow("Pass", "AC AD AH9H AS", "9S", DisplayName="Should pass if four-suited with only one trump, even if Ace")]
+        [DataRow("Pass", "ADKD AS AH JS", "9C", DisplayName="Should pass if four-suited with only one trump, even if off-Jack")]
+        [DataRow("Pass", "ACKC AD AS JH", "9H", DisplayName="Should pass if four-suited with only one trump, even if high Jack")]
+        [DataRow("Pass", "  TSJS 9DQDKD", "TD", DisplayName="Should pass if two-suited with weak trump and off-suit")]
+        [DataRow("Pass", "  AHKH 9STSQS", "KS", DisplayName="Should pass if two-suited with very weak trump, even with high off-suit")]
+        [DataRow("Pass", " AD AH 9CTCQC", "KC", DisplayName="Should pass if three-suited with very weak trump, even with high off-suit")]
+        [DataRow("Pass", " AC 9S 9DTDQD", "KD", DisplayName="Should pass if three-suited with very weak trump and mixed off-suit")]
+        [DataRow("Pass", " AC KS 9HTHQH", "KH", DisplayName="Should pass if three-suited with very weak trump and mixed off-suit")]
+        [DataRow("Pass", " 9D 9H 9STSQS", "KS", DisplayName="Should pass if three-suited with very weak trump and weak off-suit")]
+        public void TestAvoidBid(string bid, string hand, string upCard)
         {
-            Assert.AreEqual("Pass", GetSuggestedBid(" 9C 9S 9HAHJD", "QH"), "Should pass if three-suited and weak, even with three trump");
-            Assert.AreEqual("Pass", GetSuggestedBid("9C 9D 9H JCJS", "9S"), "Should pass if four-suited and weak, even with both Jacks");
-            Assert.AreEqual("Pass", GetSuggestedBid("AC AD AH9H AS", "9S"), "Should pass if four-suited with only one trump, even if Ace");
-            Assert.AreEqual("Pass", GetSuggestedBid("ADKD AS AH JS", "9C"), "Should pass if four-suited with only one trump, even if off-Jack");
-            Assert.AreEqual("Pass", GetSuggestedBid("ACKC AD AS JH", "9H"), "Should pass if four-suited with only one trump, even if high Jack");
-            Assert.AreEqual("Pass", GetSuggestedBid("  TSJS 9DQDKD", "TD"), "Should pass if two-suited with weak trump and off-suit");
-            Assert.AreEqual("Pass", GetSuggestedBid("  AHKH 9STSQS", "KS"), "Should pass if two-suited with very weak trump, even with high off-suit");
-            Assert.AreEqual("Pass", GetSuggestedBid(" AD AH 9CTCQC", "KC"), "Should pass if three-suited with very weak trump, even with high off-suit");
-            Assert.AreEqual("Pass", GetSuggestedBid(" AC 9S 9DTDQD", "KD"), "Should pass if three-suited with very weak trump and mixed off-suit");
-            Assert.AreEqual("Pass", GetSuggestedBid(" AC KS 9HTHQH", "KH"), "Should pass if three-suited with very weak trump and mixed off-suit");
-            Assert.AreEqual("Pass", GetSuggestedBid(" 9D 9H 9STSQS", "KS"), "Should pass if three-suited with very weak trump and weak off-suit");
+            Assert.AreEqual(bid, GetSuggestedBid(hand, upCard));
         }
 
         [TestMethod]
-        public void TestAvoidBidAlone()
+        //  if partner has high jack, they can help make 5 by beating off jack
+        [DataRow("♥", "9HTHQHKHAH", "JH", DisplayName = "Do not bid alone without either jack")]
+        //  higher chance partner can cover off-suit card(s) to help make 5 tricks
+        [DataRow("♣", "ADKD ACJSJC", "9C", DisplayName = "Do not bid alone with only three trump")]
+        [DataRow("♦", "KH KDADJHJD", "9D", DisplayName = "Do not bid alone with non-boss off-suit")]
+        [DataRow("♥", "9D KHAHJDJH", "9H", DisplayName = "Do not bid alone with weak off-suit")]
+        public void TestAvoidBidAlone(string bid, string hand, string upCard)
         {
-            //  if partner has high jack, they can help make 5 by beating off jack
-            Assert.AreEqual("♥", GetSuggestedBid("9HTHQHKHAH", "JH"), "Do not bid alone without either jack");
-            //  higher chance partner can cover off-suit card(s) to help make 5 tricks
-            Assert.AreEqual("♣", GetSuggestedBid("ADKD ACJSJC", "9C"), "Do not bid alone with only three trump");
-            Assert.AreEqual("♦", GetSuggestedBid("KH KDADJHJD", "9D"), "Do not bid alone with non-boss off-suit");
-            Assert.AreEqual("♥", GetSuggestedBid("9D KHAHJDJH", "9H"), "Do not bid alone with weak off-suit");
+            Assert.AreEqual(bid, GetSuggestedBid(hand, upCard));
         }
 
         [TestMethod]
-        public void TestTake4Bid()
+        [DataRow(   "♠", "  9HTH KSASJC", "9S", DisplayName="Should bid when two-suited with three trump of reasonable strength")]
+        [DataRow(   "♣", " AD AH QCKCAC", "9C", DisplayName="Should bid three-suited missing both Jacks with strong off-suit")]
+        [DataRow("Pass", " AD AH TCQCKC", "9C", DisplayName="Should pass three-suited missing both Jacks with strong off-suit")]
+        [DataRow("Pass", " 9C 9S ADJHJD", "9D", DisplayName="Should pass with only three sure tricks, regardless of other cards")]
+        [DataRow("Pass", "  9DTD QHKHAH", "9H", DisplayName="Should pass missing both Jacks with remaining high trump and two-suited")]
+        [DataRow("Pass", " ACKC AH JCJS", "9S", DisplayName="Should pass with only Jacks with strong off-suit support")]
+        [DataRow("Pass", " ASKS 9C JHJD", "9D", DisplayName="Should pass with only Jacks with mostly strong off-suit support")]
+        [DataRow("Pass", " 9D 9H KCACJS", "TC", DisplayName="Should pass with weak off-suit and no high Jack if only three strong trump")]
+        [DataRow("Pass", " 9C 9S QDADJH", "TD", DisplayName="Should pass with weak off-suit and no high Jack if only three strong trump")]
+        [DataRow("Pass", "AC AD 9S JDJH", "TH", DisplayName="Should pass four-suited having both Jacks and two off-suit Aces")]
+        [DataRow(   "♥", "AC AH 9S JDJH", "TH", DisplayName="Should take four-suited having both Jacks, an Ace and one off-suit Ace")]
+        [DataRow("Pass", "  9DKD 9SKSJC", "TS", DisplayName="Should pass with three trump if two-suited")]
+        [DataRow("Pass", "  9HQH 9CQCJC", "AC", DisplayName="Should pass with three trump if two-suited")]
+        [DataRow("Pass", "  ASKS TDQDKD", "AD", DisplayName="Should pass with three weak trump if two-suited with high off-suit")]
+        [DataRow("Pass", "  TC 9HTHQHJH", "AH", DisplayName="Should pass with four trump, regardless of off-suit")]
+        [DataRow("Pass", "  9D 9STSQSKS", "AS", DisplayName="Should pass with four trump, regardless of off-suit")]
+        public void TestTake4Bid(string bid, string hand, string upCard)
         {
-            Assert.AreEqual("♠", GetSuggestedBid("  9HTH KSASJC", "9S", true), "Should bid when two-suited with three trump of reasonable strength");
-            Assert.AreEqual("♣", GetSuggestedBid(" AD AH QCKCAC", "9C", true), "Should bid three-suited missing both Jacks with strong off-suit");
-            Assert.AreEqual("Pass", GetSuggestedBid(" AD AH TCQCKC", "9C", true), "Should pass three-suited missing both Jacks with strong off-suit");
-            Assert.AreEqual("Pass", GetSuggestedBid(" 9C 9S ADJHJD", "9D", true), "Should pass with only three sure tricks, regardless of other cards");
-            Assert.AreEqual("Pass", GetSuggestedBid("  9DTD QHKHAH", "9H", true), "Should pass missing both Jacks with remaining high trump and two-suited");
-            Assert.AreEqual("Pass", GetSuggestedBid(" ACKC AH JCJS", "9S", true), "Should pass with only Jacks with strong off-suit support");
-            Assert.AreEqual("Pass", GetSuggestedBid(" ASKS 9C JHJD", "9D", true), "Should pass with only Jacks with mostly strong off-suit support");
-            Assert.AreEqual("Pass", GetSuggestedBid(" 9D 9H KCACJS", "TC", true), "Should pass with weak off-suit and no high Jack if only three strong trump");
-            Assert.AreEqual("Pass", GetSuggestedBid(" 9C 9S QDADJH", "TD", true), "Should pass with weak off-suit and no high Jack if only three strong trump");
-            Assert.AreEqual("Pass", GetSuggestedBid("AC AD 9S JDJH", "TH", true), "Should pass four-suited having both Jacks and two off-suit Aces");
-            Assert.AreEqual("♥", GetSuggestedBid("AC AH 9S JDJH", "TH", true), "Should take four-suited having both Jacks, an Ace and one off-suit Ace");
-            Assert.AreEqual("Pass", GetSuggestedBid("  9DKD 9SKSJC", "TS", true), "Should pass with three trump if two-suited");
-            Assert.AreEqual("Pass", GetSuggestedBid("  9HQH 9CQCJC", "AC", true), "Should pass with three trump if two-suited");
-            Assert.AreEqual("Pass", GetSuggestedBid("  ASKS TDQDKD", "AD", true), "Should pass with three weak trump if two-suited with high off-suit");
-            Assert.AreEqual("Pass", GetSuggestedBid("  TC 9HTHQHJH", "AH", true), "Should pass with four trump, regardless of off-suit");
-            Assert.AreEqual("Pass", GetSuggestedBid("  9D 9STSQSKS", "AS", true), "Should pass with four trump, regardless of off-suit");
+            Assert.AreEqual(bid, GetSuggestedBid(hand, upCard, true));
         }
 
         [TestMethod]
-        public void TestTakeBid()
+        [DataRow("♠", "  9HTH KSASJC", "9S", DisplayName="Should bid when two-suited with three trump of reasonable strength")]
+        [DataRow("♣", " AD AH QCKCAC", "9C", DisplayName="Should bid three-suited missing both Jacks with strong off-suit")]
+        [DataRow("♣", " AD AH TCQCKC", "9C", DisplayName="Should bid three-suited missing both Jacks with strong off-suit")]
+        [DataRow("♦", " 9C 9S ADJHJD", "9D", DisplayName="Should bid with three sure tricks, regardless of other cards")]
+        [DataRow("♥", "  9DTD QHKHAH", "9H", DisplayName="Should bid missing both Jacks with remaining high trump and two-suited")]
+        [DataRow("♠", " ACKC AH JCJS", "9S", DisplayName="Should bid with only Jacks with strong off-suit support")]
+        [DataRow("♦", " ASKS 9C JHJD", "9D", DisplayName="Should bid with only Jacks with mostly strong off-suit support")]
+        [DataRow("♣", " 9D 9H KCACJS", "TC", DisplayName="Should bid with weak off-suit and no high Jack if three strong trump")]
+        [DataRow("♦", " 9C 9S QDADJH", "TD", DisplayName="Should bid with weak off-suit and no high Jack if three strong trump")]
+        [DataRow("♥", "AC 9D 9S JDJH", "TH", DisplayName="Should bid four-suited having both Jacks and an off-suit Ace")]
+        [DataRow("♠", "  9DKD 9SKSJC", "TS", DisplayName="Should bid with three trump if two-suited")]
+        [DataRow("♣", "  9HQH 9CQCJC", "AC", DisplayName="Should bid with three trump if two-suited")]
+        [DataRow("♦", "  ASKS TDQDKD", "AD", DisplayName="Should bid with three weak trump if two-suited with high off-suit")]
+        [DataRow("♥", "  TC 9HTHQHJH", "AH", DisplayName="Should bid with four trump, regardless of off-suit")]
+        [DataRow("♠", "  9D 9STSQSKS", "AS", DisplayName="Should bid with four trump, regardless of off-suit")]
+        public void TestTakeBid(string bid, string hand, string upCard)
         {
-            Assert.AreEqual("♠", GetSuggestedBid("  9HTH KSASJC", "9S"), "Should bid when two-suited with three trump of reasonable strength");
-            Assert.AreEqual("♣", GetSuggestedBid(" AD AH QCKCAC", "9C"), "Should bid three-suited missing both Jacks with strong off-suit");
-            Assert.AreEqual("♣", GetSuggestedBid(" AD AH TCQCKC", "9C"), "Should bid three-suited missing both Jacks with strong off-suit");
-            Assert.AreEqual("♦", GetSuggestedBid(" 9C 9S ADJHJD", "9D"), "Should bid with three sure tricks, regardless of other cards");
-            Assert.AreEqual("♥", GetSuggestedBid("  9DTD QHKHAH", "9H"), "Should bid missing both Jacks with remaining high trump and two-suited");
-            Assert.AreEqual("♠", GetSuggestedBid(" ACKC AH JCJS", "9S"), "Should bid with only Jacks with strong off-suit support");
-            Assert.AreEqual("♦", GetSuggestedBid(" ASKS 9C JHJD", "9D"), "Should bid with only Jacks with mostly strong off-suit support");
-            Assert.AreEqual("♣", GetSuggestedBid(" 9D 9H KCACJS", "TC"), "Should bid with weak off-suit and no high Jack if three strong trump");
-            Assert.AreEqual("♦", GetSuggestedBid(" 9C 9S QDADJH", "TD"), "Should bid with weak off-suit and no high Jack if three strong trump");
-            Assert.AreEqual("♥", GetSuggestedBid("AC 9D 9S JDJH", "TH"), "Should bid four-suited having both Jacks and an off-suit Ace");
-            Assert.AreEqual("♠", GetSuggestedBid("  9DKD 9SKSJC", "TS"), "Should bid with three trump if two-suited");
-            Assert.AreEqual("♣", GetSuggestedBid("  9HQH 9CQCJC", "AC"), "Should bid with three trump if two-suited");
-            Assert.AreEqual("♦", GetSuggestedBid("  ASKS TDQDKD", "AD"), "Should bid with three weak trump if two-suited with high off-suit");
-            Assert.AreEqual("♥", GetSuggestedBid("  TC 9HTHQHJH", "AH"), "Should bid with four trump, regardless of off-suit");
-            Assert.AreEqual("♠", GetSuggestedBid("  9D 9STSQSKS", "AS"), "Should bid with four trump, regardless of off-suit");
+            Assert.AreEqual(bid, GetSuggestedBid(hand, upCard));
         }
 
         [TestMethod]
-        public void TestTakeBidAlone()
+        //  risk of both same suit as Ace being led on first trick AND getting trumped is small
+        [DataRow("♥ alone", "AS KHAHJDJH", "9H", DisplayName = "Should bid alone with sure trump and off-suit Ace")]
+        //  if partner doesn't have the off-Jack, you won't take all five tricks even together, may as well go for it
+        [DataRow("♠ alone", "AC QSKSASJS", "9S", DisplayName = "Should bid alone with strength even if missing off-Jack")]
+        public void TestTakeBidAlone(string bid, string hand, string upCard)
         {
-            //  risk of both same suit as Ace being led on first trick AND getting trumped is small
-            Assert.AreEqual("♥ alone", GetSuggestedBid("AS KHAHJDJH", "9H"), "Should bid alone with sure trump and off-suit Ace");
-            //  if partner doesn't have the off-Jack, you won't take all five tricks even together, may as well go for it
-            Assert.AreEqual("♠ alone", GetSuggestedBid("AC QSKSASJS", "9S"), "Should bid alone with strength even if missing off-Jack");
+            Assert.AreEqual(bid, GetSuggestedBid(hand, upCard));
         }
 
         [TestMethod]
