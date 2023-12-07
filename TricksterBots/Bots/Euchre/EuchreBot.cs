@@ -171,15 +171,16 @@ namespace Trickster.Bots
                 }
             }
 
-            //  bid alone if we think we'll take more than 4-tricks, so long as we hold the appropriate high cards
-            if (highEstimate >= 4.25)
+            //  bid alone if we think we'll take at least 4-tricks, so long as we hold the appropriate high cards
+            //  only require just under 3-tricks if call-for-best is on (as we'll likely get another trump from partner)
+            if (highEstimate >= (options.callForBest && !options.aloneTake5 ? 2.75 : 4.0))
             {
-                //  when aloneTake5 is true, we need to hold the Joker (if present) or the high Jack to bid alone
-                if (options.aloneTake5 && hand.Any(c => options.withJoker ? c.rank == Rank.High : c.suit == highSuit && c.rank == Rank.Jack))
+                //  when aloneTake5 is true, we need to hold the Joker (if present) or the high Jack to bid alone (plus high in each off-suit)
+                if (options.aloneTake5 && hand.Any(c => options.withJoker ? c.rank == Rank.High : c.suit == highSuit && c.rank == Rank.Jack) && hand.All(c => EffectiveSuit(c, highSuit) == highSuit || hand.Any(h => h.rank == Rank.Ace && h.suit == c.suit)))
                     return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
 
-                //  when aloneTake5 is false, we need to hold one of the top cards (Joker or either Jack) to bid alone
-                if (!options.aloneTake5 && hand.Any(c => EffectiveSuit(c, highSuit) == highSuit && (c.rank == Rank.Jack || c.rank == Rank.High)))
+                //  when aloneTake5 is false, we need to be call-for-best or hold one of the top cards (Joker or either Jack) to bid alone
+                if (!options.aloneTake5 && (options.callForBest || hand.Any(c => EffectiveSuit(c, highSuit) == highSuit && (c.rank == Rank.Jack || c.rank == Rank.High))))
                     return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
             }
 

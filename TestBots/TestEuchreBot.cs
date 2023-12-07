@@ -338,11 +338,7 @@ namespace TestBots
 
         [TestMethod]
         //  if partner has high jack, they can help make 5 by beating off jack
-        [DataRow("♥", "9HTHQHKHAH", "JH", DisplayName = "Do not bid alone without either jack")]
-        //  higher chance partner can cover off-suit card(s) to help make 5 tricks
-        [DataRow("♣", "ADKD ACJSJC", "9C", DisplayName = "Do not bid alone with only three trump")]
-        [DataRow("♦", "KH KDADJHJD", "9D", DisplayName = "Do not bid alone with non-boss off-suit")]
-        [DataRow("♥", "9D KHAHJDJH", "9H", DisplayName = "Do not bid alone with weak off-suit")]
+        [DataRow("♥", " 9HTHQHKHAH", "JH", DisplayName = "Do not bid alone without either jack")]
         public void TestAvoidBidAlone(string bid, string hand, string upCard)
         {
             Assert.AreEqual(bid, GetSuggestedBid(hand, upCard));
@@ -393,12 +389,28 @@ namespace TestBots
 
         [TestMethod]
         //  risk of both same suit as Ace being led on first trick AND getting trumped is small
-        [DataRow("♥ alone", "AS KHAHJDJH", "9H", DisplayName = "Should bid alone with sure trump and off-suit Ace")]
+        [DataRow("♥ alone", "  AS KHAHJDJH", "9H", false, false, DisplayName = "Should bid alone with sure trump and off-suit Ace")]
         //  if partner doesn't have the off-Jack, you won't take all five tricks even together, may as well go for it
-        [DataRow("♠ alone", "AC QSKSASJS", "9S", DisplayName = "Should bid alone with strength even if missing off-Jack")]
-        public void TestTakeBidAlone(string bid, string hand, string upCard)
+        [DataRow("♠ alone", "  AC QSKSASJS", "9S", false, false, DisplayName = "Should bid alone with strength even if missing off-Jack")]
+        //  two-suited with an off-suit ace and top three trump should go alone
+        [DataRow("♥ alone", "  ASQS AHJDJH", "9H", false, false, DisplayName = "Should bid alone if two-suited with off-suit Ace and top three trump")]
+        //  if we're close to going alone with call for best enabled, we should count on an extra trump
+        [DataRow("♠ alone", " ACKC AH JCJS", "9S",  true, false, DisplayName = "Should bid alone if call-for-best with only Jacks with strong off-suit support")]
+        //  but don't count on anything extra from partner if alone must take 5 is enabled
+        [DataRow(      "♠", " ACKC AH JCJS", "9S",  true,  true, DisplayName = "Should not bid alone if alone-must-take-5 even with call-for-best")]
+        //  odds are good we can take these alone - if partner has A in our offsuit, we'll likely be good even if they sit out
+        [DataRow("♣ alone", "  ADKD ACJSJC", "9C", false, false, DisplayName = "Bid alone with top three trump, two-suited, and top off-suit")]
+        [DataRow("♣ alone", " AD AH ACJSJC", "9C", false, false, DisplayName = "Bid alone with top three trump and top off-suit")]
+        [DataRow("♦ alone", "  KH KDADJHJD", "9D", false, false, DisplayName = "Bid alone with top four trump and high off-suit")]
+        [DataRow("♥ alone", "  9D KHAHJDJH", "9H", false, false, DisplayName = "Bid alone with top four trump and any off-suit")]
+        //  but if alone must take 5 is on we should be more cautious
+        [DataRow("♣ alone", "  ADKD ACJSJC", "9C", false,  true, DisplayName = "Bid alone if alone-must-take-5 with top three trump, two-suited, and top off-suit")]
+        [DataRow("♣ alone", " AD AH ACJSJC", "9C", false,  true, DisplayName = "Bid alone if alone-must-take-5 with top three trump and top off-suit")]
+        [DataRow(      "♦", "  KH KDADJHJD", "9D", false,  true, DisplayName = "Don't bid alone if alone-must-take-5 with top four trump and high off-suit")]
+        [DataRow(      "♥", "  9D KHAHJDJH", "9H", false,  true, DisplayName = "Don't bid alone if alone-must-take-5 with top four trump and any off-suit")]
+        public void TestTakeBidAlone(string bid, string hand, string upCard, bool callForBest, bool aloneTake5)
         {
-            Assert.AreEqual(bid, GetSuggestedBid(hand, upCard));
+            Assert.AreEqual(bid, GetSuggestedBid(hand, upCard, aloneTake5: aloneTake5, callForBest: callForBest));
         }
 
         [TestMethod]
@@ -454,13 +466,14 @@ namespace TestBots
         /// <param name="handString">First bidder's hand</param>
         /// <param name="upCardString">The card turned up by the dealer</param>
         /// <param name="take4for1">The value to use for EuchreOptions.take4for1</param>
+        /// <param name="callForBest">The value to use for EuchreOptions.callForBest</param>
         /// <returns>The suggested bid for the first bidder</returns>
-        private static string GetSuggestedBid(string handString, string upCardString, bool take4for1 = false)
+        private static string GetSuggestedBid(string handString, string upCardString, bool take4for1 = false, bool callForBest = false, bool aloneTake5 = false)
         {
             handString = handString.Replace(" ", "");
 
             var upCard = new Card(upCardString);
-            var bot = GetBot(Suit.Unknown, new EuchreOptions { take4for1 = take4for1 });
+            var bot = GetBot(Suit.Unknown, new EuchreOptions { aloneTake5 = aloneTake5, callForBest = callForBest, take4for1 = take4for1 });
 
             //  get the bid using the state-based suggest bid method
             var bidState = new SuggestBidState<EuchreOptions>
