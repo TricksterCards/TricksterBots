@@ -74,9 +74,9 @@ namespace Trickster.Bots
                     est += 0.25;
             }
 
-            if (trumpCards.Count == 3 &&
-                offSuitCards.Any(c1 => offSuitCards.Any(c2 => c1 != c2 && EffectiveSuit(c2, maybeTrump) == EffectiveSuit(c1, maybeTrump))))
-                //  if we're two-suited with three trump, add most of a trick
+            if (trumpCards.Count >= 3 &&
+                offSuitCards.Any(c1 => offSuitCards.Count < 2 || offSuitCards.Any(c2 => c1 != c2 && EffectiveSuit(c2, maybeTrump) == EffectiveSuit(c1, maybeTrump))))
+                //  if we're one/two-suited with three or more trump, add most of a trick
                 est += 0.75;
 
             return est;

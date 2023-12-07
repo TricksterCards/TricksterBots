@@ -388,6 +388,8 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow("♠ alone", "  AC 9SKSASJS", "TS", false, false, DisplayName = "Should bid alone with four trump and off-suit Ace")]
+        [DataRow("♠ alone", "  AC 9SKSJCJS", "TS", false, false, DisplayName = "Should bid alone with four trump and off-suit Ace (case 2)")]
         //  risk of both same suit as Ace being led on first trick AND getting trumped is small
         [DataRow("♥ alone", "  AS KHAHJDJH", "9H", false, false, DisplayName = "Should bid alone with sure trump and off-suit Ace")]
         //  if partner doesn't have the off-Jack, you won't take all five tricks even together, may as well go for it
