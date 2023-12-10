@@ -436,6 +436,29 @@ namespace TestBots
             Assert.AreEqual("QD", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected QD");
         }
 
+        [TestMethod]
+        [DataRow("JD", "JDJHTDASKS", 0, DisplayName = "Lead boss trump if we have it")]
+        [DataRow("JH", "JHTDAS", 0, DisplayName = "Lead high trump if opponents haven't taken a trick")]
+        [DataRow("AS", "JHTDAS", 1, DisplayName = "Lead off-suit if opponents have a trick")]
+        [DataRow("KS", "KS9S", 0, DisplayName = "Lead high off-suit if opponents haven't taken a trick")]
+        [DataRow("9S", "KS9S", 1, DisplayName = "Lead low off-suit if opponents have a trick")]
+        public void LeadWhenAlone(string card, string hand, int oppTricks)
+        {
+            var players = new[]
+            {
+                new TestPlayer(112, hand, handScore: 5 - hand.Length/2 - oppTricks),
+                new TestPlayer(140, handScore: oppTricks),
+                new TestPlayer(-3),
+                new TestPlayer(140)
+            };
+
+            var bot = GetBot(Suit.Diamonds);
+            var cardState = new TestCardState<EuchreOptions>(bot, players);
+
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual(card, suggestion.ToString());
+        }
+
         private static string GetBidText(BidBase bid)
         {
             return GetBidText(bid.value);

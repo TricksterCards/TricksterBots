@@ -239,6 +239,13 @@ namespace Trickster.Bots
                     return sortedTrump.Last();
                 }
 
+                //  Lead high trump with 2+ trump if alone and opponents have not taken any tricks yet
+                if (sortedTrump.Count > 1 && playerBid == EuchreBid.MakeAlone &&
+                    players.Opponents(player).All(p => p.HandScore == 0))
+                {
+                    return sortedTrump.Last();
+                }
+
                 //  Lead trump if you called it and have three or more trump
                 if (sortedTrump.Count >= 3 && (playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone))
                 {
@@ -285,6 +292,11 @@ namespace Trickster.Bots
                     var theSuit = nonTrumpHighCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s)).ThenBy(s => suitOrder[s]).First();
                     return nonTrumpHighCards.Single(c => EffectiveSuit(c) == theSuit);
                 }
+
+                //  lead our highest off-suit if we're alone, out of trump and opponents haven't taken a trick yet
+                if (sortedTrump.Count == 0 && playerBid == EuchreBid.MakeAlone &&
+                    players.Opponents(player).All(p => p.HandScore == 0))
+                    return legalCards.OrderByDescending(RankSort).First();
 
                 //  return the lowest card we have favoring non-trump
                 return lowestCard;
