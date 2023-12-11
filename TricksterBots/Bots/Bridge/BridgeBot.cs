@@ -48,9 +48,8 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<BridgeOptions> state)
         {
-            // TODO: Calculate ideal contract based on player and partner's hands
-            if (state.options.variation == BridgeVariation.Mini)
-                return state.legalBids.First();
+            if (options.variation == BridgeVariation.Mini)
+                return SuggestMiniBridgeBid(state);
 
             var (players, dealerSeat, hand) = (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand);
             var history = new BridgeBidHistory(players, dealerSeat);
@@ -94,6 +93,36 @@ namespace Trickster.Bots
         public override List<Card> SuggestDiscard(SuggestDiscardState<BridgeOptions> state)
         {
             throw new NotImplementedException();
+        }
+
+        public BidBase SuggestMiniBridgeBid(SuggestBidState<BridgeOptions> state)
+        {
+            var players = new PlayersCollectionBase(this, state.players);
+            var partner = players.PartnerOf(state.player);
+            var combinedHand = new Hand(partner.Hand).AddCards(state.hand);
+
+            var hcp = BasicBidding.ComputeHighCardPoints(combinedHand);
+            var counts = BasicBidding.CountsBySuit(combinedHand);
+
+            var bestFit = counts.Where(kvp => kvp.Value >= 8).OrderByDescending(kvp => kvp.Value).Select(kvp => kvp.Key).FirstOrDefault();
+
+            var level = 1;
+            if (hcp >= 37)
+                level = 7;
+            else if (hcp >= 33)
+                level = 6;
+            else if (hcp >= 29 && IsMinor(bestFit))
+                level = 5;
+            else if (hcp >= 26 && IsMajor(bestFit))
+                level = 4;
+            else if (hcp >= 23 && bestFit == Suit.Unknown)
+                level = 3;
+
+            return state.legalBids.Reverse().FirstOrDefault(b =>
+            {
+                var bid = new DeclareBid(b.value);
+                return bid.suit == bestFit && bid.level <= level;
+            }) ?? state.legalBids[0];
         }
 
         public override Card SuggestNextCard(SuggestCardState<BridgeOptions> state)
