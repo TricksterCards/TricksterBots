@@ -1,0 +1,46 @@
+[Event "Transfer to spades minimum hand"]
+[Deal "N:KT97.KQJ.KQ5.J97 A6.9652.AT6.QT52 J5432.A4.J98.863 Q8.T873.7432.AK4"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass Pass Pass
+
+[Event "Transfer to Spades - Invitational, Refused"]
+[Deal "N:KT9.KQJ7.KQ5.J97 5.T983.AJT4.A643 AQ432.654.32.K85 J876.A2.9876.QT2"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass 2NT Pass
+3S Pass Pass Pass
+
+[Event "Spade Transfer, Invitation accepted"]
+[Deal "N:AK3.QJ98.AJ5.Q74 542.764.K763.A32 JT986.AT3.82.KJ5 Q7.K52.QT94.T986"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass 2NT Pass
+4S Pass Pass Pass
+
+[Event "Super Accept Heart Transfer, Accepted"]
+[Deal "N:KJ6.JT76.AJ83.AK Q932.K8.Q76.J962 75.AQ432.952.T84 AT84.95.KT4.Q753"]
+[Auction "N"]
+1NT Pass 2D Pass
+3H Pass 4H Pass
+Pass Pass
+
+[Event "Super Accept, Declined"]
+[Deal "N:KJ6.JT76.AJ83.AK A985.92.Q54.Q652 32.K8543.T97.984 QT74.AQ.K62.JT73"]
+[Auction "N"]
+1NT Pass 2D Pass
+3H Pass Pass Pass
+
+[Event "Transfer, Game Force, Play 3NT"]
+[Deal "N:KQ.AJ43.K84.K742 652.T92.Q52.A963 AT984.K85.A973.T J73.Q76.JT6.QJ85"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass 3NT Pass
+Pass Pass
+
+[Event "Transfer, Game Force, Play 4S"]
+[Deal "N:KQ5.AJ43.Q4.K874 J76.Q92.JT2.QJ53 AT984.K85.A973.T 32.T76.K865.A962"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass 3NT Pass
+4S Pass Pass Pass

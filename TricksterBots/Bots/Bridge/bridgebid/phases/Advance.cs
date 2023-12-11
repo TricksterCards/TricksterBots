@@ -44,7 +44,7 @@ namespace Trickster.Bots
                 //  a cuebid advance when overcall was also a cuebid is unknown (for now)
                 //  TODO: Determine if there are conditions where this makes sense
             }
-            else if (opening.declareBid.suit == advance.declareBid.suit)
+            else if (opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.level == opening.declareBid.level + 1)
             {
                 //  cuebid the oppenents' suit to show support with 10+ points
                 advance.BidConvention = BidConvention.Cuebid;
@@ -85,20 +85,30 @@ namespace Trickster.Bots
             }
             else if (advance.declareBid.suit == Suit.Unknown)
             {
+                if (advance.declareBid.level == 4)
+                {
+                    advance.BidConvention = BidConvention.Blackwood;
+                    advance.BidMessage = BidMessage.Forcing;
+                    advance.Description = "asking for Aces";
+                    //  TODO: validate knowing count of Aces will help decision to bid slam
+                    advance.Validate = hand => false;
+                }
                 //  advancing in notrump, e.g. (1C)-1H-(P)-1N
-                advance.IsBalanced = true;
-                advance.Description = $"stopper in {opening.declareBid.suit}";
-                advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
-
-                if (advance.declareBid.level == overcall.declareBid.level)
+                else if (advance.declareBid.level == overcall.declareBid.level)
                 {
                     advance.Points.Min = 6;
                     advance.Points.Max = 10;
+                    advance.IsBalanced = true;
+                    advance.Description = $"stopper in {opening.declareBid.suit}";
+                    advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
                 }
                 else if (advance.declareBid.level == overcall.declareBid.level + 1)
                 {
                     advance.Points.Min = 11;
                     advance.Points.Max = 12;
+                    advance.IsBalanced = true;
+                    advance.Description = $"stopper in {opening.declareBid.suit}";
+                    advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
                 }
             }
             else

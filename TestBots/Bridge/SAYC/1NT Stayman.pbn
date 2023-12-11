@@ -1,0 +1,27 @@
+[Event "1NT Opening - Stayman - No Major - Invite - Refused"]
+[Deal "N:K43.QJ3.AK32.Q85 T98.A74.865.A742 AJ65.T985.JT4.KT Q72.K62.Q97.J963"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass 2NT Pass
+Pass Pass
+
+[Event "1NT Open - Stayman - No Major - Game"]
+[Deal "N:K43.QJ3.AK32.Q85 972.KT6.986.A976 AJ65.A985.JT4.KT QT8.742.Q75.J432"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass 3NT Pass
+Pass Pass
+
+[Event "1NT - Stayman - Spade Fit - Game Invite - Refused"]
+[Deal "N:AK98.J4.KJ74.QJT Q7.KQT9.QT62.964 JT32.8765.A3.K32 654.A32.985.A875"]
+[Auction "N"]
+1NT Pass 2C Pass
+2S Pass 3S Pass
+Pass Pass
+
+[Event "1NT - Stayman - Spade Fit - Game in Spades"]
+[Deal "N:AK98.J4.KJ74.QJT 3.KT32.QT65.A985 QJT2.8765.A3.K32 7654.AQ9.982.764"]
+[Auction "N"]
+1NT Pass 2C Pass
+2S Pass 4S Pass
+Pass Pass

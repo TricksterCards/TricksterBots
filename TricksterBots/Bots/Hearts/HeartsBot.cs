@@ -131,6 +131,10 @@ namespace Trickster.Bots
                     //  if we might be able to take the J♦ later, don't throw high diamonds now
                     cardsBelowHighestPlayed = cardsBelowHighestPlayed.Where(c => c.rank < Rank.Jack).ToList();
 
+                //  exclude the Q♠ if we have it and our partner is taking the trick with a higher spade
+                if (queenSpades != null && isPartnerTakingTrick && cardTakingTrick.suit == Suit.Spades && cardTakingTrick.rank > Rank.Queen)
+                    cardsBelowHighestPlayed = cardsBelowHighestPlayed.Where(c => !IsBlackLady(c)).ToList();
+
                 if (cardsBelowHighestPlayed.Any())
                 {
                     var highestRankBelowHighestPlayed = cardsBelowHighestPlayed.Max(c => c.rank);

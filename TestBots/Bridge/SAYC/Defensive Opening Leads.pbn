@@ -1,0 +1,73 @@
+[Event "Opening Lead in NT with 3+ Card Sequence"]
+[Deal "N:A65.JT985.J43.T4 - - -"]
+[Contract "3NT"]
+[Play "N"]
+HJ - - -
+
+[Event "Opening Lead in Declarer's 2nd Bid Suit"]
+[Deal "N:65.AKQ.J432.T532 - - -"]
+[Contract "2S"]
+[Auction "W"]
+1H Pass 1N   Pass
+2S Pass Pass Pass
+[Play "N"]
+S5 - - -
+
+[Event "Opening Lead in Suit with 3-Card Sequence with Ace"]
+[Deal "N:65.AKQ.J432.T532 - - -"]
+[Contract "3S"]
+[Play "N"]
+HA - - -
+
+[Event "Opening Lead in Suit with Non-Trump Singleton"]
+[Deal "N:5.KQ765.4.T76532 - - -"]
+[Contract "3S"]
+[Play "N"]
+D4 - - -
+
+[Event "Opening Lead in Suit skip AKQ Non-Trump Singleton"]
+[Deal "N:5.Q765.K.Q765432 - - -"]
+[Contract "3S"]
+[Play "N"]
+C5 - - -
+
+[Event "Opening Lead in Suit with Top of Non-Doubleton Sequence"]
+[Deal "W:5.JT765.KQ.T7653 - - -"]
+[Contract "3S"]
+[Play "W"]
+HJ - - -
+
+[Event "Opening Lead in Suit skip Non-Doubleton Sequence with Ace"]
+[Deal "W:5.AJT76.KQ.T7653 - - -"]
+[Contract "3S"]
+[Play "W"]
+C5 - - -
+
+[Event "Opening Lead in Suit with 4th Best of Partner's Suit"]
+[Deal "W:5.765.7654.J7654 - - -"]
+[Contract "4S"]
+[Auction "W"]
+Pass 1H 2D   2S
+4D   4S Pass Pass
+Pass
+[Play "W"]
+D4 - - -
+
+[Event "Opening Lead in Suit ignore Partner's Suit if 1D"]
+[Deal "E:- - 54.765.765.KQ543 -"]
+[Contract "4S"]
+[Auction "E"]
+1D   4S Pass Pass
+Pass
+[Play "W"]
+CK - - -
+
+[Event "Opening Lead in Suit without Partner's Suit"]
+[Deal "E:5432.7654..J7654 - - -"]
+[Contract "4S"]
+[Auction "E"]
+Pass 1H 2D   2S
+Pass 4S Pass Pass
+Pass
+[Play "E"]
+C5 - - -

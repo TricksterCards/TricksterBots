@@ -20,7 +20,17 @@ namespace Trickster.Bots
             }
 
             if (bid.bidIsDeclare && bid.Index >= 6 && bid.History[bid.Index - 4].BidConvention == BidConvention.JacobyTransfer)
-                return InterpretResponderRebid(bid);
+            {
+                InterpretResponderRebid(bid.History[bid.Index - 4], bid.History[bid.Index - 2], bid);
+                return true;
+            }
+
+            // Now check for opener's re-rebid to place contract TODO: Need to go to slam in some cases?
+            if (bid.bidIsDeclare && bid.Index >= 8 && bid.History[bid.Index - 4].BidConvention == BidConvention.AcceptJacobyTransfer)
+            {
+                PlaceContract(bid.History[bid.Index - 4], bid.History[bid.Index -2], bid);
+                return true;
+            }
 
             return false;
         }
@@ -92,19 +102,139 @@ namespace Trickster.Bots
             }
         }
 
-        private static bool InterpretResponderRebid(InterpretedBid rebid)
+        private static void InterpretResponderRebid(InterpretedBid transfer, InterpretedBid accept, InterpretedBid rebid)
         {
-            //  TODO: check how much this overlaps with ResponderRebid.Interpret (maybe all of it?)
-            //  If, after the transfer is accepted, responder bids a new suit, that is natural and
-            //  game forcing. Possible calls after the accepted transfer are:
-            //  1NT — 2H
-            //  2S  — Pass = content to play 2S.
-            //      — 2NT, 3S = invitational. Over 2NT opener may pass or bid 3S
-            //        with a minimum hand; bid 3NT or 4S with a maximum.
-            //      — 3C, 3D, 3H = natural and game forcing.
-            //      — 3NT = giving opener a choice between 3NT and 4S.
-            //      — 4S = placing the contract, with a six-card or longer suit.
-            return false;
+            if (accept.declareBid == null || transfer.declareBid == null)
+                return; // TODO: Handle X, etc...
+
+            // Validate that transfer happened
+            var transferSuit = transfer.declareBid.suit == Suit.Diamonds ? Suit.Hearts : Suit.Spades;
+            if (accept.declareBid.suit != transferSuit)
+                return;
+
+            if (rebid.bid == BidBase.Pass)
+            {
+                rebid.Points.Max = 7;
+                rebid.BidPointType = BidPointType.Hcp;
+                return;
+            }
+
+            if (rebid.declareBid == null)
+                return;     // TODO: Handle these cases X, etc.
+
+            if (transferSuit == rebid.declareBid.suit)
+            {
+                if (rebid.declareBid.level == 3)
+                {
+                    rebid.Points.Min = 8;
+                    rebid.Points.Max = 9;
+                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.HandShape[transferSuit].Min = 6;
+                    rebid.Description = $"Inviting game; 6+ {transferSuit}";
+                    return;
+                }
+                // TODO: Slam stuff not implemented
+                if (rebid.declareBid.level == 4)
+                {
+                    // If opener has super-accepted the transfer then game can be bid with weaker hand
+                    if (accept.declareBid.level == 3)
+                    {
+                        rebid.Points.Min = 6;
+                        rebid.BidPointType = BidPointType.Hcp;
+                        rebid.HandShape[transferSuit].Min = 5;
+                        rebid.Description = $"Sign-off at game; 5+ {transferSuit}";
+                        // TODO: Weaker game with more trump cards - alternate matches
+                    }
+                    else
+                    {
+                        rebid.Points.Min = 10;
+                        rebid.BidPointType = BidPointType.Hcp;
+                        rebid.HandShape[transferSuit].Min = 6;
+                        rebid.Description = $"Sign-off at game; 6+ {transferSuit}";
+                    }
+                }
+                return;
+            }
+
+            if (rebid.declareBid.suit == Suit.Unknown)
+            {
+                if (rebid.declareBid.level == 2)
+                {
+                    rebid.Points.Min = 8;
+                    rebid.Points.Max = 9;
+                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.HandShape[transferSuit].Max = 5;
+                    rebid.HandShape[transferSuit].Min = 5;
+                    rebid.Description = $"Inviting game; 5 {transferSuit}";
+                    return;
+                }
+                if (rebid.declareBid.level == 3)
+                {
+                    rebid.Points.Min = 10;
+                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.HandShape[transferSuit].Max = 5;
+                    rebid.HandShape[transferSuit].Min = 5;
+                    rebid.Description = $"Sign-off at game; 5 {transferSuit}";
+                    return;
+                }
+            }
+
+
+        }
+
+        private static void PlaceContract(InterpretedBid accept, InterpretedBid responderRebid, InterpretedBid rebid)
+        {
+            if (accept.declareBid == null || responderRebid.declareBid == null)
+                return; // TODO: Handle X, etc...
+
+            if (rebid.declareBid == null)
+                return;     // TODO: Handle these cases X, etc.
+
+            // Validate that transfer happened -- TODO: Check earlier bids were successful transfers?
+            var transferSuit = accept.declareBid.suit;
+
+            if (rebid.bid == BidBase.Pass)
+            {
+                rebid.Points.Max = 15;
+                rebid.HandShape[transferSuit].Min = 2;
+                rebid.HandShape[transferSuit].Max = 2;
+                rebid.BidPointType = BidPointType.Hcp;
+                return;
+            }
+            
+            if (rebid.declareBid.suit == transferSuit)
+            {
+                if (rebid.declareBid.level == 3)
+                {
+                    rebid.Points.Min = 15;
+                    rebid.Points.Max = 15;
+                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.HandShape[transferSuit].Min = 3;
+                    rebid.Description = $"Sign-off at partscore; 3+ {transferSuit}";
+                    return;
+                }
+                if (rebid.declareBid.level == 4)
+                {
+                    rebid.Points.Min = (responderRebid.declareBid.level == 3 && responderRebid.declareBid.suit == Suit.Unknown) ? 15 : 16;
+                    rebid.Points.Max = 17;
+                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.HandShape[transferSuit].Min = 3;
+                    rebid.Description = $"Sign-off at game; 3+ {transferSuit}";
+                    return;
+                }
+            }
+
+            if (rebid.declareBid.suit == Suit.Unknown && rebid.declareBid.level == 3)
+            {
+                rebid.Points.Min = 16;
+                rebid.Points.Max = 17;
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.HandShape[transferSuit].Max = 2;
+                rebid.HandShape[transferSuit].Min = 2;
+                rebid.Description = $"Sign-off at game; 2 {transferSuit}";
+                return;
+            }
+
         }
     }
 }

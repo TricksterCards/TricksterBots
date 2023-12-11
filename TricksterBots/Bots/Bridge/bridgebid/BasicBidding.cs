@@ -38,19 +38,9 @@ namespace Trickster.Bots
             return dummyPoints;
         }
 
-        public static int ComputeHighCardPoints(Hand hand)
+        public static int ComputeHighCardPoints(IEnumerable<Card> hand)
         {
             var highCardPoints = ComputeRawHighCardPoints(hand);
-
-            if (IsFlat(hand))
-                //  deduct 1 point for a 4-3-3-3 (flat) distribution
-                highCardPoints -= 1;
-
-            if (HasSingletonHonor(hand))
-            {
-                //  TODO: deduct 1 point for a singleton K, Q, or J
-                //highCardPoints -= 1;
-            }
 
             return highCardPoints;
         }

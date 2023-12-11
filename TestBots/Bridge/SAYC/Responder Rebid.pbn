@@ -1,0 +1,7 @@
+
+[Event "Responder should rebid 3NT even if not balanced"]
+[Deal "S:- - JT653.A3.AKJT5.8 -"]
+[Auction "S"]
+1C Pass 1S Pass
+1NT Pass 3NT
+
