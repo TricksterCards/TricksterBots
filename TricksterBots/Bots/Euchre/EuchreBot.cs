@@ -74,9 +74,9 @@ namespace Trickster.Bots
                     est += 0.25;
             }
 
-            if (trumpCards.Count == 3 &&
-                offSuitCards.Any(c1 => offSuitCards.Any(c2 => c1 != c2 && EffectiveSuit(c2, maybeTrump) == EffectiveSuit(c1, maybeTrump))))
-                //  if we're two-suited with three trump, add most of a trick
+            if (trumpCards.Count >= 3 &&
+                offSuitCards.Any(c1 => offSuitCards.Count < 2 || offSuitCards.Any(c2 => c1 != c2 && EffectiveSuit(c2, maybeTrump) == EffectiveSuit(c1, maybeTrump))))
+                //  if we're one/two-suited with three or more trump, add most of a trick
                 est += 0.75;
 
             return est;
@@ -171,15 +171,16 @@ namespace Trickster.Bots
                 }
             }
 
-            //  bid alone if we think we'll take more than 4-tricks, so long as we hold the appropriate high cards
-            if (highEstimate >= 4.25)
+            //  bid alone if we think we'll take at least 4-tricks, so long as we hold the appropriate high cards
+            //  only require just under 3-tricks if call-for-best is on (as we'll likely get another trump from partner)
+            if (highEstimate >= (options.callForBest && !options.aloneTake5 ? 2.75 : 4.0))
             {
-                //  when aloneTake5 is true, we need to hold the Joker (if present) or the high Jack to bid alone
-                if (options.aloneTake5 && hand.Any(c => options.withJoker ? c.rank == Rank.High : c.suit == highSuit && c.rank == Rank.Jack))
+                //  when aloneTake5 is true, we need to hold the Joker (if present) or the high Jack to bid alone (plus high in each off-suit)
+                if (options.aloneTake5 && hand.Any(c => options.withJoker ? c.rank == Rank.High : c.suit == highSuit && c.rank == Rank.Jack) && hand.All(c => EffectiveSuit(c, highSuit) == highSuit || hand.Any(h => h.rank == Rank.Ace && h.suit == c.suit)))
                     return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
 
-                //  when aloneTake5 is false, we need to hold one of the top cards (Joker or either Jack) to bid alone
-                if (!options.aloneTake5 && hand.Any(c => EffectiveSuit(c, highSuit) == highSuit && (c.rank == Rank.Jack || c.rank == Rank.High)))
+                //  when aloneTake5 is false, we need to be call-for-best or hold one of the top cards (Joker or either Jack) to bid alone
+                if (!options.aloneTake5 && (options.callForBest || hand.Any(c => EffectiveSuit(c, highSuit) == highSuit && (c.rank == Rank.Jack || c.rank == Rank.High))))
                     return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
             }
 
@@ -238,6 +239,13 @@ namespace Trickster.Bots
                     return sortedTrump.Last();
                 }
 
+                //  Lead high trump with 2+ trump if alone and opponents have not taken any tricks yet
+                if (sortedTrump.Count > 1 && playerBid == EuchreBid.MakeAlone &&
+                    players.Opponents(player).All(p => p.HandScore == 0))
+                {
+                    return sortedTrump.Last();
+                }
+
                 //  Lead trump if you called it and have three or more trump
                 if (sortedTrump.Count >= 3 && (playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone))
                 {
@@ -284,6 +292,11 @@ namespace Trickster.Bots
                     var theSuit = nonTrumpHighCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s)).ThenBy(s => suitOrder[s]).First();
                     return nonTrumpHighCards.Single(c => EffectiveSuit(c) == theSuit);
                 }
+
+                //  lead our highest off-suit if we're alone, out of trump and opponents haven't taken a trick yet
+                if (sortedTrump.Count == 0 && playerBid == EuchreBid.MakeAlone &&
+                    players.Opponents(player).All(p => p.HandScore == 0))
+                    return legalCards.OrderByDescending(RankSort).First();
 
                 //  return the lowest card we have favoring non-trump
                 return lowestCard;
