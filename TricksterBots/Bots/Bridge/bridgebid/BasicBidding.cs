@@ -40,13 +40,6 @@ namespace Trickster.Bots
 
         public static int ComputeHighCardPoints(IEnumerable<Card> hand)
         {
-            var highCardPoints = ComputeRawHighCardPoints(hand);
-
-            return highCardPoints;
-        }
-
-        public static int ComputeRawHighCardPoints(Hand hand)
-        {
             var highCardPoints = 0;
 
             //  basic points for high cards
