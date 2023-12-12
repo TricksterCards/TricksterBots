@@ -51,7 +51,8 @@ namespace TestBots
         [DataRow("4♠" , "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid game in a suit if slam is not available")]
         [DataRow("1NT", "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in NT")]
         [DataRow("1♠" , "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in a suit")]
-        [DataRow("1♥",  "JS9S7SAHKHQHJH4H3H8C4C3C2D", "ASQS3S7H2HKCTC6CJD8D6D5D4D", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in a suit (case 2)")]
+        [DataRow("1♥" , "JS9S7SAHKHQHJH4H3H8C4C3C2D", "ASQS3S7H2HKCTC6CJD8D6D5D4D", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in a suit (case 2)")]
+        [DataRow("1♥" , "KC9C8C2C9HASQS5SADJD7D4D3D", "ACTC6C3CAHJHTH8H5H3H2H3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Prefer bidding a major")]
         public void MiniBridgeBidding(string bid, string hand, string partnerHand, string bids)
         {
             var legalBids = bids.Split(' ').Select(b => new BidBase(new DeclareBid(int.Parse(b[0].ToString()), LetterToSuit[b[1]]))).ToList();

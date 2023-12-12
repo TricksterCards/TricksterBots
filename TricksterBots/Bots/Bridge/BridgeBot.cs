@@ -104,7 +104,7 @@ namespace Trickster.Bots
             var hcp = BasicBidding.ComputeHighCardPoints(combinedHand);
             var counts = BasicBidding.CountsBySuit(combinedHand);
 
-            var bestFit = counts.Where(kvp => kvp.Value >= 8).OrderByDescending(kvp => kvp.Value).Select(kvp => kvp.Key).FirstOrDefault();
+            var bestFit = counts.Where(kvp => kvp.Value >= 8).OrderByDescending(kvp => kvp.Value).ThenByDescending(kvp => suitOrder[kvp.Key]).Select(kvp => kvp.Key).FirstOrDefault();
 
             var level = 1;
             if (hcp >= 37)
