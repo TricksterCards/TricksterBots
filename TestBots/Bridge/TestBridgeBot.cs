@@ -45,8 +45,12 @@ namespace TestBots
         }
 
         [TestMethod]
-        [DataRow("7NT", "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C 6NT 6S 6H 6D 6C 7NT 7S 7H 7D 7C", DisplayName = "Bid grand slam")]
-        [DataRow("3NT", "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid game if slam is not available")]
+        [DataRow("7NT", "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C 6NT 6S 6H 6D 6C 7NT 7S 7H 7D 7C", DisplayName = "Bid grand slam in NT")]
+        [DataRow("7♠" , "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C 6NT 6S 6H 6D 6C 7NT 7S 7H 7D 7C", DisplayName = "Bid grand slam in a suit")]
+        [DataRow("3NT", "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid game in NT if slam is not available")]
+        [DataRow("4♠" , "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid game in a suit if slam is not available")]
+        [DataRow("1NT", "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in NT")]
+        [DataRow("1♠" , "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in a suit")]
         public void MiniBridgeBidding(string bid, string hand, string partnerHand, string bids)
         {
             var legalBids = bids.Split(' ').Select(b => new BidBase(new DeclareBid(int.Parse(b[0].ToString()), LetterToSuit[b[1]]))).ToList();
