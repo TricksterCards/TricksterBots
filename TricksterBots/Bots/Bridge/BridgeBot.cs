@@ -314,6 +314,9 @@ namespace Trickster.Bots
 
         private List<Card> GetCardsInPartnersBestBidSuit(SuggestCardState<BridgeOptions> state, Dictionary<Suit, List<Card>> legalCardsBySuit)
         {
+            if (options.variation == BridgeVariation.Mini)
+                return new List<Card>();
+
             var partner = GetPartner(state);
             var summary = GetPlayerSummary(state, partner.Seat);
             var legalHandShapes = summary.HandShape.Where(hs => legalCardsBySuit.ContainsKey(hs.Key));
@@ -389,6 +392,9 @@ namespace Trickster.Bots
 
         private int CountDeclarersCardsInTrump(SuggestCardState<BridgeOptions> state)
         {
+            if (options.variation == BridgeVariation.Mini)
+                return 0;
+
             var declarer = GetDeclarer(state);
             var summary = GetPlayerSummary(state, declarer.Seat);
             var nCardsInTrump = 0;
@@ -472,6 +478,9 @@ namespace Trickster.Bots
 
         private List<Suit> GetUnbidSuits(SuggestCardState<BridgeOptions> state)
         {
+            if (options.variation == BridgeVariation.Mini)
+                return new List<Suit>();
+
             var dealerSeat = FindDealerSeat(state);
             var players = new PlayersCollectionBase(this, state.players);
             var history = new BridgeBidHistory(players, dealerSeat);
