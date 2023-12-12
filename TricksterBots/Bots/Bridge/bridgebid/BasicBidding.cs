@@ -38,7 +38,7 @@ namespace Trickster.Bots
             return dummyPoints;
         }
 
-        public static int ComputeHighCardPoints(IEnumerable<Card> hand)
+        public static int ComputeHighCardPoints(IReadOnlyList<Card> hand)
         {
             var highCardPoints = 0;
 
