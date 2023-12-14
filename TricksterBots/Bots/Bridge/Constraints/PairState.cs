@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Trickster.Bots;
 
-namespace TricksterBots.Bots.Bridge
+
+namespace BridgeBidding
 {
+    public enum Pair { NorthSouth, EastWest }
+
     public class PairState
     {
         public Pair Pair { get; }

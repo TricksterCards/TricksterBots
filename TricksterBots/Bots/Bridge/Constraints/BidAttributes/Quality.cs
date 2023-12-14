@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
-using System.Text;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 
 	public enum SuitQuality { Poor = 0, Decent = 1, Good = 2, Excellent = 3, Solid = 4 }

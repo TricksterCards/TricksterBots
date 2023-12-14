@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Trickster.Bots;
 using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 
    

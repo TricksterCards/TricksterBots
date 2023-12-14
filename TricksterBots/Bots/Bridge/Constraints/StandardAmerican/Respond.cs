@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+
+namespace BridgeBidding
 {
     public class Respond : StandardAmerican
     {
@@ -65,7 +61,7 @@ namespace TricksterBots.Bots.Bridge
 
         private static BidRule[] RespondNT(int level, params Suit[] denies)
         {
-            var rule = Invitational(level, Suit.Unknown);
+            var rule = Invitational(level, Strain.NoTrump);
             if (level == 1)
             {
                 foreach (Suit suit in denies)
@@ -77,7 +73,7 @@ namespace TricksterBots.Bots.Bridge
             else
             {
                 // TODO: Is this right?  I think a 5+ card suit should always be bid...
-                foreach (Suit suit in BasicBidding.BasicSuits)
+                foreach (Suit suit in Enum.GetValues(typeof(Suit)))
                 {
                     rule.AddConstraint(Shape(suit, 0, 4));
                 }
@@ -85,7 +81,7 @@ namespace TricksterBots.Bots.Bridge
             }
             return new BidRule[]
             {
-                PartnerBids(level, Suit.Unknown, Bid.Double, p => Open.RebidPartnerBidNT(p, level)),
+                PartnerBids(level, Strain.NoTrump, Bid.Double, p => Open.RebidPartnerBidNT(p, level)),
                 rule
             };
         }
@@ -108,8 +104,8 @@ namespace TricksterBots.Bots.Bridge
             var bids = new List<BidRule>
             {
 				DefaultPartnerBids(Bid.Double, Open.RebidPartnerChangedSuits),
-				PartnerBids(2, Suit.Clubs, Bid.Double, Open.RebidPartnerRaisedMinor),
-				PartnerBids(3, Suit.Clubs, Bid.Double, Open.RebidPartnerRaisedMinor),
+				PartnerBids(2, Strain.Clubs, Bid.Double, Open.RebidPartnerRaisedMinor),
+				PartnerBids(3, Strain.Clubs, Bid.Double, Open.RebidPartnerRaisedMinor),
 
 				Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(4, 5), LongestMajor(4)),
                 Forcing(1, Suit.Diamonds, Points(Respond1Level), Shape(6), LongestMajor(5)),
@@ -153,8 +149,8 @@ namespace TricksterBots.Bots.Bridge
             var bids = new List<BidRule>
             {
 				DefaultPartnerBids(Bid.Double, Open.RebidPartnerChangedSuits),
-				PartnerBids(2, Suit.Diamonds, Bid.Double, Open.RebidPartnerRaisedMinor),
-				PartnerBids(3, Suit.Diamonds, Bid.Double, Open.RebidPartnerRaisedMinor),
+				PartnerBids(2, Strain.Diamonds, Bid.Double, Open.RebidPartnerRaisedMinor),
+				PartnerBids(3, Strain.Diamonds, Bid.Double, Open.RebidPartnerRaisedMinor),
 
 				// TODO: More formal redouble???
 				Forcing(Bid.Redouble, Points((10, 100)), HighCardPoints((10, 100))),
@@ -203,9 +199,9 @@ namespace TricksterBots.Bots.Bridge
             var bids = new List<BidRule>
             {
 				DefaultPartnerBids(Bid.Double, Open.RebidPartnerChangedSuits),
-				PartnerBids(2, Suit.Hearts, Bid.Double, Open.RebidPartnerRaisedMajor),
-				PartnerBids(3, Suit.Hearts, Bid.Double, Open.RebidPartnerRaisedMajor),
-				PartnerBids(4, Suit.Hearts, Bid.Double, Open.RebidPartnerRaisedMajor),
+				PartnerBids(2, Strain.Hearts, Bid.Double, Open.RebidPartnerRaisedMajor),
+				PartnerBids(3, Strain.Hearts, Bid.Double, Open.RebidPartnerRaisedMajor),
+				PartnerBids(4, Strain.Hearts, Bid.Double, Open.RebidPartnerRaisedMajor),
 
                 // TODO: Need higher priority bids showing spades when bid hand ---
 
@@ -239,9 +235,9 @@ namespace TricksterBots.Bots.Bridge
             var bids = new List<BidRule>
             {
                 DefaultPartnerBids(Bid.Double, Open.RebidPartnerChangedSuits),
-				PartnerBids(2, Suit.Spades, Bid.Double, Open.RebidPartnerRaisedMajor),
-				PartnerBids(3, Suit.Spades, Bid.Double, Open.RebidPartnerRaisedMajor),
-                PartnerBids(4, Suit.Spades, Bid.Double, Open.RebidPartnerRaisedMajor),
+				PartnerBids(2, Strain.Spades, Bid.Double, Open.RebidPartnerRaisedMajor),
+				PartnerBids(3, Strain.Spades, Bid.Double, Open.RebidPartnerRaisedMajor),
+                PartnerBids(4, Strain.Spades, Bid.Double, Open.RebidPartnerRaisedMajor),
 
 				// Highest priority is to show support...
                 Invitational(3, Suit.Spades, DummyPoints(LimitRaise), Shape(4, 8), ShowsTrump()),
@@ -385,7 +381,7 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(2, Suit.Spades, Partner(HasShownSuit()), Fit(), Points(RespondX1Level)),
 
 				// TODO: Perhaps higer priority than raise of a minor???
-                Nonforcing(1, Suit.Unknown, Points(RespondX1Level)),
+                Nonforcing(1, Strain.NoTrump, Points(RespondX1Level)),
 
                 Signoff(Bid.Pass, Points(RespondPass))
 

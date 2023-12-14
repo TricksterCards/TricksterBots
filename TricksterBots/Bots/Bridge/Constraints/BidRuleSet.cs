@@ -6,11 +6,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 
     public class BidRuleSet
@@ -28,6 +25,7 @@ namespace TricksterBots.Bots.Bridge
 			public PairAgreements PairAgreements;
 		}
         public Call Call { get; }
+		public BidRule.BidForce BidForce { get; }
 
 		private PartnerChoicesXXX _partnerChoices;
 
@@ -39,9 +37,10 @@ namespace TricksterBots.Bots.Bridge
 
        
 
-		public BidRuleSet(Call call) 
+		public BidRuleSet(Call call, BidRule.BidForce bidForce) 
         {
             this.Call = call;
+			this.BidForce = bidForce;
 			this._partnerChoices = new PartnerChoicesXXX();
             this._ruleInfo = new List<RuleInfo>();
         }
@@ -50,6 +49,10 @@ namespace TricksterBots.Bots.Bridge
 		public void AddRule(BidRule rule)
 		{
 			Debug.Assert(rule.Call.Equals(this.Call));
+			if (rule.Force != this.BidForce)
+			{
+				//Debug.WriteLine($"Rule force for {this.Call} created {this.BidForce} but new rule {rule.Force}");
+			}
 			if (rule is PartnerBidRule partnerBids)
 			{
 				_partnerChoices.AddFactory(partnerBids.GoodThrough, partnerBids.PartnerBidFactory);

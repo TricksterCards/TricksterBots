@@ -8,12 +8,10 @@ using System.Runtime.Remoting.Messaging;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Schema;
-using Trickster.Bots;
-using Trickster.cloud;
-using static Trickster.Bots.InterpretedBid;
 
-namespace TricksterBots.Bots.Bridge
+//using static Trickster.Bots.InterpretedBid;
+
+namespace BridgeBidding
 {
 	public abstract class State
 	{
@@ -107,7 +105,7 @@ namespace TricksterBots.Bots.Bridge
 			
 				this.HandSummary = (startState == null) ? new HandSummary() : new HandSummary(startState);
 				this.Suits = new Dictionary<Suit, SuitSummary.ShowState>();
-				foreach (var suit in BasicBidding.BasicSuits)
+				foreach (Suit suit in Enum.GetValues(typeof(Suit)))
 				{
 					this.Suits[suit] = new SuitSummary.ShowState(HandSummary, HandSummary.Suits[suit]);
 				}
@@ -398,7 +396,7 @@ namespace TricksterBots.Bots.Bridge
 			this.CountAces = null;
 			this.CountKings = null;
 			this.Suits = new Dictionary<Suit, SuitSummary>();
-			foreach (Suit suit in BasicBidding.BasicSuits)
+			foreach (Suit suit in Enum.GetValues(typeof(Suit)))
 			{
 				Suits[suit] = new SuitSummary();
 			}
@@ -416,7 +414,7 @@ namespace TricksterBots.Bots.Bridge
 			this.CountAces = other.CountAces;
 			this.CountKings = other.CountKings;
 			this.Suits = new Dictionary<Suit, SuitSummary>();
-			foreach (Suit suit in BasicBidding.BasicSuits)
+			foreach (Suit suit in Enum.GetValues(typeof(Suit)))
 			{
 				Suits[suit] = new SuitSummary(other.Suits[suit]);
 			}
@@ -452,7 +450,7 @@ namespace TricksterBots.Bots.Bridge
 			this.IsFlat = CombineBool(this.IsFlat, other.IsFlat, cr);
 			this.CountAces = CombineIntSet(this.CountAces, other.CountAces, cr);
 			this.CountKings = CombineIntSet(this.CountKings, other.CountKings, cr);
-			foreach (var suit in BasicBidding.BasicSuits)
+			foreach (Suit suit in Enum.GetValues(typeof(Suit)))
 			{
 				this.Suits[suit].Combine(other.Suits[suit], cr);
 			}
@@ -526,7 +524,7 @@ namespace TricksterBots.Bots.Bridge
 				this.IsFlat != other.IsFlat ||
 				!EqualIntSet(this.CountAces, other.CountAces) ||
 				!EqualIntSet(this.CountKings, other.CountKings)) { return false; }
-			foreach (var suit in BasicBidding.BasicSuits)
+			foreach (Suit suit in Enum.GetValues(typeof(Suit)))
 			{
 				if (!this.Suits[suit].Equals(other.Suits[suit])) return false;
 			}

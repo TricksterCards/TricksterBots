@@ -6,19 +6,9 @@ using System.Diagnostics.Contracts;
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Linq;
-using System.Net.Mail;
-using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
-using System.Security.Policy;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Markup;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+
+namespace BridgeBidding
 {
     public enum Strain { Clubs = 0, Diamonds = 1, Hearts = 2, Spades = 3, NoTrump = 4 }
 
@@ -52,7 +42,6 @@ namespace TricksterBots.Bots.Bridge
             switch (suit)
             {
                 case null: return Strain.NoTrump;
-                case Suit.Unknown: return Strain.NoTrump;
                 case Suit.Clubs: return Strain.Clubs;
                 case Suit.Diamonds: return Strain.Diamonds;
                 case Suit.Hearts: return Strain.Hearts;
@@ -113,15 +102,15 @@ namespace TricksterBots.Bots.Bridge
             { Strain.Spades,   "♠" },
             { Strain.NoTrump,  "NT" }
         };
-
+        /* - Think this is just a simple cast now...
         public static Dictionary<Suit, int> SuitToInt = new Dictionary<Suit, int>
         {
             { Suit.Clubs,    0 },
             { Suit.Diamonds, 1 },
             { Suit.Hearts,   2 },
-            { Suit.Spades,   3 },
-            { Suit.Unknown,  4 }
+            { Suit.Spades,   3 }
         };
+        */
 
 
     }
@@ -161,7 +150,7 @@ namespace TricksterBots.Bots.Bridge
         public Suit? Suit => StrainToSuit(Strain);
 
 
-        public Bid(int level, Suit suit) : base((level - 1) * 5 + SuitToInt[suit] + 3)
+        public Bid(int level, Suit suit) : base((level - 1) * 5 + (int)suit + 3)
         {
             Debug.Assert(level >= 1 && level <= 7);
             this.Level = level;

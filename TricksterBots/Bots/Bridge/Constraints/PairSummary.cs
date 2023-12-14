@@ -5,10 +5,10 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+
+
+namespace BridgeBidding
 {
     public class PairSummary
     {
@@ -100,7 +100,7 @@ namespace TricksterBots.Bots.Bridge
      //       this.CountAces = other.CountAces;
       //      this.CountKings = other.CountKings;
             this.Suits = new Dictionary<Suit, SuitSummary>();
-            foreach (Suit suit in BasicBidding.BasicSuits)
+            foreach (Suit suit in Card.Suits)
             {
                 Suits[suit] = new SuitSummary(hs1.Suits[suit], hs2.Suits[suit]);
                 if (pa.Strains[Call.SuitToStrain(suit)].LongHand != null)

@@ -5,9 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Diagnostics;
 
-using Trickster.cloud;
-
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
     public class ShowsSuit : DynamicConstraint, IShowsState
     {

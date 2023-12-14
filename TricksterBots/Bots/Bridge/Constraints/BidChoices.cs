@@ -7,9 +7,10 @@ using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using static TricksterBots.Bots.Bridge.BidRule;
 
-namespace TricksterBots.Bots.Bridge
+using static BridgeBidding.BidRule;
+
+namespace BridgeBidding
 {
 
     public delegate IEnumerable<BidRule> BidRulesFactory(PositionState positionState);
@@ -99,7 +100,7 @@ namespace TricksterBots.Bots.Bridge
                 return _choices[call];
             }
             var bogusRule = new BidRule(call, BidForce.Nonforcing, new Constraint[0]);
-            var choice = new BidRuleSet(call);
+            var choice = new BidRuleSet(call, bogusRule.Force);
             choice.AddRule(bogusRule);
             return choice;
         }
@@ -146,15 +147,22 @@ namespace TricksterBots.Bots.Bridge
                         {
                             if (!_choices.ContainsKey(rule.Call))
                             {
-                                _choices[rule.Call] = new BidRuleSet(rule.Call); ;
+                                _choices[rule.Call] = new BidRuleSet(rule.Call, rule.Force); ;
                                 added.Add(rule.Call);
                             }
                             if (added.Contains(rule.Call))
                             {
-                                _choices[rule.Call].AddRule(rule);
-                                if (BestCall == null && !(rule is PartnerBidRule) && _ps.PrivateHandConforms(rule))
+                                // TODO: IS THIS CORRECT.  SEEMS LIKE ALL BIDS MUST HAVE THE SAME FORCE IF THEY 
+                                // ARE GOING TO BE ADDDED.  THIS MEANS THAT THE RULESET MUST HAVE THE SAME FORCE
+                                // AS THE NEW RULE OR ELSE THAT RULE IS ELEMINATED (kind of like a static constraint)
+                                if (true) //(rule.Force == _choices[rule.Call].BidForce ||
+                                    //(rule.Force != BidRule.BidForce.Forcing && _choices[rule.Call].BidForce != BidRule.BidForce.Forcing))
                                 {
-                                    BestCall = rule.Call;
+                                    _choices[rule.Call].AddRule(rule);
+                                    if (BestCall == null && !(rule is PartnerBidRule) && _ps.PrivateHandConforms(rule))
+                                    {
+                                        BestCall = rule.Call;
+                                    }
                                 }
                             }
                         }

@@ -113,6 +113,7 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\PairKeyCards.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\RuleOf9.cs" />
     <Compile Include="Bots\Bridge\Constraints\BiddingSystem.cs" />
+    <Compile Include="Bots\Bridge\Constraints\BridgeBidder.cs" />
     <Compile Include="Bots\Bridge\Constraints\Call.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\Balanced.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\BetterSuit.cs" />
@@ -140,10 +141,12 @@
     <Compile Include="Bots\Bridge\Constraints\BidAttributes\TakeoutSuit.cs" />
     <Compile Include="Bots\Bridge\Constraints\BidChoices.cs" />
     <Compile Include="Bots\Bridge\Constraints\Bidder.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Card.cs" />
     <Compile Include="Bots\Bridge\Constraints\Contract.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Blackwood.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Gerber.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\NegativeDouble.cs" />
+    <Compile Include="Bots\Bridge\Constraints\Hand.cs" />
     <Compile Include="Bots\Bridge\Constraints\StandardAmerican\Advance.cs" />
     <Compile Include="Bots\Bridge\Constraints\StandardAmerican\Compete.cs" />
     <Compile Include="Bots\Bridge\Constraints\Conventions\Michaels.cs" />
@@ -153,6 +156,7 @@
     <Compile Include="Bots\Bridge\Constraints\BidRuleSet.cs" />
     <Compile Include="Bots\Bridge\Constraints\BiddingState.cs" />
     <Compile Include="Bots\Bridge\Constraints\ConventionRule.cs" />
+    <Compile Include="Bots\Bridge\Constraints\StandardAmerican\ForcedBid.cs" />
     <Compile Include="Bots\Bridge\Constraints\StandardAmerican\Open.cs" />
     <Compile Include="Bots\Bridge\Constraints\StandardAmerican\Respond.cs" />
     <Compile Include="Bots\Bridge\Constraints\StandardAmerican\Overcall.cs" />

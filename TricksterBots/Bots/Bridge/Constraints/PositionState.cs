@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.ExceptionServices;
-using System.Security.Cryptography;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
+using System.Diagnostics;
 
-namespace TricksterBots.Bots.Bridge
+
+namespace BridgeBidding
 {
 	public enum PositionRole { Opener, Overcaller, Responder, Advancer }
+
+
 
 
 	public class PositionState
@@ -62,9 +56,15 @@ namespace TricksterBots.Bots.Bridge
 			return _bids[_bids.Count - 1 - historyLevel].Call;
 		}
 
-		public PositionState Partner => BiddingState.Positions[BasicBidding.Partner(Direction)];
-		public PositionState RightHandOpponent => BiddingState.Positions[BasicBidding.RightHandOpponent(Direction)];
-		public PositionState LeftHandOpponent => BiddingState.Positions[BasicBidding.LeftHandOpponent(Direction)];
+
+		private Direction OffsetDirection(int offset)
+		{
+			return (Direction)(((int)Direction + offset) % 4);
+		}
+
+		public PositionState Partner => BiddingState.Positions[OffsetDirection(2)];
+		public PositionState RightHandOpponent => BiddingState.Positions[OffsetDirection(3)];
+		public PositionState LeftHandOpponent => BiddingState.Positions[OffsetDirection(1)];
 
 
 		// TODO: Potentially LHO Interferred...  Maybe just in 
@@ -107,6 +107,20 @@ namespace TricksterBots.Bots.Bridge
 
 		public Call LastCall { get { return GetBidHistory(0); } }
 
+
+		public bool ForcedToBid
+		{
+			get
+			{
+				/*
+				return (Partner._bids.Count > 0 &&
+						Partner._bids.Last().BidForce == BidRule.BidForce.Forcing &&
+						RightHandOpponent._bids.Last() is Call.Pass);
+				*/
+				throw new NotImplementedException();
+			}
+		
+		}
 		
 		public BidChoices GetBidChoices()
 		{

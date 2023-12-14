@@ -4,10 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
     public class TakeoutSuit : DynamicConstraint, IShowsState
     {
@@ -46,7 +44,7 @@ namespace TricksterBots.Bots.Bridge
             {
                 var oppsSuits = PairSummary.Opponents(ps).ShownSuits;
                 if (oppsSuits.Contains(suit)) { return false; }
-                foreach (var other in BasicBidding.BasicSuits)
+                foreach (Suit other in Enum.GetValues(typeof(Suit)))
                 {
                     if (other != suit && !oppsSuits.Contains(other))
                     {

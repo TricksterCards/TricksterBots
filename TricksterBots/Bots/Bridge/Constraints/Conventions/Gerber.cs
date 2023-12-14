@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+
+namespace BridgeBidding
 {
 	public class Gerber : Bidder
 	{
@@ -21,8 +18,8 @@ namespace TricksterBots.Bots.Bridge
 			if (ps.Partner.LastCall is Call partnerCall && partnerCall is Bid partnerBid &&
 				partnerBid.Strain == Strain.NoTrump && (partnerBid.Level <= 3))
 			{
-				bids.Add(PartnerBids(4, Suit.Clubs, Call.Double, RespondAces));
-				bids.Add(Forcing(4, Suit.Clubs, PairPoints(SlamOrBetter)));
+				bids.Add(PartnerBids(4, Strain.Clubs, Call.Double, RespondAces));
+				bids.Add(Forcing(4, Strain.Clubs, PairPoints(SlamOrBetter)));
 			}
 			return bids;
 		}
@@ -31,10 +28,10 @@ namespace TricksterBots.Bots.Bridge
 			return new BidRule[]
 			{
 				DefaultPartnerBids(goodThrough: Call.Double, PlaceContract),
-				Forcing(4, Suit.Diamonds, ShowsNoSuit(), Aces(0, 4)),
-				Forcing(4, Suit.Hearts, ShowsNoSuit(), Aces(1)),
-				Forcing(4, Suit.Spades, ShowsNoSuit(), Aces(2)),
-				Forcing(4, Suit.Unknown, ShowsNoSuit(), Aces(3)),
+				Forcing(4, Strain.Diamonds, ShowsNoSuit(), Aces(0, 4)),
+				Forcing(4, Strain.Hearts, ShowsNoSuit(), Aces(1)),
+				Forcing(4, Strain.Spades, ShowsNoSuit(), Aces(2)),
+				Forcing(4, Strain.NoTrump, ShowsNoSuit(), Aces(3)),
 			};
 		}
 		// TODO: There needs to be somewhere that we ask for kings...
@@ -43,9 +40,9 @@ namespace TricksterBots.Bots.Bridge
 			// TODO: Need to ask about kings..... 
 			return new BidRule[]
 			{
-				Signoff(7, Suit.Unknown, PairPoints(GrandSlam), PairAces(4)),
-				Signoff(6, Suit.Unknown, PairAces(3, 4)),
-				Signoff(4, Suit.Unknown, PairAces(0, 1, 2))
+				Signoff(7, Strain.NoTrump, PairPoints(GrandSlam), PairAces(4)),
+				Signoff(6, Strain.NoTrump, PairAces(3, 4)),
+				Signoff(4, Strain.NoTrump, PairAces(0, 1, 2))
 			};
 		}
 

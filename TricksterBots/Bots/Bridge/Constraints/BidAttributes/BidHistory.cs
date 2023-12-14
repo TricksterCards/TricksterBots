@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 	// TODO: For now this just allows the last bid to be examined...  In the future may need to look back in
 	// bid history.  But this works for now...

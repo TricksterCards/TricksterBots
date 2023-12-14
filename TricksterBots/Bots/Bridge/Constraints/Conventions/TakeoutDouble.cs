@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+
+namespace BridgeBidding
 {
     public class TakeoutDouble: Bidder
     {
@@ -47,7 +41,7 @@ namespace TricksterBots.Bots.Bridge
 
 			var rule = Forcing(Bid.Double, Points(TakeoutRange), BidAvailable(4, Suit.Clubs));
 			var oppsSummary = PairSummary.Opponents(ps);
-			foreach (var s in BasicBidding.BasicSuits)
+			foreach (Suit s in Enum.GetValues(typeof(Suit)))
 			{
                 if (oppsSummary.ShownSuits.Contains(s))
                 {
@@ -93,7 +87,7 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(1, Suit.Spades, TakeoutSuit(), Points(MinLevel)),
 
 
-                Nonforcing(1, Suit.Unknown, Balanced(), OppsStopped(), Points(NoTrump1)),
+                Nonforcing(1, Strain.NoTrump, Balanced(), OppsStopped(), Points(NoTrump1)),
 
                 Nonforcing(2, Suit.Clubs, TakeoutSuit(), Points(MinLevel)),
                 Nonforcing(2, Suit.Diamonds, TakeoutSuit(), Jump(0), Points(MinLevel)),
@@ -104,13 +98,13 @@ namespace TricksterBots.Bots.Bridge
                 Nonforcing(2, Suit.Spades, TakeoutSuit(), Jump(1), Points(InviteLevel)),
 
 
-                Nonforcing(2, Suit.Unknown, Balanced(), OppsStopped(), Points(NoTrump2)),
+                Nonforcing(2, Strain.NoTrump, Balanced(), OppsStopped(), Points(NoTrump2)),
 
                 // TODO: Game bids
                 Signoff(4, Suit.Hearts, TakeoutSuit(), Points(GameLevel)),
                 Signoff(4, Suit.Spades, TakeoutSuit(), Points(GameLevel)),
 
-                Signoff(3, Suit.Unknown, Balanced(), OppsStopped(), Points(Game3NT))
+                Signoff(3, Strain.NoTrump, Balanced(), OppsStopped(), Points(Game3NT))
             }) ;
             // Many strong bids can be done with pure competition.
             // TODO: Think through this - is this really what we want?

@@ -1,14 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 
 
@@ -45,9 +38,9 @@ namespace TricksterBots.Bots.Bridge
 		{
             return new BidRule[] {
 
-                PartnerBids(2, Suit.Diamonds, Call.Double, RespondTo2D),
-				PartnerBids(2, Suit.Hearts, Call.Double, p => RespondTo2M(p, Suit.Hearts)),
-				PartnerBids(2, Suit.Spades, Call.Double, p => RespondTo2M(p, Suit.Spades)),
+                PartnerBids(2, Strain.Diamonds, Call.Double, RespondTo2D),
+				PartnerBids(2, Strain.Hearts, Call.Double, p => RespondTo2M(p, Suit.Hearts)),
+				PartnerBids(2, Strain.Spades, Call.Double, p => RespondTo2M(p, Suit.Spades)),
 
 				// TODO: Deal with interferenceDefaultPartnerBids(goodThrough: Bid.Double, Explain),
 
@@ -66,25 +59,25 @@ namespace TricksterBots.Bots.Bridge
                 // TODO: Points 0-7 defined as garbage range...
                 Signoff(Call.Pass, NTD.RR.LessThanInvite),
 
-                PartnerBids(3, Suit.Hearts, Call.Double, p => GameNewMajor(p, Suit.Hearts)),
-                PartnerBids(3, Suit.Spades, Call.Double, p => GameNewMajor(p, Suit.Spades)),
+                PartnerBids(3, Strain.Hearts, Call.Double, p => GameNewMajor(p, Suit.Hearts)),
+                PartnerBids(3, Strain.Spades, Call.Double, p => GameNewMajor(p, Suit.Spades)),
                 // If we have a 5 card suit and want to go to game then show that suit.
                 Forcing(3, Suit.Spades, NTD.RR.GameOrBetter, Shape(5)),
 				Forcing(3, Suit.Hearts, NTD.RR.GameOrBetter, Shape(5)),
 
                 // These show invitational 5/4
-                PartnerBids(2, Suit.Hearts, Call.Double, p => PlaceConractNewMajor(p, Suit.Hearts)),
-				PartnerBids(2, Suit.Spades, Call.Double, p => PlaceConractNewMajor(p, Suit.Spades)),
+                PartnerBids(2, Strain.Hearts, Call.Double, p => PlaceConractNewMajor(p, Suit.Hearts)),
+				PartnerBids(2, Strain.Spades, Call.Double, p => PlaceConractNewMajor(p, Suit.Spades)),
 				Invitational(2, Suit.Hearts, NTD.RR.InviteGame, Shape(5)),
 				Invitational(2, Suit.Spades, NTD.RR.InviteGame, Shape(5)),
 
-                PartnerBids(2, Suit.Unknown, Call.Double, PlaceContract2NTInvite),
-				Invitational(2, Suit.Unknown, ShowsTrump(), NTD.RR.InviteGame),
+                PartnerBids(2, Strain.NoTrump, Call.Double, PlaceContract2NTInvite),
+				Invitational(2, Strain.NoTrump, ShowsTrump(), NTD.RR.InviteGame),
 
-                Signoff(3, Suit.Unknown, ShowsTrump(), NTD.RR.Game),
+                Signoff(3, Strain.NoTrump, ShowsTrump(), NTD.RR.Game),
 
                 // TODO: Point ranges - Need to figure out where these...
-                Invitational(4, Suit.Unknown, ShowsTrump(), PairPoints((30, 31)))
+                Invitational(4, Strain.NoTrump, ShowsTrump(), PairPoints((30, 31)))
 			};
             bids.AddRange(Gerber.InitiateConvention(ps));
             return bids;
@@ -92,20 +85,21 @@ namespace TricksterBots.Bots.Bridge
 
         public IEnumerable<BidRule> RespondTo2M(PositionState _, Suit major)
         {
+            var majorStrain = Call.SuitToStrain(major);
             return new BidRule[]
             {
 
                 Signoff(Call.Pass, NTD.RR.LessThanInvite),
 
                 Signoff(4, major, Shape(4, 5), NTD.RR.GameAsDummy, ShowsTrump()),
-                PartnerBids(3, major, Call.Double, p => PlaceContractMajorInvite(p, major)),
+                PartnerBids(3, majorStrain, Call.Double, p => PlaceContractMajorInvite(p, major)),
                 Invitational(3, major, Shape(4, 5), NTD.RR.InviteAsDummy, ShowsTrump()),
 
-                PartnerBids(3, Suit.Unknown, Call.Double, CheckOpenerSpadeGame),
-                Signoff(3, Suit.Unknown, NTD.RR.Game, Shape(major, 0, 3)),
+                PartnerBids(3, Strain.NoTrump, Call.Double, CheckOpenerSpadeGame),
+                Signoff(3, Strain.NoTrump, NTD.RR.Game, Shape(major, 0, 3)),
 
-				PartnerBids(2, Suit.Unknown, Call.Double, PlaceContract2NTInvite),
-				Invitational(2, Suit.Unknown, NTD.RR.InviteGame, Shape(major, 0, 3))
+				PartnerBids(2, Strain.NoTrump, Call.Double, PlaceContract2NTInvite),
+				Invitational(2, Strain.NoTrump, NTD.RR.InviteGame, Shape(major, 0, 3))
 			};
 		}
         /*
@@ -167,7 +161,7 @@ namespace TricksterBots.Bots.Bridge
             return new BidRule[]
             {
                 Signoff(4, major, Fit(), ShowsTrump()),
-                Signoff(3, Suit.Unknown)
+                Signoff(3, Strain.NoTrump)
             };
         }
 
@@ -176,9 +170,9 @@ namespace TricksterBots.Bots.Bridge
             return new BidRule[]
             {
                 Signoff(Call.Pass, NTD.OR.DontAcceptInvite, Fit(major)),    // TODO: Need to use dummy points here...
-                Signoff(2, Suit.Unknown, NTD.OR.DontAcceptInvite),
+                Signoff(2, Strain.NoTrump, NTD.OR.DontAcceptInvite),
                 Signoff(4, major, Fit(), ShowsTrump(), NTD.OR.AcceptInvite),
-                Signoff(3, Suit.Unknown, ShowsTrump(), NTD.OR.AcceptInvite)
+                Signoff(3, Strain.NoTrump, ShowsTrump(), NTD.OR.AcceptInvite)
             };
         }
 
@@ -186,14 +180,14 @@ namespace TricksterBots.Bots.Bridge
         {
             return new BidRule[]
             {
-				PartnerBids(3, Suit.Spades, Bid.Double, CheckSpadeGame),
+				PartnerBids(3, Strain.Spades, Bid.Double, CheckSpadeGame),
                 // This is possible to know we have a fit if partner bid stayman, we respond hearts,
                 Nonforcing(3, Suit.Spades, Break(false, "3NT"), NTD.OR.DontAcceptInvite, Fit(), ShowsTrump()),
 
 
                 Signoff(4, Suit.Spades, NTD.OR.AcceptInvite, Fit(), ShowsTrump()),
 
-                Signoff(3, Suit.Unknown, NTD.OR.AcceptInvite)
+                Signoff(3, Strain.NoTrump, NTD.OR.AcceptInvite)
 			};
 
         }
@@ -297,23 +291,23 @@ namespace TricksterBots.Bots.Bridge
         public static IEnumerable<BidRule> ResponderRebid(PositionState _)
         {
             return new BidRule[] {
-                DefaultPartnerBids(Bid.Double, OpenerRebid),
+                DefaultPartnerBids(Call.Double, OpenerRebid),
 
-                Forcing(3, Suit.Hearts, Shape(5), Partner(LastBid(3, Suit.Diamonds))),
-                Forcing(3, Suit.Spades, Shape(5), Partner(LastBid(3, Suit.Diamonds))),
+                Forcing(3, Strain.Hearts, Shape(5), Partner(LastBid(3, Suit.Diamonds))),
+                Forcing(3, Strain.Spades, Shape(5), Partner(LastBid(3, Suit.Diamonds))),
 
-                Signoff(3, Suit.Unknown, Fit(Suit.Hearts, false), Fit(Suit.Spades, false)),
-                Signoff(4, Suit.Hearts, Fit()),
-                Signoff(4, Suit.Spades, Fit())
+                Signoff(3, Strain.NoTrump, Fit(Suit.Hearts, false), Fit(Suit.Spades, false)),
+                Signoff(4, Strain.Hearts, Fit()),
+                Signoff(4, Strain.Spades, Fit())
             };
         }
     
         public static IEnumerable<BidRule> OpenerRebid(PositionState _)
         { 
             return new BidRule[] {
-                Signoff(3, Suit.Unknown, Fit(Suit.Hearts, false), Fit(Suit.Spades, false)),
-                Signoff(4, Suit.Hearts, Fit()),
-                Signoff(4, Suit.Spades, Fit())
+                Signoff(3, Strain.NoTrump, Fit(Suit.Hearts, false), Fit(Suit.Spades, false)),
+                Signoff(4, Strain.Hearts, Fit()),
+                Signoff(4, Strain.Spades, Fit())
             };
         }
     }

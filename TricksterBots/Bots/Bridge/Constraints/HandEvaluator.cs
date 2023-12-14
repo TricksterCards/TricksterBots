@@ -2,19 +2,16 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+
+
+namespace BridgeBidding
 {
 	class StandardHandEvaluator
 	{
 		private static bool Stopped(Hand hand, Suit suit, int countSuit)
 		{
-			return BasicBidding.ComputeHighCardPoints(hand, suit) + countSuit >= 5;
+			return hand.HighCardPoints(suit) + countSuit >= 5;
 		}
 
 
@@ -23,15 +20,15 @@ namespace TricksterBots.Bots.Bridge
 		// ideal or advanced in any way.  
         public static int AudreyDummyPoints(Hand hand, Suit trumpSuit)
         {
-            var trumpCount = hand.Count(c => c.suit == trumpSuit);
+            var trumpCount = hand.Count(c => c.Suit == trumpSuit);
             int adjust = 0;
             if (trumpCount >= 3)
             {
                 int[] bonus = { 5, 3, 1 };
                 // This is the Audrey Grant version of counting as dummy.  Don't care about shortness of honors...
-                foreach (Suit suit in BasicBidding.BasicSuits)
+                foreach (Suit suit in Card.Suits)
                 {
-                    var count = hand.Count(c => c.suit == suit);
+                    var count = hand.Count(c => c.Suit == suit);
                     if (count < 3)
                     {
                         adjust += bonus[count];
@@ -45,7 +42,7 @@ namespace TricksterBots.Bots.Bridge
         private static SuitQuality Quality(Hand hand, Suit suit)
 		{
 			var q = SuitQuality.Poor;
-			switch (BasicBidding.ComputeHighCardPoints(hand, suit))
+			switch (hand.HighCardPoints(suit))
 			{
 				case 10:
 					q = SuitQuality.Solid; break;
@@ -57,7 +54,7 @@ namespace TricksterBots.Bots.Bridge
 				case 5:
 				case 6:
 				case 7:
-					q = (BasicBidding.IsGoodSuit(hand, suit)) ? SuitQuality.Good : SuitQuality.Decent; break;
+					q = (hand.IsGoodSuit(suit)) ? SuitQuality.Good : SuitQuality.Decent; break;
 				default:
 					q = SuitQuality.Poor;
 					break;
@@ -66,20 +63,20 @@ namespace TricksterBots.Bots.Bridge
 		}
 		public static void Evaluate(Hand hand, HandSummary.ShowState hs)
 		{
-			var hcp = BasicBidding.ComputeHighCardPoints(hand);
+			var hcp = hand.HighCardPoints();
 			hs.ShowHighCardPoints(hcp, hcp);
-			var startPoints = hcp + BasicBidding.ComputeDistributionPoints(hand); 
+			var startPoints = hcp + hand.LengthPoints(); 
 			hs.ShowStartingPoints(startPoints, startPoints);
             hs.ShowNoTrumpDummyPoints(startPoints, startPoints);
             hs.ShowNoTrumpLongHandPoints(startPoints, startPoints);
-            var counts = BasicBidding.CountsBySuit(hand);
-			hs.ShowIsBalanced(BasicBidding.IsBalanced(hand));
-			hs.ShowIsFlat(BasicBidding.Is4333(counts));
-			int countAces = hand.Count(c => c.rank == Rank.Ace);
+            var counts = hand.CountsBySuit();
+			hs.ShowIsBalanced(hand.IsBalanced);
+			hs.ShowIsFlat(hand.Is4333);
+			int countAces = hand.Count(c => c.Rank == Rank.Ace);
             hs.ShowCountAces(new HashSet<int> { countAces });
-			int countKings = hand.Count(c => c.rank == Rank.King);
+			int countKings = hand.Count(c => c.Rank == Rank.King);
 			hs.ShowCountKings(new HashSet<int> { countKings });
-            foreach (Suit suit in BasicBidding.BasicSuits)
+            foreach (Suit suit in Card.Suits)
 			{
 				var dp = hcp + AudreyDummyPoints(hand, suit);
 				var c = counts[suit];
@@ -89,12 +86,12 @@ namespace TricksterBots.Bots.Bridge
 				hs.Suits[suit].ShowLongHandPoints(startPoints, startPoints);
 				hs.Suits[suit].ShowQuality(q, q);
 				var keyCards = countAces;
-				if (hand.Contains(new Card(suit, Rank.King)))
+				if (hand.Contains(new Card(Rank.King, suit)))
 				{
 					keyCards += 1;
 				}
 				hs.Suits[suit].ShowKeyCards(new HashSet<int> { keyCards });
-				hs.Suits[suit].ShowHaveQueen(hand.Contains(new Card(suit, Rank.Queen)));
+				hs.Suits[suit].ShowHaveQueen(hand.Contains(new Card(Rank.Queen, suit)));
 				hs.Suits[suit].ShowStopped(Stopped(hand, suit, c));
 
 				// Compute "rule of 9" score for the suit.  This is the count of cards + count of all cards higher
@@ -102,7 +99,7 @@ namespace TricksterBots.Bots.Bridge
 				int rule9 = c;
 				foreach (Card card in hand)
 				{
-					if (card.suit == suit && (card.IsHonorRank || card.rank == Rank.Ten))
+					if (card.Suit == suit && card.Rank >= Rank.Ten)
 					{
 						rule9++;
 					}

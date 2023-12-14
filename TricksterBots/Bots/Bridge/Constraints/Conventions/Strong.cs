@@ -1,15 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
     public class Strong2Clubs : Bidder
     {
@@ -43,11 +35,11 @@ namespace TricksterBots.Bots.Bridge
                 DefaultPartnerBids(Bid.Pass, OpenerRebidPositiveResponse),
                 Forcing(2, Suit.Hearts, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(2, Suit.Spades, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
-                Forcing(2, Suit.Unknown, Points(PositiveResponse), Balanced()),
+                Forcing(2, Strain.NoTrump, Points(PositiveResponse), Balanced()),
                 Forcing(3, Suit.Clubs, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
                 Forcing(3, Suit.Diamonds, Points(PositiveResponse), Shape(5, 11), Quality(SuitQuality.Good, SuitQuality.Solid)),
 
-                PartnerBids(2, Suit.Diamonds, Bid.Pass, OpenerRebidWaiting), 
+                PartnerBids(2, Strain.Diamonds, Bid.Pass, OpenerRebidWaiting), 
                 // TODO: Interference...
                 Forcing(2, Suit.Diamonds, Points(Waiting), ShowsNoSuit()),
 
@@ -112,8 +104,8 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(4, Suit.Diamonds, Fit(), ShowsTrump()),
 
                 // Now show a bust hand by bidding cheapest minor with less 0-4 points
-                PartnerBids(3, Suit.Clubs, Call.Double, PartnerIsBust),
-                PartnerBids(3, Suit.Diamonds, Call.Double, PartnerIsBust, Partner(LastBid(3, Suit.Clubs))),
+                PartnerBids(3, Strain.Clubs, Call.Double, PartnerIsBust),
+                PartnerBids(3, Strain.Diamonds, Call.Double, PartnerIsBust, Partner(LastBid(3, Suit.Clubs))),
                 Forcing(3, Suit.Clubs, ShowsNoSuit(), Points(RespondBust)),
                 Forcing(3, Suit.Diamonds, Partner(LastBid(3, Suit.Clubs)), ShowsNoSuit(), Points(RespondBust)),
 
@@ -122,7 +114,7 @@ namespace TricksterBots.Bots.Bridge
                 Forcing(3, Suit.Spades, Shape(5, 11), Points(RespondSuitNotBust)),
 
                 // Final bid if we're 
-                Signoff(3, Suit.Unknown, Points(RespondNTNotBust)) 
+                Signoff(3, Strain.NoTrump, Points(RespondNTNotBust)) 
 
             });
             return choices;
@@ -154,7 +146,7 @@ namespace TricksterBots.Bots.Bridge
                 Signoff(5, Suit.Clubs, LastBid(3, Suit.Clubs), Shape(7, 11), Points(GameInHand)),
                 Signoff(5, Suit.Diamonds, LastBid(3, Suit.Diamonds), Shape(7, 11), Points(GameInHand)),
 
-                Signoff(3, Suit.Unknown, Points(GameInHand)),
+                Signoff(3, Strain.NoTrump, Points(GameInHand)),
 
                 // Bust partner so return to or original suit...
                 Signoff(3, Suit.Hearts, Rebid()),

@@ -1,22 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+﻿
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Schema;
-using Trickster.Bots;
-using Trickster.cloud;
-using static TricksterBots.Bots.Bridge.BidRule;
 
-namespace TricksterBots.Bots.Bridge
+
+
+using static BridgeBidding.BidRule;
+
+namespace BridgeBidding
 {
 
 
@@ -57,24 +47,24 @@ namespace TricksterBots.Bots.Bridge
         }
 
 
-        public static BidRule PartnerBids(int level, Suit suit, Call goodThrough, BidRulesFactory partnerBidsFactory)
+        public static BidRule PartnerBids(int level, Strain strain, Call goodThrough, BidRulesFactory partnerBidsFactory)
 		{
-			return PartnerBids(level, suit, goodThrough, partnerBidsFactory, new Constraint[0]);
+			return PartnerBids(level, strain, goodThrough, partnerBidsFactory, new Constraint[0]);
 		}
 
-		public static BidRule PartnerBids(int level, Suit suit, Call goodThrough, BidRulesFactory brf, params Constraint[] constraints)
+		public static BidRule PartnerBids(int level, Strain strain, Call goodThrough, BidRulesFactory brf, params Constraint[] constraints)
 		{
-			return _PartnerBids(new Bid(level, suit), goodThrough, (ps) => { return new BidChoices(ps, brf); }, constraints);
+			return _PartnerBids(new Bid(level, strain), goodThrough, (ps) => { return new BidChoices(ps, brf); }, constraints);
 		}
 
-		public static BidRule PartnerBids(int level, Suit suit, Call goodThrough, BidChoicesFactory choicesFactory)
+		public static BidRule PartnerBids(int level, Strain strain, Call goodThrough, BidChoicesFactory choicesFactory)
 		{
-			return _PartnerBids(new Bid(level, suit), goodThrough, choicesFactory, new Constraint[0]);
+			return _PartnerBids(new Bid(level, strain), goodThrough, choicesFactory, new Constraint[0]);
 		}
 
-		public static BidRule PartnerBids(int level, Suit suit, Bid goodThrough, BidChoicesFactory choicesFactory, params Constraint[] constraints)
+		public static BidRule PartnerBids(int level, Strain strain, Bid goodThrough, BidChoicesFactory choicesFactory, params Constraint[] constraints)
 		{
-			return _PartnerBids(new Bid(level, suit), goodThrough, choicesFactory, constraints);
+			return _PartnerBids(new Bid(level, strain), goodThrough, choicesFactory, constraints);
 		}
 
 		public static BidRule PartnerBids(Call call, Call goodThrough, BidRulesFactory brf)
@@ -90,29 +80,17 @@ namespace TricksterBots.Bots.Bridge
 			return new PartnerBidRule(call, goodThrough, choicesFactory, constraints);
 		}
 
-		// TODO: THis is start of something for conventions... Flush it out...
-		public static Call GoodThrough(PositionState ps, string systemKey)
-		{
-			return Call.Pass;
-		}
 
-		/*
-		public static BidRule PartnerBids(Call call, PrescribedBidsFactory partnerBidsFactory)
-		{
-			return PartnerBids(call, partnerBidsFactory, new Constraint[0]);
-		}
-
-		public static BidRule PartnerBids(Call call, PrescribedBidsFactory partnerBidsFactory, params Constraint[] constraints)
-		{
-			return new PartnerBidRule(new Bid(call), partnerBidsFactory, constraints);
-		}
-		*/
 
 		public static BidRule Forcing(int level, Suit suit, params Constraint[] constraints)
 		{
 			return Rule(level, suit, BidForce.Forcing, constraints);
 		}
 
+		public static BidRule Forcing(int level, Strain strain, params Constraint[] constraints)
+		{
+			return Rule(level, strain, BidForce.Forcing, constraints);
+		}
 
 		// TODO: Add other flavors of this, but for now this works.
 		public static BidRule Forcing(Call call, params Constraint[] constraints)
@@ -126,6 +104,11 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return Rule(level, suit, BidForce.Nonforcing, constraints);
 		}
+		public static BidRule Nonforcing(int level, Strain strain, params Constraint[] constraints)
+		{
+			return Rule(level, strain, BidForce.Nonforcing, constraints);
+		}
+
 		public static BidRule Nonforcing(Call call, params Constraint[] constraints)
 		{
 			return Rule(call, BidForce.Nonforcing, constraints);
@@ -137,6 +120,11 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return Rule(level, suit, BidForce.Invitational, constraints);
 		}
+		public static BidRule Invitational(int level, Strain strain, params Constraint[] constraints)
+		{
+			return Rule(level, strain, BidForce.Invitational, constraints);
+		}
+
 		public static BidRule Invitational(Call call, params Constraint[] constraints)
 		{
 			return Rule(call, BidForce.Invitational, constraints);
@@ -147,6 +135,12 @@ namespace TricksterBots.Bots.Bridge
 		{
 			return Rule(level, suit, BidForce.Signoff, constraints);
 		}
+
+		public static BidRule Signoff(int level, Strain strain, params Constraint[] constraints)
+		{
+			return Rule(level, strain, BidForce.Signoff, constraints);
+		}
+
 		public static BidRule Signoff(Call call, params Constraint[] constraints)
 		{
 			return Rule(call, BidForce.Signoff, constraints);
@@ -160,10 +154,11 @@ namespace TricksterBots.Bots.Bridge
 
 
 
-//		public static BidRule Rule(Call call, BidForce force, params Constraint[] constraints)
-	//	{
-//			return Rule(new Bid(call), force, constraints);
-//		}
+		public static BidRule Rule(int level, Strain strain, BidForce force, params Constraint[] constraints)
+		{
+			return Rule(new Bid(level, strain), force, constraints);
+		}
+
 
 		public static BidRule Rule(Call call, BidForce force, params Constraint[] constraints)
 		{
@@ -211,6 +206,10 @@ namespace TricksterBots.Bots.Bridge
 		public static StaticConstraint LastBid(int level, Suit suit, bool desired = true)
 		{
 			return new BidHistory(0, new Bid(level, suit), desired);
+		}
+		public static StaticConstraint LastBid(int level, Strain strain, bool desired = true)
+		{
+			return new BidHistory(0, new Bid(level, strain), desired);
 		}
 
 		public static StaticConstraint Rebid(bool desired = true)

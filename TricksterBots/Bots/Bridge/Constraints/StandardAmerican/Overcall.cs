@@ -1,12 +1,9 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+
+namespace BridgeBidding
 {
     public class Overcall: StandardAmerican
     {
@@ -30,7 +27,7 @@ namespace TricksterBots.Bots.Bridge
         {
             return new BidRule[] {
                 // TODO: What is the level of interference we can take
-                DefaultPartnerBids(new Bid(4, Suit.Unknown), Advance.FirstBid), 
+                DefaultPartnerBids(new Bid(4, Strain.NoTrump), Advance.FirstBid), 
 
 
                 // Weak overcall takes precedence if good suit and low points
@@ -87,7 +84,7 @@ namespace TricksterBots.Bots.Bridge
                 // TODO: Rebid 6+ card suit if appropriate
                 // TODO: Bid some level of NT if appropriate...
 
-                Signoff(3, Suit.Unknown, OppsStopped(), OppsStopped(), PairPoints((25, 30)) )
+                Signoff(3, Strain.NoTrump, OppsStopped(), OppsStopped(), PairPoints((25, 30)) )
 
             };
         }

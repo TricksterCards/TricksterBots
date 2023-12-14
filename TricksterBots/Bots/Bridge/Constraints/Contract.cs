@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
     public class Contract
     {
@@ -106,7 +106,7 @@ namespace TricksterBots.Bots.Bridge
 				{
 					Redoubled = true;
 					Debug.Assert(this.Doubled);
-					CallsRemaining = (Bid.Level == 7 && Bid.Suit == Suit.Unknown) ? 0 : 3;
+					CallsRemaining = (Bid.Level == 7 && Bid.Strain == Strain.NoTrump) ? 0 : 3;
 				}
 				return true;
 			}

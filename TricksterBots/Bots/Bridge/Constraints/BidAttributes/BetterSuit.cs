@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Trickster.Bots;
 using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 	public class IsBetterSuit : DynamicConstraint
 	{

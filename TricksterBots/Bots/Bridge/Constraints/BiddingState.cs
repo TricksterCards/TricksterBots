@@ -9,11 +9,11 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
+
+using static BridgeBidding.PairState;
 
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
     // TODO: Line this up with trickser conventions, but re-declare for now for flexibility...
     public static class Convention
@@ -27,8 +27,7 @@ namespace TricksterBots.Bots.Bridge
     }
 
 
-
-    public class BiddingState
+	public class BiddingState
     {
 
         //   public Dictionary<Convention, Bidder> Conventions { get; protected set; }
@@ -103,7 +102,7 @@ namespace TricksterBots.Bots.Bridge
             {
                 PairState pairState = (d == Direction.North || d == Direction.South) ? ns : ew;
                 this.Positions[d] = new PositionState(this, pairState, d, seat, IsVulnerable(vul, d), hands[seat - 1]);
-                d = BasicBidding.LeftHandOpponent(d);
+                d = BridgeBidder.LeftHandOpponent(d);
             }
             this.Dealer = Positions[dealer];
             this.NextToAct = Dealer;

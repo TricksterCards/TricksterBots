@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Trickster.cloud;
-using TricksterBots.Bots.Bridge;
+
 
 namespace Trickster.Bots
 {
@@ -115,12 +116,10 @@ namespace Trickster.Bots
                 historyStrings.Add(BidString(history[ix]));
 
             // TODO: Hack to just pass thie stuff on to the bid test....
-            Hand[] hands = { null, null, null, null };
+            string[] hands = { null, null, null, null };
             var i = historyStrings.Count % 4;
-            hands[i] = hand;
-            var biddingState = new BiddingState(hands, Direction.North, "EW");
-
-            var bid = biddingState.SuggestBid(historyStrings.ToArray());
+            hands[i] = hand.ToString();
+            var bid = BridgeBidding.BridgeBidder.SuggestBid(hands, "North", "EW", historyStrings.ToArray());
 
             switch (bid)
             {
@@ -132,9 +131,27 @@ namespace Trickster.Bots
                     return new BidBase(BridgeBid.Redouble);
             }
 
-            var b = Call.FromString(bid) as Bid;
-            var suit = b.Suit ?? Suit.Unknown;
-            return new DeclareBid(b.Level, suit);
+            var b = BridgeBidding.Call.FromString(bid) as BridgeBidding.Bid;
+            Trickster.cloud.Suit suit = Suit.Unknown;
+            switch (b.Suit)
+            {
+                case BridgeBidding.Suit.Clubs:
+                    suit = Suit.Clubs;
+                    break;
+				case BridgeBidding.Suit.Diamonds:
+					suit = Suit.Diamonds;
+					break;
+				case BridgeBidding.Suit.Hearts:
+					suit = Suit.Hearts;
+					break;
+				case BridgeBidding.Suit.Spades:
+					suit = Suit.Spades;
+					break;
+                default:
+                    suit = Suit.Unknown;
+                    break;
+			}
+			return new DeclareBid(b.Level, suit);
         }
 
         public override List<Card> SuggestDiscard(SuggestDiscardState<BridgeOptions> state)

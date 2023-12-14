@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+
+namespace BridgeBidding
 {
 	public class ThreeNoTrump : Bidder
 	{
@@ -25,8 +22,8 @@ namespace TricksterBots.Bots.Bridge
 			return new BidRule[]
 			{
                 // TODO: Systems on/off through here --- just like 1NT.....
-                PartnerBids(3, Suit.Unknown, Bid.Double, Respond),
-				Nonforcing(3, Suit.Unknown, OpenPoints, Balanced())
+                PartnerBids(3, Strain.NoTrump, Bid.Double, Respond),
+				Nonforcing(3, Strain.NoTrump, OpenPoints, Balanced())
 			};
 		}
 

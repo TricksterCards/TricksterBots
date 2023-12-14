@@ -1,21 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
-using static TricksterBots.Bots.Bridge.NoTrumpDescription;
+using static BridgeBidding.NoTrumpDescription;
 
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 
     public class NoTrumpDescription : Bidder
@@ -169,8 +157,8 @@ namespace TricksterBots.Bots.Bridge
             {
                 return new BidRule[]
                 {
-                    PartnerBids(1, Suit.Unknown, Call.Double, ConventionalResponses),
-                    Nonforcing(1, Suit.Unknown, NTD.OR.Open, Balanced())
+                    PartnerBids(1, Strain.NoTrump, Call.Double, ConventionalResponses),
+                    Nonforcing(1, Strain.NoTrump, NTD.OR.Open, Balanced())
                 };
             }
             if (ps.Role == PositionRole.Overcaller && ps.RoleRound == 1)
@@ -179,17 +167,17 @@ namespace TricksterBots.Bots.Bridge
 				{
                     return new BidRule[]
                     {
-                        PartnerBids(1, Suit.Unknown, Call.Double, ConventionalResponses),
+                        PartnerBids(1, Strain.NoTrump, Call.Double, ConventionalResponses),
                         // TODO: Perhaps more rules here for balancing but for now this is fine -- Balanced() is not necessary
-                        Nonforcing(1, Suit.Unknown, NTD.OR.Open, PassEndsAuction(true))
+                        Nonforcing(1, Strain.NoTrump, NTD.OR.Open, PassEndsAuction(true))
                     };
 				}
                 else if (NTD.OpenType == "Overcall1NT")
                 {
                     return new BidRule[]
                     {
-                        PartnerBids(1, Suit.Unknown, Call.Double, ConventionalResponses),
-                        Nonforcing(1, Suit.Unknown, NTD.OR.Open, Balanced(), OppsStopped(), PassEndsAuction(false))
+                        PartnerBids(1, Strain.NoTrump, Call.Double, ConventionalResponses),
+                        Nonforcing(1, Strain.NoTrump, NTD.OR.Open, Balanced(), OppsStopped(), PassEndsAuction(false))
                     };
                 }
 			}
@@ -259,21 +247,21 @@ namespace TricksterBots.Bots.Bridge
             {
 
                 DefaultPartnerBids(Bid.Pass, OpenerRebid),
-                Signoff(2, Suit.Clubs, Shape(5, 11), NTD.RR.LessThanInvite),
-                Signoff(2, Suit.Diamonds, Shape(5, 11), NTD.RR.LessThanInvite),
-                Signoff(2, Suit.Hearts, Shape(5, 11), NTD.RR.LessThanInvite),
-                Signoff(2, Suit.Spades, Shape(5, 11), NTD.RR.LessThanInvite),
+                Signoff(2, Strain.Clubs, Shape(5, 11), NTD.RR.LessThanInvite),
+                Signoff(2, Strain.Diamonds, Shape(5, 11), NTD.RR.LessThanInvite),
+                Signoff(2, Strain.Hearts, Shape(5, 11), NTD.RR.LessThanInvite),
+                Signoff(2, Strain.Spades, Shape(5, 11), NTD.RR.LessThanInvite),
 
-                Invitational(2, Suit.Unknown, NTD.RR.InviteGame, LongestMajor(4)),
+                Invitational(2, Strain.NoTrump, NTD.RR.InviteGame, LongestMajor(4)),
                 // TODO: These natural bids are not exactly right....
-                Forcing(3, Suit.Hearts, NTD.RR.GameOrBetter, Shape(5, 11)),
-                Forcing(3, Suit.Spades, NTD.RR.GameOrBetter, Shape(5, 11)),
-                Signoff(3, Suit.Unknown, NTD.RR.Game, LongestMajor(4)),
+                Forcing(3, Strain.Hearts, NTD.RR.GameOrBetter, Shape(5, 11)),
+                Forcing(3, Strain.Spades, NTD.RR.GameOrBetter, Shape(5, 11)),
+                Signoff(3, Strain.NoTrump, NTD.RR.Game, LongestMajor(4)),
 
-                Invitational(4, Suit.Unknown, NTD.RR.InviteSlam), // TODO: Any shape stuff here???
+                Invitational(4, Strain.NoTrump, NTD.RR.InviteSlam), // TODO: Any shape stuff here???
 
-                Signoff(6, Suit.Unknown, Flat(), NTD.RR.SmallSlam),
-                Signoff(6, Suit.Unknown, Balanced(), Shape(Suit.Hearts, 2, 3), Shape(Suit.Spades, 2, 3), NTD.RR.SmallSlam),
+                Signoff(6, Strain.NoTrump, Flat(), NTD.RR.SmallSlam),
+                Signoff(6, Strain.NoTrump, Balanced(), Shape(Suit.Hearts, 2, 3), Shape(Suit.Spades, 2, 3), NTD.RR.SmallSlam),
 
                 Signoff(Bid.Pass, NTD.RR.LessThanInvite),
 
@@ -287,21 +275,21 @@ namespace TricksterBots.Bots.Bridge
             {
                 DefaultPartnerBids(Bid.Pass, ResponderRebid),
 
-                Signoff(Call.Pass, NTD.OR.DontAcceptInvite, Partner(LastBid(2, Suit.Unknown))),
-                Signoff(Call.Pass, Partner(LastBid(2, Suit.Clubs))),
-                Signoff(Call.Pass, Partner(LastBid(2, Suit.Diamonds))),
-                Signoff(Call.Pass, Partner(LastBid(2, Suit.Hearts))),
-                Signoff(Call.Pass, Partner(LastBid(2, Suit.Spades))),
+                Signoff(Call.Pass, NTD.OR.DontAcceptInvite, Partner(LastBid(2, Strain.NoTrump))),
+                Signoff(Call.Pass, Partner(LastBid(2, Strain.Clubs))),
+                Signoff(Call.Pass, Partner(LastBid(2, Strain.Diamonds))),
+                Signoff(Call.Pass, Partner(LastBid(2, Strain.Hearts))),
+                Signoff(Call.Pass, Partner(LastBid(2, Strain.Spades))),
 
-                Forcing(3, Suit.Hearts, Partner(LastBid(2, Suit.Unknown)), NTD.OR.AcceptInvite, Shape(5)),
-                Forcing(3, Suit.Spades, Partner(LastBid(2, Suit.Unknown)), NTD.OR.AcceptInvite, Shape(5)),
+                Forcing(3, Strain.Hearts, Partner(LastBid(2, Strain.NoTrump)), NTD.OR.AcceptInvite, Shape(5)),
+                Forcing(3, Strain.Spades, Partner(LastBid(2, Strain.NoTrump)), NTD.OR.AcceptInvite, Shape(5)),
 
-                Signoff(3, Suit.Unknown, NTD.OR.AcceptInvite, Partner(LastBid(2, Suit.Unknown))),
-                Signoff(3, Suit.Unknown, Partner(LastBid(3, Suit.Hearts)), Shape(Suit.Hearts, 0, 2)),
-                Signoff(3, Suit.Unknown, Partner(LastBid(3, Suit.Spades)), Shape(Suit.Spades, 0, 2)),
+                Signoff(3, Strain.NoTrump, NTD.OR.AcceptInvite, Partner(LastBid(2, Strain.NoTrump))),
+                Signoff(3, Strain.NoTrump, Partner(LastBid(3, Strain.Hearts)), Shape(Suit.Hearts, 0, 2)),
+                Signoff(3, Strain.NoTrump, Partner(LastBid(3, Suit.Spades)), Shape(Suit.Spades, 0, 2)),
 
-                Nonforcing(4, Suit.Hearts, Partner(LastBid(3, Suit.Hearts)), Shape(3, 5)),
-                Nonforcing(4, Suit.Spades, Partner(LastBid(3, Suit.Spades)), Shape(3, 5))
+                Nonforcing(4, Strain.Hearts, Partner(LastBid(3, Strain.Hearts)), Shape(3, 5)),
+                Nonforcing(4, Strain.Spades, Partner(LastBid(3, Strain.Spades)), Shape(3, 5))
             };
         }
         private IEnumerable<BidRule> ResponderRebid(PositionState _)
@@ -309,17 +297,16 @@ namespace TricksterBots.Bots.Bridge
             return new BidRule[]
             {
                 // TODO: Ideally this would be "Parther(ShowsShape(Hearts, 5)" Better than lastbid...
-                Signoff(3, Suit.Unknown, Partner(LastBid(3, Suit.Hearts)), Shape(Suit.Hearts, 0, 2)),
-                Signoff(3, Suit.Unknown, Partner(LastBid(3, Suit.Spades)), Shape(Suit.Spades, 0, 2)),
+                Signoff(3, Strain.NoTrump, Partner(LastBid(3, Strain.Hearts)), Shape(Suit.Hearts, 0, 2)),
+                Signoff(3, Strain.NoTrump, Partner(LastBid(3, Strain.Spades)), Shape(Suit.Spades, 0, 2)),
 
 
-                Nonforcing(4, Suit.Hearts, Partner(LastBid(3, Suit.Hearts)), Shape(3, 4)),
-                Nonforcing(4, Suit.Spades, Partner(LastBid(3, Suit.Spades)), Shape(3, 4))
+                Nonforcing(4, Strain.Hearts, Partner(LastBid(3, Strain.Hearts)), Shape(3, 4)),
+                Nonforcing(4, Strain.Spades, Partner(LastBid(3, Strain.Spades)), Shape(3, 4))
 
             };
         }
     }
 
-    // ********************************* MAYBE NEW FILE ********************
   
 }

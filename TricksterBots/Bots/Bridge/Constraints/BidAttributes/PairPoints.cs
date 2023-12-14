@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+
+namespace BridgeBidding
 {
     // This class is used for PairHasShownPoints and PairShowsPoints.  HasShown is a static constraint, while
     // the Shows class is a dynamic constaint that also shows state.  This class implements all of the logic, while

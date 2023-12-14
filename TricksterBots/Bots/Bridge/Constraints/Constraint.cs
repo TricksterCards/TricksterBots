@@ -14,11 +14,9 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Trickster.Bots;
-using Trickster.cloud;
 
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
     public class CueBid : StaticConstraint
     {

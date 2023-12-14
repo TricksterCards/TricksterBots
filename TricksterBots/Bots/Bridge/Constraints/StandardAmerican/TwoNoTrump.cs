@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Trickster.cloud;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 	public class TwoNoTrump : Bidder
 	{
@@ -31,8 +27,8 @@ namespace TricksterBots.Bots.Bridge
 			return new BidRule[]
 			{
                 // TODO: Systems on/off through here --- just like 1NT.....
-                PartnerBids(2, Suit.Unknown, Bid.Double, Respond),
-				Nonforcing(2, Suit.Unknown, OpenPoints, Balanced())
+                PartnerBids(2, Strain.NoTrump, Bid.Double, Respond),
+				Nonforcing(2, Strain.NoTrump, OpenPoints, Balanced())
 			};
 		}
 
@@ -68,7 +64,7 @@ namespace TricksterBots.Bots.Bridge
 
 				Signoff(Bid.Pass, NTB.RespondNoGame),
 
-				Signoff(3, Suit.Unknown, NTB.RespondGame, LongestMajor(4)),
+				Signoff(3, Strain.NoTrump, NTB.RespondGame, LongestMajor(4)),
 
 				Signoff(4, Suit.Hearts, NTB.RespondGame, Shape(5, 11), BetterThan(Suit.Spades)),
 				Signoff(4, Suit.Spades, NTB.RespondGame, Shape(5, 11), BetterOrEqualTo(Suit.Hearts)),

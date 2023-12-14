@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Trickster.Bots;
 
-namespace TricksterBots.Bots.Bridge
+namespace BridgeBidding
 {
 	public class IsFlat : DynamicConstraint
 	{
