@@ -10,6 +10,8 @@ namespace BridgeBidding
         public static (int, int) AdvanceNewSuit1Level = (6, 40); // TODO: Highest level for this?
         public static (int, int) NewSuit2Level = (11, 40); // Same here...
         public static (int, int) AdvanceTo1NT = (6, 10);
+        public static (int, int) PairAdvanceTo2NT = (23, 24);
+        public static (int, int) PairAdvanceTo3NT = (25, 31);   
         public static (int, int) WeakJumpRaise = (0, 8);   // TODO: What is the high end of jump raise weak
         public static (int, int) Raise = (6, 10);
         public static (int, int) AdvanceCuebid = (11, 40);
@@ -21,7 +23,8 @@ namespace BridgeBidding
             {
                 // NOTE: We only shold get here when a suit has been bid.  NoTrump overcalls have different logic.
                 Suit partnerSuit = (Suit)partnerBid.Suit;
-                return new BidRule[] {
+                var bids = new List<BidRule>
+                {
                     // TODO: What is the level of interference we can take
                     DefaultPartnerBids(new Bid(4, Strain.NoTrump), Overcall.Rebid),
 
@@ -72,13 +75,21 @@ namespace BridgeBidding
                     Nonforcing(3, Strain.Spades, Jump(1), Fit(9), DummyPoints(WeakJumpRaise), ShowsTrump()),
 
 
-       
+                    // Need to differentiate between weak and strong overcalls and advance properly.
+                    // Perhaps depend more on PairPoints(). 
 
                     // Lowest priority is to bid some level of NT - all fit() bids should be higher priority.
-                    Nonforcing(1, Strain.NoTrump, OppsStopped(), Points(AdvanceTo1NT))
+                    Nonforcing(1, Strain.NoTrump, OppsStopped(), Points(AdvanceTo1NT)),
+                    Nonforcing(2, Strain.NoTrump, OppsStopped(), PairPoints(PairAdvanceTo2NT)),
+					Nonforcing(3, Strain.NoTrump, OppsStopped(), PairPoints(PairAdvanceTo3NT))
+
 
                     // TODO: Any specification of PASS?>>
                 };
+                // TODO: Should this be higher priority?
+                // TODO: Are there situations where 4NT is not blackwood.  Overcall 4D advanace 4NT?
+                bids.AddRange(Blackwood.InitiateConvention(ps));
+                return bids;
             }
             Debug.Fail("Partner.LastCall is not a bid.  How in the world did we get here?");
             return new BidRule[0];
