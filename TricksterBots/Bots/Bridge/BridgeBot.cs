@@ -122,6 +122,10 @@ namespace Trickster.Bots
             {
                 var bid = new DeclareBid(b.value);
                 return bid.suit == bestFit && bid.level <= level;
+            }) ?? state.legalBids.FirstOrDefault(b =>
+            {
+                var bid = new DeclareBid(b.value);
+                return bid.suit == bestFit;
             }) ?? state.legalBids[0];
         }
 
