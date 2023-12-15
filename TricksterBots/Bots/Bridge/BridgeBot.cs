@@ -48,6 +48,9 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<BridgeOptions> state)
         {
+            if (options.variation == BridgeVariation.Mini)
+                return SuggestMiniBridgeBid(state);
+
             var (players, dealerSeat, hand) = (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand);
             var history = new BridgeBidHistory(players, dealerSeat);
             return SuggestBid(history, hand);
@@ -90,6 +93,40 @@ namespace Trickster.Bots
         public override List<Card> SuggestDiscard(SuggestDiscardState<BridgeOptions> state)
         {
             throw new NotImplementedException();
+        }
+
+        public BidBase SuggestMiniBridgeBid(SuggestBidState<BridgeOptions> state)
+        {
+            var players = new PlayersCollectionBase(this, state.players);
+            var partner = players.PartnerOf(state.player);
+            var combinedHand = new Hand(partner.Hand).AddCards(state.hand);
+
+            var hcp = BasicBidding.ComputeHighCardPoints(combinedHand);
+            var counts = BasicBidding.CountsBySuit(combinedHand);
+
+            var bestFit = counts.Where(kvp => kvp.Value >= 8).OrderByDescending(kvp => kvp.Value).ThenByDescending(kvp => suitOrder[kvp.Key]).Select(kvp => kvp.Key).FirstOrDefault();
+
+            var level = 1;
+            if (hcp >= 37)
+                level = 7;
+            else if (hcp >= 33)
+                level = 6;
+            else if (hcp >= 29 && IsMinor(bestFit))
+                level = 5;
+            else if (hcp >= 26 && IsMajor(bestFit))
+                level = 4;
+            else if (hcp >= 23 && bestFit == Suit.Unknown)
+                level = 3;
+
+            return state.legalBids.Reverse().FirstOrDefault(b =>
+            {
+                var bid = new DeclareBid(b.value);
+                return bid.suit == bestFit && bid.level <= level;
+            }) ?? state.legalBids.FirstOrDefault(b =>
+            {
+                var bid = new DeclareBid(b.value);
+                return bid.suit == bestFit;
+            }) ?? state.legalBids[0];
         }
 
         public override Card SuggestNextCard(SuggestCardState<BridgeOptions> state)
@@ -281,6 +318,9 @@ namespace Trickster.Bots
 
         private List<Card> GetCardsInPartnersBestBidSuit(SuggestCardState<BridgeOptions> state, Dictionary<Suit, List<Card>> legalCardsBySuit)
         {
+            if (options.variation == BridgeVariation.Mini)
+                return new List<Card>();
+
             var partner = GetPartner(state);
             var summary = GetPlayerSummary(state, partner.Seat);
             var legalHandShapes = summary.HandShape.Where(hs => legalCardsBySuit.ContainsKey(hs.Key));
@@ -356,6 +396,9 @@ namespace Trickster.Bots
 
         private int CountDeclarersCardsInTrump(SuggestCardState<BridgeOptions> state)
         {
+            if (options.variation == BridgeVariation.Mini)
+                return 0;
+
             var declarer = GetDeclarer(state);
             var summary = GetPlayerSummary(state, declarer.Seat);
             var nCardsInTrump = 0;
@@ -439,6 +482,9 @@ namespace Trickster.Bots
 
         private List<Suit> GetUnbidSuits(SuggestCardState<BridgeOptions> state)
         {
+            if (options.variation == BridgeVariation.Mini)
+                return new List<Suit>();
+
             var dealerSeat = FindDealerSeat(state);
             var players = new PlayersCollectionBase(this, state.players);
             var history = new BridgeBidHistory(players, dealerSeat);

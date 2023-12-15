@@ -45,6 +45,42 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow("7NT", "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C 6NT 6S 6H 6D 6C 7NT 7S 7H 7D 7C", DisplayName = "Bid grand slam in NT")]
+        [DataRow("7♠" , "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C 6NT 6S 6H 6D 6C 7NT 7S 7H 7D 7C", DisplayName = "Bid grand slam in a suit")]
+        [DataRow("3NT", "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid game in NT if slam is not available")]
+        [DataRow("4♠" , "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid game in a suit if slam is not available")]
+        [DataRow("1NT", "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in NT")]
+        [DataRow("1♠" , "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in a suit")]
+        [DataRow("1♥" , "JS9S7SAHKHQHJH4H3H8C4C3C2D", "ASQS3S7H2HKCTC6CJD8D6D5D4D", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in a suit (case 2)")]
+        [DataRow("1♥" , "KC9C8C2C9HASQS5SADJD7D4D3D", "ACTC6C3CAHJHTH8H5H3H2H3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Prefer bidding a major")]
+        [DataRow("2NT", "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "2C 2D 2H 2S 2NT", DisplayName = "Handle fixed bidding in NT")]
+        [DataRow("2♠" , "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "2C 2D 2H 2S 2NT", DisplayName = "Handle fixed bidding in a suit")]
+
+        public void MiniBridgeBidding(string bid, string hand, string partnerHand, string bids)
+        {
+            var legalBids = bids.Split(' ').Select(b => new BidBase(new DeclareBid(int.Parse(b[0].ToString()), LetterToSuit[b[1]]))).ToList();
+            var options = new BridgeOptions { variation = BridgeVariation.Mini };
+            var bot = new BridgeBot(options, Suit.Unknown);
+            var players = new List<PlayerBase>
+            {
+                new PlayerBase { Seat = 0, Hand = hand },
+                new PlayerBase { Seat = 1 },
+                new PlayerBase { Seat = 2, Hand = partnerHand },
+                new PlayerBase { Seat = 3 }
+            };
+            var state = new SuggestBidState<BridgeOptions>
+            {
+                hand = new Hand(players[0].Hand),
+                legalBids = legalBids,
+                player = players[0],
+                players = players
+            };
+            var suggestion = bot.SuggestBid(state);
+
+            Assert.AreEqual(bid, BidString(suggestion.value));
+        }
+
+        [TestMethod]
         public void FuzzPlays()
         {
             var failures = new List<string>();
