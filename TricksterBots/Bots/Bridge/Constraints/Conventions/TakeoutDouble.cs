@@ -18,10 +18,10 @@ namespace BridgeBidding
         public static IEnumerable<BidRule> InitiateConvention(PositionState ps)
         {
             var bids = new List<BidRule>();
-            if (ps.IsOpponentsContract)
+            if (ps.IsOpponentsContract && ps.BiddingState.OpeningBid.Strain != Strain.NoTrump)
             {
                 var contractBid = ps.BiddingState.Contract.Bid;
-                if (contractBid.Level <= 3 && contractBid.Suit is Suit suit)
+                if (contractBid.Level <= 3)
                 {
                     bids.AddRange(Takeout(ps, contractBid.Level));
                 }
@@ -41,7 +41,7 @@ namespace BridgeBidding
 
 			var rule = Forcing(Bid.Double, Points(TakeoutRange), BidAvailable(4, Suit.Clubs));
 			var oppsSummary = PairSummary.Opponents(ps);
-			foreach (Suit s in Enum.GetValues(typeof(Suit)))
+			foreach (Suit s in Card.Suits)
 			{
                 if (oppsSummary.ShownSuits.Contains(s))
                 {

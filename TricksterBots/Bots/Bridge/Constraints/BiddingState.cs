@@ -46,6 +46,10 @@ namespace BridgeBidding
 
         public Contract Contract { get; private set; }
 
+        public Bid OpeningBid { get; private set; }
+
+        public PositionState Opener { get; private set; }
+
         public static bool IsVulnerable(string vul, Direction direction)
         {
             switch (vul)
@@ -147,7 +151,7 @@ namespace BridgeBidding
                 {
                     var bids = GetBidsForNextToAct();
                     var choice = bids.GetBidRuleSet(Call.FromString(call));
-                    MakeBid(choice);
+                    MakeCall(choice);
                 }
             }
             var choices = GetBidsForNextToAct();
@@ -157,13 +161,18 @@ namespace BridgeBidding
                 chosenCall = Call.Pass;
                 // TODO: Log something here...
             }
-            MakeBid(choices.GetBidRuleSet(chosenCall));
+            MakeCall(choices.GetBidRuleSet(chosenCall));
             return chosenCall.ToString();
         }
 
 
-        private void MakeBid(BidRuleSet bidRuleSet)
+        private void MakeCall(BidRuleSet bidRuleSet)
         {
+            if (this.OpeningBid == null && bidRuleSet.Call is Bid bid)
+            {
+                this.OpeningBid = bid;
+                this.Opener = NextToAct;
+            }
             NextToAct.MakeBid(bidRuleSet);
             Contract.MakeCall(bidRuleSet.Call, NextToAct);
             NextToAct = NextToAct.LeftHandOpponent;
