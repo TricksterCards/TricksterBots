@@ -60,9 +60,9 @@ namespace Trickster.Bots
             //  then add adjustments based on hand shape, other players, and the kitty
             foreach (var suit in FiveHundredBid.suitRank.Keys)
             {
-                //  deduct one for each number of cards we have below five in trump
+                //  deduct one for each number of cards we have below five in trump (unless partner bid suit too)
                 var count = hand.Count(c => EffectiveSuit(c, suit) == suit);
-                if (suit != Suit.Unknown && count < 5)
+                if (suit != Suit.Unknown && count < 5 && !partnersBids.Any(b => b.IsContractor && b.Suit == suit))
                     tricksBySuit[suit] -= 5 - count;
 
                 //  if opponents bid a suit, stay clear of it
@@ -73,9 +73,9 @@ namespace Trickster.Bots
                 else if (suit == Suit.Unknown && !hasJoker && !partnersBids.Any(b => b.IsContractor && b.Suit == suit))
                     tricksBySuit[suit] = 0;
 
-                //  if any partner bid a suit, add our tricks to theirs (minus the two they expect from us)
+                //  if any partner bid a suit we haven't bid yet, add our tricks to theirs (minus the two they expect from us), but don't go past 8 unless we have it by ourself
                 else if (partnersBids.Any(b => b.IsContractor && b.Suit == suit) && !(playerLastBid.IsContractor && playerLastBid.Suit == suit))
-                    tricksBySuit[suit] += partnersBids.Last(b => b.IsContractor && b.Suit == suit).Tricks - defaultPartnerTricks;
+                    tricksBySuit[suit] = Math.Max(tricksBySuit[suit], Math.Min(8, tricksBySuit[suit] + partnersBids.Last(b => b.IsContractor && b.Suit == suit).Tricks - defaultPartnerTricks));
 
                 //  otherwise assume two tricks from partner plus one/two from the kitty (depending on size) unless already estimating 8+
                 //  also progressively reduce how many additional tricks we'll assume as our own trick count increases
@@ -350,9 +350,9 @@ namespace Trickster.Bots
 
                 while (cards.Any())
                 {
-                    //  don't give credit for off-suit cards more than two steps below the highest rank in a trump contract
+                    //  don't give credit for off-suit cards more than one step below the highest rank in a trump contract
                     //  reasoning: too easy for other players to be void and trump in by that point
-                    if (trumpSuit != Suit.Unknown && suit != trumpSuit && highRank - nextHighestRank > 2)
+                    if (trumpSuit != Suit.Unknown && suit != trumpSuit && highRank - nextHighestRank > 1)
                         break;
 
                     var targetCard = cards.Last(); //  start with our next highest card
