@@ -1,0 +1,3 @@
+[submodule "Bridgit"]
+	path = Bridgit
+	url = https://github.com/TricksterCards/Bridgit.git
