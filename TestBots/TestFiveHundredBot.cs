@@ -22,8 +22,9 @@ namespace TestBots
         };
 
         [TestMethod]
+        [DataRow(  "6♦", "4D5D6D8D9CKC5H8HQHAH", FiveHundredVariation.Australian, 3,   0,    "", "Pass", "Pass",   "6S",  BidAfterPass.Never, DisplayName = "Keep bid minimal with weak trump")]
         [DataRow(  "6♠", "AHKHTH7HKSQSJS8SKCTC", FiveHundredVariation.Australian, 3,   0,    "",     "",     "",     "",  BidAfterPass.Never, DisplayName = "Prefer picking suit with stronger trump")]
-        [DataRow(  "7♠", "AHKHTH7HKSQSJS8SKCTC", FiveHundredVariation.Australian, 3,   0,  "6♠", "Pass", "Pass", "Pass",  BidAfterPass.Never, DisplayName = "Prefer picking suit with stronger trump (at correct level)")]
+        [DataRow(  "7♠", "AHKHTH7HKSQSJS8SKCTC", FiveHundredVariation.Australian, 3,   0,  "6S", "Pass", "Pass", "Pass",  BidAfterPass.Never, DisplayName = "Prefer picking suit with stronger trump (at correct level)")]
         [DataRow(  "7♥", "HJJHQH4H6S9D8D8C7C6C", FiveHundredVariation.Australian, 3,   0, "6NT",     "",   "6H", "Pass",  BidAfterPass.Never, DisplayName = "Raise partner with support")]
         [DataRow("Pass", "KSJS7SJH9D6DQC5C4CHJ", FiveHundredVariation.Australian, 5,   0, "6NT", "Pass",   "8C", "Pass",  BidAfterPass.Never, DisplayName = "Don't raise past 8 if missing tricks")]
         [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3,   0, "6NT", "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Raise with a good fit with partner")]

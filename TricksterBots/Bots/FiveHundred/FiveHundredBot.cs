@@ -34,8 +34,8 @@ namespace Trickster.Bots
         public override BidBase SuggestBid(SuggestBidState<FiveHundredOptions> state)
         {
             var (players, hand, legalBids, player) = (new PlayersCollectionBase(this, state.players), state.hand, state.legalBids, state.player);
-            var opponentsBids = players.Opponents(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
-            var partnersBids = players.PartnersOf(player).Select(p => new FiveHundredBid(p.Bid)).ToList();
+            var opponentsBids = players.Opponents(player).SelectMany(p => p.BidHistory.Select(b => new FiveHundredBid(b))).ToList();
+            var partnersBids = players.PartnersOf(player).SelectMany(p => p.BidHistory.Select(b => new FiveHundredBid(b))).ToList();
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
             var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
             var estimatedKittyTricks = 1;
@@ -60,17 +60,24 @@ namespace Trickster.Bots
             //  then add adjustments based on hand shape, other players, and the kitty
             foreach (var suit in FiveHundredBid.suitRank.Keys)
             {
-                //  deduct one for each number of cards we have below five in trump (unless partner bid suit too)
+                var partnerBidSuit = partnersBids.Any(b => b.IsContractor && b.Suit == suit);
+
+                //  deduct one for each number of cards we have fewer than five in trump (unless partner bid suit too)
                 var count = hand.Count(c => EffectiveSuit(c, suit) == suit);
-                if (suit != Suit.Unknown && count < 5 && !partnersBids.Any(b => b.IsContractor && b.Suit == suit))
+                if (suit != Suit.Unknown && count < 5 && !partnerBidSuit)
                     tricksBySuit[suit] -= 5 - count;
+
+                //  deduct one if the highest card in trump is less than an Ace (unless partner bid suit too)
+                var highestTrump = hand.Where(c => EffectiveSuit(c, suit) == suit).OrderByDescending(c => RankSort(c, suit)).FirstOrDefault();
+                if (highestTrump != null && RankSort(highestTrump, suit) < RankSort(new Card(suit, Rank.Ace), suit) && !partnerBidSuit)
+                    tricksBySuit[suit] -= 1;
 
                 //  if opponents bid a suit, stay clear of it
                 if (opponentsBids.Any(b => b.IsContractor && b.Suit == suit))
                     tricksBySuit[suit] = 0;
 
                 //  avoid NT without the Joker (unless a partner has bid it)
-                else if (suit == Suit.Unknown && !hasJoker && !partnersBids.Any(b => b.IsContractor && b.Suit == suit))
+                else if (suit == Suit.Unknown && !hasJoker && !partnerBidSuit)
                     tricksBySuit[suit] = 0;
 
                 //  if any partner bid a suit we haven't bid yet, add our tricks to theirs (minus the two they expect from us), but don't go past 8 unless we have it by ourself
