@@ -94,6 +94,7 @@ namespace Trickster.Bots
                 return new BidBase(BidBase.Pass);
 
             var isDealer = player.Seat == dealerSeat;
+            var isTeamDealing = isDealer || players.PartnersOf(player).Any(p => p.Seat == dealerSeat);
 
             //  always call a misdeal if offered
             if (legalBids.Any(b => b.value == (int)EuchreBid.CallMisdeal))
@@ -102,15 +103,15 @@ namespace Trickster.Bots
             if (legalBids.Any(b => b.value == (int)EuchreBid.GoUnder))
             {
                 //  go under if we can and don't have any suit we think we want to bid
-                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer);
+                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, canPass: true);
 
                 if (bestBid.value == BidBase.Pass && upCard != null)
-                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer);
+                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer, isTeamDealing, canPass: true);
 
                 return legalBids.Single(b => b.value == (bestBid.value == BidBase.Pass ? (int)EuchreBid.GoUnder : (int)EuchreBid.AfterGoUnder));
             }
 
-            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, legalBids.Any(b => b.value == BidBase.Pass));
+            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, legalBids.Any(b => b.value == BidBase.Pass));
             var canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
 
             if (!canBidSuggestion && IsAloneBid(suggestion))
@@ -132,8 +133,8 @@ namespace Trickster.Bots
             return !IsAloneBid(bid) ? bid : new BidBase(bid.value - (int)EuchreBid.MakeAlone + (int)EuchreBid.Make);
         }
 
-        //  overload called above and for unit tests
-        public BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool canPass = true)
+        //  overload called above
+        private BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool isTeamDealing, bool canPass)
         {
             var highSuit = Suit.Unknown;
             var highEstimate = 0.0;
@@ -173,7 +174,10 @@ namespace Trickster.Bots
 
             //  bid alone if we think we'll take at least 4-tricks, so long as we hold the appropriate high cards
             //  only require just under 3-tricks if call-for-best is on (as we'll likely get another trump from partner)
-            if (highEstimate >= (options.callForBest && !options.aloneTake5 ? 2.75 : 4.0))
+            //  and make sure to not go alone if the up-card is high and will be picked up by the opponents
+            var upCardIsHigh = upCard != null && (options.withJoker ? upCard.rank == Rank.High : upCard.rank == Rank.Jack);
+            var opponentsHaveHigh = upCardIsHigh && !isTeamDealing;
+            if (!opponentsHaveHigh && highEstimate >= (options.callForBest && !options.aloneTake5 && !options.take4for1 ? 2.75 : 4.0))
             {
                 //  when aloneTake5 is true, we need to hold the Joker (if present) or the high Jack to bid alone (plus high in each off-suit)
                 if (options.aloneTake5 && hand.Any(c => options.withJoker ? c.rank == Rank.High : c.suit == highSuit && c.rank == Rank.Jack) && hand.All(c => EffectiveSuit(c, highSuit) == highSuit || hand.Any(h => h.rank == Rank.Ace && h.suit == c.suit)))
