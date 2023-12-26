@@ -133,8 +133,8 @@ namespace Trickster.Bots
             return !IsAloneBid(bid) ? bid : new BidBase(bid.value - (int)EuchreBid.MakeAlone + (int)EuchreBid.Make);
         }
 
-        //  overload called above and for unit tests
-        public BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool isTeamDealing, bool canPass)
+        //  overload called above
+        private BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool isTeamDealing, bool canPass)
         {
             var highSuit = Suit.Unknown;
             var highEstimate = 0.0;
