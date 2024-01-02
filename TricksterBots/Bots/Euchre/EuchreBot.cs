@@ -26,6 +26,8 @@ namespace Trickster.Bots
             {
                 switch (options.deckSize)
                 {
+                    case 20:
+                        return options.withJoker ? DeckType.TenToAceAndJoker : DeckType.TenToAce;
                     case 24:
                         return options.withJoker ? DeckType.NineToAceAndJoker : DeckType.NineToAce;
                     case 28:
