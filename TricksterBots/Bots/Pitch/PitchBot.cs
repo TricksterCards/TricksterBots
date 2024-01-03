@@ -39,54 +39,15 @@ namespace Trickster.Bots
         {
         }
 
-        public override DeckType DeckType
-        {
-            get
-            {
-                switch (options.variation)
-                {
-                    case PitchVariation.FourPoint:
-                    case PitchVariation.FivePoint:
-                        return options.deck;
-                    case PitchVariation.NinePoint:
-                        return DeckType.Std52Card;
-                    case PitchVariation.SixPoint:
-                        switch (options.deck)
-                        {
-                            case DeckType.Std52Card:
-                                return DeckType.Std53Card;
-                            case DeckType.TwoAndNineToAce:
-                                return DeckType.TwoAndNineToAceAndJoker;
-                            case DeckType.FiveToAce:
-                                return DeckType.FiveToAceAndJoker;
-                            case DeckType.NineToAce:
-                                return DeckType.NineToAceAndJoker;
-                            default:
-                                throw new Exception($"Unrecognized deck type: {options.deck}");
-                        }
-                    case PitchVariation.SevenPoint:
-                    case PitchVariation.TenPoint:
-                    case PitchVariation.ElevenPoint:
-                    case PitchVariation.ThirteenPoint:
-                        if (options.players == 5 && options.kitty == 0)
-                            return DeckType.No4s_50Card; //  5-player call your partner w/o a kitty (10 cards to each player)
-                        else
-                            return DeckType.Std54Card;
-                    default:
-                        throw new Exception($"Unrecognized Pitch variation: {options.variation}");
-                }
-            }
-        }
-
         private bool HasPostBidDiscard => autoDiscardVariations.Contains(options.variation);
 
         private bool IsCallPartner => options.players > 4 && !options.isPartnership;
 
-        private bool IsOffAceTrump => options.variation == PitchVariation.ElevenPoint;
+        //private bool IsOffAceTrump => options.variation == PitchVariation.ElevenPoint;
 
-        private bool IsOffJackTrump => options.variation != PitchVariation.FourPoint && options.variation != PitchVariation.NinePoint;
+        //private bool IsOffJackTrump => options.variation != PitchVariation.FourPoint && options.variation != PitchVariation.NinePoint;
 
-        private bool IsOffThreeTrump => PitchOptions.availablePoints[options.variation] >= 13;
+        //private bool IsOffThreeTrump => PitchOptions.availablePoints[options.variation] >= 13;
 
         private bool IsRankFiveWorth5 => options.variation == PitchVariation.NinePoint;
 
@@ -779,7 +740,7 @@ namespace Trickster.Bots
 
         private int GamePointsX2(Card card)
         {
-            return !options.tenOfTrumpReplacesGamePoint && gamePointsByRank.ContainsKey(card.rank) ? gamePointsByRank[card.rank] : 0;
+            return !options.tenOfTrumpReplacesGamePoint && gamePointsByRank.TryGetValue(card.rank, out var pts) ? pts : 0;
         }
 
         private int GetMaxDiscardCount(PlayerBase player, List<Card> legalDiscards)

@@ -60,7 +60,7 @@ namespace Trickster.Bots
             return false;
         }
 
-        public abstract DeckType DeckType { get; }
+        public DeckType DeckType => options.deckType;
 
         public Suit EffectiveSuit(Card c)
         {

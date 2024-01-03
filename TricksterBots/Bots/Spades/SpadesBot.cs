@@ -20,24 +20,7 @@ namespace Trickster.Bots
         {
         }
 
-        public override DeckType DeckType
-        {
-            get
-            {
-                switch (options.variation)
-                {
-                    case SpadesVariation.JokerJokerAce:
-                    case SpadesVariation.JokerJokerDeuceAce:
-                    case SpadesVariation.JokerJokerDeuceDeuce:
-                        return options.players == 3 ? DeckType.Std54Card : DeckType.SpadesWithJokers;
-
-                    default:
-                        return options.players == 3 ? DeckType.No2C_51Card : DeckType.Std52Card;
-                }
-            }
-        }
-        
-        public double EstimatedTricks(Hand hand)
+        private double EstimatedTricks(Hand hand)
         {
             var est = 0.0;
             var noJokers = DeckType != DeckType.SpadesWithJokers;
