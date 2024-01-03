@@ -11,24 +11,6 @@ namespace Trickster.Bots
         {
         }
 
-        public override DeckType DeckType
-        {
-            get
-            {
-                switch (options.players)
-                {
-                    case 3:
-                        return DeckType.No2D_51Card;
-                    case 5:
-                        return DeckType.No2C2D_50Card;
-                    case 6:
-                        return DeckType.No2C2D2S3C_48Card;
-                    default:
-                        return DeckType.Std52Card;
-                }
-            }
-        }
-
         private int JackOfDiamondsValue => options.jackOfDiamonds ? -10 : options.jackOfDiamondsForMinus5 ? -5 : 0;
 
         public override BidBase SuggestBid(SuggestBidState<HeartsOptions> state)

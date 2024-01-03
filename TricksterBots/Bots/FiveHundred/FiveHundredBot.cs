@@ -11,24 +11,6 @@ namespace Trickster.Bots
         {
         }
 
-        public override DeckType DeckType
-        {
-            get
-            {
-                switch (options.deckSize)
-                {
-                    case 43:
-                        return options.players == 6 ? DeckType.FiveHundred63Card : options.players == 3 ? DeckType.FiveHundred33Card : DeckType.FiveHundred43Card;
-                    case 45:
-                        return options.players == 6 ? DeckType.FiveHundred65Card : DeckType.FiveHundred45Card;
-                    case 46:
-                        return options.players == 6 ? DeckType.FiveHundred66Card : DeckType.FiveHundred46Card;
-                    default:
-                        return options.players == 6 ? DeckType.FiveHundred63Card : DeckType.FiveHundred43Card;
-                }
-            }
-        }
-
         private int KittySize => options.deckSize - 40;
 
         public override BidBase SuggestBid(SuggestBidState<FiveHundredOptions> state)

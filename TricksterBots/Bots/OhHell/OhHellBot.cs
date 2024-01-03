@@ -11,8 +11,6 @@ namespace Trickster.Bots
         {
         }
 
-        public override DeckType DeckType => DeckType.Std52Card;
-
         public override BidBase SuggestBid(SuggestBidState<OhHellOptions> state)
         {
             var hand = state.hand;

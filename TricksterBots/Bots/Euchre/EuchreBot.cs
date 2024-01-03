@@ -20,27 +20,7 @@ namespace Trickster.Bots
         {
         }
 
-        public override DeckType DeckType
-        {
-            get
-            {
-                switch (options.deckSize)
-                {
-                    case 20:
-                        return options.withJoker ? DeckType.TenToAceAndJoker : DeckType.TenToAce;
-                    case 24:
-                        return options.withJoker ? DeckType.NineToAceAndJoker : DeckType.NineToAce;
-                    case 28:
-                        return options.withJoker ? DeckType.EightToAceAndJoker : DeckType.EightToAce;
-                    case 32:
-                        return options.withJoker ? DeckType.SevenToAceAndJoker : DeckType.SevenToAce;
-                }
-
-                return DeckType.NineToAce;
-            }
-        }
-
-        public double EstimatedTricks(Hand hand, Suit maybeTrump, bool withJoker)
+        private double EstimatedTricks(Hand hand, Suit maybeTrump, bool withJoker)
         {
             //  ensure all suits have at least some value so we never pick Suit.Unknown
             var est = 0.1;
