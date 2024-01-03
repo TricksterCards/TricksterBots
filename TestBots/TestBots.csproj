@@ -58,11 +58,11 @@
     <Compile Include="Bridge\BasicTests.cs" />
     <Compile Include="Bridge\BidTest.cs" />
     <Compile Include="Bridge\Fuzz.cs" />
-    <Compile Include="Bridge\PBN.cs" />
     <Compile Include="Bridge\SaycResult.cs" />
     <Compile Include="Bridge\TestBridgeBot.cs" />
     <Compile Include="Bridge\Test_Sayc.cs" />
     <Compile Include="Bridge\Test_Sayc_Results.cs" />
+    <Compile Include="PTN.cs" />
     <Compile Include="TestFiveHundredBot.cs" />
     <Compile Include="TestHeartsBot.cs" />
     <Compile Include="TestOhHellBot.cs" />
