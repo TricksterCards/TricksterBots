@@ -69,6 +69,29 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow("QS",  "♦ alone", "JDJHTC9CQS", DisplayName = "Ditch non-boss off-suit singleton")]
+        [DataRow("9C",  "♦ alone", "JDJHTC9CAS", DisplayName = "Avoid ditching off-suit Ace")]
+        [DataRow("AH",  "♦ alone", "JDJHADKDAH", DisplayName = "Ditch off-suit Ace if necessary")]
+        [DataRow("9D",  "♦ alone", "JDJHADKD9D", DisplayName = "Ditch low from trump if necessary")]
+        [DataRow("9D", "NT alone", "AHJD9DACKC", DisplayName = "Ditch low from suit without boss in NT")]
+        [DataRow("TD", "NT alone", "AHJDTDKC9C", DisplayName = "Ditch low from suit without possible boss in NT")]
+        public void CallForBestMaker(string expected, string bidStr, string hand)
+        {
+            var bid = GetBid(bidStr, out var bidSuit);
+            var bot = GetBot(bidSuit, new EuchreOptions { allowNotrump = true, callForBest = true });
+
+            //  first suggestion is maker passing to non-playing partner
+            var passState = new SuggestPassState<EuchreOptions>
+            {
+                player = new TestPlayer(bid.value, hand),
+                hand = new Hand(hand),
+                passCount = 1
+            };
+            var suggestion = bot.SuggestPass(passState);
+            Assert.AreEqual(expected, suggestion[0].ToString());
+        }
+
+        [TestMethod]
         public void CallForBestWithoutTrump()
         {
             var bot = GetBot(Suit.Hearts, new EuchreOptions { callForBest = true });
@@ -459,6 +482,30 @@ namespace TestBots
 
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual(card, suggestion.ToString());
+        }
+
+        private static BidBase GetBid(string bidText, out Suit suit)
+        {
+            var parts = bidText.Split(' ');
+            suit = Suit.Unknown;
+            switch (parts[0])
+            {
+                case "♣":
+                    suit = Suit.Clubs;
+                    break;
+                case "♦":
+                    suit = Suit.Diamonds;
+                    break;
+                case "♠":
+                    suit = Suit.Spades;
+                    break;
+                case "♥":
+                    suit = Suit.Hearts;
+                    break;
+            }
+
+            var isAlone = parts.Length > 1;
+            return new BidBase((isAlone ? (int)EuchreBid.MakeAlone : (int)EuchreBid.Make) + (int)suit);
         }
 
         private static string GetBidText(BidBase bid)
