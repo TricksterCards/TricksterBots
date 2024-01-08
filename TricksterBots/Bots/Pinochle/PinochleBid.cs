@@ -32,7 +32,7 @@ namespace Trickster.Bots
         public static PinochleBid DeclarerPartnerBid => NonPointsBid(NonPointBid.DeclarerPartner);
         public static PinochleBid DefenderBid => NonPointsBid(NonPointBid.Defender);
 
-        public bool IsDeclarerParnter => BidIsDeclarerPartner(theBid);
+        public bool IsDeclarerPartner => BidIsDeclarerPartner(theBid);
         public bool IsDefender => BidIsDefender(theBid);
         public bool IsLikePass => BidIsLikePass(theBid);
         public bool IsMisDeal => BidIsMisDeal(theBid);
@@ -70,7 +70,7 @@ namespace Trickster.Bots
 
         public static bool BidIsDeclarerPartner(int bid)
         {
-            return bid == DeclarerPartnerBid.theBid;
+            return bid == DeclarerPartnerBid.theBid || bid == BidBase.NotPlaying;
         }
 
         public static bool BidIsDefender(int bid)
@@ -143,7 +143,7 @@ namespace Trickster.Bots
 
         public override string ToString()
         {
-            if (IsDeclarerParnter || IsDefender)
+            if (IsDeclarerPartner || IsDefender)
                 return string.Empty;
 
             if (IsPassWithHelp)
