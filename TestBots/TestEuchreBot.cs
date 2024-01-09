@@ -22,10 +22,10 @@ namespace TestBots
             {
                 players = new[]
                 {
-                    new TestPlayer(hand: handString),
-                    new TestPlayer(),
-                    new TestPlayer(),
-                    new TestPlayer()
+                    new TestPlayer(seat: 0, hand: handString),
+                    new TestPlayer(seat: 1),
+                    new TestPlayer(seat: 2),
+                    new TestPlayer(seat: 3)
                 },
                 dealerSeat = 3,
                 hand = new Hand(handString),
@@ -400,6 +400,8 @@ namespace TestBots
         [DataRow("♠ alone", " ACKC AH JCJS", "9S",  true, false, DisplayName = "Should bid alone if call-for-best with only Jacks with strong off-suit support")]
         //  but don't count on anything extra from partner if alone must take 5 is enabled
         [DataRow(      "♠", " ACKC AH JCJS", "9S",  true,  true, DisplayName = "Should not bid alone if alone-must-take-5 even with call-for-best")]
+        [DataRow("♠ alone", "  AH QSKSASJC", "9S",  true, false, DisplayName = "Should go alone without high Jack if strong enough")]
+        [DataRow(      "♠", "  AH QSKSASJC", "JS",  true, false, DisplayName = "Should not go alone if opponents will pick up high Jack")]
         //  odds are good we can take these alone - if partner has A in our offsuit, we'll likely be good even if they sit out
         [DataRow("♣ alone", "  ADKD ACJSJC", "9C", false, false, DisplayName = "Bid alone with top three trump, two-suited, and top off-suit")]
         [DataRow("♣ alone", " AD AH ACJSJC", "9C", false, false, DisplayName = "Bid alone with top three trump and top off-suit")]
@@ -505,10 +507,10 @@ namespace TestBots
             {
                 players = new[]
                 {
-                    new TestPlayer(hand: handString),
-                    new TestPlayer(),
-                    new TestPlayer(),
-                    new TestPlayer()
+                    new TestPlayer(seat: 0, hand: handString),
+                    new TestPlayer(seat: 1),
+                    new TestPlayer(seat: 2),
+                    new TestPlayer(seat: 3)
                 },
                 dealerSeat = 3,
                 hand = new Hand(handString),

@@ -29,8 +29,6 @@ namespace Trickster.Bots
         {
         }
 
-        public override DeckType DeckType => DeckType.Std52Card;
-
         public static bool IsMajor(Suit s)
         {
             return s == Suit.Spades || s == Suit.Hearts;

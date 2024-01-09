@@ -22,17 +22,24 @@ namespace TestBots
         };
 
         [TestMethod]
-        [DataRow( "10♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3,   0, "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid high with a good fit with partner")]
-        [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480, "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Don't bid higher than needed to win")]
-        [DataRow(  "9♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 120, "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid just high enough to win the game")]
-        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480,     "",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Keep bidding if opponents might overbid but no higher than necessary")]
-        [DataRow("Pass", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480,     "",   "7D", "Pass", BidAfterPass.Always, DisplayName = "Don't bid higher than partner if we can reenter bidding")]
-        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480, "Pass",   "7D",   "7H",  BidAfterPass.Never, DisplayName = "Overbid opponents but no higher than necessary")]
-        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3, 480, "Pass",   "7D",   "7H", BidAfterPass.Always, DisplayName = "Overbid opponents even if we can reenter bidding")]
-        [DataRow("Pass", "HJKSJSTS6H5HKC7CKDQD",   FiveHundredVariation.American, 5,   0,     "", "Pass",   "8H",  BidAfterPass.Never, DisplayName = "Pass with insufficient strength to overbid opponents")]
-        [DataRow( "7NT", "HJQSKH6HQC5C4CQD7D6D",   FiveHundredVariation.American, 5,   0,     "",     "",     "",  BidAfterPass.Never, DisplayName = "Only count the Joker as stopper once in NT")]
-        public void TestBidding(string bid, string hand, FiveHundredVariation variation, int kittySize, int score, string lhoBidStr, string partnerBidStr, string rhoBidStr, BidAfterPass bidAfterPass)
+        [DataRow(  "6♦", "4D5D6D8D9CKC5H8HQHAH", FiveHundredVariation.Australian, 3,   0,    "", "Pass", "Pass",   "6S",  BidAfterPass.Never, DisplayName = "Keep bid minimal with weak trump")]
+        [DataRow(  "6♠", "AHKHTH7HKSQSJS8SKCTC", FiveHundredVariation.Australian, 3,   0,    "",     "",     "",     "",  BidAfterPass.Never, DisplayName = "Prefer picking suit with stronger trump")]
+        [DataRow(  "7♠", "AHKHTH7HKSQSJS8SKCTC", FiveHundredVariation.Australian, 3,   0,  "6S", "Pass", "Pass", "Pass",  BidAfterPass.Never, DisplayName = "Prefer picking suit with stronger trump (at correct level)")]
+        [DataRow(  "7♥", "HJJHQH4H6S9D8D8C7C6C", FiveHundredVariation.Australian, 3,   0, "6NT",     "",   "6H", "Pass",  BidAfterPass.Never, DisplayName = "Raise partner with support")]
+        [DataRow("Pass", "KSJS7SJH9D6DQC5C4CHJ", FiveHundredVariation.Australian, 5,   0, "6NT", "Pass",   "8C", "Pass",  BidAfterPass.Never, DisplayName = "Don't raise past 8 if missing tricks")]
+        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3,   0, "6NT", "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Raise with a good fit with partner")]
+        [DataRow( "10♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3,   0, "6NT", "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid 10 if we have it")]
+        [DataRow("Pass", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT", "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Don't bid higher than needed to win")]
+        [DataRow(  "9♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 120, "6NT", "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid just high enough to win the game")]
+        [DataRow(  "8♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT",     "",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Keep bidding if opponents might overbid but no higher than necessary")]
+        [DataRow("Pass", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT",     "",   "7D", "Pass", BidAfterPass.Always, DisplayName = "Don't bid higher than partner if we can reenter bidding")]
+        [DataRow(  "8♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT", "Pass",   "7D",   "7H",  BidAfterPass.Never, DisplayName = "Overbid opponents but no higher than necessary")]
+        [DataRow(  "8♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT", "Pass",   "7D",   "7H", BidAfterPass.Always, DisplayName = "Overbid opponents even if we can reenter bidding")]
+        [DataRow("Pass", "HJKSJSTS6H5HKC7CKDQD",   FiveHundredVariation.American, 5,   0, "6NT",     "", "Pass",   "8H",  BidAfterPass.Never, DisplayName = "Pass with insufficient strength to overbid opponents")]
+        [DataRow( "7NT", "HJQSKH6HQC5C4CQD7D6D",   FiveHundredVariation.American, 5,   0, "6NT",     "",     "",     "",  BidAfterPass.Never, DisplayName = "Only count the Joker as stopper once in NT")]
+        public void TestBidding(string bid, string hand, FiveHundredVariation variation, int kittySize, int score, string firstBidStr, string lhoBidStr, string partnerBidStr, string rhoBidStr, BidAfterPass bidAfterPass)
         {
+            var firstBid = new FiveHundredBid(GetBid(firstBidStr));
             var lhoBid = new FiveHundredBid(GetBid(lhoBidStr));
             var partnerBid = new FiveHundredBid(GetBid(partnerBidStr));
             var rhoBid = new FiveHundredBid(GetBid(rhoBidStr));
@@ -45,7 +52,7 @@ namespace TestBots
             };
             var players = new[]
             {
-                new TestPlayer(hand: hand, seat: 0, bid: new FiveHundredBid(Suit.Unknown, 6), gameScore: score),
+                new TestPlayer(hand: hand, seat: 0, bid: firstBid, gameScore: score),
                 new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 1, bid: lhoBid),
                 new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 2, bid: partnerBid, gameScore: score),
                 new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 3, bid: rhoBid)
@@ -74,7 +81,8 @@ namespace TestBots
         [DataRow( "6NT", "HJASKSAH4H5D4D6C5C4C", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a medium hand in Australian")]
         [DataRow( "iNT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.American,           null, DisplayName = "Bid iNT in American")]
         [DataRow( "6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian,         null, DisplayName = "Bid 6NT with Joker and a strong hand in Australian")]
-        [DataRow("10NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.American,   Suit.Unknown, DisplayName = "Bid 10NT with Joker and a strong hand in Americat")]
+        [DataRow("10NT", "HJASKSQSJSTS9S8S7S6S", FiveHundredVariation.American,   Suit.Unknown, DisplayName = "Bid 10NT with Joker and a strong hand in American")]
+        [DataRow( "10♠", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.American,   Suit.Unknown, DisplayName = "Bid 10♠ with Joker, a strong hand, and off-Jack in American")]
         [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,         null, DisplayName = "Don't bid any NT without Joker in Australian (if partner hasn't bid)")]
         [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,  Suit.Spades, DisplayName = "Don't bid any NT without Joker in Australian (if partner didn't bid NT)")]
         [DataRow( "7NT", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian, Suit.Unknown, DisplayName = "Bid 7NT without Joker if strong in NT and partner bid 6NT")]

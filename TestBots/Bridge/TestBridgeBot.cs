@@ -104,8 +104,14 @@ namespace TestBots
             foreach (var file in files)
             {
                 var text = File.ReadAllText(file);
-                var tests = PBN.ImportTests(text);
+                var tests = PTN.ImportTests(text);
                 var filename = Path.GetFileName(file);
+
+                if (!tests.All(t => t.nPlayers == 4 && t.nCardsPerPlayer == 13))
+                {
+                    failures.Add($"{filename}: Not all tests have 4 players with 13 cards each");
+                    continue;
+                }
 
                 foreach (var test in tests)
                 {
@@ -296,7 +302,7 @@ namespace TestBots
                 }
                 if (trick.Count == 4)
                 {
-                    var topCard = PBN.GetTopCard(trick, test.contract[1]);
+                    var topCard = PTN.GetTopCard(trick, test.contract[1]);
                     nextSeat = (nextSeat + trick.IndexOf(topCard)) % 4;
                     players[nextSeat].CardsTaken += string.Join("", trick);
                 }

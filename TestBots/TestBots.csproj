@@ -50,19 +50,19 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="TricksterBotClasses, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TricksterBotClasses.1.2.1\lib\net48\TricksterBotClasses.dll</HintPath>
+    <Reference Include="TricksterBotClasses, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TricksterBotClasses.1.3.0\lib\net48\TricksterBotClasses.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bridge\BasicTests.cs" />
     <Compile Include="Bridge\BidTest.cs" />
     <Compile Include="Bridge\Fuzz.cs" />
-    <Compile Include="Bridge\PBN.cs" />
     <Compile Include="Bridge\SaycResult.cs" />
     <Compile Include="Bridge\TestBridgeBot.cs" />
     <Compile Include="Bridge\Test_Sayc.cs" />
     <Compile Include="Bridge\Test_Sayc_Results.cs" />
+    <Compile Include="PTN.cs" />
     <Compile Include="TestFiveHundredBot.cs" />
     <Compile Include="TestHeartsBot.cs" />
     <Compile Include="TestOhHellBot.cs" />
