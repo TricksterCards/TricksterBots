@@ -72,7 +72,7 @@ namespace Trickster.Bots
 
         public BidBase SuggestBid(BridgeBidHistory history, Hand hand)
         {
-            if (options.useBidBot == BridgeBidBot.RLBot)
+            if (options.useBidBot == BridgeBidBot.Bridgit)
                 return SuggestRLBid(history, hand);
 
             var interpretedHistory = InterpretedBid.InterpretHistory(history);
