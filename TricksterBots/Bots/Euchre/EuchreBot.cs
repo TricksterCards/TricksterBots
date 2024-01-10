@@ -194,8 +194,8 @@ namespace Trickster.Bots
                         lowRank = hand.Where(c => EffectiveSuit(c) == s).Min(RankSort),
                         highRank = hand.Where(c => EffectiveSuit(c) == s).Max(RankSort)
                     })
-                    .OrderBy(sc => sc.lowRank == (int)Rank.Ace) //  don't get rid of off-suit Aces unless we have to
-                    .ThenBy(sc => sc.count == 2 && sc.highRank == (int)Rank.King) //  don't get rid of protection for an off-suit King unless we have to
+                    .OrderBy(sc => sc.lowRank == RankSort(new Card(sc.suit, Rank.Ace))) //  don't get rid of off-suit Aces unless we have to
+                    .ThenBy(sc => sc.count == 2 && sc.highRank == RankSort(new Card(sc.suit, Rank.King))) //  don't get rid of protection for an off-suit King unless we have to
                     .ThenBy(sc => sc.count)
                     .ThenBy(sc => sc.lowRank)
                     .FirstOrDefault();
