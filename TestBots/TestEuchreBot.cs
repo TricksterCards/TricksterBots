@@ -422,9 +422,14 @@ namespace TestBots
         //  if we're close to going alone with call for best enabled, we should count on an extra trump
         [DataRow("♠ alone", " ACKC AH JCJS", "9S",  true, false, DisplayName = "Should bid alone if call-for-best with only Jacks with strong off-suit support")]
         //  but don't count on anything extra from partner if alone must take 5 is enabled
-        [DataRow(      "♠", " ACKC AH JCJS", "9S",  true,  true, DisplayName = "Should not bid alone if alone-must-take-5 even with call-for-best")]
+        [DataRow(      "♠", " ACKC AH JCJS", "9S",  true,  true, DisplayName = "Should not bid alone with only Jacks if alone-must-take-5 even with call-for-best")]
         [DataRow("♠ alone", "  AH QSKSASJC", "9S",  true, false, DisplayName = "Should go alone without high Jack if strong enough")]
         [DataRow(      "♠", "  AH QSKSASJC", "JS",  true, false, DisplayName = "Should not go alone if opponents will pick up high Jack")]
+        [DataRow("♥ alone", "  AD THQHKHAH", "9H",  true, false, DisplayName = "Bid alone in call-for-best without either Jack with 4 trump and strong off-suit")]
+        [DataRow("♥ alone", "  9D THQHKHAH", "9H",  true, false, DisplayName = "Bid alone in call-for-best without either Jack with 4 trump and weak off-suit")]
+        [DataRow(      "♥", "  ADKD QHKHAH", "9H",  true, false, DisplayName = "Should not go alone in call-for-best without either Jack with next 3 trump and strong off-suit")]
+        [DataRow(      "♥", "  KDQD QHKHAH", "9H",  true, false, DisplayName = "Should not go alone in call-for-best without either Jack, only 3 trump, and no off-suit Ace")]
+        [DataRow(      "♥", "  ADAC THQHKH", "AH",  true, false, DisplayName = "Should not go alone in call-for-best without top 3 trump")]
         //  odds are good we can take these alone - if partner has A in our offsuit, we'll likely be good even if they sit out
         [DataRow("♣ alone", "  ADKD ACJSJC", "9C", false, false, DisplayName = "Bid alone with top three trump, two-suited, and top off-suit")]
         [DataRow("♣ alone", " AD AH ACJSJC", "9C", false, false, DisplayName = "Bid alone with top three trump and top off-suit")]
