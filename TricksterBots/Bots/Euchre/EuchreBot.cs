@@ -165,8 +165,8 @@ namespace Trickster.Bots
                 if (options.aloneTake5 && hand.Any(c => options.withJoker ? c.rank == Rank.High : c.suit == highSuit && c.rank == Rank.Jack) && hand.All(c => EffectiveSuit(c, highSuit) == highSuit || hand.Any(h => h.rank == Rank.Ace && h.suit == c.suit)))
                     return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
 
-                //  when aloneTake5 is false, we need to be call-for-best or hold one of the top cards (Joker or either Jack) to bid alone
-                if (!options.aloneTake5 && (options.callForBest || hand.Any(c => EffectiveSuit(c, highSuit) == highSuit && (c.rank == Rank.Jack || c.rank == Rank.High))))
+                //  when aloneTake5 is false, we need to hold one of the top cards (Joker or either Jack) to bid alone (or be call-for-best with 4+ trump)
+                if (!options.aloneTake5 && ((options.callForBest && hand.Count(c => EffectiveSuit(c, highSuit) == highSuit) >= 4) || hand.Any(c => EffectiveSuit(c, highSuit) == highSuit && (c.rank == Rank.Jack || c.rank == Rank.High))))
                     return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
             }
 
