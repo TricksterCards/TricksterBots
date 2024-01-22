@@ -69,6 +69,29 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow("QS",  "♦ alone", "JDJHTC9CQS", DisplayName = "Ditch non-boss off-suit singleton")]
+        [DataRow("9C",  "♦ alone", "JDJHTC9CAS", DisplayName = "Avoid ditching off-suit Ace")]
+        [DataRow("AH",  "♦ alone", "JDJHADKDAH", DisplayName = "Ditch off-suit Ace if necessary")]
+        [DataRow("9D",  "♦ alone", "JDJHADKD9D", DisplayName = "Ditch low from trump if necessary")]
+        [DataRow("9D", "NT alone", "AHJD9DACKC", DisplayName = "Ditch low from suit without boss in NT")]
+        [DataRow("TD", "NT alone", "AHJDTDKC9C", DisplayName = "Ditch low from suit without possible boss in NT")]
+        public void CallForBestMaker(string expected, string bidStr, string hand)
+        {
+            var bid = GetBid(bidStr, out var bidSuit);
+            var bot = GetBot(bidSuit, new EuchreOptions { allowNotrump = true, callForBest = true });
+
+            //  first suggestion is maker passing to non-playing partner
+            var passState = new SuggestPassState<EuchreOptions>
+            {
+                player = new TestPlayer(bid.value, hand),
+                hand = new Hand(hand),
+                passCount = 1
+            };
+            var suggestion = bot.SuggestPass(passState);
+            Assert.AreEqual(expected, suggestion[0].ToString());
+        }
+
+        [TestMethod]
         public void CallForBestWithoutTrump()
         {
             var bot = GetBot(Suit.Hearts, new EuchreOptions { callForBest = true });
@@ -399,9 +422,14 @@ namespace TestBots
         //  if we're close to going alone with call for best enabled, we should count on an extra trump
         [DataRow("♠ alone", " ACKC AH JCJS", "9S",  true, false, DisplayName = "Should bid alone if call-for-best with only Jacks with strong off-suit support")]
         //  but don't count on anything extra from partner if alone must take 5 is enabled
-        [DataRow(      "♠", " ACKC AH JCJS", "9S",  true,  true, DisplayName = "Should not bid alone if alone-must-take-5 even with call-for-best")]
+        [DataRow(      "♠", " ACKC AH JCJS", "9S",  true,  true, DisplayName = "Should not bid alone with only Jacks if alone-must-take-5 even with call-for-best")]
         [DataRow("♠ alone", "  AH QSKSASJC", "9S",  true, false, DisplayName = "Should go alone without high Jack if strong enough")]
         [DataRow(      "♠", "  AH QSKSASJC", "JS",  true, false, DisplayName = "Should not go alone if opponents will pick up high Jack")]
+        [DataRow("♥ alone", "  AD THQHKHAH", "9H",  true, false, DisplayName = "Bid alone in call-for-best without either Jack with 4 trump and strong off-suit")]
+        [DataRow("♥ alone", "  9D THQHKHAH", "9H",  true, false, DisplayName = "Bid alone in call-for-best without either Jack with 4 trump and weak off-suit")]
+        [DataRow(      "♥", "  ADKD QHKHAH", "9H",  true, false, DisplayName = "Should not go alone in call-for-best without either Jack with next 3 trump and strong off-suit")]
+        [DataRow(      "♥", "  KDQD QHKHAH", "9H",  true, false, DisplayName = "Should not go alone in call-for-best without either Jack, only 3 trump, and no off-suit Ace")]
+        [DataRow(      "♥", "  ADAC THQHKH", "AH",  true, false, DisplayName = "Should not go alone in call-for-best without top 3 trump")]
         //  odds are good we can take these alone - if partner has A in our offsuit, we'll likely be good even if they sit out
         [DataRow("♣ alone", "  ADKD ACJSJC", "9C", false, false, DisplayName = "Bid alone with top three trump, two-suited, and top off-suit")]
         [DataRow("♣ alone", " AD AH ACJSJC", "9C", false, false, DisplayName = "Bid alone with top three trump and top off-suit")]
@@ -459,6 +487,30 @@ namespace TestBots
 
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual(card, suggestion.ToString());
+        }
+
+        private static BidBase GetBid(string bidText, out Suit suit)
+        {
+            var parts = bidText.Split(' ');
+            suit = Suit.Unknown;
+            switch (parts[0])
+            {
+                case "♣":
+                    suit = Suit.Clubs;
+                    break;
+                case "♦":
+                    suit = Suit.Diamonds;
+                    break;
+                case "♠":
+                    suit = Suit.Spades;
+                    break;
+                case "♥":
+                    suit = Suit.Hearts;
+                    break;
+            }
+
+            var isAlone = parts.Length > 1;
+            return new BidBase((isAlone ? (int)EuchreBid.MakeAlone : (int)EuchreBid.Make) + (int)suit);
         }
 
         private static string GetBidText(BidBase bid)
