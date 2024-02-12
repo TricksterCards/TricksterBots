@@ -142,7 +142,7 @@ namespace Trickster.Bots
                     return new BidBase(BridgeBid.Redouble);
             }
 
-            if (!(BridgeBidding.Call.FromString(bid) is BridgeBidding.Bid b))
+            if (!(BridgeBidding.Call.Parse(bid) is BridgeBidding.Bid b))
                 return new BidBase(BidBase.Pass);
 
             Suit suit;
