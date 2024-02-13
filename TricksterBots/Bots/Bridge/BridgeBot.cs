@@ -72,8 +72,8 @@ namespace Trickster.Bots
 
         public BidBase SuggestBid(BridgeBidHistory history, Hand hand)
         {
-            if (options.useBidBot == BridgeBidBot.Bridgit)
-                return SuggestRLBid(history, hand);
+            if (options.bidding == BridgeBiddingScheme.TwoOverOne)
+                return SuggestBridgitBid(history, hand);
 
             var interpretedHistory = InterpretedBid.InterpretHistory(history);
             var legalBids = AllPossibleBids().Where(history.IsBidLegal).ToList();
@@ -107,7 +107,7 @@ namespace Trickster.Bots
             return bid;
         }
 
-        public static BidBase SuggestRLBid(BridgeBidHistory history, Hand hand)
+        public static BidBase SuggestBridgitBid(BridgeBidHistory history, Hand hand)
         {
             string ranksInSuit(Hand h, Suit s) => string.Join("",
                 h.Where(c => c.suit == s)
