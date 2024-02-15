@@ -95,6 +95,43 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void BridgitSanityTests()
+        {
+            var failures = new List<string>();
+            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "Bridgit"), "*.pbn");
+            foreach (var file in files)
+            {
+                var text = File.ReadAllText(file);
+                var tests = PTN.ImportTests(text);
+                var filename = Path.GetFileName(file);
+
+                if (!tests.All(t => t.nPlayers == 4 && t.nCardsPerPlayer == 13))
+                {
+                    failures.Add($"{filename}: Not all tests have 4 players with 13 cards each");
+                    continue;
+                }
+
+                foreach (var test in tests)
+                {
+                    if (!string.IsNullOrEmpty(test.bid))
+                    {
+                        var failure = RunBidTest(new BidTest(test), BridgeBiddingScheme.TwoOverOne);
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
+                    }
+                    else
+                    {
+                        failures.Add($"{filename}: '{test.type}' must have an expected bid.");
+                    }
+                }
+            }
+            if (failures.Count > 0)
+                Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
+        }
+
+        [TestMethod]
         public void SaycTestFiles()
         {
             var failures = new List<string>();
@@ -254,9 +291,9 @@ namespace TestBots
             return passed ? "passed" : "failed";
         }
 
-        private static string RunBidTest(BidTest test)
+        private static string RunBidTest(BidTest test, BridgeBiddingScheme bidding = BridgeBiddingScheme.SAYC)
         {
-            var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
+            var bot = new BridgeBot(new BridgeOptions { bidding = bidding }, Suit.Unknown);
             var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
 
             if (test.expectedBid != suggestion)

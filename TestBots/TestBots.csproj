@@ -106,6 +106,9 @@
     <Content Include="Bridge\SAYC\Blackwood.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Bridge\Bridgit\Basic.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
