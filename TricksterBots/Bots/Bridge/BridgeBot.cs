@@ -67,13 +67,16 @@ namespace Trickster.Bots
 
             var (players, dealerSeat, hand) = (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand);
             var history = new BridgeBidHistory(players, dealerSeat);
-            return SuggestBid(history, hand);
+            var vulnerable = state.vulnerabilityBySeat.All(v => v) ? "All" :
+                !state.vulnerabilityBySeat.Any(v => v) ? "None" :
+                state.vulnerabilityBySeat[state.player.Seat] ? "NS" : "EW";
+            return SuggestBid(history, hand, vulnerable);
         }
 
-        public BidBase SuggestBid(BridgeBidHistory history, Hand hand)
+        public BidBase SuggestBid(BridgeBidHistory history, Hand hand, string vulnerable = "None")
         {
             if (options.bidding == BridgeBiddingScheme.TwoOverOne)
-                return SuggestBridgitBid(history, hand);
+                return SuggestBridgitBid(history, hand, vulnerable);
 
             var interpretedHistory = InterpretedBid.InterpretHistory(history);
             var legalBids = AllPossibleBids().Where(history.IsBidLegal).ToList();
@@ -107,7 +110,7 @@ namespace Trickster.Bots
             return bid;
         }
 
-        public static BidBase SuggestBridgitBid(BridgeBidHistory history, Hand hand)
+        public static BidBase SuggestBridgitBid(BridgeBidHistory history, Hand hand, string vulnerable)
         {
             string ranksInSuit(Hand h, Suit s) => string.Join("",
                 h.Where(c => c.suit == s)
@@ -129,8 +132,7 @@ namespace Trickster.Bots
             for (var ix = 0; ix < history.Count; ix++)
                 historyStrings.Add(BidString(history[ix]));
 
-            // TODO: pass actual vulnerability
-            var bid = BridgeBidding.BridgeBidder.SuggestBid(deal, "None", string.Join(" ", historyStrings));
+            var bid = BridgeBidding.BridgeBidder.SuggestBid(deal, vulnerable, string.Join(" ", historyStrings));
 
             switch (bid)
             {
