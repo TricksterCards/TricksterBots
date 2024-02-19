@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPI", "WebAPI\WebAPI.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBots", "TestBots\TestBots.csproj", "{DFE54BCF-63D4-40D4-934D-6DC98DB2626E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BridgeBidder", "Bridgit\BridgeBidder\BridgeBidder.csproj", "{6B07819F-8F79-4F15-A516-809396A77D5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{DFE54BCF-63D4-40D4-934D-6DC98DB2626E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DFE54BCF-63D4-40D4-934D-6DC98DB2626E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DFE54BCF-63D4-40D4-934D-6DC98DB2626E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B07819F-8F79-4F15-A516-809396A77D5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B07819F-8F79-4F15-A516-809396A77D5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B07819F-8F79-4F15-A516-809396A77D5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B07819F-8F79-4F15-A516-809396A77D5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -44,6 +44,22 @@ namespace Trickster.Bots
             return player.Seat == target.Seat || target.Bid == BidBase.Dummy && target.Hand.Length < 26 || player.Bid == BidBase.Dummy && target.Seat == players.PartnerOf(player).Seat;
         }
 
+        private static string BidString(int bidValue)
+        {
+            switch (bidValue)
+            {
+                case BidBase.Pass:
+                    return "Pass";
+                case BridgeBid.Double:
+                    return "X";
+                case BridgeBid.Redouble:
+                    return "XX";
+                default:
+                    var db = new DeclareBid(bidValue);
+                    return $"{db.level}{(db.suit == Suit.Unknown ? "NT" : db.suit.ToString().Substring(0, 1))}";
+            }
+        }
+
         public override BidBase SuggestBid(SuggestBidState<BridgeOptions> state)
         {
             if (options.variation == BridgeVariation.Mini)
@@ -51,11 +67,17 @@ namespace Trickster.Bots
 
             var (players, dealerSeat, hand) = (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand);
             var history = new BridgeBidHistory(players, dealerSeat);
-            return SuggestBid(history, hand);
+            var vulnerable = state.vulnerabilityBySeat.All(v => v) ? "All" :
+                !state.vulnerabilityBySeat.Any(v => v) ? "None" :
+                state.vulnerabilityBySeat[state.player.Seat] ? "NS" : "EW";
+            return SuggestBid(history, hand, vulnerable);
         }
 
-        public BidBase SuggestBid(BridgeBidHistory history, Hand hand)
+        public BidBase SuggestBid(BridgeBidHistory history, Hand hand, string vulnerable = "None")
         {
+            if (options.bidding == BridgeBiddingScheme.TwoOverOne)
+                return SuggestBridgitBid(history, hand, vulnerable);
+
             var interpretedHistory = InterpretedBid.InterpretHistory(history);
             var legalBids = AllPossibleBids().Where(history.IsBidLegal).ToList();
 
@@ -86,6 +108,66 @@ namespace Trickster.Bots
             var bid = suggestions.FirstOrDefault() ?? FindBestFit(legalBids, interpretedHistory) ?? legalBids.First(b => b.value == BidBase.Pass);
 
             return bid;
+        }
+
+        public static BidBase SuggestBridgitBid(BridgeBidHistory history, Hand hand, string vulnerable)
+        {
+            string ranksInSuit(Hand h, Suit s) => string.Join("",
+                h.Where(c => c.suit == s)
+                    .OrderByDescending(c => c.rank)
+                    .Select(c => c.rank == Rank.Ten ? "T" : Card.StdNotationRank(c.rank)));
+
+            var seat = history.Count % 4;
+            var spades = ranksInSuit(hand, Suit.Spades);
+            var hearts = ranksInSuit(hand, Suit.Hearts);
+            var diamonds = ranksInSuit(hand, Suit.Diamonds);
+            var clubs = ranksInSuit(hand, Suit.Clubs);
+            var hands = new List<string> { "-", "-", "-", "-" };
+
+            hands[seat] = $"{spades}.{hearts}.{diamonds}.{clubs}";
+
+            var deal = $"S:{string.Join(" ", hands)}";
+
+            var historyStrings = new List<string>();
+            for (var ix = 0; ix < history.Count; ix++)
+                historyStrings.Add(BidString(history[ix]));
+
+            var bid = BridgeBidding.BridgeBidder.SuggestBid(deal, vulnerable, string.Join(" ", historyStrings));
+
+            switch (bid)
+            {
+                case "Pass":
+                    return new BidBase(BidBase.Pass);
+                case "X":
+                    return new BidBase(BridgeBid.Double);
+                case "XX":
+                    return new BidBase(BridgeBid.Redouble);
+            }
+
+            if (!(BridgeBidding.Call.Parse(bid) is BridgeBidding.Bid b))
+                return new BidBase(BidBase.Pass);
+
+            Suit suit;
+            switch (b.Suit)
+            {
+                case BridgeBidding.Suit.Clubs:
+                    suit = Suit.Clubs;
+                    break;
+                case BridgeBidding.Suit.Diamonds:
+                    suit = Suit.Diamonds;
+                    break;
+                case BridgeBidding.Suit.Hearts:
+                    suit = Suit.Hearts;
+                    break;
+                case BridgeBidding.Suit.Spades:
+                    suit = Suit.Spades;
+                    break;
+                default:
+                    suit = Suit.Unknown;
+                    break;
+            }
+
+            return new DeclareBid(b.Level, suit);
         }
 
         public override List<Card> SuggestDiscard(SuggestDiscardState<BridgeOptions> state)
