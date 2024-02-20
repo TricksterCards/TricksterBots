@@ -16,10 +16,10 @@ namespace TricksterBots.Bots.Bridge
                 Vulnerable = ToBridgitVulnerable(state.vulnerabilityBySeat)
             };
             var nSeats = state.players.Count;
-            var playersBySeat = state.players.OrderBy(p => (p.Seat - state.dealerSeat + nSeats) % nSeats).ToList();
-            for (var i = 0; i < playersBySeat[0].BidHistory.Count; i++)
+            var playersInBidOrder = state.players.OrderBy(p => (p.Seat - state.dealerSeat + nSeats) % nSeats).ToList();
+            for (var i = 0; i < playersInBidOrder[0].BidHistory.Count; i++)
             {
-                foreach (var player in playersBySeat)
+                foreach (var player in playersInBidOrder)
                 {
                     if (player.BidHistory.Count > i)
                     {
@@ -32,14 +32,14 @@ namespace TricksterBots.Bots.Bridge
             var history = new Dictionary<int, List<BidBase>>();
             for (var i = 0; i < auction.Count; i++)
             {
-                var seat = (state.dealerSeat + i) % 4;
-                var bidValue = playersBySeat[seat].BidHistory[i / 4];
+                var player = playersInBidOrder[i % 4];
+                var bidValue = player.BidHistory[i / 4];
                 var bid = new BidBase(bidValue)
                 {
                     explanation = FormatBridgitDescription(auction[i].GetCallDescriptions())
                 };
-                if (!history.ContainsKey(seat)) history[seat] = new List<BidBase>();
-                history[seat].Add(bid);
+                if (!history.ContainsKey(player.Seat)) history[player.Seat] = new List<BidBase>();
+                history[player.Seat].Add(bid);
             }
             return history;
         }
