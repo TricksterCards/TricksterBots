@@ -126,6 +126,16 @@ namespace Trickster.Bots
 
         public abstract BidBase SuggestBid(SuggestBidState<T> state);
 
+        public virtual Dictionary<int, List<BidBase>> DescribeBidHistoryBySeat(SuggestBidState<T> state)
+        {
+            return null;
+        }
+
+        public virtual List<BidBase> DescribeLegalBids(SuggestBidState<T> state)
+        {
+            return null;
+        }
+
         public abstract List<Card> SuggestDiscard(SuggestDiscardState<T> state);
 
         public abstract Card SuggestNextCard(SuggestCardState<T> state);
