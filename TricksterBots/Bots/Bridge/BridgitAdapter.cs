@@ -11,6 +11,38 @@ namespace TricksterBots.Bots.Bridge
 
         public static Dictionary<int, List<BidBase>> DescribeBidHistoryBySeat(SuggestBidState<BridgeOptions> state)
         {
+            var (biddingState, playersInBidOrder) = ConvertState(state);
+            var auction = biddingState.GetAuction();
+            var history = new Dictionary<int, List<BidBase>>();
+            for (var i = 0; i < auction.Count; i++)
+            {
+                var player = playersInBidOrder[i % 4];
+                var bidValue = player.BidHistory[i / 4];
+                var bid = new BidBase(bidValue)
+                {
+                    explanation = FormatBridgitDescription(auction[i])
+                };
+                if (!history.ContainsKey(player.Seat)) history[player.Seat] = new List<BidBase>();
+                history[player.Seat].Add(bid);
+            }
+            return history;
+        }
+
+        public static List<BidBase> DescribeLegalBids(SuggestBidState<BridgeOptions> state)
+        {
+            var (biddingState, _) = ConvertState(state);
+            var legalCalls = biddingState.GetCallChoices();
+            return legalCalls.Select(call =>
+            {
+                return new BidBase(FromBridgitBid(call.Key))
+                {
+                    explanation = FormatBridgitDescription(call.Value)
+                };
+            }).ToList();
+        }
+
+        private static (BridgeBidding.BiddingState state, List<PlayerBase> playersInBidOrder) ConvertState(SuggestBidState<BridgeOptions> state)
+        {
             var game = new BridgeBidding.Game
             {
                 Vulnerable = ToBridgitVulnerable(state.vulnerabilityBySeat)
@@ -27,58 +59,29 @@ namespace TricksterBots.Bots.Bridge
                     }
                 }
             }
-            var biddingState = new BridgeBidding.BiddingState(game);
-            var auction = biddingState.GetAuction();
-            var history = new Dictionary<int, List<BidBase>>();
-            for (var i = 0; i < auction.Count; i++)
-            {
-                var player = playersInBidOrder[i % 4];
-                var bidValue = player.BidHistory[i / 4];
-                var bid = new BidBase(bidValue)
-                {
-                    explanation = FormatBridgitDescription(auction[i].GetCallDescriptions())
-                };
-                if (!history.ContainsKey(player.Seat)) history[player.Seat] = new List<BidBase>();
-                history[player.Seat].Add(bid);
-            }
-            return history;
+            return (new BridgeBidding.BiddingState(game), playersInBidOrder);
         }
 
-        public static List<BidBase> DescribeLegalBids(SuggestBidState<BridgeOptions> state)
+        private static BidExplanation FormatBridgitDescription(BridgeBidding.CallDetails details)
         {
-            var game = new BridgeBidding.Game
-            {
-                Vulnerable = ToBridgitVulnerable(state.vulnerabilityBySeat)
-            };
-            var nSeats = state.players.Count;
-            var playersBySeat = state.players.OrderBy(p => (p.Seat - state.dealerSeat + nSeats) % nSeats).ToList();
-            for (var i = 0; i < playersBySeat[0].BidHistory.Count; i++)
-            {
-                foreach (var player in playersBySeat)
-                {
-                    if (player.BidHistory.Count > i)
-                    {
-                        game.Auction.Add(ToBridgitBid(player.BidHistory[i]));
-                    }
-                }
-            }
-            var biddingState = new BridgeBidding.BiddingState(game);
-            var legalCalls = biddingState.GetCallChoices();
-            return legalCalls.Select(call =>
-            {
-                return new BidBase(FromBridgitBid(call.Key))
-                {
-                    explanation = FormatBridgitDescription(call.Value.GetCallDescriptions())
-                };
-            }).ToList();
-        }
-        private static BidExplanation FormatBridgitDescription(List<List<string>> descriptions)
-        {
+            var convention = string.Join(", ", details.Annotations.Where(a => a.Type == BridgeBidding.CallAnnotation.AnnotationType.Convention).Select(a => a.Text));
+            var descriptions = details.GetCallDescriptions();
             var desc = descriptions.Select(d => string.Join(", ", d)).ToList();
             desc.Reverse();
+            var description = string.Join("\n", desc);
+
+            // TODO: pass as BidExplanation.Convention
+            if (!string.IsNullOrEmpty(convention))
+                description = $"Convention: {convention}\n{description}";
+
+            if (string.IsNullOrEmpty(description))
+                description = "Unknown bid";
+
             return new BidExplanation
             {
-                Description = string.Join("\n", desc)
+                // TODO: BidPhase = FromBridgitPositionState(details.PositionState),
+                BidMessage = FromBridgitBidForce(details.BidForce),
+                Description = description,
             };
         }
 
@@ -94,6 +97,18 @@ namespace TricksterBots.Bots.Bridge
                 return new DeclareBid(bid.Level, FromBridgitSuit(bid.Strain));
 
             throw new Exception("Unable to convert from Bridgit bid");
+        }
+
+        private static BidMessage FromBridgitBidForce(BridgeBidding.BidForce bidForce)
+        {
+            switch (bidForce)
+            {
+                case BridgeBidding.BidForce.Forcing1Round: return BidMessage.Forcing;
+                case BridgeBidding.BidForce.ForcingToGame: return BidMessage.Forcing; // TODO: switch to GameForcing
+                case BridgeBidding.BidForce.Signoff:       return BidMessage.Signoff;
+            }
+
+            return BidMessage.Invitational;
         }
 
         private static Suit FromBridgitSuit(BridgeBidding.Strain suit)
