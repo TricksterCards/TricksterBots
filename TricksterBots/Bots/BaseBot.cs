@@ -128,12 +128,12 @@ namespace Trickster.Bots
 
         public virtual Dictionary<int, List<BidBase>> DescribeBidHistoryBySeat(SuggestBidState<T> state)
         {
-            return null;
+            return state.players.ToDictionary(p => p.Seat, p => p.BidHistory.Select(b => new BidBase(b)).ToList());
         }
 
         public virtual List<BidBase> DescribeLegalBids(SuggestBidState<T> state)
         {
-            return null;
+            return state.legalBids.ToList();
         }
 
         public abstract List<Card> SuggestDiscard(SuggestDiscardState<T> state);

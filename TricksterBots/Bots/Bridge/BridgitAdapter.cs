@@ -66,9 +66,9 @@ namespace TricksterBots.Bots.Bridge
         {
             var convention = string.Join(", ", details.Annotations.Where(a => a.Type == BridgeBidding.CallAnnotation.AnnotationType.Convention).Select(a => a.Text));
             var descriptions = details.GetCallDescriptions();
-            var desc = descriptions.Select(d => string.Join(", ", d)).ToList();
-            desc.Reverse();
-            var description = string.Join("\n", desc);
+            var lines = descriptions.Select(d => string.Join(", ", d)).ToList();
+            lines.Reverse();
+            var description = string.Join("\n", lines);
 
             // TODO: pass as BidExplanation.Convention
             if (!string.IsNullOrEmpty(convention))

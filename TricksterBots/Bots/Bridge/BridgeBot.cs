@@ -68,7 +68,7 @@ namespace Trickster.Bots
             if (state.options.bidding == BridgeBiddingScheme.SAYC)
                 return DescribeSaycBidHistoryBySeat(state);
 
-            return null;
+            return base.DescribeBidHistoryBySeat(state);
         }
 
         private static Dictionary<int, List<BidBase>> DescribeSaycBidHistoryBySeat(SuggestBidState<BridgeOptions> state)
@@ -106,7 +106,7 @@ namespace Trickster.Bots
             if (state.options.bidding == BridgeBiddingScheme.SAYC)
                 return DescribeSaycLegalBids(state);
 
-            return null;
+            return base.DescribeLegalBids(state);
         }
 
         private static List<BidBase> DescribeSaycLegalBids(SuggestBidState<BridgeOptions> state)
