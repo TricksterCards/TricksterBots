@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Trickster.cloud;
+using TricksterBots.Bots.Bridge;
 
 namespace Trickster.Bots
 {
@@ -58,6 +59,76 @@ namespace Trickster.Bots
                     var db = new DeclareBid(bidValue);
                     return $"{db.level}{(db.suit == Suit.Unknown ? "NT" : db.suit.ToString().Substring(0, 1))}";
             }
+        }
+
+        public override Dictionary<int, List<BidBase>> DescribeBidHistoryBySeat(SuggestBidState<BridgeOptions> state)
+        {
+            if (state.options.bidding == BridgeBiddingScheme.TwoOverOne)
+                return BridgitAdapter.DescribeBidHistoryBySeat(state);
+            if (state.options.bidding == BridgeBiddingScheme.SAYC)
+                return DescribeSaycBidHistoryBySeat(state);
+
+            return base.DescribeBidHistoryBySeat(state);
+        }
+
+        private static Dictionary<int, List<BidBase>> DescribeSaycBidHistoryBySeat(SuggestBidState<BridgeOptions> state)
+        {
+            var history = new Dictionary<int, List<BidBase>>();
+            var dealerSeat = state.dealerSeat;
+            var bidHistory = new BridgeBidHistory(state.players, dealerSeat);
+            var interpretedHistory = InterpretedBid.InterpretHistory(bidHistory);
+
+            foreach (var player in state.players)
+            {
+                var firstIndex = BridgeBidHistory.FirstBidIndex(state.players, player, dealerSeat);
+                var bids = new List<BidBase>();
+
+                for (var i = 0; i < player.BidHistory.Count; ++i)
+                {
+                    var bid = new BidBase(player.BidHistory[i]);
+                    var interpretedBid = new InterpretedBid(bid.value, interpretedHistory, firstIndex + i * 4);
+
+                    bid.explanation = new BidExplanation(interpretedBid);
+
+                    bids.Add(bid);
+                }
+
+                history.Add(player.Seat, bids);
+            }
+
+            return history;
+        }
+
+        public override List<BidBase> DescribeLegalBids(SuggestBidState<BridgeOptions> state)
+        {
+            if (state.options.bidding == BridgeBiddingScheme.TwoOverOne)
+                return BridgitAdapter.DescribeLegalBids(state);
+            if (state.options.bidding == BridgeBiddingScheme.SAYC)
+                return DescribeSaycLegalBids(state);
+
+            return base.DescribeLegalBids(state);
+        }
+
+        private static List<BidBase> DescribeSaycLegalBids(SuggestBidState<BridgeOptions> state)
+        {
+            var bids = new List<BidBase>();
+            var history = new BridgeBidHistory(state.players, state.dealerSeat);
+            var interpretedHistory = InterpretedBid.InterpretHistory(history);
+
+            foreach (var legalBid in state.legalBids)
+            {
+                var value = legalBid.value;
+                var bid = new BidBase(value);
+                if (legalBid.value != BidBase.NoBid)
+                {
+                    var interpretedBid = new InterpretedBid(value, interpretedHistory, interpretedHistory.Count);
+                    bid.explanation = new BidExplanation(interpretedBid);
+                }
+
+                bids.Add(bid);
+            }
+
+            return bids;
         }
 
         public override BidBase SuggestBid(SuggestBidState<BridgeOptions> state)
