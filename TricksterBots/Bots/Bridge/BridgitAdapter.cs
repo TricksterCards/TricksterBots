@@ -32,12 +32,22 @@ namespace TricksterBots.Bots.Bridge
         {
             var (biddingState, _) = ConvertState(state);
             var legalCalls = biddingState.GetCallChoices();
-            return legalCalls.Select(call =>
+            return state.legalBids.Select(b =>
             {
-                return new BidBase(FromBridgitBid(call.Key))
+                var match = legalCalls.FirstOrDefault(c => FromBridgitBid(c.Key) == b.value);
+                if (match.Equals(default(KeyValuePair<BridgeBidding.Call, BridgeBidding.CallDetails>)))
                 {
-                    explanation = FormatBridgitDescription(call.Value)
-                };
+                    b.explanation = new BidExplanation
+                    {
+                        BidMessage = BidMessage.Invitational,
+                        Description = "Unexpected bid"
+                    };
+                }
+                else
+                {
+                    b.explanation = FormatBridgitDescription(match.Value);
+                }
+                return b;
             }).ToList();
         }
 
