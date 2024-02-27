@@ -74,24 +74,25 @@ namespace TricksterBots.Bots.Bridge
 
         private static BidExplanation FormatBridgitDescription(BridgeBidding.CallDetails details)
         {
+            var alert = string.Join(", ", details.Annotations.Where(a => a.Type == BridgeBidding.CallAnnotation.AnnotationType.Alert).Select(a => a.Text));
+            var announce = string.Join(", ", details.Annotations.Where(a => a.Type == BridgeBidding.CallAnnotation.AnnotationType.Announce).Select(a => a.Text));
             var convention = string.Join(", ", details.Annotations.Where(a => a.Type == BridgeBidding.CallAnnotation.AnnotationType.Convention).Select(a => a.Text));
             var descriptions = details.GetCallDescriptions();
             var lines = descriptions.Select(d => string.Join(", ", d)).ToList();
             lines.Reverse();
             var description = string.Join("\n", lines);
 
-            // TODO: pass as BidExplanation.Convention
-            if (!string.IsNullOrEmpty(convention))
-                description = $"Convention: {convention}\n{description}";
-
             if (string.IsNullOrEmpty(description))
                 description = "Unknown bid";
 
             return new BidExplanation
             {
-                // TODO: BidPhase = FromBridgitPositionState(details.PositionState),
+                Alert = alert,
+                Announce = announce,
                 BidMessage = FromBridgitBidForce(details.BidForce),
+                Convention = convention,
                 Description = description,
+                Role = details.PositionState.Role.ToString(),
             };
         }
 
@@ -114,7 +115,7 @@ namespace TricksterBots.Bots.Bridge
             switch (bidForce)
             {
                 case BridgeBidding.BidForce.Forcing1Round: return BidMessage.Forcing;
-                case BridgeBidding.BidForce.ForcingToGame: return BidMessage.Forcing; // TODO: switch to GameForcing
+                case BridgeBidding.BidForce.ForcingToGame: return BidMessage.GameForcing;
                 case BridgeBidding.BidForce.Signoff:       return BidMessage.Signoff;
             }
 
