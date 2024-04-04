@@ -140,6 +140,7 @@ namespace TestBots
                 {
                     if (!string.IsNullOrEmpty(test.bid))
                     {
+                        // TODO: also validate bid description and metadata match expectations
                         var failure = RunBidTest(new BidTest(test), BridgeBiddingScheme.TwoOverOne);
                         if (failure != null)
                             failures.Add($"{filename}: {failure}");
