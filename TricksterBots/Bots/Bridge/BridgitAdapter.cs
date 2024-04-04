@@ -89,7 +89,7 @@ namespace TricksterBots.Bots.Bridge
             {
                 Alert = alert,
                 Announce = announce,
-                BidMessage = FromBridgitBidForce(details.BidForce),
+                BidMessage = FromBridgitForcing(details),
                 Convention = convention,
                 Description = description,
                 Role = details.PositionState.Role.ToString(),
@@ -110,14 +110,14 @@ namespace TricksterBots.Bots.Bridge
             throw new Exception("Unable to convert from Bridgit bid");
         }
 
-        private static BidMessage FromBridgitBidForce(BridgeBidding.BidForce bidForce)
+        private static BidMessage FromBridgitForcing(BridgeBidding.CallDetails details)
         {
-            switch (bidForce)
-            {
-                case BridgeBidding.BidForce.Forcing1Round: return BidMessage.Forcing;
-                case BridgeBidding.BidForce.ForcingToGame: return BidMessage.GameForcing;
-                case BridgeBidding.BidForce.Signoff:       return BidMessage.Signoff;
-            }
+            if (details.Properties.Forcing1Round)
+                return BidMessage.Forcing;
+            if (details.Properties.ForcingToGame)
+                return BidMessage.GameForcing;
+
+            // TODO: Signoff?
 
             return BidMessage.Invitational;
         }
