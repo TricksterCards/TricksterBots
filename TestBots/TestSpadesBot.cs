@@ -26,6 +26,25 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void PlayHandThatBidItself()
+        {
+            var players = new[]
+            {
+                new TestPlayer(hand: "AC3C"),
+                new TestPlayer(hand: "3H"),
+                new TestPlayer(hand: "4H"),
+                new TestPlayer(hand: "5H"),
+            };
+
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "4C5C6C");
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            //  should try to take tricks when playing "first hand bid itself" (e.g. our bid is BidBase.NoBid)
+            Assert.AreEqual("AC", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected AC");
+        }
+
+        [TestMethod]
         [DataRow("2H3H", "JH5H",   "", "JH")]
         [DataRow("3H2H", "JH5H",   "", "JH")]
         [DataRow("9HTH", "QHJH",   "", "JH")]
