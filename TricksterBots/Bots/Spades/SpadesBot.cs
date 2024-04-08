@@ -669,6 +669,10 @@ namespace Trickster.Bots
             //  look for our team's nil bids
             var playerBid = new SpadesBid(player.Bid);
 
+            //  always try to take tricks if "first hand bids itself"
+            if (playerBid.IsNoBid)
+                return TryTakeEm(player, trick, legalCards, cardsPlayed, players, isPartnerTakingTrick, cardTakingTrick, trickTaker);
+
             if (partner != null)
             {
                 //  try to make my own nil bid first
