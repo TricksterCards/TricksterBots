@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+using Newtonsoft.Json;
 using TestBots.Bridge;
 using Trickster.Bots;
 using Trickster.cloud;
@@ -42,6 +43,28 @@ namespace TestBots
                     $"Test '{test.type}' suggested {BidString(suggestion)} ({suggestion}) but expected {BidString(test.expectedBid)} ({test.expectedBid})"
                 );
             }
+        }
+
+        [TestMethod]
+        [DataRow("5♥", "{\"cloudBid\":null,\"dealerSeat\":2,\"hand\":[{\"s\":1,\"r\":6},{\"s\":1,\"r\":12},{\"s\":1,\"r\":13},{\"s\":1,\"r\":14},{\"s\":2,\"r\":3},{\"s\":2,\"r\":7},{\"s\":2,\"r\":8},{\"s\":3,\"r\":2},{\"s\":3,\"r\":6},{\"s\":3,\"r\":11},{\"s\":4,\"r\":4},{\"s\":4,\"r\":5},{\"s\":4,\"r\":14}],\"legalBids\":[{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5♣\",\"v\":445},{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5♦\",\"v\":446},{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5♥\",\"v\":448},{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5♠\",\"v\":447},{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5NT\",\"v\":444},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6♣\",\"v\":453},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6♦\",\"v\":454},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6♥\",\"v\":456},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6♠\",\"v\":455},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6NT\",\"v\":452},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7♣\",\"v\":461},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7♦\",\"v\":462},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7♥\",\"v\":464},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7♠\",\"v\":463},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7NT\",\"v\":460},{\"cTP\":true,\"t\":\"Pass\",\"v\":-2}],\"players\":[{\"Bid\":-1,\"BidHistory\":[440],\"CardsTaken\":\"\",\"Hand\":\"0U0U0U0U0U0U0U0U0U0U0U0U0U\",\"PlayedCards\":[],\"Seat\":0,\"VoidSuits\":[]},{\"Bid\":-1,\"BidHistory\":[-2],\"CardsTaken\":\"\",\"Hand\":\"0U0U0U0U0U0U0U0U0U0U0U0U0U\",\"PlayedCards\":[],\"Seat\":1,\"VoidSuits\":[]},{\"Bid\":436,\"BidHistory\":[416,436],\"CardsTaken\":\"\",\"Hand\":\"0U0U0U0U0U0U0U0U0U0U0U0U0U\",\"PlayedCards\":[],\"Seat\":2,\"VoidSuits\":[]},{\"Bid\":-2,\"BidHistory\":[-2,-2],\"CardsTaken\":\"\",\"Hand\":\"0U0U0U0U0U0U0U0U0U0U0U0U0U\",\"PlayedCards\":[],\"Seat\":3,\"VoidSuits\":[]}],\"upCard\":null,\"upCardSuit\":0,\"vulnerabilityBySeat\":[false,false,false,false],\"options\":{\"_honors\":{\"honors\":[{\"s\":2,\"r\":14},{\"s\":2,\"r\":13},{\"s\":2,\"r\":12},{\"s\":2,\"r\":10}],\"points\":0,\"seat\":-1},\"allowUndo\":true,\"allowUndoBids\":false,\"bidding\":4,\"miniBridgeBidLevels\":1,\"chicagoPartscore\":0,\"gameCode\":5,\"goodPracticeHandToSeatZero\":false,\"honorsBonus\":false,\"rubberDealLimit\":0,\"variation\":0,\"CompeteBuyIn\":0,\"CompeteFee\":0,\"CompeteWinnings\":0,\"gameOverScore\":2199023255552,\"gamePlayMode\":4,\"gameVisibility\":1,\"isCustom\":true,\"isPartnership\":true,\"noSuggestions\":true,\"noWatching\":true,\"reviewLastDeal\":true,\"scheduledStart\":\"\"},\"player\":{\"Bid\":-1,\"BidHistory\":[440],\"CardsTaken\":\"\",\"Hand\":\"6CQCKCAC3D7D8D2S6SJS4H5HAH\",\"PlayedCards\":[],\"Seat\":0,\"VoidSuits\":[]},\"trumpSuit\":0}",
+            DisplayName="Bridgit handles Blackwood")]
+        public void SnapshotTests(string expected, string snapshot)
+        {
+            var state = JsonConvert.DeserializeObject<SuggestBidState<BridgeOptions>>(snapshot);
+            var bot = new BridgeBot(new BridgeOptions{ bidding = BridgeBiddingScheme.TwoOverOne }, Suit.Unknown);
+            BidBase bid = null;
+
+            try
+            {
+                bid = bot.SuggestBid(state);
+            }
+            catch (Exception err)
+            {
+                Assert.Fail($"Bridgit threw an exception: {err}");
+            }
+
+            if (bid != null)
+                Assert.AreEqual(expected, BidString(bid.value));
         }
 
         [TestMethod]
@@ -117,6 +140,7 @@ namespace TestBots
                 {
                     if (!string.IsNullOrEmpty(test.bid))
                     {
+                        // TODO: also validate bid description and metadata match expectations
                         var failure = RunBidTest(new BidTest(test), BridgeBiddingScheme.TwoOverOne);
                         if (failure != null)
                             failures.Add($"{filename}: {failure}");
