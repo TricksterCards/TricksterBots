@@ -112,6 +112,8 @@ namespace TricksterBots.Bots.Bridge
 
         private static BidMessage FromBridgitForcing(BridgeBidding.CallDetails details)
         {
+            if (details.Properties == null)
+                return BidMessage.Invitational;
             if (details.Properties.Forcing1Round)
                 return BidMessage.Forcing;
             if (details.Properties.ForcingToGame)
