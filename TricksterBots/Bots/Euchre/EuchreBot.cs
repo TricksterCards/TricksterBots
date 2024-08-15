@@ -264,8 +264,8 @@ namespace Trickster.Bots
 
             var playerBid = BidBid(player);
             var partners = players.PartnersOf(player);
-            var partnerIsMaker = partners.Any(p => BidBid(p) == EuchreBid.Make);
-            var weAreMaker = playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone || partnerIsMaker;
+            var partnerIsMaker = partners.Any(IsMaker);
+            var weAreMaker = IsMaker(player) || partnerIsMaker;
             var isDefending = !weAreMaker;
             var cardsPlayedPlusHand = cardsPlayed.Concat(new Hand(player.Hand));
 
@@ -508,9 +508,20 @@ namespace Trickster.Bots
             return est;
         }
 
-        private static bool IsMakeAlone(PlayerBase player)
+        private bool IsBidEuchre => options.variation == EuchreVariation.BidEuchre;
+
+        private bool IsMaker(PlayerBase player)
         {
-            return BidBid(player.Bid) == EuchreBid.MakeAlone;
+            if (IsBidEuchre)
+                return new BidEuchreBid(player.Bid).IsMake;
+
+            var bid = BidBid(player);
+            return bid == EuchreBid.Make || bid == EuchreBid.MakeAlone;
+        }
+
+        private bool IsMakeAlone(PlayerBase player)
+        {
+            return IsBidEuchre ? new BidEuchreBid(player.Bid).IsAnyAlone : BidBid(player.Bid) == EuchreBid.MakeAlone;
         }
 
         private bool IsAskingDefendAlone(PlayersCollectionBase players)
