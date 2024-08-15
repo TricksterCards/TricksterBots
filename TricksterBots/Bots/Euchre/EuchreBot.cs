@@ -66,6 +66,9 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<EuchreOptions> state)
         {
+            if (state.options.variation == EuchreVariation.BidEuchre)
+                return SuggestBidEuchreBid(state);
+
             var (players, dealerSeat, hand, legalBids, player, upCard, upCardSuit) =
                 (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand, state.legalBids, state.player, state.upCard, state.upCardSuit);
 
@@ -103,6 +106,55 @@ namespace Trickster.Bots
             }
 
             return canBidSuggestion ? suggestion : legalBids.FirstOrDefault(b => b.value == BidBase.Pass) ?? legalBids.First();
+        }
+
+        private BidBase SuggestBidEuchreBid(SuggestBidState<EuchreOptions> state)
+        {
+            var legalBids = state.legalBids.Where(b => b.value != BidBase.NoBid).Select(b => new BidEuchreBid(b.value)).ToList();
+            var legalLevelBids = legalBids.Where(b => b.IsLevelBid).ToList();
+            var maxTricks = 0.0;
+            var maxSuit = Suit.Unknown;
+
+            foreach (var suit in SuitRank.stdSuits)
+            {
+                var tricks = EstimatedTricks(state.hand, suit, state.options.withJoker);
+                if (tricks > maxTricks)
+                {
+                    maxTricks = tricks;
+                    maxSuit = suit;
+                }
+            }
+
+            if (state.options.allowNotrump)
+            {
+                var ntTricks = EstimatedNotrumpTricks(state.hand);
+                if (ntTricks > maxTricks)
+                {
+                    maxTricks = ntTricks;
+                    maxSuit = Suit.Unknown;
+                }
+            }
+
+            // TODO: handle LowNoTrump if allowed
+
+            if (legalLevelBids.Any())
+            {
+                //  choose level
+                var level = (int)maxTricks;
+                var minLegalLevel = legalLevelBids.Select(b => b.BidLevel).Min();
+
+                if (level >= minLegalLevel)
+                    return new BidBase(BidEuchreBid.FromLevel(level));
+            }
+            else
+            {
+                //  choose suit
+                var match = legalBids.SingleOrDefault(b => b.BidSuit == maxSuit);
+                if (match != null)
+                    return new BidBase(match);
+            }
+
+            return new BidBase(BidBase.Pass);
         }
 
         private static bool IsAloneBid(BidBase bid)
