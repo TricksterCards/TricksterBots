@@ -214,7 +214,7 @@ namespace Trickster.Bots
             var partners = players.PartnersOf(player);
             var partnerIsMaker = partners.Any(p => BidBid(p) == EuchreBid.Make);
             var weAreMaker = playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone || partnerIsMaker;
-            var isDefending = !weAreMaker && !partnerIsMaker;
+            var isDefending = !weAreMaker;
             var cardsPlayedPlusHand = cardsPlayed.Concat(new Hand(player.Hand));
 
             var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).First();
@@ -397,13 +397,15 @@ namespace Trickster.Bots
             }
 
             //  if partner bid, try to give our partner trump if we can
-            var list = hand.Where(IsTrump).OrderByDescending(RankSort).Take(1).ToList();
-            if (list.Count > 0)
+            var list = hand.Where(IsTrump).OrderByDescending(RankSort).Take(state.passCount).ToList();
+            if (list.Count == state.passCount)
                 return list;
 
-            //  otherwise give them our highest-ranked off-suit card, tie-breaking using the shortest suit
-            var suitCounts = hand.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
-            return hand.OrderByDescending(RankSort).ThenBy(c => suitCounts[EffectiveSuit(c)]).Take(1).ToList();
+            //  if we don't have enought, add our highest-ranked off-suit card, tie-breaking using the shortest suit
+            var suitCounts = hand.Where(c => !IsTrump(c)).GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
+            list.AddRange(hand.OrderByDescending(RankSort).ThenBy(c => suitCounts[EffectiveSuit(c)]).Take(state.passCount - list.Count));
+
+            return list;
         }
 
         public override int SuitSort(Card c)
