@@ -444,8 +444,10 @@ namespace Trickster.Bots
             var hand = new Hand(player.Hand);
             if (IsMakeAlone(player))
             {
-                //  if we bid alone, treat this like an extra discard
-                return SuggestDiscard(new SuggestDiscardState<EuchreOptions> { player = player, hand = hand });
+                //  if we bid alone in classic euchre, treat this like an extra discard; in Bid Euchre just pass the requested number of the lowest cards favoring non-trump
+                return IsBidEuchre
+                    ? hand.OrderBy(IsTrump).ThenBy(RankSort).Take(state.passCount).ToList()
+                    : SuggestDiscard(new SuggestDiscardState<EuchreOptions> { player = player, hand = hand });
             }
 
             //  if partner bid, try to give our partner trump if we can
