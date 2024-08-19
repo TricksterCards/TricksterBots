@@ -393,7 +393,7 @@ namespace Trickster.Bots
                             //  partner might lose the trick, but we have the highest card; play it
                             return highFollow;
                     }
-                    else if (!trick.Any(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(highFollow)))
+                    else if (!trick.Any(c => EffectiveSuit(c) == trickSuit && RankSort(c) >= RankSort(highFollow)))
                     {
                         //  the other team is taking the trick, but our highest card will win
 
