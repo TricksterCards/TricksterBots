@@ -1,0 +1,11 @@
+[Event "Trump in low"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1}"]
+[Dealer "N"]
+[Deal "N:AJ9.K.AT. K.T.J9.AK T.AJ..JT9 Q.Q9.KQ.Q"]
+[Declarer "S"]
+[Contract "3♣"]
+[Auction "E"]
+2 3 Pass Pass
+- 3♣ - -
+[Play "E"]
+D9 C9 - -

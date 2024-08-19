@@ -40,12 +40,16 @@ namespace TestBots.Bridge
             var name = string.Empty;
             var nPlayers = 0; // filled in after importing hands
             var nCardsPerPlayer = 0; // filled in after importing hands
+            var optionsJson = string.Empty;
 
             foreach (var tag in tags)
                 switch (tag.Name)
                 {
                     case "Event":
                         name = tag.Description;
+                        break;
+                    case "GameOptionsJson":
+                        optionsJson = tag.Description;
                         break;
                     case "Deal":
                         contract = string.Empty;
@@ -68,6 +72,7 @@ namespace TestBots.Bridge
                                 tests.Add(
                                     new BasicTest
                                     {
+                                        optionsJson = optionsJson,
                                         nPlayers = nPlayers,
                                         nCardsPerPlayer = nCardsPerPlayer,
                                         history = history.ToArray(),
@@ -110,6 +115,7 @@ namespace TestBots.Bridge
                                 tests.Add(
                                     new BasicTest
                                     {
+                                        optionsJson = optionsJson,
                                         nPlayers = nPlayers,
                                         nCardsPerPlayer = nCardsPerPlayer,
                                         contract = contract,
@@ -295,7 +301,7 @@ namespace TestBots.Bridge
                     tag.Name = line.Substring(1, line.IndexOf(' ') - 1);
                     var start = line.IndexOf('"') + 1;
                     var end = line.LastIndexOf('"') - start;
-                    tag.Description = line.Substring(start, end);
+                    tag.Description = Regex.Unescape(line.Substring(start, end));
                 }
                 else
                 {

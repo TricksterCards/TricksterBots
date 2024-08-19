@@ -7,6 +7,7 @@
         public string dummy { get; set; }
         public string hand { get; set; }
         public string[] history { get; set; }
+        public string optionsJson { get; set; }
         public string type { get; set; }
         public string play { get; set; }
         public string[] plays { get; set; }
