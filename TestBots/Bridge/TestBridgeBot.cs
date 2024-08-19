@@ -284,7 +284,7 @@ namespace TestBots
             return new DeclareBid(level, suit);
         }
 
-        private static DeclareBid GetContract(BasicTests.BasicTest test)
+        private static DeclareBid GetContract(BasicTest test)
         {
             var level = int.Parse(test.contract.Substring(0, 1));
             var suit = LetterToSuit[test.contract[1]];
@@ -326,7 +326,7 @@ namespace TestBots
                 return null;
         }
 
-        private static string RunPlayTest(BasicTests.BasicTest test)
+        private static string RunPlayTest(BasicTest test)
         {
             var contract = GetContract(test);
             var cardsPlayedInOrder = "";
