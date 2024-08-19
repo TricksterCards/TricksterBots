@@ -127,7 +127,7 @@ namespace TestBots
             foreach (var file in files)
             {
                 var text = File.ReadAllText(file);
-                var tests = PTN.ImportTests(text);
+                var tests = PTN.ImportTests(text, new BridgeOptions());
                 var filename = Path.GetFileName(file);
 
                 if (!tests.All(t => t.nPlayers == 4 && t.nCardsPerPlayer == 13))
@@ -165,7 +165,7 @@ namespace TestBots
             foreach (var file in files)
             {
                 var text = File.ReadAllText(file);
-                var tests = PTN.ImportTests(text);
+                var tests = PTN.ImportTests(text, new BridgeOptions());
                 var filename = Path.GetFileName(file);
 
                 if (!tests.All(t => t.nPlayers == 4 && t.nCardsPerPlayer == 13))
@@ -351,19 +351,19 @@ namespace TestBots
             var nextSeat = (test.declarerSeat + 1) % 4;
             for (var i = 0; i < test.plays.Length; i += 4)
             {
-                var trick = test.plays.Skip(i).Take(4).ToList();
+                var trick = new Hand(string.Join("", test.plays.Skip(i).Take(4).ToList()));
                 for (var j = 0; j < trick.Count; j++)
                 {
                     var card = trick[j];
                     var seat = (nextSeat + j) % 4;
                     var player = players[seat];
                     cardsPlayedInOrder += $"{seat}{card}";
-                    if (j > 0 && card[1] != trick[0][1])
-                        player.VoidSuits.Add(LetterToSuit[trick[0][1]]);
+                    if (j > 0 && card.suit != trick[0].suit)
+                        player.VoidSuits.Add(trick[0].suit);
                 }
                 if (trick.Count == 4)
                 {
-                    var topCard = PTN.GetTopCard(trick, test.contract[1]);
+                    var topCard = PTN.GetTopCard(trick, LetterToSuit[test.contract[1]], new BridgeOptions());
                     nextSeat = (nextSeat + trick.IndexOf(topCard)) % 4;
                     players[nextSeat].CardsTaken += string.Join("", trick);
                 }

@@ -42,7 +42,7 @@ namespace TestBots
             foreach (var file in files)
             {
                 var text = File.ReadAllText(file);
-                var tests = PTN.ImportTests(text);
+                var tests = PTN.ImportTests(text, new EuchreOptions());
                 var filename = Path.GetFileName(file);
 
                 foreach (var test in tests)
@@ -117,46 +117,51 @@ namespace TestBots
         {
             var options = string.IsNullOrEmpty(test.optionsJson) ? new EuchreOptions() : JsonConvert.DeserializeObject<EuchreOptions>(test.optionsJson);
             var contract = GetContract(test.contract);
+            var bot = new EuchreBot(options, contract.suit);
             var cardsPlayedInOrder = "";
-            var players = new[] { new TestPlayer(), new TestPlayer(), new TestPlayer(), new TestPlayer() };
-            for (var i = 0; i < 4; i++)
-            {
-                players[i].Seat = (test.declarerSeat + i) % 4;
+            var players = new List<TestPlayer>();
+            var nPlayers = options.players;
 
-                if (players[i].Seat == test.declarerSeat)
-                    players[i].Bid = contract.value;
-                else if (players[i].Seat == (test.declarerSeat + 2) % 4)
-                    players[i].Bid = BidBase.Dummy;
+            for (var i = 0; i < nPlayers; i++)
+            {
+                var player = new TestPlayer();
+                players.Add(player);
+
+                player.Seat = (test.declarerSeat + i) % nPlayers;
+
+                if (player.Seat == test.declarerSeat)
+                    player.Bid = contract.value;
                 else
-                    players[i].Bid = BridgeBid.Defend;
+                    player.Bid = (int)EuchreBid.NotMaker;
             }
 
             // resort the players in seat order to simplify adding data
-            players = players.OrderBy(p => p.Seat).ToArray();
+            players = players.OrderBy(p => p.Seat).ToList();
 
             // fill in taken cards per player (and track who's turn it will be to play)
-            var nextSeat = (test.declarerSeat + 1) % 4;
-            for (var i = 0; i < test.plays.Length; i += 4)
+            var nextSeat = test.declarerSeat % nPlayers;
+            for (var i = 0; i < test.plays.Length; i += nPlayers)
             {
-                var trick = test.plays.Skip(i).Take(4).ToList();
+                var trick = new Hand(string.Join("", test.plays.Skip(i).Take(nPlayers).ToList()));
+                var ledSuit = trick.Count > 0 ? bot.EffectiveSuit(trick[0]) : Suit.Unknown;
                 for (var j = 0; j < trick.Count; j++)
                 {
                     var card = trick[j];
-                    var seat = (nextSeat + j) % 4;
+                    var seat = (nextSeat + j) % nPlayers;
                     var player = players[seat];
                     cardsPlayedInOrder += $"{seat}{card}";
-                    if (j > 0 && card[1] != trick[0][1])
-                        player.VoidSuits.Add(LetterToSuit[trick[0][1]]);
+                    if (j > 0 && bot.EffectiveSuit(card) != ledSuit)
+                        player.VoidSuits.Add(ledSuit);
                 }
-                if (trick.Count == 4)
+                if (trick.Count == nPlayers)
                 {
-                    var topCard = PTN.GetTopCard(trick, test.contract[1]);
-                    nextSeat = (nextSeat + trick.IndexOf(topCard)) % 4;
+                    var topCard = PTN.GetTopCard(trick, contract.suit, options);
+                    nextSeat = (nextSeat + trick.IndexOf(topCard)) % nPlayers;
                     players[nextSeat].CardsTaken += string.Join("", trick);
                 }
                 else
                 {
-                    nextSeat = (nextSeat + trick.Count) % 4;
+                    nextSeat = (nextSeat + trick.Count) % nPlayers;
                 }
             }
 
@@ -174,7 +179,7 @@ namespace TestBots
             {
                 for (var i = 0; i < test.history.Length; i++)
                 {
-                    var seat = (test.dealerSeat + i) % 4;
+                    var seat = (test.dealerSeat + i) % nPlayers;
                     if (test.history[i] != "-")
                         players[seat].BidHistory.Add(GetBid(test.history[i]));
                 }
@@ -192,11 +197,10 @@ namespace TestBots
             }
 
             // resort players so the player we're asking to play is listed first (required by TestCardState)
-            players = players.OrderBy(p => (4 + p.Seat - nextSeat) % 4).ToArray();
+            players = players.OrderBy(p => (nPlayers + p.Seat - nextSeat) % nPlayers).ToList();
 
             {
-                var bot = new EuchreBot(options, contract.suit);
-                var trickLength = test.plays.Length % 4;
+                var trickLength = test.plays.Length % nPlayers;
                 var trick = string.Join("", test.plays.Skip(test.plays.Length - trickLength));
                 var cardState = new TestCardState<EuchreOptions>(bot, players, trick) {
                     cardsPlayedInOrder = cardsPlayedInOrder,
