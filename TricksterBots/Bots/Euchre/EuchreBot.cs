@@ -117,6 +117,7 @@ namespace Trickster.Bots
             var legalLevelBids = legalBids.Where(b => b.IsLevelBid).ToList();
             var maxTricks = 0.0;
             var maxSuit = Suit.Unknown;
+            var ntDown = false;
 
             foreach (var suit in SuitRank.stdSuits)
             {
@@ -136,9 +137,12 @@ namespace Trickster.Bots
                     maxTricks = ntTricks;
                     maxSuit = Suit.Unknown;
                 }
-            }
 
-            // TODO: handle LowNoTrump if allowed
+                if (options.allowLowNotrump)
+                {
+                    // TODO: correctly handle LowNoTrump if allowed
+                }
+            }
 
             if (legalLevelBids.Any())
             {
@@ -152,7 +156,19 @@ namespace Trickster.Bots
             else
             {
                 //  choose suit
-                var match = legalBids.SingleOrDefault(b => b.BidSuit == maxSuit);
+                BidEuchreBid match;
+
+                //  there are two bids where BidSuit returns Suit.Unknown so handle them specially
+                if (maxSuit == Suit.Unknown)
+                {
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                    match = ntDown ? legalBids.SingleOrDefault(b => b.IsNTdown) : legalBids.SingleOrDefault(b => b.IsNT);
+                }
+                else
+                {
+                    match = legalBids.SingleOrDefault(b => b.BidSuit == maxSuit);
+                }
+
                 if (match != null)
                     return new BidBase(match);
             }
@@ -234,6 +250,12 @@ namespace Trickster.Bots
 
         public override List<Card> SuggestDiscard(SuggestDiscardState<EuchreOptions> state)
         {
+            if (options.variation == EuchreVariation.BidEuchre)
+            {
+                //  we're being asked to discard because we added the kitty
+                return options.withKitty ? state.hand.OrderBy(IsTrump).ThenBy(RankSort).Take(options.KittySize).ToList() : new List<Card>();
+            }
+
             var (player, hand) = (state.player, state.hand);
 
             if (player.Bid == (int)EuchreBid.GoUnder)
