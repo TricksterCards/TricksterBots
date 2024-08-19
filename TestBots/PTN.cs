@@ -29,9 +29,9 @@ namespace TestBots.Bridge
                    ?? trick.Where(c => c[1] == ledSuit).OrderByDescending(CardRank).First();
         }
 
-        public static BasicTests.BasicTest[] ImportTests(string text)
+        public static BasicTest[] ImportTests(string text)
         {
-            var tests = new List<BasicTests.BasicTest>();
+            var tests = new List<BasicTest>();
             var contract = string.Empty;
             var dealerSeat = 0;
             var hands = new List<string>();
@@ -66,7 +66,7 @@ namespace TestBots.Bridge
                             var bidNumber = 1 + i / nPlayers;
                             if (!IsUnknownHand(hand))
                                 tests.Add(
-                                    new BasicTests.BasicTest
+                                    new BasicTest
                                     {
                                         nPlayers = nPlayers,
                                         nCardsPerPlayer = nCardsPerPlayer,
@@ -108,7 +108,7 @@ namespace TestBots.Bridge
                             // And don't validate dummy plays when declarer's hand is unknown
                             if (!IsUnknownHand(hand) && !(seat == dummySeat && IsUnknownHand(hands[(dummySeat + 2) % nPlayers])))
                                 tests.Add(
-                                    new BasicTests.BasicTest
+                                    new BasicTest
                                     {
                                         nPlayers = nPlayers,
                                         nCardsPerPlayer = nCardsPerPlayer,

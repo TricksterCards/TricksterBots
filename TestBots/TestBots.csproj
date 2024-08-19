@@ -55,6 +55,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicTest.cs" />
     <Compile Include="Bridge\BasicTests.cs" />
     <Compile Include="Bridge\BidTest.cs" />
     <Compile Include="Bridge\Fuzz.cs" />
