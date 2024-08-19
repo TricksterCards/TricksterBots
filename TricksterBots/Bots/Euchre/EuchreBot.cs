@@ -66,6 +66,9 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<EuchreOptions> state)
         {
+            if (state.legalBids.Count == 1)
+                return state.legalBids.First();
+
             if (state.options.variation == EuchreVariation.BidEuchre)
                 return SuggestBidEuchreBid(state);
 
@@ -457,7 +460,7 @@ namespace Trickster.Bots
 
             //  if we don't have enought, add our highest-ranked off-suit card, tie-breaking using the shortest suit
             var suitCounts = hand.Where(c => !IsTrump(c)).GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
-            list.AddRange(hand.OrderByDescending(RankSort).ThenBy(c => suitCounts[EffectiveSuit(c)]).Take(state.passCount - list.Count));
+            list.AddRange(hand.Where(c => !IsTrump(c)).OrderByDescending(RankSort).ThenBy(c => suitCounts[EffectiveSuit(c)]).Take(state.passCount - list.Count));
 
             return list;
         }
