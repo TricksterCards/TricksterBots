@@ -287,11 +287,11 @@ namespace Trickster.Bots
                 state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
 
-            var playerBid = BidBid(player);
+            var playerIsMaker = IsMaker(player);
             var partners = players.PartnersOf(player);
             var partnerIsMaker = partners.Any(IsMaker);
-            var weAreMaker = IsMaker(player) || partnerIsMaker;
-            var isDefending = !weAreMaker;
+            var teamIsMaker = playerIsMaker || partnerIsMaker;
+            var isDefending = !teamIsMaker;
             var cardsPlayedPlusHand = cardsPlayed.Concat(new Hand(player.Hand));
 
             var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).First();
@@ -310,14 +310,14 @@ namespace Trickster.Bots
                 }
 
                 //  Lead high trump with 2+ trump if alone and opponents have not taken any tricks yet
-                if (sortedTrump.Count > 1 && playerBid == EuchreBid.MakeAlone &&
+                if (sortedTrump.Count > 1 && IsMakeAlone(player) &&
                     players.Opponents(player).All(p => p.HandScore == 0))
                 {
                     return sortedTrump.Last();
                 }
 
                 //  Lead trump if you called it and have three or more trump
-                if (sortedTrump.Count >= 3 && (playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone))
+                if (sortedTrump.Count >= 3 && playerIsMaker)
                 {
                     //  we have three or more trump and we're the maker: lead our high trump if it's good or our low trump if not
                     var highTrump = sortedTrump.Last();
@@ -326,7 +326,7 @@ namespace Trickster.Bots
 
                 //  Lead last trump if you called it, have already taken 3 tricks, and partner is void or not playing.
                 //  Increases chances of taking all 5 tricks by forcing opponents to discard a high off-suit card.
-                var alreadyMadeBid = weAreMaker && 3 <= player.HandScore + partners.Sum(p => p.HandScore);
+                var alreadyMadeBid = teamIsMaker && 3 <= player.HandScore + partners.Sum(p => p.HandScore);
                 var partnersAreNotPlayingOrVoid = partners.All(p => p.Bid == BidBase.NotPlaying || players.TargetIsVoidInSuit(player, p, trump, cardsPlayed));
                 if (sortedTrump.Count == 1 && alreadyMadeBid && partnersAreNotPlayingOrVoid)
                 {
@@ -347,14 +347,14 @@ namespace Trickster.Bots
                 //  We want to lead a high (best in suit) card with conditions:
                 //  if we have only one high card, play it only if it's not trump or we are the maker and have more than one trump remaining
                 var highCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed)).ToList();
-                if (highCards.Count == 1 && (!IsTrump(highCards[0]) || weAreMaker && sortedTrump.Count > 1))
+                if (highCards.Count == 1 && (!IsTrump(highCards[0]) || teamIsMaker && sortedTrump.Count > 1))
                     return highCards[0];
 
                 //  if we have more than one high card, if we're the maker and one of the high cards is trump, lead it
                 //  otherwise, play the non-trump high card from the suit with the fewest cards
                 if (highCards.Count > 1)
                 {
-                    if (weAreMaker && highCards.Any(IsTrump))
+                    if (teamIsMaker && highCards.Any(IsTrump))
                         return highCards.Single(IsTrump);
 
                     //  play the high non-trump card from the suit with fewest cards
@@ -364,7 +364,7 @@ namespace Trickster.Bots
                 }
 
                 //  lead our highest off-suit if we're alone, out of trump and opponents haven't taken a trick yet
-                if (sortedTrump.Count == 0 && playerBid == EuchreBid.MakeAlone &&
+                if (sortedTrump.Count == 0 && IsMakeAlone(player) &&
                     players.Opponents(player).All(p => p.HandScore == 0))
                     return legalCards.OrderByDescending(RankSort).First();
 
