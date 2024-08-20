@@ -15,7 +15,8 @@ namespace TestBots
             const string handString = "TD9S9C9H9D";
 
             var upCard = new Card("JD");
-            var bot = GetBot(Suit.Unknown, new EuchreOptions { allowMisdeal = EuchreMisdeal.NoAceNoFace });
+            var options = new EuchreOptions { allowMisdeal = EuchreMisdeal.NoAceNoFace };
+            var bot = GetBot(Suit.Unknown, options);
 
             //  get the bid using the state-based suggest bid method
             var bidState = new SuggestBidState<EuchreOptions>
@@ -34,6 +35,7 @@ namespace TestBots
                     new BidBase((int)EuchreBid.CallMisdeal),
                     new BidBase((int)EuchreBid.NoMisdeal)
                 },
+                options = options,
                 upCard = upCard,
                 upCardSuit = upCard.suit
             };
@@ -552,7 +554,8 @@ namespace TestBots
             handString = handString.Replace(" ", "");
 
             var upCard = new Card(upCardString);
-            var bot = GetBot(Suit.Unknown, new EuchreOptions { aloneTake5 = aloneTake5, callForBest = callForBest, take4for1 = take4for1 });
+            var options = new EuchreOptions { aloneTake5 = aloneTake5, callForBest = callForBest, take4for1 = take4for1 };
+            var bot = GetBot(Suit.Unknown, options);
 
             //  get the bid using the state-based suggest bid method
             var bidState = new SuggestBidState<EuchreOptions>
@@ -572,6 +575,7 @@ namespace TestBots
                     new BidBase((int)EuchreBid.MakeAlone + (int)upCard.suit),
                     new BidBase(BidBase.Pass)
                 },
+                options = options,
                 upCard = upCard,
                 upCardSuit = upCard.suit
             };
