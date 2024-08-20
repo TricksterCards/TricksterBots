@@ -30,6 +30,8 @@ namespace Trickster.Bots
         // ReSharper disable once StaticMemberInGenericType
         private static readonly Regex rxSeatCard = new Regex(@"(?<seat>\d{1})(?<card>\w{2})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private Dictionary<Suit, int> _highRankBySuit;
+        private Dictionary<Suit, List<Card>> _cardsBySuit;
+        private List<Card> _deck;
 
         protected BaseBot(T options, Suit trumpSuit)
         {
@@ -39,8 +41,14 @@ namespace Trickster.Bots
 
         public bool returnLog { get; set; }
 
+        protected Dictionary<Suit, List<Card>> cardsBySuit =>
+            _cardsBySuit ?? (_cardsBySuit = deck.GroupBy(c => EffectiveSuit(c, trump))
+                .ToDictionary(g => g.Key, g => g.OrderBy(c => RankSort(c, trump)).ToList()));
+
+        protected List<Card> deck => _deck ?? (_deck = DeckBuilder.BuildDeck(DeckType));
+
         protected Dictionary<Suit, int> highRankBySuit =>
-            _highRankBySuit ?? (_highRankBySuit = DeckBuilder.BuildDeck(DeckType).GroupBy(c => EffectiveSuit(c, trump))
+            _highRankBySuit ?? (_highRankBySuit = deck.GroupBy(c => EffectiveSuit(c, trump))
                 .ToDictionary(g => g.Key, g => g.Max(c => RankSort(c, trump))));
 
         protected T options { get; }
@@ -178,6 +186,16 @@ namespace Trickster.Bots
             return seatsAndCards;
         }
 
+        protected List<Card> CardsInSuit(Card card)
+        {
+            return CardsInSuit(EffectiveSuit(card));
+        }
+
+        protected List<Card> CardsInSuit(Suit suit)
+        {
+            return cardsBySuit.TryGetValue(suit, out var cards) ? cards : new List<Card>();
+        }
+
         protected int HighRankInSuit(Card card)
         {
             return HighRankInSuit(EffectiveSuit(card));
@@ -207,15 +225,17 @@ namespace Trickster.Bots
             return delta - nBetween <= 1;
         }
 
-        protected bool IsCardHigh(Card highestCard, IEnumerable<Card> cardsPlayed)
+        protected bool IsCardHigh(Card targetCard, IEnumerable<Card> cardsPlayed)
         {
-            if (!IsOfValue(highestCard))
+            if (!IsOfValue(targetCard))
                 return false;
 
-            var highRank = HighRankInSuit(highestCard);
-            return RankSort(highestCard) == highRank ||
-                   cardsPlayed.Count(c => EffectiveSuit(c) == EffectiveSuit(highestCard) && RankSort(c) > RankSort(highestCard)) ==
-                   highRank - RankSort(highestCard);
+            var highRank = HighRankInSuit(targetCard);
+            var targetCardRank = RankSort(targetCard);
+            var targetCardSuit = EffectiveSuit(targetCard);
+            return targetCardRank == highRank ||
+                   cardsPlayed.Count(c => EffectiveSuit(c) == targetCardSuit && RankSort(c) > targetCardRank) == 
+                   CardsInSuit(targetCard).Count(c => RankSort(c) > targetCardRank);
         }
 
         protected bool IsCardEffectivelyTheSame(Card card, Card target, IEnumerable<Card> knownCards)
