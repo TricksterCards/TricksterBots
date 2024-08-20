@@ -66,6 +66,8 @@ namespace TestBots.Bridge
                 switch (tag.Name)
                 {
                     case "Event":
+                        dealerSeat = 0;
+                        declarerSeat = -1;
                         name = tag.Description;
                         break;
                     case "GameOptionsJson":
