@@ -9,7 +9,7 @@
 [Play "E"]
 D9 C9 - -
 
-[Event "Follow"]
+[Event "Double-Deck Bleed Trump"]
 [GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"numDecks\":2}"]
 [Deal "E:Q99.AJ.AKJT.QJT AAQJ.AQJ.JT.AJT KKT.K99.AQ99.AK JT.KQTT.KQ.KQ99"]
 [Declarer "S"]
@@ -19,9 +19,7 @@ D9 C9 - -
 6♠ - - -
 [Play "S"]
 SJ ST ST S9
-CJ SK SJ S9
+SQ SK SJ S9
 CA CK C9 CQ
+CJ SK C9 SQ
 HA H9 HT HJ
-SQ SK C9 SQ
-CT CA CQ CT
-- HK HK HA
