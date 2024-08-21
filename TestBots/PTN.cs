@@ -53,6 +53,7 @@ namespace TestBots.Bridge
             var contract = string.Empty;
             var dealerSeat = 0;
             var declarerSeat = -1;
+            var firstBidderSeat = 0;
             var hands = new List<string>();
             var history = new List<string>();
             var tags = TokenizeTags(text);
@@ -68,6 +69,7 @@ namespace TestBots.Bridge
                     case "Event":
                         dealerSeat = 0;
                         declarerSeat = -1;
+                        firstBidderSeat = 0;
                         name = tag.Description;
                         break;
                     case "GameOptionsJson":
@@ -81,13 +83,13 @@ namespace TestBots.Bridge
                         break;
                     case "Auction":
                     {
-                        dealerSeat = GetSide(tag.Description.ToUpperInvariant(), nPlayers);
+                        firstBidderSeat = GetSide(tag.Description.ToUpperInvariant(), nPlayers);
                         var bids = ImportBids(tag.Data);
                         history = new List<string>();
                         for (var i = 0; i < bids.Count; i++)
                         {
                             var bid = bids[i];
-                            var seat = (dealerSeat + i) % nPlayers;
+                            var seat = (firstBidderSeat + i) % nPlayers;
                             var hand = hands[seat];
                             var seatName = GetSideName(seat, nPlayers);
                             var bidNumber = 1 + i / nPlayers;
@@ -98,6 +100,8 @@ namespace TestBots.Bridge
                                         optionsJson = optionsJson,
                                         nPlayers = nPlayers,
                                         nCardsPerPlayer = nCardsPerPlayer,
+                                        dealerSeat = dealerSeat,
+                                        firstBidderSeat = firstBidderSeat,
                                         history = history.ToArray(),
                                         hand = hand,
                                         bid = bid,
@@ -120,7 +124,8 @@ namespace TestBots.Bridge
                         Debug.Assert(2 <= nPlayers && nPlayers <= 6, $"nPlayers is {nPlayers}, which is not valid");
                         Debug.Assert(nCardsPerPlayer > 0, $"nCardsPerPlayer is {nCardsPerPlayer}, which is not valid");
 
-                        var leadSeat = GetSide(tag.Description.ToUpperInvariant(), nPlayers);
+                        var firstLeadSeat = GetSide(tag.Description.ToUpperInvariant(), nPlayers);
+                        var leadSeat = firstLeadSeat;
                         var dummySeat = (leadSeat + 1) % nPlayers;  // why not (declarerSeat + 2) % nPlayers ?
                         var trick = new List<Card>();
 
@@ -157,6 +162,8 @@ namespace TestBots.Bridge
                                         contract = contract,
                                         dealerSeat = dealerSeat,
                                         declarerSeat = declarerSeat,
+                                        firstBidderSeat = firstBidderSeat,
+                                        firstLeadSeat = firstLeadSeat,
                                         history = history.ToArray(),
                                         dummy = i > 0 ? seat == dummySeat ? hands[declarerSeat] : hands[dummySeat] : string.Empty,
                                         hand = hand,
@@ -240,7 +247,6 @@ namespace TestBots.Bridge
 
             for (var i = 0; i < nPlayers; i++)
             {
-                //  I don't think this isn't to spec. south is always listed first, not the dealer
                 var seat = (dealerSeat + i) % nPlayers;
                 var handString = handStrings[i];
                 var hand = string.Empty;

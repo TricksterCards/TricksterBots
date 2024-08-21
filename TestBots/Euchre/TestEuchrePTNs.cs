@@ -139,7 +139,7 @@ namespace TestBots
             players = players.OrderBy(p => p.Seat).ToList();
 
             // fill in taken cards per player (and track who's turn it will be to play)
-            var nextSeat = test.declarerSeat % nPlayers;
+            var nextSeat = test.firstLeadSeat % nPlayers;
             for (var i = 0; i < test.plays.Length; i += nPlayers)
             {
                 var trick = new Hand(string.Join("", test.plays.Skip(i).Take(nPlayers).ToList()));
@@ -179,7 +179,7 @@ namespace TestBots
             {
                 for (var i = 0; i < test.history.Length; i++)
                 {
-                    var seat = (test.dealerSeat + i) % nPlayers;
+                    var seat = (test.firstBidderSeat + i) % nPlayers;
                     if (test.history[i] != "-")
                         players[seat].BidHistory.Add(GetBid(test.history[i]));
                 }

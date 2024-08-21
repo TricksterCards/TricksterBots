@@ -13,6 +13,8 @@
         public string[] plays { get; set; }
         public int dealerSeat { get; set; }
         public int declarerSeat { get; set; }
+        public int firstBidderSeat { get; set; }
+        public int firstLeadSeat { get; set; }
         public int nPlayers { get; set; }
         public int nCardsPerPlayer { get; set; }
     }
