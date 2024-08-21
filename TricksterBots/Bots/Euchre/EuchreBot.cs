@@ -355,12 +355,12 @@ namespace Trickster.Bots
                 if (highCards.Count > 1)
                 {
                     if (teamIsMaker && highCards.Any(IsTrump))
-                        return highCards.Single(IsTrump);
+                        return highCards.First(IsTrump);
 
                     //  play the high non-trump card from the suit with fewest cards
                     var nonTrumpHighCards = highCards.Where(c => !IsTrump(c)).ToList();
                     var theSuit = nonTrumpHighCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s)).ThenBy(s => suitOrder[s]).First();
-                    return nonTrumpHighCards.Single(c => EffectiveSuit(c) == theSuit);
+                    return nonTrumpHighCards.First(c => EffectiveSuit(c) == theSuit);
                 }
 
                 //  lead our highest off-suit if we're alone, out of trump and opponents haven't taken a trick yet
