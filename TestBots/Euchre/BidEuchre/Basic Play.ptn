@@ -23,3 +23,17 @@ SQ SK SJ S9
 CA CK C9 CQ
 CJ SK C9 SQ
 HA H9 HT HJ
+
+[Event "Test"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"deckSize\":16,\"numDecks\":2}"]
+[Deal "W:KKQ.K.AJ.AQ J.Q.AQ.KKQJ AAJ.KQ.KKJ. Q.AAJJ.Q.AJ"]
+[Declarer "S"]
+[Contract "7♥"]
+[Auction "N"]
+6 Pass 7 Pass
+- - 7♥ -
+[Play "N"]
+HQ DJ HJ HK
+CJ HQ HJ DJ
+SJ HK HA CQ
+-  -  CA -
