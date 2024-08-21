@@ -326,6 +326,7 @@ namespace Trickster.Bots
 
                 //  Lead last trump if you called it, have already taken 3 tricks, and partner is void or not playing.
                 //  Increases chances of taking all 5 tricks by forcing opponents to discard a high off-suit card.
+                // TODO: can't use "3" to determine if we already made our bid in BidEuchre (probably should ignore this case entirely as there's no separate bonus for all tricks)
                 var alreadyMadeBid = teamIsMaker && 3 <= player.HandScore + partners.Sum(p => p.HandScore);
                 var partnersAreNotPlayingOrVoid = partners.All(p => p.Bid == BidBase.NotPlaying || players.TargetIsVoidInSuit(player, p, trump, cardsPlayed));
                 if (sortedTrump.Count == 1 && alreadyMadeBid && partnersAreNotPlayingOrVoid)
