@@ -101,11 +101,11 @@ namespace TestBots
             else
                 suit = SuitSymbolToSuit[bidParts.Groups["suit"].Value[0]];
 
-            if (bid.Contains("call 2"))
+            if (bid.EndsWith("Call2"))
                 level = BidEuchreBid.AloneCall2Bid;
-            else if (bid.Contains("call 1"))
+            else if (bid.EndsWith("Call1"))
                 level = BidEuchreBid.AloneCall1Bid;
-            else if (bid.Contains("alone"))
+            else if (bid.EndsWith("Alone"))
                 level = BidEuchreBid.AloneCall0Bid;
             else
                 level = int.Parse(bidParts.Groups["level"].Value);
