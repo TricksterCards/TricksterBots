@@ -567,6 +567,7 @@ namespace TestBots
         /// <param name="upCardString">The card turned up by the dealer</param>
         /// <param name="take4for1">The value to use for EuchreOptions.take4for1</param>
         /// <param name="callForBest">The value to use for EuchreOptions.callForBest</param>
+        /// <param name="aloneTake5">The value to use for EuchreOptions.aloneTake5</param>
         /// <returns>The suggested bid for the first bidder</returns>
         private static string GetSuggestedBid(string handString, string upCardString, bool take4for1 = false, bool callForBest = false, bool aloneTake5 = false)
         {

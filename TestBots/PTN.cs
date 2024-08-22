@@ -93,7 +93,7 @@ namespace TestBots.Bridge
                             var hand = hands[seat];
                             var seatName = GetSideName(seat, nPlayers);
                             var bidNumber = 1 + i / nPlayers;
-                            if (!IsUnknownHand(hand))
+                            if (!IsUnknownHand(hand) && bid != "-")
                                 tests.Add(
                                     new BasicTest
                                     {

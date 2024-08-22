@@ -1,0 +1,6 @@
+[Event "Bid NT"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"allowNoTrump\":true}"]
+[Deal "N:- AK.AK.A.A - -"]
+[Auction "E"]
+6 Pass Pass Pass
+6NT - - -

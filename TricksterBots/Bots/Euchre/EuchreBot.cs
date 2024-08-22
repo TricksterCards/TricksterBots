@@ -83,6 +83,7 @@ namespace Trickster.Bots
 
             var isDealer = player.Seat == dealerSeat;
             var isTeamDealing = isDealer || players.PartnersOf(player).Any(p => p.Seat == dealerSeat);
+            var willLeadFirst = (state.dealerSeat + 1) % state.options.players == state.player.Seat;
 
             //  always call a misdeal if offered
             if (legalBids.Any(b => b.value == (int)EuchreBid.CallMisdeal))
@@ -91,15 +92,15 @@ namespace Trickster.Bots
             if (legalBids.Any(b => b.value == (int)EuchreBid.GoUnder))
             {
                 //  go under if we can and don't have any suit we think we want to bid
-                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, canPass: true);
+                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, canPass: true, willLeadFirst);
 
                 if (bestBid.value == BidBase.Pass && upCard != null)
-                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer, isTeamDealing, canPass: true);
+                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer, isTeamDealing, canPass: true, willLeadFirst);
 
                 return legalBids.Single(b => b.value == (bestBid.value == BidBase.Pass ? (int)EuchreBid.GoUnder : (int)EuchreBid.AfterGoUnder));
             }
 
-            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, legalBids.Any(b => b.value == BidBase.Pass));
+            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, legalBids.Any(b => b.value == BidBase.Pass), willLeadFirst);
             var canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
 
             if (!canBidSuggestion && IsAloneBid(suggestion))
@@ -118,10 +119,12 @@ namespace Trickster.Bots
             var maxTricks = 0.0;
             var maxSuit = Suit.Unknown;
             var ntDown = false;
+            var willLeadFirst = (state.dealerSeat + 1) % state.options.players == state.player.Seat;
+            var withJoker = state.options.withJoker;
 
             foreach (var suit in SuitRank.stdSuits)
             {
-                var tricks = EstimatedTricks(state.hand, suit, state.options.withJoker);
+                var tricks = EstimatedTricks(state.hand, suit, withJoker);
                 if (tricks > maxTricks)
                 {
                     maxTricks = tricks;
@@ -131,7 +134,7 @@ namespace Trickster.Bots
 
             if (state.options.allowNotrump)
             {
-                var ntTricks = EstimatedNotrumpTricks(state.hand);
+                var ntTricks = EstimatedNotrumpTricks(state.hand, willLeadFirst, false);
                 if (ntTricks > maxTricks)
                 {
                     maxTricks = ntTricks;
@@ -140,7 +143,13 @@ namespace Trickster.Bots
 
                 if (options.allowLowNotrump)
                 {
-                    // TODO: correctly handle LowNoTrump if allowed
+                    var lowNtTricks = EstimatedNotrumpTricks(state.hand, willLeadFirst, true);
+                    if (lowNtTricks > maxTricks)
+                    {
+                        maxTricks = lowNtTricks;
+                        maxSuit = Suit.Unknown;
+                        ntDown = true;
+                    }
                 }
             }
 
@@ -187,7 +196,7 @@ namespace Trickster.Bots
         }
 
         //  overload called above
-        private BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool isTeamDealing, bool canPass)
+        private BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool isTeamDealing, bool canPass, bool willLeadFirst)
         {
             var highSuit = Suit.Unknown;
             var highEstimate = 0.0;
@@ -216,11 +225,21 @@ namespace Trickster.Bots
 
                 if (options.allowNotrump)
                 {
-                    var est = EstimatedNotrumpTricks(hand);
+                    var est = EstimatedNotrumpTricks(hand, willLeadFirst, lowIsHigh: false);
                     if (est > highEstimate)
                     {
                         highEstimate = est;
                         highSuit = Suit.Unknown;
+                    }
+
+                    if (options.allowLowNotrump)
+                    {
+                        var lowEst = EstimatedNotrumpTricks(hand, willLeadFirst, lowIsHigh: true);
+                        if (lowEst > highEstimate)
+                        {
+                            highEstimate = lowEst;
+                            highSuit = Suit.Joker;
+                        }
                     }
                 }
             }
@@ -518,20 +537,31 @@ namespace Trickster.Bots
             return upCard.suit == Suit.Joker ? Suit.Spades : upCard.suit;
         }
 
-        private static double EstimatedNotrumpTricks(Hand hand)
+        private double EstimatedNotrumpTricks(Hand hand, bool willLeadFirst, bool lowIsHigh)
         {
+            options._bidIsNtDown = lowIsHigh;
+
             var est = 0.0;
+            var cardsPlayed = new List<Card>();
+            var sortedHand = hand.OrderByDescending(RankSort).ToList();
+            var nHighSuits = sortedHand.Where(c => c.suit != Suit.Joker)
+                .GroupBy(c => c.suit)
+                .ToDictionary(g => g.Key, g => g.First())
+                .Count(g => IsCardHigh(g.Value, cardsPlayed));
 
-            var countsBySuit = hand.GroupBy(c => c.suit).ToDictionary(g => g.Key, g => g.Count());
-
-            foreach (var card in hand)
+            //  If we lead first or have a high card in every suit, we can run our high cards so long as noone else holds a Joker
+            if ((willLeadFirst || nHighSuits == 4) && (!options.withJoker || hand.Any(c => c.suit == Suit.Joker)))
             {
-                var count = countsBySuit[card.suit];
+                foreach (var card in sortedHand)
+                {
+                    if (IsCardHigh(card, cardsPlayed))
+                        est += 1;
 
-                if (card.rank == Rank.Ace && count <= 3)
-                    est += 1;
-                else if (card.rank == Rank.King && count == 2)
-                    est += hand.Any(c => c.rank == Rank.Ace && c.suit == card.suit) ? 1 : 0.75;
+                    // TODO: calculate if remaining low cards are likely good too
+                    // This happens when we have enough high cards to make other players void
+
+                    cardsPlayed.Add(card);
+                }
             }
 
             return est;

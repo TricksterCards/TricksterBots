@@ -3,9 +3,6 @@
 [Deal "N:AJ9.K.AT. K.T.J9.AK T.AJ..JT9 Q.Q9.KQ.Q"]
 [Declarer "S"]
 [Contract "3♣"]
-[Auction "E"]
-2 3 Pass Pass
-- 3♣ - -
 [Play "E"]
 D9 C9 - -
 
@@ -14,9 +11,6 @@ D9 C9 - -
 [Deal "E:Q99.AJ.AKJT.QJT AAQJ.AQJ.JT.AJT KKT.K99.AQ99.AK JT.KQTT.KQ.KQ99"]
 [Declarer "S"]
 [Contract "6♠"]
-[Auction "S"]
-6 Pass Pass Pass
-6♠ - - -
 [Play "S"]
 SJ ST ST S9
 SQ SK SJ S9
@@ -29,9 +23,6 @@ HA H9 HT HJ
 [Deal "W:KKQ.K.AJ.AQ J.Q.AQ.KKQJ AAJ.KQ.KKJ. Q.AAJJ.Q.AJ"]
 [Declarer "S"]
 [Contract "7♥"]
-[Auction "N"]
-6 Pass 7 Pass
-- - 7♥ -
 [Play "N"]
 HQ DJ HJ HK
 CJ HQ HJ DJ

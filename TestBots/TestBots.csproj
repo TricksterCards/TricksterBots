@@ -119,6 +119,9 @@
     <Content Include="Euchre\BidEuchre\Basic Play.ptn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Euchre\BidEuchre\Bid NT.ptn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

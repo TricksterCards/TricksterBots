@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -49,10 +50,9 @@ namespace TestBots
                 {
                     if (!string.IsNullOrEmpty(test.bid))
                     {
-                        // TODO: Run test.bid tests
-                        //var failure = RunBidTest(test);
-                        //if (failure != null)
-                        //    failures.Add($"{filename}: {failure}");
+                        var failure = RunBidTest(test);
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
                     }
                     else if (!string.IsNullOrEmpty(test.play))
                     {
@@ -111,6 +111,85 @@ namespace TestBots
                 level = int.Parse(bidParts.Groups["level"].Value);
 
             return (BidEuchreBid.FromSuitAndLevel(suit, level), suit);
+        }
+
+        private static string RunBidTest(BasicTest test)
+        {
+            var options = string.IsNullOrEmpty(test.optionsJson) ? new EuchreOptions() : JsonConvert.DeserializeObject<EuchreOptions>(test.optionsJson);
+            var bot = new EuchreBot(options, Suit.Unknown);
+            var players = new List<TestPlayer>();
+            var nPlayers = options.players;
+
+            for (var i = 0; i < nPlayers; i++)
+                players.Add(new TestPlayer { Seat = i });
+
+            // fill in bid history per player
+            var nextSeat = test.firstBidderSeat;
+            var minLevel = Math.Max(1, options.minBid);
+            foreach (var bid in test.history)
+            {
+                if (bid != "-")
+                {
+                    var rawBid = GetBid(bid);
+                    var bidEuchreBid = new BidEuchreBid(rawBid);
+                    if (bidEuchreBid.IsLevelBid && bidEuchreBid.BidLevel >= minLevel)
+                        minLevel = bidEuchreBid.BidLevel + 1;
+
+                    players[nextSeat].BidHistory.Add(rawBid);
+                }
+
+                nextSeat = (nextSeat + 1) % nPlayers;
+            }
+
+            var legalBids = new List<BidBase>();
+            if (options.variation == EuchreVariation.BidEuchre)
+            {
+                var suits = new List<Suit> { Suit.Diamonds, Suit.Hearts, Suit.Clubs, Suit.Spades };
+                if (options.allowNotrump)
+                {
+                    suits.Add(Suit.Unknown);
+                    if (options.allowLowNotrump)
+                        suits.Add(Suit.Joker);
+                }
+                if (test.history.Length < nPlayers)
+                {
+                    for (var i = minLevel; i <= options.CardsPerPlayer; i++)
+                        legalBids.Add(new BidBase(BidEuchreBid.FromLevel(i)));
+                }
+                else
+                {
+                    foreach (var suit in suits)
+                        legalBids.Add(new BidBase(BidEuchreBid.FromSuitAndLevel(suit, minLevel - 1)));
+                }
+            }
+
+            // fill in hand per player
+            foreach (var p in players)
+            {
+                if (p.Seat == nextSeat)
+                    p.Hand = test.hand;
+                else // TODO: calculate correct length based on who's played in the current trick
+                    p.Hand = UnknownCards(test.hand.Length / 2);
+            }
+
+            var player = players.Single(p => p.Seat == nextSeat);
+            var bidState = new SuggestBidState<EuchreOptions>
+            {
+                options = options,
+                player = player,
+                players = players,
+                hand = new Hand(player.Hand),
+                dealerSeat = test.dealerSeat,
+                legalBids = legalBids,
+            };
+
+            var suggestion = bot.SuggestBid(bidState);
+            var suggestionText = suggestion == null ? "null" : suggestion.value == BidBase.Pass ? "Pass" : new BidEuchreBid(suggestion.value).ToString();
+
+            if (!string.IsNullOrEmpty(test.bid))
+                return test.bid != suggestionText ? $"Test '{test.type}' suggested {suggestionText} but expected {test.bid}" : null;
+
+            return suggestion == null ? $"Test '{test.type}' failed to return a suggestion" : null;
         }
 
         private static string RunPlayTest(BasicTest test)
