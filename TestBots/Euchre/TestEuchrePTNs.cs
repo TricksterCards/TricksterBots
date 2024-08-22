@@ -147,9 +147,15 @@ namespace TestBots
                 var suits = new List<Suit> { Suit.Diamonds, Suit.Hearts, Suit.Clubs, Suit.Spades };
                 if (options.allowNotrump)
                 {
-                    suits.Add(Suit.Unknown);
                     if (options.allowLowNotrump)
-                        suits.Add(Suit.Joker);
+                    {
+                        suits.Add(Suit.Joker + 1);
+                        suits.Add(Suit.Joker + 2);
+                    }
+                    else
+                    {
+                        suits.Add(Suit.Unknown);
+                    }
                 }
                 if (test.history.Length < nPlayers)
                 {
