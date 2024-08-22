@@ -291,6 +291,7 @@ namespace Trickster.Bots
             var partners = players.PartnersOf(player);
             var partnerIsMaker = partners.Any(IsMaker);
             var teamIsMaker = playerIsMaker || partnerIsMaker;
+            var teamHandScore = player.HandScore + partners.Sum(p => p.HandScore);
             var isDefending = !teamIsMaker;
             var cardsPlayedPlusHand = cardsPlayed.Concat(new Hand(player.Hand));
 
@@ -326,12 +327,12 @@ namespace Trickster.Bots
 
                 //  Lead last trump if you called it, have already taken 3 tricks, and partner is void or not playing.
                 //  Increases chances of taking all 5 tricks by forcing opponents to discard a high off-suit card.
-                // TODO: can't use "3" to determine if we already made our bid in BidEuchre (probably should ignore this case entirely as there's no separate bonus for all tricks)
-                var alreadyMadeBid = teamIsMaker && 3 <= player.HandScore + partners.Sum(p => p.HandScore);
-                var partnersAreNotPlayingOrVoid = partners.All(p => p.Bid == BidBase.NotPlaying || players.TargetIsVoidInSuit(player, p, trump, cardsPlayed));
-                if (sortedTrump.Count == 1 && alreadyMadeBid && partnersAreNotPlayingOrVoid)
+                if (!IsBidEuchre && sortedTrump.Count == 1)
                 {
-                    return sortedTrump.Last();
+                    var alreadyMadeBid = teamIsMaker && 3 <= player.HandScore + partners.Sum(p => p.HandScore);
+                    var partnersAreNotPlayingOrVoid = partners.All(p => p.Bid == BidBase.NotPlaying || players.TargetIsVoidInSuit(player, p, trump, cardsPlayed));
+                    if (alreadyMadeBid && partnersAreNotPlayingOrVoid)
+                        return sortedTrump.Last();
                 }
 
                 //  Never lead your last trump unless you have the high remaining card in an off suit
@@ -413,7 +414,7 @@ namespace Trickster.Bots
 
             bool NeedToProtectOffJack()
             {
-                if (!isDefending || isLastToPlay)
+                if (IsBidEuchre || !isDefending || isLastToPlay)
                     return false;
 
                 // no need to protect if we don't have exactly two trump (more and we can still protect, less and we can't protect anyway)
@@ -421,7 +422,7 @@ namespace Trickster.Bots
                     return false;
 
                 // it's only worth protecting the left if a guaranteed trick would be a stopper or the last trick to Euchre
-                if (player.HandScore != 0 && player.HandScore != 2)
+                if (teamHandScore != 0 && teamHandScore != 2)
                     return false;
 
                 // if we don't have the left or it's already high, there's nothing to protect

@@ -279,16 +279,35 @@ namespace TestBots
         [TestMethod]
         public void DontProtectTheLeftIfTookOneTrick()
         {
+            var trump = Suit.Diamonds;
             var players = new[]
             {
-                new TestPlayer(140, handScore: 1, hand: "ACTC9CJHQD"),
-                new TestPlayer(140),
-                new TestPlayer(140, handScore: 1, cardsTaken: "AHQHTH9H"),
-                new TestPlayer(102),
+                new TestPlayer((int)EuchreBid.NotMaker, handScore: 1, hand: "ACJHQD"),
+                new TestPlayer((int)EuchreBid.NotMaker),
+                new TestPlayer((int)EuchreBid.NotMaker),
+                new TestPlayer((int)EuchreBid.Make + (int)trump, handScore: 1, cardsTaken: "AHQHTH9H"),
             };
 
-            var bot = GetBot(Suit.Diamonds);
-            var cardState = new TestCardState<EuchreOptions>(bot, players, "TS9S");
+            var bot = GetBot(trump);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "TS");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QD", $"{suggestion}");
+        }
+
+        [TestMethod]
+        public void DontProtectTheLeftIfPartnerTookOneTrick()
+        {
+            var trump = Suit.Diamonds;
+            var players = new[]
+            {
+                new TestPlayer((int)EuchreBid.NotMaker, hand: "AC9CJHQD"),
+                new TestPlayer((int)EuchreBid.NotMaker),
+                new TestPlayer((int)EuchreBid.NotMaker, handScore: 1, cardsTaken: "AHQHTH9H"),
+                new TestPlayer((int)EuchreBid.Make + (int)trump),
+            };
+
+            var bot = GetBot(trump);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9STS");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("QD", $"{suggestion}");
         }
@@ -298,9 +317,9 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(140, handScore: 2, hand: "ACTC9CJHQD"),
+                new TestPlayer(140, handScore: 1, hand: "ACTC9CJHQD"),
                 new TestPlayer(140),
-                new TestPlayer(140, handScore: 2, cardsTaken: "AHQHTH9HKCQCJCQS"),
+                new TestPlayer(140, handScore: 1, cardsTaken: "AHQHTH9HKCQCJCQS"),
                 new TestPlayer(102),
             };
 
