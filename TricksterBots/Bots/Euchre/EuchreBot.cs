@@ -171,7 +171,7 @@ namespace Trickster.Bots
                 if (maxSuit == Suit.Unknown)
                 {
                     // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                    match = ntDown ? legalBids.SingleOrDefault(b => b.IsNTdown) : legalBids.SingleOrDefault(b => b.IsNT);
+                    match = ntDown ? legalBids.SingleOrDefault(b => b.IsNTdown) : legalBids.SingleOrDefault(b => b.IsNT || b.IsNTup);
                 }
                 else
                 {
