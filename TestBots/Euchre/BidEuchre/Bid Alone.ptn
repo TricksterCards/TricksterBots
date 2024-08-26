@@ -1,0 +1,41 @@
+[Event "Bid NT Alone"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"allowNoTrump\":true}"]
+[Deal "N:- AK.AK.A.A - -"]
+[Auction "E"]
+Alone Pass Pass Pass
+NTAlone - - -
+
+[Event "Bid a Suit Alone"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1}"]
+[Deal "N:- .AKJQT.J. - -"]
+[Auction "E"]
+Alone Pass Pass Pass
+♥Alone - - -
+
+[Event "Bid NT Call 1"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"allowNoTrump\":true,\"callForBest\":true}"]
+[Deal "N:- AK.AK.A.9 - -"]
+[Auction "E"]
+Call1 Pass Pass Pass
+NTCall1 - - -
+
+[Event "Bid a Suit Call 1"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"callForBest\":true}"]
+[Deal "N:- .AKJQ.J.9 - -"]
+[Auction "E"]
+Call1 Pass Pass Pass
+♥Call1 - - -
+
+[Event "Bid NT Call 2"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"allowNoTrump\":true,\"callForBest\":true,\"offerAloneCall2\":true}"]
+[Deal "N:- AK.AK.9.9 - -"]
+[Auction "E"]
+Call2 Pass Pass Pass
+NTCall2 - - -
+
+[Event "Bid a Suit Call 2"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"callForBest\":true,\"offerAloneCall2\":true}"]
+[Deal "N:- 9.AKJ.J.9 - -"]
+[Auction "E"]
+Call2 Pass Pass Pass
+♥Call2 - - -

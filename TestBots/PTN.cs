@@ -14,6 +14,7 @@ namespace TestBots.Bridge
         private const string UnknownCard = "0U";
         private static readonly Regex rxDealerSeat = new Regex("^(?<side>N|E|W|S|SE|SW|NE|NW):", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex rxTrumpSuit = new Regex("(?<suit>♠|♥|♦|♣|S|H|D|C)", RegexOptions.Compiled);
+        private static readonly Regex rxReplaceSuit = new Regex("(?<suit>S|H|D|C)$", RegexOptions.Compiled);
 
         private static readonly Dictionary<char, Suit> SuitLetterToSuit = new Dictionary<char, Suit> {
             { 'S', Suit.Spades },
@@ -21,6 +22,14 @@ namespace TestBots.Bridge
             { 'D', Suit.Diamonds },
             { 'C', Suit.Clubs },
             { 'N', Suit.Unknown }
+        };
+
+        private static readonly Dictionary<char, string> SuitLetterToSymbol = new Dictionary<char, string> {
+            { 'S', "♠" },
+            { 'H', "♥" },
+            { 'D', "♦" },
+            { 'C', "♣" },
+            { 'N', "N" }
         };
 
         private static readonly Dictionary<char, Suit> SuitSymbolToSuit = new Dictionary<char, Suit> {
@@ -228,7 +237,7 @@ namespace TestBots.Bridge
         {
             return string.Join(" ", bidLines)
                 .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(bid => bid.Replace('S', '♠').Replace('H', '♥').Replace('D', '♦').Replace('C', '♣'))
+                .Select(bid => rxReplaceSuit.Replace(bid, (match) => SuitLetterToSymbol[match.Value[0]]))
                 .ToList();
         }
 

@@ -92,6 +92,13 @@ namespace TestBots
             if (int.TryParse(bid, out var levelOnly))
                 return (BidEuchreBid.FromLevel(levelOnly), Suit.Unknown);
 
+            if (bid == "Call2")
+                return (BidEuchreBid.AloneCall2Bid, Suit.Unknown);
+            if (bid == "Call1")
+                return (BidEuchreBid.AloneCall1Bid, Suit.Unknown);
+            if (bid == "Alone")
+                return (BidEuchreBid.AloneCall0Bid, Suit.Unknown);
+
             Suit suit;
             int level;
             var bidParts = rxBid.Match(bid);
@@ -190,7 +197,7 @@ namespace TestBots
             };
 
             var suggestion = bot.SuggestBid(bidState);
-            var suggestionText = suggestion == null ? "null" : suggestion.value == BidBase.Pass ? "Pass" : new BidEuchreBid(suggestion.value).ToString();
+            var suggestionText = suggestion == null ? "null" : suggestion.value == BidBase.Pass ? "Pass" : new BidEuchreBid(suggestion.value).ToString().Replace(" ", "");
 
             if (!string.IsNullOrEmpty(test.bid))
                 return test.bid != suggestionText ? $"Test '{test.type}' suggested {suggestionText} but expected {test.bid}" : null;
