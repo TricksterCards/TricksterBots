@@ -120,6 +120,8 @@ namespace Trickster.Bots
             var maxTricks = 0.0;
             var maxSuit = Suit.Unknown;
             var ntDown = false;
+            var players = new PlayersCollectionBase(this, state.players);
+            var partners = players.PartnersOf(state.player);
             var possibleTricks = (double)state.hand.Count;
             var willLeadFirst = (state.dealerSeat + 1) % state.options.players == state.player.Seat;
             var withJoker = state.options.withJoker;
@@ -182,22 +184,30 @@ namespace Trickster.Bots
                     maxTricks = Math.Min(possibleTricks, maxTricks + kittySize / possibleTricks);
 
                 //  assume each partner is good for 1/n remaining tricks (where n is the number of other players)
-                var nPartners = state.options.isPartnership ? state.options.players > 4 ? state.options.isTwoTeams ? 2 : 1 : 1 : 0;
-                if (nPartners > 0)
-                    maxTricks = Math.Min(possibleTricks, maxTricks + nPartners / (state.options.players - 1) * (possibleTricks - maxTricks));
+                if (partners.Length > 0)
+                    maxTricks = Math.Min(possibleTricks, maxTricks + partners.Length / (state.options.players - 1) * (possibleTricks - maxTricks));
             }
 
             if (legalLevelBids.Any())
             {
-                //  choose level
-                var level = (int)maxTricks;
+                var canPass = state.legalBids.Any(b => b.value == BidBase.Pass);
+                var highLevel = players.Select(p => new BidEuchreBid(p.Bid).BidLevel).Max();
+                var isLastToBid = state.player.Seat == state.dealerSeat;
+                var isPartnerWinningBid = highLevel > 0 && partners.Any(p => new BidEuchreBid(p.Bid).BidLevel == highLevel);
+
+                //  pass if last to bid and partner has the high bid
+                if (canPass && isLastToBid && isPartnerWinningBid)
+                    return new BidBase(BidBase.Pass);
+
+                //  choose level (only bidding as high as necessary if last to bid)
                 var minLegalLevel = legalLevelBids.Select(b => b.BidLevel).Min();
+                var level = isLastToBid ? minLegalLevel : (int)maxTricks;
 
                 if (level >= minLegalLevel)
                     return new BidBase(BidEuchreBid.FromLevel(level));
 
                 //  handle stick-the-dealer
-                if (!state.legalBids.Any(b => b.value == BidBase.Pass))
+                if (!canPass)
                     return new BidBase(BidEuchreBid.FromLevel(minLegalLevel));
             }
             else

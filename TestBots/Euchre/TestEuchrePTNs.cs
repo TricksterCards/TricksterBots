@@ -142,6 +142,7 @@ namespace TestBots
                     if (bidEuchreBid.IsLevelBid && bidEuchreBid.BidLevel >= minLevel)
                         minLevel = bidEuchreBid.BidLevel + 1;
 
+                    players[nextSeat].Bid = rawBid;
                     players[nextSeat].BidHistory.Add(rawBid);
                 }
 
@@ -174,6 +175,8 @@ namespace TestBots
                         legalBids.Add(new BidBase(BidEuchreBid.AloneCall1Bid));
                     if (!options.noAlone)
                         legalBids.Add(new BidBase(BidEuchreBid.AloneCall0Bid));
+                    if (players.Any(p => p.Seat != nextSeat && p.Bid != BidBase.Pass))
+                        legalBids.Add(new BidBase(BidBase.Pass));
                 }
                 else
                 {
