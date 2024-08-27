@@ -120,6 +120,7 @@ namespace Trickster.Bots
             var maxTricks = 0.0;
             var maxSuit = Suit.Unknown;
             var ntDown = false;
+            var possibleTricks = (double)state.hand.Count;
             var willLeadFirst = (state.dealerSeat + 1) % state.options.players == state.player.Seat;
             var withJoker = state.options.withJoker;
 
@@ -154,18 +155,21 @@ namespace Trickster.Bots
                 }
             }
 
-            var possibleTricks = (double)state.hand.Count;
+            var bestTrumpInDeck = deck.Where(c => EffectiveSuit(c, maxSuit) == maxSuit).OrderByDescending(c => RankSort(c, maxSuit)).FirstOrDefault();
+            var bestTrumpInHand = state.hand.Where(c => EffectiveSuit(c, maxSuit) == maxSuit).OrderByDescending(c => RankSort(c, maxSuit)).FirstOrDefault();
+            var hasHighestTrump = bestTrumpInDeck != null && bestTrumpInHand != null && RankSort(bestTrumpInDeck, maxSuit) == RankSort(bestTrumpInHand, maxSuit);
+            var shouldConsiderAlone = maxSuit == Suit.Unknown || hasHighestTrump;
 
             var aloneLevelBid = legalLevelBids.FirstOrDefault(b => b.BidLevel == BidEuchreBid.AloneCall0Bid.BidLevel);
-            if (aloneLevelBid != null && maxTricks >= possibleTricks)
+            if (shouldConsiderAlone && aloneLevelBid != null && maxTricks >= possibleTricks)
                 return new BidBase(aloneLevelBid);
 
             var aloneCall1Bid = legalLevelBids.FirstOrDefault(b => b.BidLevel == BidEuchreBid.AloneCall1Bid.BidLevel);
-            if (aloneCall1Bid != null && maxTricks >= possibleTricks - 1)
+            if (shouldConsiderAlone && aloneCall1Bid != null && maxTricks >= possibleTricks - 1)
                 return new BidBase(aloneCall1Bid);
 
             var aloneCall2Bid = legalLevelBids.FirstOrDefault(b => b.BidLevel == BidEuchreBid.AloneCall2Bid.BidLevel);
-            if (aloneCall2Bid != null && maxTricks >= possibleTricks - 2)
+            if (shouldConsiderAlone && aloneCall2Bid != null && maxTricks >= possibleTricks - 2)
                 return new BidBase(aloneCall2Bid);
 
             // Estimate extra tricks from partner and/or kitty unless we're already estimating 3/5 or more of the possible tricks

@@ -26,6 +26,13 @@ NTCall1 - - -
 Call1 Pass Pass Pass
 ♥Call1 - - -
 
+[Event "Don't Bid Alone or Call 1 without High"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"callForBest\":true}"]
+[Deal "N:- .AKQT9.J. - -"]
+[Auction "E"]
+5 Pass Pass Pass
+5♥ - - -
+
 [Event "Bid NT Call 2"]
 [GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"allowNoTrump\":true,\"callForBest\":true,\"offerAloneCall2\":true}"]
 [Deal "N:- AK.AK.9.9 - -"]
@@ -39,3 +46,10 @@ NTCall2 - - -
 [Auction "E"]
 Call2 Pass Pass Pass
 ♥Call2 - - -
+
+[Event "Don't Bid Call 2 without High"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"callForBest\":true,\"offerAloneCall2\":true}"]
+[Deal "N:- A.AKQ.J.9 - -"]
+[Auction "E"]
+4 Pass Pass Pass
+4♥ - - -
