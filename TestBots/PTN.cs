@@ -93,6 +93,10 @@ namespace TestBots.Bridge
                     case "Auction":
                     {
                         firstBidderSeat = GetSide(tag.Description.ToUpperInvariant(), nPlayers);
+
+                        if (defaultOptions.gameCode == GameCode.Bridge && firstBidderSeat != dealerSeat)
+                            throw new Exception("Invalid Bridge PBN: Dealer is not first to bid in auction");
+
                         var bids = ImportBids(tag.Data);
                         history = new List<string>();
                         for (var i = 0; i < bids.Count; i++)
