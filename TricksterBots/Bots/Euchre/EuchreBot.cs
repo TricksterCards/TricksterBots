@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Trickster.cloud;
 
@@ -153,6 +154,35 @@ namespace Trickster.Bots
                 }
             }
 
+            var possibleTricks = (double)state.hand.Count;
+
+            var aloneLevelBid = legalLevelBids.FirstOrDefault(b => b.BidLevel == BidEuchreBid.AloneCall0Bid.BidLevel);
+            if (aloneLevelBid != null && maxTricks >= possibleTricks)
+                return new BidBase(aloneLevelBid);
+
+            var aloneCall1Bid = legalLevelBids.FirstOrDefault(b => b.BidLevel == BidEuchreBid.AloneCall1Bid.BidLevel);
+            if (aloneCall1Bid != null && maxTricks >= possibleTricks - 1)
+                return new BidBase(aloneCall1Bid);
+
+            var aloneCall2Bid = legalLevelBids.FirstOrDefault(b => b.BidLevel == BidEuchreBid.AloneCall2Bid.BidLevel);
+            if (aloneCall2Bid != null && maxTricks >= possibleTricks - 2)
+                return new BidBase(aloneCall2Bid);
+
+            // Estimate extra tricks from partner and/or kitty unless we're already estimating 3/5 or more of the possible tricks
+            if (maxTricks < 4.0/5.0 * possibleTricks)
+            {
+                var kittySize = deck.Count - state.options.players * possibleTricks;
+
+                //  assume kitty is good for kittySize/totalTricks remaining tricks
+                if (state.options.withKitty)
+                    maxTricks = Math.Min(possibleTricks, maxTricks + kittySize / possibleTricks);
+
+                //  assume each partner is good for 1/n remaining tricks (where n is the number of other players)
+                var nPartners = state.options.isPartnership ? state.options.players > 4 ? state.options.isTwoTeams ? 2 : 1 : 1 : 0;
+                if (nPartners > 0)
+                    maxTricks = Math.Min(possibleTricks, maxTricks + nPartners / (state.options.players - 1) * (possibleTricks - maxTricks));
+            }
+
             if (legalLevelBids.Any())
             {
                 //  choose level
@@ -161,6 +191,10 @@ namespace Trickster.Bots
 
                 if (level >= minLegalLevel)
                     return new BidBase(BidEuchreBid.FromLevel(level));
+
+                //  handle stick-the-dealer
+                if (!state.legalBids.Any(b => b.value == BidBase.Pass))
+                    return new BidBase(BidEuchreBid.FromLevel(minLegalLevel));
             }
             else
             {

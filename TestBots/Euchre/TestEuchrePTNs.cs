@@ -168,6 +168,12 @@ namespace TestBots
                 {
                     for (var i = minLevel; i <= options.CardsPerPlayer; i++)
                         legalBids.Add(new BidBase(BidEuchreBid.FromLevel(i)));
+                    if (options.offerAloneCall2)
+                        legalBids.Add(new BidBase(BidEuchreBid.AloneCall2Bid));
+                    if (options.callForBest)
+                        legalBids.Add(new BidBase(BidEuchreBid.AloneCall1Bid));
+                    if (!options.noAlone)
+                        legalBids.Add(new BidBase(BidEuchreBid.AloneCall0Bid));
                 }
                 else
                 {
