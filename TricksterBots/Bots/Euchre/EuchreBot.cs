@@ -162,15 +162,15 @@ namespace Trickster.Bots
             var hasHighestTrump = bestTrumpInDeck != null && bestTrumpInHand != null && RankSort(bestTrumpInDeck, maxSuit) == RankSort(bestTrumpInHand, maxSuit);
             var shouldConsiderAlone = maxSuit == Suit.Unknown || hasHighestTrump;
 
-            var aloneLevelBid = legalLevelBids.FirstOrDefault(b => b.BidLevel == BidEuchreBid.AloneCall0Bid.BidLevel);
+            var aloneLevelBid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall0);
             if (shouldConsiderAlone && aloneLevelBid != null && maxTricks >= possibleTricks)
                 return new BidBase(aloneLevelBid);
 
-            var aloneCall1Bid = legalLevelBids.FirstOrDefault(b => b.BidLevel == BidEuchreBid.AloneCall1Bid.BidLevel);
+            var aloneCall1Bid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall1);
             if (shouldConsiderAlone && aloneCall1Bid != null && maxTricks >= possibleTricks - 1)
                 return new BidBase(aloneCall1Bid);
 
-            var aloneCall2Bid = legalLevelBids.FirstOrDefault(b => b.BidLevel == BidEuchreBid.AloneCall2Bid.BidLevel);
+            var aloneCall2Bid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall2);
             if (shouldConsiderAlone && aloneCall2Bid != null && maxTricks >= possibleTricks - 2)
                 return new BidBase(aloneCall2Bid);
 
