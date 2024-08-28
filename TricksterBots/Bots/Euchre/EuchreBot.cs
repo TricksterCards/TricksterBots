@@ -199,12 +199,11 @@ namespace Trickster.Bots
                 if (canPass && isLastToBid && isPartnerWinningBid)
                     return new BidBase(BidBase.Pass);
 
-                //  choose level (only bidding as high as necessary if last to bid)
                 var minLegalLevel = legalLevelBids.Select(b => b.BidLevel).Min();
-                var level = isLastToBid ? minLegalLevel : (int)maxTricks;
 
-                if (level >= minLegalLevel)
-                    return new BidBase(BidEuchreBid.FromLevel(level));
+                //  choose level (only bidding as high as necessary if last to bid)
+                if (maxTricks >= minLegalLevel)
+                    return new BidBase(BidEuchreBid.FromLevel(isLastToBid ? minLegalLevel : (int)maxTricks));
 
                 //  handle stick-the-dealer
                 if (!canPass)
