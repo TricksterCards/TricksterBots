@@ -55,11 +55,13 @@
     <ProjectReference Include="..\..\Trickster\TricksterBotClasses\TricksterBotClasses.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)'!='Debug'">
-    <Reference Include="TricksterBotClasses, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TricksterBotClasses.1.5.0\lib\net48\TricksterBotClasses.dll</HintPath>
+    <Reference Include="TricksterBotClasses, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TricksterBotClasses.1.6.0\lib\net48\TricksterBotClasses.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicTest.cs" />
     <Compile Include="Bridge\BasicTests.cs" />
     <Compile Include="Bridge\BidTest.cs" />
     <Compile Include="Bridge\Fuzz.cs" />
@@ -67,6 +69,7 @@
     <Compile Include="Bridge\TestBridgeBot.cs" />
     <Compile Include="Bridge\Test_Sayc.cs" />
     <Compile Include="Bridge\Test_Sayc_Results.cs" />
+    <Compile Include="Euchre\TestEuchrePTNs.cs" />
     <Compile Include="PTN.cs" />
     <Compile Include="TestFiveHundredBot.cs" />
     <Compile Include="TestHeartsBot.cs" />
@@ -112,6 +115,18 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Bridge\Bridgit\Basic.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Euchre\BidEuchre\Basic Play.ptn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Euchre\BidEuchre\Bid NT.ptn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Euchre\BidEuchre\Bid Alone.ptn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Euchre\BidEuchre\Last to Bid.ptn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />

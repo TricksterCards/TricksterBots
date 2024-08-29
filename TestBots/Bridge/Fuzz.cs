@@ -11,9 +11,9 @@ namespace TestBots.Bridge
         private const string StdSuitLetters = "SHDC";
         private const string StdCardRanks = " 23456789TJQKA";
 
-        public static BasicTests.BasicTest[] GeneratePlayTests(int count)
+        public static BasicTest[] GeneratePlayTests(int count)
         {
-            var tests = new List<BasicTests.BasicTest>();
+            var tests = new List<BasicTest>();
             var random = new Random(1); // Specify a seed so re-runs are deterministic
 
             for (var i = 0; i < count; i++)
@@ -23,7 +23,7 @@ namespace TestBots.Bridge
                 var plays = GetRandomPlayHistory(random, contract[1], hands, declarerSeat, out var nextPlaySeat);
                 var hand = hands[nextPlaySeat];
                 var dummy = plays.Length > 0 ? string.Join("", hands[(declarerSeat + 2) % 4]) : "";
-                tests.Add(new BasicTests.BasicTest()
+                tests.Add(new BasicTest
                 {
                     play = "", // accept any suggestion, so long as we don't error
                     contract = contract,

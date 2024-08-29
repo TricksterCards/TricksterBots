@@ -1,0 +1,20 @@
+[Event "Bid NT"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"allowNoTrump\":true,\"noAlone\":true}"]
+[Deal "N:- AK.AK.A.A - -"]
+[Auction "E"]
+6 Pass Pass Pass
+6NT - - -
+
+[Event "Bid NT↑"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"allowNoTrump\":true,\"allowLowNoTrump\":true,\"noAlone\":true}"]
+[Deal "N:- AK.AK.A.A - -"]
+[Auction "E"]
+6 Pass Pass Pass
+6NT↑ - - -
+
+[Event "Bid NT↓"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"allowNoTrump\":true,\"allowLowNoTrump\":true,\"noAlone\":true}"]
+[Deal "N:- 9T.9T.9.9 - -"]
+[Auction "E"]
+6 Pass Pass Pass
+6NT↓ - - -

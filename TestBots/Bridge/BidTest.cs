@@ -32,7 +32,7 @@ namespace TestBots
         }
 
         //  use to contruct a test from JsonTests
-        public BidTest(BasicTests.BasicTest test)
+        public BidTest(BasicTest test)
         {
             hand = new Hand(test.hand.Replace(" ", string.Empty));
             bidHistory = ParseBasicTestBidHistory(test.history);

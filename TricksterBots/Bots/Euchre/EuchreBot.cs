@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Trickster.cloud;
 
@@ -66,6 +67,12 @@ namespace Trickster.Bots
 
         public override BidBase SuggestBid(SuggestBidState<EuchreOptions> state)
         {
+            if (state.legalBids.Count == 1)
+                return state.legalBids.First();
+
+            if (state.options.variation == EuchreVariation.BidEuchre)
+                return SuggestBidEuchreBid(state);
+
             var (players, dealerSeat, hand, legalBids, player, upCard, upCardSuit) =
                 (new PlayersCollectionBase(this, state.players), state.dealerSeat, state.hand, state.legalBids, state.player, state.upCard, state.upCardSuit);
 
@@ -77,6 +84,7 @@ namespace Trickster.Bots
 
             var isDealer = player.Seat == dealerSeat;
             var isTeamDealing = isDealer || players.PartnersOf(player).Any(p => p.Seat == dealerSeat);
+            var willLeadFirst = (state.dealerSeat + 1) % state.options.players == state.player.Seat;
 
             //  always call a misdeal if offered
             if (legalBids.Any(b => b.value == (int)EuchreBid.CallMisdeal))
@@ -85,15 +93,15 @@ namespace Trickster.Bots
             if (legalBids.Any(b => b.value == (int)EuchreBid.GoUnder))
             {
                 //  go under if we can and don't have any suit we think we want to bid
-                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, canPass: true);
+                var bestBid = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, canPass: true, willLeadFirst);
 
                 if (bestBid.value == BidBase.Pass && upCard != null)
-                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer, isTeamDealing, canPass: true);
+                    bestBid = SuggestBid(hand, null, upCardSuit, isDealer, isTeamDealing, canPass: true, willLeadFirst);
 
                 return legalBids.Single(b => b.value == (bestBid.value == BidBase.Pass ? (int)EuchreBid.GoUnder : (int)EuchreBid.AfterGoUnder));
             }
 
-            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, legalBids.Any(b => b.value == BidBase.Pass));
+            var suggestion = SuggestBid(hand, upCard, upCardSuit, isDealer, isTeamDealing, legalBids.Any(b => b.value == BidBase.Pass), willLeadFirst);
             var canBidSuggestion = legalBids.Any(b => b.value == suggestion.value);
 
             if (!canBidSuggestion && IsAloneBid(suggestion))
@@ -103,6 +111,125 @@ namespace Trickster.Bots
             }
 
             return canBidSuggestion ? suggestion : legalBids.FirstOrDefault(b => b.value == BidBase.Pass) ?? legalBids.First();
+        }
+
+        private BidBase SuggestBidEuchreBid(SuggestBidState<EuchreOptions> state)
+        {
+            var legalBids = state.legalBids.Where(b => b.value != BidBase.NoBid).Select(b => new BidEuchreBid(b.value)).ToList();
+            var legalLevelBids = legalBids.Where(b => b.IsLevelBid).ToList();
+            var maxTricks = 0.0;
+            var maxSuit = Suit.Unknown;
+            var ntDown = false;
+            var players = new PlayersCollectionBase(this, state.players);
+            var partners = players.PartnersOf(state.player);
+            var possibleTricks = (double)state.hand.Count;
+            var willLeadFirst = (state.dealerSeat + 1) % state.options.players == state.player.Seat;
+            var withJoker = state.options.withJoker;
+
+            foreach (var suit in SuitRank.stdSuits)
+            {
+                var tricks = EstimatedTricks(state.hand, suit, withJoker);
+                if (tricks > maxTricks)
+                {
+                    maxTricks = tricks;
+                    maxSuit = suit;
+                }
+            }
+
+            if (state.options.allowNotrump)
+            {
+                var ntTricks = EstimatedNotrumpTricks(state.hand, willLeadFirst, false);
+                if (ntTricks > maxTricks)
+                {
+                    maxTricks = ntTricks;
+                    maxSuit = Suit.Unknown;
+                }
+
+                if (options.allowLowNotrump)
+                {
+                    var lowNtTricks = EstimatedNotrumpTricks(state.hand, willLeadFirst, true);
+                    if (lowNtTricks > maxTricks)
+                    {
+                        maxTricks = lowNtTricks;
+                        maxSuit = Suit.Unknown;
+                        ntDown = true;
+                    }
+                }
+            }
+
+            var bestTrumpInDeck = deck.Where(c => EffectiveSuit(c, maxSuit) == maxSuit).OrderByDescending(c => RankSort(c, maxSuit)).FirstOrDefault();
+            var bestTrumpInHand = state.hand.Where(c => EffectiveSuit(c, maxSuit) == maxSuit).OrderByDescending(c => RankSort(c, maxSuit)).FirstOrDefault();
+            var hasHighestTrump = bestTrumpInDeck != null && bestTrumpInHand != null && RankSort(bestTrumpInDeck, maxSuit) == RankSort(bestTrumpInHand, maxSuit);
+            var shouldConsiderAlone = maxSuit == Suit.Unknown || hasHighestTrump;
+
+            var aloneLevelBid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall0);
+            if (shouldConsiderAlone && aloneLevelBid != null && maxTricks >= possibleTricks)
+                return new BidBase(aloneLevelBid);
+
+            var aloneCall1Bid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall1);
+            if (shouldConsiderAlone && aloneCall1Bid != null && maxTricks >= possibleTricks - 1)
+                return new BidBase(aloneCall1Bid);
+
+            var aloneCall2Bid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall2);
+            if (shouldConsiderAlone && aloneCall2Bid != null && maxTricks >= possibleTricks - 2)
+                return new BidBase(aloneCall2Bid);
+
+            // Estimate extra tricks from partner and/or kitty unless we're already estimating 3/5 or more of the possible tricks
+            if (maxTricks < 4.0/5.0 * possibleTricks)
+            {
+                var kittySize = deck.Count - state.options.players * possibleTricks;
+
+                //  assume kitty is good for kittySize/totalTricks remaining tricks
+                if (state.options.withKitty)
+                    maxTricks = Math.Min(possibleTricks, maxTricks + kittySize / possibleTricks);
+
+                //  assume each partner is good for 1/n remaining tricks (where n is the number of other players)
+                if (partners.Length > 0)
+                    maxTricks = Math.Min(possibleTricks, maxTricks + partners.Length / (state.options.players - 1) * (possibleTricks - maxTricks));
+            }
+
+            if (legalLevelBids.Any())
+            {
+                var canPass = state.legalBids.Any(b => b.value == BidBase.Pass);
+                var highLevel = players.Select(p => new BidEuchreBid(p.Bid).BidLevel).Max();
+                var isLastToBid = state.player.Seat == state.dealerSeat;
+                var isPartnerWinningBid = highLevel > 0 && partners.Any(p => new BidEuchreBid(p.Bid).BidLevel == highLevel);
+
+                //  pass if last to bid and partner has the high bid
+                if (canPass && isLastToBid && isPartnerWinningBid)
+                    return new BidBase(BidBase.Pass);
+
+                var minLegalLevel = legalLevelBids.Select(b => b.BidLevel).Min();
+
+                //  choose level (only bidding as high as necessary if last to bid)
+                if (maxTricks >= minLegalLevel)
+                    return new BidBase(BidEuchreBid.FromLevel(isLastToBid ? minLegalLevel : (int)maxTricks));
+
+                //  handle stick-the-dealer
+                if (!canPass)
+                    return new BidBase(BidEuchreBid.FromLevel(minLegalLevel));
+            }
+            else
+            {
+                //  choose suit
+                BidEuchreBid match;
+
+                //  there are two bids where BidSuit returns Suit.Unknown so handle them specially
+                if (maxSuit == Suit.Unknown)
+                {
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                    match = ntDown ? legalBids.SingleOrDefault(b => b.IsNTdown) : legalBids.SingleOrDefault(b => b.IsNT || b.IsNTup);
+                }
+                else
+                {
+                    match = legalBids.SingleOrDefault(b => b.BidSuit == maxSuit);
+                }
+
+                if (match != null)
+                    return new BidBase(match);
+            }
+
+            return new BidBase(BidBase.Pass);
         }
 
         private static bool IsAloneBid(BidBase bid)
@@ -116,7 +243,7 @@ namespace Trickster.Bots
         }
 
         //  overload called above
-        private BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool isTeamDealing, bool canPass)
+        private BidBase SuggestBid(Hand hand, Card upCard, Suit upCardSuit, bool isDealer, bool isTeamDealing, bool canPass, bool willLeadFirst)
         {
             var highSuit = Suit.Unknown;
             var highEstimate = 0.0;
@@ -145,11 +272,21 @@ namespace Trickster.Bots
 
                 if (options.allowNotrump)
                 {
-                    var est = EstimatedNotrumpTricks(hand);
+                    var est = EstimatedNotrumpTricks(hand, willLeadFirst, lowIsHigh: false);
                     if (est > highEstimate)
                     {
                         highEstimate = est;
                         highSuit = Suit.Unknown;
+                    }
+
+                    if (options.allowLowNotrump)
+                    {
+                        var lowEst = EstimatedNotrumpTricks(hand, willLeadFirst, lowIsHigh: true);
+                        if (lowEst > highEstimate)
+                        {
+                            highEstimate = lowEst;
+                            highSuit = Suit.Joker;
+                        }
                     }
                 }
             }
@@ -179,6 +316,12 @@ namespace Trickster.Bots
 
         public override List<Card> SuggestDiscard(SuggestDiscardState<EuchreOptions> state)
         {
+            if (options.variation == EuchreVariation.BidEuchre)
+            {
+                //  we're being asked to discard because we added the kitty
+                return options.withKitty ? state.hand.OrderBy(IsTrump).ThenBy(RankSort).Take(options.KittySize).ToList() : new List<Card>();
+            }
+
             var (player, hand) = (state.player, state.hand);
 
             if (player.Bid == (int)EuchreBid.GoUnder)
@@ -210,11 +353,12 @@ namespace Trickster.Bots
                 state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
 
-            var playerBid = BidBid(player);
+            var playerIsMaker = IsMaker(player);
             var partners = players.PartnersOf(player);
-            var partnerIsMaker = partners.Any(p => BidBid(p) == EuchreBid.Make);
-            var weAreMaker = playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone || partnerIsMaker;
-            var isDefending = !weAreMaker && !partnerIsMaker;
+            var partnerIsMaker = partners.Any(IsMaker);
+            var teamIsMaker = playerIsMaker || partnerIsMaker;
+            var teamHandScore = player.HandScore + partners.Sum(p => p.HandScore);
+            var isDefending = !teamIsMaker;
             var cardsPlayedPlusHand = cardsPlayed.Concat(new Hand(player.Hand));
 
             var lowestCard = legalCards.OrderBy(c => IsTrump(c) ? 1 : 0).ThenBy(RankSort).First();
@@ -233,14 +377,14 @@ namespace Trickster.Bots
                 }
 
                 //  Lead high trump with 2+ trump if alone and opponents have not taken any tricks yet
-                if (sortedTrump.Count > 1 && playerBid == EuchreBid.MakeAlone &&
+                if (sortedTrump.Count > 1 && IsMakeAlone(player) &&
                     players.Opponents(player).All(p => p.HandScore == 0))
                 {
                     return sortedTrump.Last();
                 }
 
                 //  Lead trump if you called it and have three or more trump
-                if (sortedTrump.Count >= 3 && (playerBid == EuchreBid.Make || playerBid == EuchreBid.MakeAlone))
+                if (sortedTrump.Count >= 3 && playerIsMaker)
                 {
                     //  we have three or more trump and we're the maker: lead our high trump if it's good or our low trump if not
                     var highTrump = sortedTrump.Last();
@@ -249,11 +393,12 @@ namespace Trickster.Bots
 
                 //  Lead last trump if you called it, have already taken 3 tricks, and partner is void or not playing.
                 //  Increases chances of taking all 5 tricks by forcing opponents to discard a high off-suit card.
-                var alreadyMadeBid = weAreMaker && 3 <= player.HandScore + partners.Sum(p => p.HandScore);
-                var partnersAreNotPlayingOrVoid = partners.All(p => p.Bid == BidBase.NotPlaying || players.TargetIsVoidInSuit(player, p, trump, cardsPlayed));
-                if (sortedTrump.Count == 1 && alreadyMadeBid && partnersAreNotPlayingOrVoid)
+                if (!IsBidEuchre && sortedTrump.Count == 1)
                 {
-                    return sortedTrump.Last();
+                    var alreadyMadeBid = teamIsMaker && 3 <= player.HandScore + partners.Sum(p => p.HandScore);
+                    var partnersAreNotPlayingOrVoid = partners.All(p => p.Bid == BidBase.NotPlaying || players.TargetIsVoidInSuit(player, p, trump, cardsPlayed));
+                    if (alreadyMadeBid && partnersAreNotPlayingOrVoid)
+                        return sortedTrump.Last();
                 }
 
                 //  Never lead your last trump unless you have the high remaining card in an off suit
@@ -270,24 +415,24 @@ namespace Trickster.Bots
                 //  We want to lead a high (best in suit) card with conditions:
                 //  if we have only one high card, play it only if it's not trump or we are the maker and have more than one trump remaining
                 var highCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed)).ToList();
-                if (highCards.Count == 1 && (!IsTrump(highCards[0]) || weAreMaker && sortedTrump.Count > 1))
+                if (highCards.Count == 1 && (!IsTrump(highCards[0]) || teamIsMaker && sortedTrump.Count > 1))
                     return highCards[0];
 
                 //  if we have more than one high card, if we're the maker and one of the high cards is trump, lead it
                 //  otherwise, play the non-trump high card from the suit with the fewest cards
                 if (highCards.Count > 1)
                 {
-                    if (weAreMaker && highCards.Any(IsTrump))
-                        return highCards.Single(IsTrump);
+                    if (teamIsMaker && highCards.Any(IsTrump))
+                        return highCards.First(IsTrump);
 
                     //  play the high non-trump card from the suit with fewest cards
                     var nonTrumpHighCards = highCards.Where(c => !IsTrump(c)).ToList();
                     var theSuit = nonTrumpHighCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s)).ThenBy(s => suitOrder[s]).First();
-                    return nonTrumpHighCards.Single(c => EffectiveSuit(c) == theSuit);
+                    return nonTrumpHighCards.First(c => EffectiveSuit(c) == theSuit);
                 }
 
                 //  lead our highest off-suit if we're alone, out of trump and opponents haven't taken a trick yet
-                if (sortedTrump.Count == 0 && playerBid == EuchreBid.MakeAlone &&
+                if (sortedTrump.Count == 0 && IsMakeAlone(player) &&
                     players.Opponents(player).All(p => p.HandScore == 0))
                     return legalCards.OrderByDescending(RankSort).First();
 
@@ -316,7 +461,7 @@ namespace Trickster.Bots
                             //  partner might lose the trick, but we have the highest card; play it
                             return highFollow;
                     }
-                    else if (!trick.Any(c => EffectiveSuit(c) == trickSuit && RankSort(c) > RankSort(highFollow)))
+                    else if (!trick.Any(c => EffectiveSuit(c) == trickSuit && RankSort(c) >= RankSort(highFollow)))
                     {
                         //  the other team is taking the trick, but our highest card will win
 
@@ -335,7 +480,7 @@ namespace Trickster.Bots
 
             bool NeedToProtectOffJack()
             {
-                if (!isDefending || isLastToPlay)
+                if (IsBidEuchre || !isDefending || isLastToPlay)
                     return false;
 
                 // no need to protect if we don't have exactly two trump (more and we can still protect, less and we can't protect anyway)
@@ -343,7 +488,7 @@ namespace Trickster.Bots
                     return false;
 
                 // it's only worth protecting the left if a guaranteed trick would be a stopper or the last trick to Euchre
-                if (player.HandScore != 0 && player.HandScore != 2)
+                if (teamHandScore != 0 && teamHandScore != 2)
                     return false;
 
                 // if we don't have the left or it's already high, there's nothing to protect
@@ -392,18 +537,22 @@ namespace Trickster.Bots
             var hand = new Hand(player.Hand);
             if (IsMakeAlone(player))
             {
-                //  if we bid alone, treat this like an extra discard
-                return SuggestDiscard(new SuggestDiscardState<EuchreOptions> { player = player, hand = hand });
+                //  if we bid alone in classic euchre, treat this like an extra discard; in Bid Euchre just pass the requested number of the lowest cards favoring non-trump
+                return IsBidEuchre
+                    ? hand.OrderBy(IsTrump).ThenBy(RankSort).Take(state.passCount).ToList()
+                    : SuggestDiscard(new SuggestDiscardState<EuchreOptions> { player = player, hand = hand });
             }
 
             //  if partner bid, try to give our partner trump if we can
-            var list = hand.Where(IsTrump).OrderByDescending(RankSort).Take(1).ToList();
-            if (list.Count > 0)
+            var list = hand.Where(IsTrump).OrderByDescending(RankSort).Take(state.passCount).ToList();
+            if (list.Count == state.passCount)
                 return list;
 
-            //  otherwise give them our highest-ranked off-suit card, tie-breaking using the shortest suit
-            var suitCounts = hand.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
-            return hand.OrderByDescending(RankSort).ThenBy(c => suitCounts[EffectiveSuit(c)]).Take(1).ToList();
+            //  if we don't have enought, add our highest-ranked off-suit card, tie-breaking using the shortest suit
+            var suitCounts = hand.Where(c => !IsTrump(c)).GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.Count());
+            list.AddRange(hand.Where(c => !IsTrump(c)).OrderByDescending(RankSort).ThenBy(c => suitCounts[EffectiveSuit(c)]).Take(state.passCount - list.Count));
+
+            return list;
         }
 
         public override int SuitSort(Card c)
@@ -435,28 +584,50 @@ namespace Trickster.Bots
             return upCard.suit == Suit.Joker ? Suit.Spades : upCard.suit;
         }
 
-        private static double EstimatedNotrumpTricks(Hand hand)
+        private double EstimatedNotrumpTricks(Hand hand, bool willLeadFirst, bool lowIsHigh)
         {
+            options._bidIsNtDown = lowIsHigh;
+
             var est = 0.0;
+            var cardsPlayed = new List<Card>();
+            var sortedHand = hand.OrderByDescending(RankSort).ToList();
+            var nHighSuits = sortedHand.Where(c => c.suit != Suit.Joker)
+                .GroupBy(c => c.suit)
+                .ToDictionary(g => g.Key, g => g.First())
+                .Count(g => IsCardHigh(g.Value, cardsPlayed));
 
-            var countsBySuit = hand.GroupBy(c => c.suit).ToDictionary(g => g.Key, g => g.Count());
-
-            foreach (var card in hand)
+            //  If we lead first or have a high card in every suit, we can run our high cards so long as noone else holds a Joker
+            if ((willLeadFirst || nHighSuits == 4) && (!options.withJoker || hand.Any(c => c.suit == Suit.Joker)))
             {
-                var count = countsBySuit[card.suit];
+                foreach (var card in sortedHand)
+                {
+                    if (IsCardHigh(card, cardsPlayed))
+                        est += 1;
 
-                if (card.rank == Rank.Ace && count <= 3)
-                    est += 1;
-                else if (card.rank == Rank.King && count == 2)
-                    est += hand.Any(c => c.rank == Rank.Ace && c.suit == card.suit) ? 1 : 0.75;
+                    // TODO: calculate if remaining low cards are likely good too
+                    // This happens when we have enough high cards to make other players void
+
+                    cardsPlayed.Add(card);
+                }
             }
 
             return est;
         }
 
-        private static bool IsMakeAlone(PlayerBase player)
+        private bool IsBidEuchre => options.variation == EuchreVariation.BidEuchre;
+
+        private bool IsMaker(PlayerBase player)
         {
-            return BidBid(player.Bid) == EuchreBid.MakeAlone;
+            if (IsBidEuchre)
+                return new BidEuchreBid(player.Bid).IsMake;
+
+            var bid = BidBid(player);
+            return bid == EuchreBid.Make || bid == EuchreBid.MakeAlone;
+        }
+
+        private bool IsMakeAlone(PlayerBase player)
+        {
+            return IsBidEuchre ? new BidEuchreBid(player.Bid).IsAnyAlone : BidBid(player.Bid) == EuchreBid.MakeAlone;
         }
 
         private bool IsAskingDefendAlone(PlayersCollectionBase players)

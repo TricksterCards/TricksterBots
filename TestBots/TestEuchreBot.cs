@@ -15,7 +15,8 @@ namespace TestBots
             const string handString = "TD9S9C9H9D";
 
             var upCard = new Card("JD");
-            var bot = GetBot(Suit.Unknown, new EuchreOptions { allowMisdeal = EuchreMisdeal.NoAceNoFace });
+            var options = new EuchreOptions { allowMisdeal = EuchreMisdeal.NoAceNoFace };
+            var bot = GetBot(Suit.Unknown, options);
 
             //  get the bid using the state-based suggest bid method
             var bidState = new SuggestBidState<EuchreOptions>
@@ -34,6 +35,7 @@ namespace TestBots
                     new BidBase((int)EuchreBid.CallMisdeal),
                     new BidBase((int)EuchreBid.NoMisdeal)
                 },
+                options = options,
                 upCard = upCard,
                 upCardSuit = upCard.suit
             };
@@ -277,16 +279,35 @@ namespace TestBots
         [TestMethod]
         public void DontProtectTheLeftIfTookOneTrick()
         {
+            var trump = Suit.Diamonds;
             var players = new[]
             {
-                new TestPlayer(140, handScore: 1, hand: "ACTC9CJHQD"),
-                new TestPlayer(140),
-                new TestPlayer(140, handScore: 1, cardsTaken: "AHQHTH9H"),
-                new TestPlayer(102),
+                new TestPlayer((int)EuchreBid.NotMaker, handScore: 1, hand: "ACJHQD"),
+                new TestPlayer((int)EuchreBid.NotMaker),
+                new TestPlayer((int)EuchreBid.NotMaker),
+                new TestPlayer((int)EuchreBid.Make + (int)trump, handScore: 1, cardsTaken: "AHQHTH9H"),
             };
 
-            var bot = GetBot(Suit.Diamonds);
-            var cardState = new TestCardState<EuchreOptions>(bot, players, "TS9S");
+            var bot = GetBot(trump);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "TS");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QD", $"{suggestion}");
+        }
+
+        [TestMethod]
+        public void DontProtectTheLeftIfPartnerTookOneTrick()
+        {
+            var trump = Suit.Diamonds;
+            var players = new[]
+            {
+                new TestPlayer((int)EuchreBid.NotMaker, hand: "AC9CJHQD"),
+                new TestPlayer((int)EuchreBid.NotMaker),
+                new TestPlayer((int)EuchreBid.NotMaker, handScore: 1, cardsTaken: "AHQHTH9H"),
+                new TestPlayer((int)EuchreBid.Make + (int)trump),
+            };
+
+            var bot = GetBot(trump);
+            var cardState = new TestCardState<EuchreOptions>(bot, players, "9STS");
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("QD", $"{suggestion}");
         }
@@ -296,9 +317,9 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(140, handScore: 2, hand: "ACTC9CJHQD"),
+                new TestPlayer(140, handScore: 1, hand: "ACTC9CJHQD"),
                 new TestPlayer(140),
-                new TestPlayer(140, handScore: 2, cardsTaken: "AHQHTH9HKCQCJCQS"),
+                new TestPlayer(140, handScore: 1, cardsTaken: "AHQHTH9HKCQCJCQS"),
                 new TestPlayer(102),
             };
 
@@ -546,13 +567,15 @@ namespace TestBots
         /// <param name="upCardString">The card turned up by the dealer</param>
         /// <param name="take4for1">The value to use for EuchreOptions.take4for1</param>
         /// <param name="callForBest">The value to use for EuchreOptions.callForBest</param>
+        /// <param name="aloneTake5">The value to use for EuchreOptions.aloneTake5</param>
         /// <returns>The suggested bid for the first bidder</returns>
         private static string GetSuggestedBid(string handString, string upCardString, bool take4for1 = false, bool callForBest = false, bool aloneTake5 = false)
         {
             handString = handString.Replace(" ", "");
 
             var upCard = new Card(upCardString);
-            var bot = GetBot(Suit.Unknown, new EuchreOptions { aloneTake5 = aloneTake5, callForBest = callForBest, take4for1 = take4for1 });
+            var options = new EuchreOptions { aloneTake5 = aloneTake5, callForBest = callForBest, take4for1 = take4for1 };
+            var bot = GetBot(Suit.Unknown, options);
 
             //  get the bid using the state-based suggest bid method
             var bidState = new SuggestBidState<EuchreOptions>
@@ -572,6 +595,7 @@ namespace TestBots
                     new BidBase((int)EuchreBid.MakeAlone + (int)upCard.suit),
                     new BidBase(BidBase.Pass)
                 },
+                options = options,
                 upCard = upCard,
                 upCardSuit = upCard.suit
             };
