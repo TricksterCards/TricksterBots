@@ -427,8 +427,11 @@ namespace Trickster.Bots
 
                     //  play the high non-trump card from the suit with fewest cards
                     var nonTrumpHighCards = highCards.Where(c => !IsTrump(c)).ToList();
-                    var theSuit = nonTrumpHighCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s)).ThenBy(s => suitOrder[s]).First();
-                    return nonTrumpHighCards.First(c => EffectiveSuit(c) == theSuit);
+                    if (nonTrumpHighCards.Any())
+                    {
+                        var theSuit = nonTrumpHighCards.Select(EffectiveSuit).OrderBy(s => legalCards.Count(c => EffectiveSuit(c) == s)).ThenBy(s => suitOrder[s]).First();
+                        return nonTrumpHighCards.First(c => EffectiveSuit(c) == theSuit);
+                    }
                 }
 
                 //  lead our highest off-suit if we're alone, out of trump and opponents haven't taken a trick yet

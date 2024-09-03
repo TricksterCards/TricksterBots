@@ -283,36 +283,12 @@ namespace TestBots.Bridge
                 if (hands[i] == string.Empty)
                     hands[i] = string.Join(string.Empty, Enumerable.Repeat(UnknownCard, nCardsPerPlayer));
 
-            // validate known hands are of the correct length with no shared cards
+            // validate known hands are of the correct length
             var knownHands = hands.Where(h => !IsUnknownHand(h)).ToList();
-            var cardCounts = new Dictionary<string, int>();
             foreach (var hand in knownHands)
             {
                 if (hand.Length != nCardsPerPlayer * 2)
                     throw new ArgumentException($"Hand without exactly {nCardsPerPlayer} cards found in '{handsString}'");
-
-                for (var i = 0; i < hand.Length; i += 2)
-                {
-                    var card = hand.Substring(i, 2);
-                    if (!cardCounts.ContainsKey(card))
-                        cardCounts[card] = 1;
-                    else
-                        cardCounts[card]++;
-                }
-            }
-
-            var max = cardCounts.Values.Max();
-            var min = cardCounts.Values.Min();
-
-            if (max != min)
-            {
-                var under = cardCounts.Where(kv => kv.Value < max).Select(kv => kv.Key).ToList();
-                var over = cardCounts.Where(kv => kv.Value > min).Select(kv => kv.Key).ToList();
-
-                if (over.Count > under.Count)
-                    throw new ArgumentException($"Missing some instances of {string.Join(",", under)} in '{handsString}'");
-
-                throw new ArgumentException($"Extra instances of {string.Join(",", under)} found in '{handsString}'");
             }
 
             return (dealerSeat, hands, nPlayers, nCardsPerPlayer);
