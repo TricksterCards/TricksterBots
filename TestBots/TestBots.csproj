@@ -129,6 +129,9 @@
     <Content Include="Euchre\BidEuchre\Last to Bid.ptn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Euchre\BidEuchre\Leads.ptn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
