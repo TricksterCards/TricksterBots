@@ -115,6 +115,9 @@ namespace Trickster.Bots
 
         private BidBase SuggestBidEuchreBid(SuggestBidState<EuchreOptions> state)
         {
+            if (state.options.bidType == EuchreBidType.LevelAndSuit)
+                return state.legalBids.First();
+
             var legalBids = state.legalBids.Where(b => b.value != BidBase.NoBid).Select(b => new BidEuchreBid(b.value)).ToList();
             var legalLevelBids = legalBids.Where(b => b.IsLevelBid).ToList();
             var maxTricks = 0.0;
