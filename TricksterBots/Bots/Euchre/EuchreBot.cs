@@ -115,9 +115,6 @@ namespace Trickster.Bots
 
         private BidBase SuggestBidEuchreBid(SuggestBidState<EuchreOptions> state)
         {
-            if (state.options.bidType == EuchreBidType.LevelAndSuit)
-                return state.legalBids.First();
-
             var legalBids = state.legalBids.Where(b => b.value != BidBase.NoBid).Select(b => new BidEuchreBid(b.value)).ToList();
             var legalLevelBids = legalBids.Where(b => b.IsLevelBid).ToList();
             var maxTricks = 0.0;
@@ -165,17 +162,24 @@ namespace Trickster.Bots
             var hasHighestTrump = bestTrumpInDeck != null && bestTrumpInHand != null && RankSort(bestTrumpInDeck, maxSuit) == RankSort(bestTrumpInHand, maxSuit);
             var shouldConsiderAlone = maxSuit == Suit.Unknown || hasHighestTrump;
 
-            var aloneLevelBid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall0);
-            if (shouldConsiderAlone && aloneLevelBid != null && maxTricks >= possibleTricks)
-                return new BidBase(aloneLevelBid);
+            //  if we're bidding level-only, look at the alone bids before adjusting for partner and kitty
+            if (legalLevelBids.Any())
+            {
+                var aloneLevelBid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall0);
+                if (shouldConsiderAlone && aloneLevelBid != null && maxTricks >= possibleTricks)
+                    return new BidBase(aloneLevelBid);
 
-            var aloneCall1Bid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall1);
-            if (shouldConsiderAlone && aloneCall1Bid != null && maxTricks >= possibleTricks - 1)
-                return new BidBase(aloneCall1Bid);
+                var aloneCall1Bid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall1);
+                if (shouldConsiderAlone && aloneCall1Bid != null && maxTricks >= possibleTricks - 1)
+                    return new BidBase(aloneCall1Bid);
 
-            var aloneCall2Bid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall2);
-            if (shouldConsiderAlone && aloneCall2Bid != null && maxTricks >= possibleTricks - 2)
-                return new BidBase(aloneCall2Bid);
+                var aloneCall2Bid = legalLevelBids.FirstOrDefault(b => b.IsAloneCall2);
+                if (shouldConsiderAlone && aloneCall2Bid != null && maxTricks >= possibleTricks - 2)
+                    return new BidBase(aloneCall2Bid);
+            }
+
+            //  save this for use later
+            var unadjustedMaxTricks = maxTricks;
 
             // Estimate extra tricks from partner and/or kitty unless we're already estimating 3/5 or more of the possible tricks
             if (maxTricks < 4.0/5.0 * possibleTricks)
@@ -188,11 +192,45 @@ namespace Trickster.Bots
 
                 //  assume each partner is good for 1/n remaining tricks (where n is the number of other players)
                 if (partners.Length > 0)
+                {
+                    // ReSharper disable once PossibleLossOfFraction
                     maxTricks = Math.Min(possibleTricks, maxTricks + partners.Length / (state.options.players - 1) * (possibleTricks - maxTricks));
+                }
             }
 
-            if (legalLevelBids.Any())
+            if (options.bidType == EuchreBidType.LevelAndSuit)
             {
+                //  we've got to bid both level and suit
+
+                //  handle NT up/down
+                int intSuit;
+                if (maxSuit == Suit.Unknown)
+                    if (ntDown)
+                        intSuit = BidEuchreBid.Suit_NTdown;
+                    else if (options.allowLowNotrump)
+                        intSuit = BidEuchreBid.Suit_NTup;
+                    else
+                        intSuit = (int)Suit.Unknown;
+                else
+                    intSuit = (int)maxSuit;
+
+                //  get out best bid using the intSuit
+                BidEuchreBid bestBid;
+                if (unadjustedMaxTricks >= possibleTricks)
+                    bestBid = BidEuchreBid.FromIntSuitAndLevel(intSuit, BidEuchreBid.Level_AloneCall0);
+                else if (unadjustedMaxTricks >= possibleTricks - 1)
+                    bestBid = BidEuchreBid.FromIntSuitAndLevel(intSuit, BidEuchreBid.Level_AloneCall1);
+                else if (unadjustedMaxTricks >= possibleTricks - 2)
+                    bestBid = BidEuchreBid.FromIntSuitAndLevel(intSuit, BidEuchreBid.Level_AloneCall2);
+                else
+                    bestBid = BidEuchreBid.FromIntSuitAndLevel(intSuit, (int)maxTricks);
+
+                if (legalBids.Any(lb => lb.Equals(bestBid)))
+                    return new BidBase(bestBid);
+            }
+            else if (legalLevelBids.Any())
+            {
+                //  handle non-alone levels when we're bidding level-only
                 var canPass = state.legalBids.Any(b => b.value == BidBase.Pass);
                 var highLevel = players.Select(p => new BidEuchreBid(p.Bid).BidLevel).Max();
                 var isLastToBid = state.player.Seat == state.dealerSeat;
