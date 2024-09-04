@@ -227,6 +227,13 @@ namespace Trickster.Bots
 
                 if (legalBids.Any(lb => lb.Equals(bestBid)))
                     return new BidBase(bestBid);
+
+                //  handle condition when we can't pass
+                if (state.legalBids.All(b => b.value != BidBase.Pass))
+                {
+                    var lowestLevel = new BidEuchreBid(state.legalBids.First().value);
+                    return new BidBase(BidEuchreBid.FromIntSuitAndLevel(intSuit, lowestLevel));
+                }
             }
             else if (legalLevelBids.Any())
             {
