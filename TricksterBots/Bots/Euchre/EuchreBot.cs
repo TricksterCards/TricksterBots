@@ -84,7 +84,7 @@ namespace Trickster.Bots
 
             var isDealer = player.Seat == dealerSeat;
             var isTeamDealing = isDealer || players.PartnersOf(player).Any(p => p.Seat == dealerSeat);
-            var willLeadFirst = (state.dealerSeat + 1) % state.options.players == state.player.Seat;
+            var willLeadFirst = MakerWillLeadFirst(state);
 
             //  always call a misdeal if offered
             if (legalBids.Any(b => b.value == (int)EuchreBid.CallMisdeal))
@@ -123,7 +123,7 @@ namespace Trickster.Bots
             var players = new PlayersCollectionBase(this, state.players);
             var partners = players.PartnersOf(state.player);
             var possibleTricks = (double)state.hand.Count;
-            var willLeadFirst = (state.dealerSeat + 1) % state.options.players == state.player.Seat;
+            var willLeadFirst = MakerWillLeadFirst(state);
             var withJoker = state.options.withJoker;
 
             foreach (var suit in SuitRank.stdSuits)
@@ -278,6 +278,11 @@ namespace Trickster.Bots
             }
 
             return new BidBase(BidBase.Pass);
+        }
+
+        private bool MakerWillLeadFirst(SuggestBidState<EuchreOptions> state)
+        {
+            return options.makerLeadsFirst || (state.dealerSeat + 1) % state.options.players == state.player.Seat;
         }
 
         private static bool IsAloneBid(BidBase bid)
