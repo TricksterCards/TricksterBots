@@ -214,6 +214,9 @@ namespace Trickster.Bots
                 else
                     intSuit = (int)maxSuit;
 
+                //  get the lowest bid available
+                var lowestBid = new BidEuchreBid(state.legalBids.First().value);
+
                 //  get out best bid using the intSuit
                 BidEuchreBid bestBid;
                 if (unadjustedMaxTricks >= possibleTricks)
@@ -222,6 +225,11 @@ namespace Trickster.Bots
                     bestBid = BidEuchreBid.FromIntSuitAndLevel(intSuit, BidEuchreBid.Level_AloneCall1);
                 else if (unadjustedMaxTricks >= possibleTricks - 2)
                     bestBid = BidEuchreBid.FromIntSuitAndLevel(intSuit, BidEuchreBid.Level_AloneCall2);
+                else if (options.biddingStyle == EuchreBidStyle.Auction && !lowestBid.IsAnyAlone)
+                {
+                    //  if we're using auction-style bidding, we'll have another opportunity to bid, so bid as low as we can
+                    bestBid = BidEuchreBid.FromIntSuitAndLevel(intSuit, Math.Min(lowestBid.BidLevel, (int)maxTricks));
+                }
                 else
                     bestBid = BidEuchreBid.FromIntSuitAndLevel(intSuit, (int)maxTricks);
 
@@ -231,8 +239,7 @@ namespace Trickster.Bots
                 //  handle condition when we can't pass
                 if (state.legalBids.All(b => b.value != BidBase.Pass))
                 {
-                    var lowestLevel = new BidEuchreBid(state.legalBids.First().value);
-                    return new BidBase(BidEuchreBid.FromIntSuitAndLevel(intSuit, lowestLevel));
+                    return new BidBase(BidEuchreBid.FromIntSuitAndLevel(intSuit, lowestBid.BidLevel));
                 }
             }
             else if (legalLevelBids.Any())
@@ -249,9 +256,9 @@ namespace Trickster.Bots
 
                 var minLegalLevel = legalLevelBids.Select(b => b.BidLevel).Min();
 
-                //  choose level (only bidding as high as necessary if last to bid)
+                //  choose level (only bidding as high as necessary if last to bid or this is auction-style bidding)
                 if (maxTricks >= minLegalLevel)
-                    return new BidBase(BidEuchreBid.FromLevel(isLastToBid ? minLegalLevel : (int)maxTricks));
+                    return new BidBase(BidEuchreBid.FromLevel(isLastToBid || options.biddingStyle == EuchreBidStyle.Auction ? minLegalLevel : (int)maxTricks));
 
                 //  handle stick-the-dealer
                 if (!canPass)
