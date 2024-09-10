@@ -77,9 +77,8 @@
     <ProjectReference Include="..\..\Trickster\TricksterBotClasses\TricksterBotClasses.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)'!='Debug'">
-    <Reference Include="TricksterBotClasses, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TricksterBotClasses.1.6.0\lib\net48\TricksterBotClasses.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="TricksterBotClasses, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TricksterBotClasses.1.7.0\lib\net48\TricksterBotClasses.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
