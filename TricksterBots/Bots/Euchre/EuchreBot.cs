@@ -649,29 +649,40 @@ namespace Trickster.Bots
 
         private double EstimatedNotrumpTricks(Hand hand, bool willLeadFirst, bool lowIsHigh)
         {
+            //  temporarily override NT direction on options (so RankSort, IsCardHigh, etc. works as expected)
+            var bidIsNtDown = options._bidIsNtDown;
             options._bidIsNtDown = lowIsHigh;
 
             var est = 0.0;
-            var cardsPlayed = new List<Card>();
-            var sortedHand = hand.OrderByDescending(RankSort).ToList();
-            var nHighSuits = sortedHand.Where(c => c.suit != Suit.Joker)
-                .GroupBy(c => c.suit)
-                .ToDictionary(g => g.Key, g => g.First())
-                .Count(g => IsCardHigh(g.Value, cardsPlayed));
 
-            //  If we lead first or have a high card in every suit, we can run our high cards so long as noone else holds a Joker
-            if ((willLeadFirst || nHighSuits == 4) && (!options.withJoker || hand.Any(c => c.suit == Suit.Joker)))
+            try
             {
-                foreach (var card in sortedHand)
+                var cardsPlayed = new List<Card>();
+                var sortedHand = hand.OrderByDescending(RankSort).ToList();
+                var nHighSuits = sortedHand.Where(c => c.suit != Suit.Joker)
+                    .GroupBy(c => c.suit)
+                    .ToDictionary(g => g.Key, g => g.First())
+                    .Count(g => IsCardHigh(g.Value, cardsPlayed));
+
+                //  If we lead first or have a high card in every suit, we can run our high cards so long as noone else holds a Joker
+                if ((willLeadFirst || nHighSuits == 4) && (!options.withJoker || hand.Any(c => c.suit == Suit.Joker)))
                 {
-                    if (IsCardHigh(card, cardsPlayed))
-                        est += 1;
+                    foreach (var card in sortedHand)
+                    {
+                        if (IsCardHigh(card, cardsPlayed))
+                            est += 1;
 
-                    // TODO: calculate if remaining low cards are likely good too
-                    // This happens when we have enough high cards to make other players void
+                        // TODO: calculate if remaining low cards are likely good too
+                        // This happens when we have enough high cards to make other players void
 
-                    cardsPlayed.Add(card);
+                        cardsPlayed.Add(card);
+                    }
                 }
+            }
+            finally
+            {
+                //  restory correct NT direction on options
+                options._bidIsNtDown = bidIsNtDown;
             }
 
             return est;
