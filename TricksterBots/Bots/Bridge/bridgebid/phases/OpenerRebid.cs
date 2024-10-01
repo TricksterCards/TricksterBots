@@ -293,7 +293,7 @@ namespace Trickster.Bots
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.Description = $"New suit; 4+ {rebid.declareBid.suit}";
                 }
-                else if (rebid.declareBid.suit > opening.declareBid.suit && rebid.declareBid.level == lowestAvailableLevel)
+                else if (BridgeBot.suitRank[rebid.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] && rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  medium: REVERSE in a new suit (16-21 points)
                     rebid.Points.Min = 16;
