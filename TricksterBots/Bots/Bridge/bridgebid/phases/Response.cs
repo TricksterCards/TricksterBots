@@ -385,10 +385,10 @@ namespace Trickster.Bots
                             {
                                 //  changing suits
                                 response.BidMessage = BidMessage.Forcing;
-                                response.Points.Min = response.declareBid.suit > opening.declareBid.suit ? 17 : 11;
+                                response.Points.Min = BridgeBot.suitRank[response.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] ? 17 : 11;
                                 response.HandShape[response.declareBid.suit].Min = BridgeBot.IsMinor(response.declareBid.suit) ? 4 : 5;
                                 response.Description =
-                                    $"{response.HandShape[response.declareBid.suit].Min}+ {response.declareBid.suit}{(response.declareBid.suit > opening.declareBid.suit ? "; slam interest" : string.Empty)}";
+                                    $"{response.HandShape[response.declareBid.suit].Min}+ {response.declareBid.suit}{(BridgeBot.suitRank[response.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] ? "; slam interest" : string.Empty)}";
                             }
 
                             break;
@@ -556,7 +556,7 @@ namespace Trickster.Bots
                             {
                                 //  changing suits
                                 response.BidMessage = BidMessage.Forcing;
-                                response.Points.Min = response.declareBid.suit > opening.declareBid.suit ? 17 : 11;
+                                response.Points.Min = BridgeBot.suitRank[response.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] ? 17 : 11;
                                 response.HandShape[response.declareBid.suit].Min = 5;
                                 response.SetHandShapeMaxesOfOtherSuits(response.declareBid.suit, 6);
                                 response.Description = $"5+ {response.declareBid.suit}; slam interest";
