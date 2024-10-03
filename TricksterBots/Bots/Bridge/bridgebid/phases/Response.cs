@@ -143,6 +143,19 @@ namespace Trickster.Bots
                         response.Points.Max = 9;
                         response.IsBalanced = true;
                         response.Description = string.Empty;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 8
+                                && hcp <= 9
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4
+                                && counts[Suit.Diamonds] < 6
+                                && counts[Suit.Clubs] < 6;
+                        };
                     }
                     else
                     {
@@ -168,6 +181,19 @@ namespace Trickster.Bots
                         response.Points.Max = 15;
                         response.IsBalanced = true;
                         response.Description = string.Empty;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 10
+                                && hcp <= 15
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4
+                                && counts[Suit.Diamonds] < 6
+                                && counts[Suit.Clubs] < 6;
+                        };
                     }
                     else if (BridgeBot.IsMajor(response.declareBid.suit))
                     {
@@ -224,6 +250,19 @@ namespace Trickster.Bots
                         response.BidPointType = BidPointType.Hcp;
                         response.BidMessage = BidMessage.Signoff;
                         response.IsBalanced = true;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 18
+                                && hcp <= 19
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4
+                                && counts[Suit.Diamonds] < 6
+                                && counts[Suit.Clubs] < 6;
+                        };
                     }
 
                     break;
@@ -244,6 +283,17 @@ namespace Trickster.Bots
                         response.Points.Max = 10;
                         response.IsBalanced = true;
                         response.Description = string.Empty;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 4
+                                && hcp <= 10
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4;
+                        };
                     }
                     else
                     {
@@ -293,6 +343,17 @@ namespace Trickster.Bots
                         response.BidPointType = BidPointType.Hcp;
                         response.BidMessage = BidMessage.Signoff;
                         response.IsBalanced = true;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 13
+                                && hcp <= 15
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4;
+                        };
                     }
 
                     break;
