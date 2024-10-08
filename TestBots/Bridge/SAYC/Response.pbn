@@ -9,3 +9,10 @@
 [Auction "E"]
 Pass 1NT Pass 3NT
 
+[Event "Don't rebid partner's suit without support"]
+[Deal "W:- Q.KJ95.AJT86.T42 - -"]
+[Declarer "S"]
+[Contract "2S"]
+[Auction "W"]
+Pass 1D Pass 1S
+Pass 1NT

@@ -176,7 +176,7 @@ namespace Trickster.Bots
             }
 
             //  then favor the most "descriptive" one
-            var bid = suggestions.FirstOrDefault() ?? FindBestFit(legalBids, interpretedHistory) ?? legalBids.First(b => b.value == BidBase.Pass);
+            var bid = suggestions.FirstOrDefault() ?? FindBestFit(hand, legalBids, interpretedHistory) ?? legalBids.First(b => b.value == BidBase.Pass);
 
             return bid;
         }
@@ -331,7 +331,7 @@ namespace Trickster.Bots
             return bids.Select(bb => new BidWhy(bb)).ToList();
         }
 
-        private static BidWhy FindBestFit(IEnumerable<BidWhy> legalBids, IReadOnlyList<InterpretedBid> history)
+        private static BidWhy FindBestFit(Hand hand, IEnumerable<BidWhy> legalBids, IReadOnlyList<InterpretedBid> history)
         {
             //  if we're not responding to a forcing bid or there was interference, we can just pass
             var nHistory = history.Count;
@@ -341,17 +341,15 @@ namespace Trickster.Bots
             //  TODO: check if any bids that didn't fit were "close enough"
 
             //  otherwise we should bid the best fit between our hand and partner's at the lowest available level
-            var summary = new InterpretedBid.TeamSummary(history, history.Count - 2);
-            var suit = summary.HandShape.Where(hs => hs.Value.Min >= 8).Select(hs => hs.Key).FirstOrDefault();
+            var summary = new InterpretedBid.PlayerSummary(history, history.Count - 2);
+            var counts = BasicBidding.CountsBySuit(hand);
+            var suit = summary.HandShape
+                .Where(hs => hs.Value.Min + counts[hs.Key] >= 8)
+                .OrderByDescending(hs => hs.Value.Min + counts[hs.Key])
+                .Select(hs => hs.Key)
+                .FirstOrDefault();
 
-            //  if we don't have a fit, go back to partner's best suit at the lowest available level
-            if (suit == Suit.Unknown)
-                suit = summary.p1.HandShape.Where(hs => hs.Value.Min > 0).OrderByDescending(hs => hs.Value.Min).Select(hs => hs.Key).FirstOrDefault();
-
-            //  if we don't know partner's suit, bid our best suit at the lowest available level
-            if (suit == Suit.Unknown)
-                suit = summary.p2.HandShape.Where(hs => hs.Value.Min > 0).OrderByDescending(hs => hs.Value.Min).Select(hs => hs.Key).FirstOrDefault();
-
+            //  bid either our fit, or NT at the lowest available level
             return legalBids.FirstOrDefault(b => b.why.bidIsDeclare && b.why.declareBid.suit == suit);
         }
 
