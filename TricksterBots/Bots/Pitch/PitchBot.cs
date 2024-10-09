@@ -49,9 +49,11 @@ namespace Trickster.Bots
 
         //private bool IsOffThreeTrump => PitchOptions.availablePoints[options.variation] >= 13;
 
-        private bool IsRankFiveWorth5 => options.variation == PitchVariation.NinePoint;
+        private bool IsRankFiveWorth5 => options.variation == PitchVariation.NinePoint || options.variation == PitchVariation.EighteenPoint;
 
-        private bool IsRankThreeWorth3 => PitchOptions.availablePoints[options.variation] >= 10;
+        private bool IsRankNineWorth9 => options.variation == PitchVariation.EighteenPoint;
+
+        private bool IsRankThreeWorth3 => PitchOptions.availablePoints[options.variation] >= 10 && options.variation != PitchVariation.EighteenPoint;
 
         private int MinPitchBid => (int)PitchBid.Base + options.minBid;
 
@@ -66,6 +68,7 @@ namespace Trickster.Bots
                     case PitchVariation.SixPoint:
                         return 6;
                     case PitchVariation.NinePoint:
+                    case PitchVariation.EighteenPoint:
                         return 9;
                     case PitchVariation.SevenPoint:
                     case PitchVariation.TenPoint:
@@ -455,6 +458,9 @@ namespace Trickster.Bots
                 if (card.rank == Rank.Ten && options.tenOfTrumpReplacesGamePoint)
                     return 1;
 
+                if (card.rank == Rank.Nine && IsRankNineWorth9)
+                    return 9;
+
                 if (card.rank == Rank.Five && IsRankFiveWorth5)
                     return 5;
 
@@ -509,8 +515,9 @@ namespace Trickster.Bots
             var highjoker = hand.Any(c => c.rank == Rank.High && c.suit == Suit.Joker);
             var lowjoker = hand.Any(c => c.rank == Rank.Low && c.suit == Suit.Joker);
             var ten = hand.Any(c => c.rank == Rank.Ten && c.suit == t);
-            var five = options.variation == PitchVariation.NinePoint && hand.Any(c => c.rank == Rank.Five && c.suit == t);
-            var three = hand.Any(c => c.rank == Rank.Three && c.suit == t);
+            var nine = IsRankNineWorth9 && hand.Any(c => c.rank == Rank.Nine && c.suit == t);
+            var five = IsRankFiveWorth5 && hand.Any(c => c.rank == Rank.Five && c.suit == t);
+            var three = IsRankThreeWorth3 && hand.Any(c => c.rank == Rank.Three && c.suit == t);
             var offthree = hand.Any(c => c.rank == Rank.Three && c.suit != t && EffectiveSuit(c, t) == t);
             var two = hand.Any(c => c.rank == Rank.Two && c.suit == t);
 
@@ -549,13 +556,19 @@ namespace Trickster.Bots
                 capturablePoints--;
             }
 
+            if (nine)
+            {
+                //  if we have the nine in our hand, we can't capture it
+                capturablePoints -= 9;
+            }
+
             if (five)
             {
                 //  if we have the five in our hand, we can't capture it
                 capturablePoints -= 5;
             }
 
-            if (three && maxPoints >= 10)
+            if (three)
             {
                 //  if we have the three in our hand, we can't capture it
                 capturablePoints -= 3;
@@ -686,6 +699,13 @@ namespace Trickster.Bots
                     estimatedPoints += estTrumpCount >= 4 ? 1 : estTrumpCount >= 2 ? 0.5 : 0;
                 }
 
+                if (nine)
+                {
+                    //  estimate the liklihood of taking the nine if it's in our hand
+                    //  Note: we already deducted this from capturable points above
+                    estimatedPoints += estTrumpCount >= 5 ? 9 : estTrumpCount >= 3 ? 4.5 : 0;
+                }
+
                 if (five)
                 {
                     //  estimate the liklihood of taking the five if it's in our hand
@@ -693,7 +713,7 @@ namespace Trickster.Bots
                     estimatedPoints += estTrumpCount >= 5 ? 5 : estTrumpCount >= 3 ? 2.5 : 0;
                 }
 
-                if (three && maxPoints >= 10)
+                if (three)
                 {
                     //  estimate the liklihood of taking the three if it's in our hand
                     //  Note: we already deducted this from capturable points above
