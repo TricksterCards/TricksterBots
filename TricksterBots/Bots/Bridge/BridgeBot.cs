@@ -170,7 +170,7 @@ namespace Trickster.Bots
             {
                 suggestions = suggestions
                     .OrderByDescending(s => s.why.Priority)
-                    .ThenBy(s => s.why.HandShape.Any(hs => IsMajor(hs.Key) && hs.Value.Min > 3) ? 0 : 1)
+                    .ThenBy(s => s.why.HandShape.Any(hs => IsMajor(hs.Key) && hs.Value.Min >= 3) ? 0 : 1)
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min))
                     .ThenByDescending(s => s.why.Points.Min);
             }
