@@ -729,9 +729,10 @@ namespace Trickster.Bots
             }
             else if (response.declareBid.suit == opening.declareBid.suit)
             {
-                if (response.declareBid.level == opening.declareBid.level + 1)
+                if (response.declareBid.level == opening.declareBid.level + 1 && response.declareBid.level <= response.GameLevel)
                 {
                     //  simple raise with 3+ support
+                    response.BidMessage = BidMessage.Signoff;
                     response.HandShape[response.declareBid.suit].Min = 3;
                     response.Description = $"3+ {response.declareBid.suit}";
                 }
@@ -743,9 +744,9 @@ namespace Trickster.Bots
                     response.Description = $"4+ {response.declareBid.suit}";
                 }
             }
-            else
+            else if (response.declareBid.level < response.GameLevel)
             {
-                //  new suit
+                //  new suit below the game level
                 response.BidMessage = BidMessage.Forcing;
                 response.HandShape[response.declareBid.suit].Min = 5;
                 response.IsGood = true;
