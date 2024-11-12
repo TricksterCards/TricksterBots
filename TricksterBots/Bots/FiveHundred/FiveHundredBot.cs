@@ -19,7 +19,8 @@ namespace Trickster.Bots
             var opponentsBids = players.Opponents(player).SelectMany(p => p.BidHistory.Select(b => new FiveHundredBid(b))).ToList();
             var partnersBids = players.PartnersOf(player).SelectMany(p => p.BidHistory.Select(b => new FiveHundredBid(b))).ToList();
             var playerLastBid = player.BidHistory.Any() ? new FiveHundredBid(player.BidHistory.Last()) : new FiveHundredBid(BidBase.NoBid);
-            var defaultPartnerTricks = players.Count == 3 ? 1 : 2;
+            var partnerPassedFirst = partnersBids.Any() && partnersBids.FirstOrDefault() == BidBase.Pass;
+            var defaultPartnerTricks = (partnerPassedFirst || players.Count == 3) ? 1 : 2;
             var estimatedKittyTricks = 1;
             var minimumToBid6NT = 6 - defaultPartnerTricks - estimatedKittyTricks;
 
@@ -27,9 +28,10 @@ namespace Trickster.Bots
             var tricksBySuit = FiveHundredBid.suitRank.Keys.ToDictionary(s => s, s => CountTricks(hand, s));
             var hasJoker = hand.Any(c => c.suit == Suit.Joker);
 
-            //  in Australian: if we haven't bid yet, we have a Joker, and we can bid 6NT, do so (if our hand has at least some strength)
+            //  in Australian: if we haven't bid yet, partner hasn't bid yet, we have a Joker, and we can bid 6NT, do so (if our hand has at least some strength)
             if (options.variation == FiveHundredVariation.Australian
                 && !player.BidHistory.Any()
+                && !partnersBids.Any()
                 && hasJoker
                 && tricksBySuit[Suit.Unknown] >= minimumToBid6NT)
             {
