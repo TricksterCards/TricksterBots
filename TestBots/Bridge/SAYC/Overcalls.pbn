@@ -16,3 +16,9 @@ Pass 3D 3S Pass
 [Auction "E"]
 Pass 3D 3S 5D
 Pass
+
+[Event "Advance a Takeout Double over 1NT"]
+[Deal "N:84.Q9.A832.Q9852 - - -"]
+[Auction "N"]
+Pass 1NT X Pass
+2C
