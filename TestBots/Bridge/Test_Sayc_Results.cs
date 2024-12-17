@@ -1,4 +1,4 @@
-// last updated 10/23/2024 11:13 AM (-05:00)
+// last updated 12/17/2024 3:08 PM (-06:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -702,8 +702,8 @@ namespace TestBots
                     new SaycResult(true, 422, 422),
                     new SaycResult(false, 402, 420), // last run result: X; expected: 2NT;
                     new SaycResult(false, 420, 416), // last run result: 2NT; expected: 1♥;
-                    new SaycResult(false, -2, 430), // last run result: Pass; expected: 3♦;
-                    new SaycResult(false, -2, 432), // last run result: Pass; expected: 3♥;
+                    new SaycResult(true, 430, 430),
+                    new SaycResult(true, 432, 432),
                 }
              },
              {
@@ -715,7 +715,7 @@ namespace TestBots
                     new SaycResult(false, -2, 438), // last run result: Pass; expected: 4♦;
                     new SaycResult(true, 445, 445),
                     new SaycResult(false, 445, 446), // last run result: 5♣; expected: 5♦;
-                    new SaycResult(false, -2, 432), // last run result: Pass; expected: 3♥;
+                    new SaycResult(true, 432, 432),
                     new SaycResult(false, 429, 420), // last run result: 3♣; expected: 2NT;
                 }
              },
@@ -1067,14 +1067,14 @@ namespace TestBots
                     new SaycResult(false, -2, 402), // last run result: Pass; expected: X;
                     new SaycResult(false, 428, 420), // last run result: 3NT; expected: 2NT;
                     new SaycResult(false, 428, -2), // last run result: 3NT; expected: Pass;
-                    new SaycResult(false, -2, 424), // last run result: Pass; expected: 2♥;
+                    new SaycResult(true, 424, 424),
                     new SaycResult(true, 440, 440),
                     new SaycResult(false, -2, 439), // last run result: Pass; expected: 4♠;
                     new SaycResult(true, 424, 424),
                     new SaycResult(true, -2, -2),
                     new SaycResult(false, 463, 439), // last run result: 7♠; expected: 4♠;
                     new SaycResult(false, 428, 440), // last run result: 3NT; expected: 4♥;
-                    new SaycResult(false, -2, 432), // last run result: Pass; expected: 3♥;
+                    new SaycResult(false, 429, 432), // last run result: 3♣; expected: 3♥;
                     new SaycResult(false, -2, 421), // last run result: Pass; expected: 2♣;
                     new SaycResult(true, 420, 420),
                     new SaycResult(true, -2, -2),
@@ -1107,11 +1107,11 @@ namespace TestBots
                     new SaycResult(true, 431, 431),
                     new SaycResult(false, -2, 402), // last run result: Pass; expected: X;
                     new SaycResult(true, -2, -2),
-                    new SaycResult(false, -2, 430), // last run result: Pass; expected: 3♦;
+                    new SaycResult(true, 430, 430),
                     new SaycResult(false, 416, 415), // last run result: 1♥; expected: 1♠;
                     new SaycResult(false, -2, 420), // last run result: Pass; expected: 2NT;
                     new SaycResult(true, 428, 428),
-                    new SaycResult(false, -2, 423), // last run result: Pass; expected: 2♠;
+                    new SaycResult(true, 423, 423),
                     new SaycResult(true, -2, -2),
                     new SaycResult(true, 439, 439),
                     new SaycResult(true, 415, 415),
