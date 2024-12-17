@@ -16,3 +16,9 @@ Pass 3D 3S Pass
 [Auction "E"]
 Pass 3D 3S 5D
 Pass
+
+[Event "Make and advance Michael's cuebid"]
+[Deal "W:- JT95.63.KQT5.KT7 - KQ876.A5.J.AQJ83"]
+[Auction "W"]
+1H Pass Pass 2H
+Pass 2S

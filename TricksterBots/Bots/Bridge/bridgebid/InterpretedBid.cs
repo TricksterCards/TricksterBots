@@ -223,13 +223,17 @@ namespace Trickster.Bots
             if (Kings.Count != 0 && !Kings.Contains(hand.Count(c => c.rank == Rank.King)))
                 return false;
 
+            var isUnset = !IsBalanced &&
+                Points.Min == 0 && Points.Max == 37 &&
+                HandShape.All(hs => hs.Value.Min == 0 && hs.Value.Max == 13) &&
+                Aces.Count == 0 && Kings.Count == 0;
+
             //  don't match bids with "unset" hand-related values (except "Pass")
-            if (bid != BidBase.Pass && !IsBalanced && Points.Min == 0 && Points.Max == 37 &&
-                HandShape.All(hs => hs.Value.Min == 0 && hs.Value.Max == 13) && Aces.Count == 0 && Kings.Count == 0)
+            if (bid != BidBase.Pass && isUnset)
                 return false;
 
-            //  don't allow an unknown pass as a response to a forcing bid without interference
-            if (bid == BidBase.Pass && Description == UnknownDescripton && History.Count >= 2 && History[Index - 1].bid == BidBase.Pass &&
+            //  don't allow an "unset" pass as a response to a forcing bid without interference
+            if (bid == BidBase.Pass && isUnset && History.Count >= 2 && History[Index - 1].bid == BidBase.Pass &&
                 History[Index - 2].BidMessage == BidMessage.Forcing)
                 return false;
 
