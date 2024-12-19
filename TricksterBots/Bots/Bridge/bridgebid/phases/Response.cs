@@ -436,20 +436,29 @@ namespace Trickster.Bots
                                 response.HandShape[response.declareBid.suit].Min = 3;
                                 response.Description = $"3+ {response.declareBid.suit}";
                             }
+                            //  1H-2S
+                            else if (response.declareBid.suit == Suit.Spades)
+                            {
+                                //  changing suits to a higher-ranking suit
+                                response.BidMessage = BidMessage.Forcing;
+                                response.Points.Min = 17;
+                                response.HandShape[response.declareBid.suit].Min = 5;
+                                response.Description = $"5+ {response.declareBid.suit}; slam interest";
+                            }
                             //  1H-2C
                             //  1H-2D
-                            //  1H-2S
                             //  1S-2C
                             //  1S-2D
                             //  1S-2H
                             else
                             {
-                                //  changing suits
+                                //  changing suits to a lower ranking suit
+                                var min = BridgeBot.IsMinor(response.declareBid.suit) ? 4 : 5;
                                 response.BidMessage = BidMessage.Forcing;
-                                response.Points.Min = BridgeBot.suitRank[response.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] ? 17 : 11;
-                                response.HandShape[response.declareBid.suit].Min = BridgeBot.IsMinor(response.declareBid.suit) ? 4 : 5;
-                                response.Description =
-                                    $"{response.HandShape[response.declareBid.suit].Min}+ {response.declareBid.suit}{(BridgeBot.suitRank[response.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] ? "; slam interest" : string.Empty)}";
+                                response.Points.Min = 11;
+                                response.BidPointType = BidPointType.Dummy;
+                                response.HandShape[response.declareBid.suit].Min = min;
+                                response.Description = $"{min}+ {response.declareBid.suit} (may have 3+ {opening.declareBid.suit})";
                             }
 
                             break;
@@ -527,23 +536,23 @@ namespace Trickster.Bots
                         case Suit.Hearts:
                         case Suit.Spades:
 
+                            if (response.declareBid.suit == opening.declareBid.suit)
+                            {
+                                //  1H-4H
+                                //  1S-4S
+                                //  usually 5+ card support, a singleton or void, and fewer than 10 points.
+                                response.Points.Max = 10;
+                                response.BidPointType = BidPointType.Dummy;
+                                response.HandShape[response.declareBid.suit].Min = 5;
+                                response.Description = $"5+ {response.declareBid.suit} with a singleton or void";
+                                response.Validate = hand => BasicBidding.CountsBySuit(hand).Any(cs => cs.Value <= 1);
+                            }
+
                             break;
 
                         case Suit.Unknown:
 
                             break;
-                    }
-
-                    if (response.declareBid.suit == opening.declareBid.suit)
-                    {
-                        //  1H-4H
-                        //  1S-4S
-                        //  usually 5+ card support, a singleton or void, and fewer than 10 HCP.
-                        response.Points.Max = 10;
-                        response.BidPointType = BidPointType.Hcp;
-                        response.HandShape[response.declareBid.suit].Min = 5;
-                        response.Description = $"5+ {response.declareBid.suit} with a singleton or void";
-                        response.Validate = hand => BasicBidding.CountsBySuit(hand).Any(cs => cs.Value <= 1);
                     }
 
                     break;

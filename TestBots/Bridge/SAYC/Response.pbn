@@ -36,3 +36,10 @@ Pass 1NT
 [Deal "S:- - .K64.AJT93.J9763 -"]
 [Auction "S"]
 4H Pass Pass Pass
+
+[Event "Customer bug 1"]
+[Deal "N:5.K983.842.AQT94 - AK3.AJT54.KQ.J85 -"]
+[Auction "N"]
+Pass Pass 1H Pass
+2C Pass 3NT Pass
+4H Pass Pass Pass
