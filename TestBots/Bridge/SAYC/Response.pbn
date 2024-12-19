@@ -37,7 +37,7 @@ Pass 1NT
 [Auction "S"]
 4H Pass Pass Pass
 
-[Event "Customer bug 1"]
+[Event "Use dummy points when responding with support"]
 [Deal "N:5.K983.842.AQT94 - AK3.AJT54.KQ.J85 -"]
 [Auction "N"]
 Pass Pass 1H Pass
