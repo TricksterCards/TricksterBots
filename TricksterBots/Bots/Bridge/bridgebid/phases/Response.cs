@@ -466,12 +466,16 @@ namespace Trickster.Bots
                         //  1H-2N
                         //  1S-2N
                         case Suit.Unknown:
-                            response.Points.Min = 13;
-                            response.BidPointType = BidPointType.Dummy;
-                            response.BidConvention = BidConvention.Jacoby2NT;
-                            response.BidMessage = BidMessage.Forcing;
-                            response.HandShape[opening.declareBid.suit].Min = 4;
-                            response.Description = $"4+ {opening.declareBid.suit}";
+                            if (overcall.bid == BidBase.Pass)
+                            {
+                                response.Points.Min = 13;
+                                response.BidPointType = BidPointType.Dummy;
+                                response.BidConvention = BidConvention.Jacoby2NT;
+                                response.BidMessage = BidMessage.Forcing;
+                                response.HandShape[opening.declareBid.suit].Min = 4;
+                                response.Description = $"4+ {opening.declareBid.suit}";
+                            }
+                            //  TODO: should we include an alternate meaning for 2NT after interference?
                             break;
                     }
 

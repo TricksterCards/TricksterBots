@@ -1,0 +1,47 @@
+[Event "Response to Jacoby 2NT after 1S (minimum, not short)"]
+[Deal "N:AKQJ3.Q75.T86.83 - - -"]
+[Auction "N"]
+1S Pass 2NT Pass
+4S
+
+[Event "Response to Jacoby 2NT after 1H (minimum, not short)"]
+[Deal "N:Q75.AKQJ3.T86.83 - - -"]
+[Auction "N"]
+1H Pass 2NT Pass
+4H
+
+[Event "Response to Jacoby 2NT after 1S (medium, not short)"]
+[Deal "N:AKQJ3.A75.T86.83 - - -"]
+[Auction "N"]
+1S Pass 2NT Pass
+3NT
+
+[Event "Response to Jacoby 2NT after 1H (medium, not short)"]
+[Deal "N:A75.AKQJ3.T86.83 - - -"]
+[Auction "N"]
+1H Pass 2NT Pass
+3NT
+
+[Event "Response to Jacoby 2NT after 1S (maximum, not short)"]
+[Deal "N:AKQJ3.A7.K865.83 - - -"]
+[Auction "N"]
+1S Pass 2NT Pass
+3S
+
+[Event "Response to Jacoby 2NT after 1H (maximum, not short)"]
+[Deal "N:A7.AKQJ3.K865.83 - - -"]
+[Auction "N"]
+1H Pass 2NT Pass
+3H
+
+[Event "Response to Jacoby 2NT after 1S (singleton)"]
+[Deal "N:AKQJ3.A.AK86.876 - - -"]
+[Auction "N"]
+1S Pass 2NT Pass
+3H
+
+[Event "Response to Jacoby 2NT after 1S (good 5-card side suit)"]
+[Deal "N:AKQJ3.A7.AK865.8 - - -"]
+[Auction "N"]
+1S Pass 2NT Pass
+4D
