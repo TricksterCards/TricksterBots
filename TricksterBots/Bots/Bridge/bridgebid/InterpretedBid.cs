@@ -34,7 +34,7 @@ namespace Trickster.Bots
 
         public string AlternatePoints = string.Empty;
 
-        public int Priority = 0;
+        public int Priority = 100;
 
         public InterpretedBid()
         {
