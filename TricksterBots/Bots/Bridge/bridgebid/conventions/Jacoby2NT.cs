@@ -27,7 +27,7 @@ namespace Trickster.Bots
                 {
                     //  maximum hand (18+)
                     //  1H-2N-3H
-                    //  1S-2N-2S
+                    //  1S-2N-3S
                     answer.Points.Min = 18;
                     answer.BidConvention = BidConvention.AnswerJacoby2NT;
                     foreach (var s in SuitRank.stdSuits) answer.HandShape[s].Min = 2;
