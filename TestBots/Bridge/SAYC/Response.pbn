@@ -43,3 +43,8 @@ Pass 1NT
 Pass Pass 1H Pass
 2C Pass 3NT Pass
 4H Pass Pass Pass
+
+[Event "Respond to minor with gap strength (too strong for 1NT; too weak for 2NT)"]
+[Deal "E:- - - QT5.T87.QJ4.AQ93"]
+[Auction "E"]
+Pass 1C Pass 1NT
