@@ -27,6 +27,7 @@ namespace Trickster.Bots
 
             if (bid.BidPhase == BidPhase.Response && bid.History[bid.Index - 1].BidConvention == BidConvention.TakeoutDouble)
                 return Response(bid.History[bid.Index - 2], bid);
+
             if (bid.Index >= 2 && bid.History[bid.Index - 2].BidConvention == BidConvention.TakeoutDouble)
             {
                 Advance(bid);
@@ -141,7 +142,7 @@ namespace Trickster.Bots
         private static bool Overcall(InterpretedBid opening, InterpretedBid response, InterpretedBid overcall)
         {
             //  a double is for takeout over an opening partscore bid (4D or lower)
-            if (overcall.LowestAvailableLevel(Suit.Hearts) > 4)
+            if (overcall.LowestAvailableLevel(Suit.Hearts, true) >= 4)
                 return false;
 
             var bidSuits = SuitRank.stdSuits.Where(s =>

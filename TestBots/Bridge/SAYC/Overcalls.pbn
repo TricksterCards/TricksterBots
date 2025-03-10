@@ -22,3 +22,11 @@ Pass
 [Auction "W"]
 1H Pass Pass 2H
 Pass 2S
+
+[Event "Double of game bid is for penalty, not takeout"]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:- 95.Q.A97654.J764 - -"]
+[Auction "S"]
+4S Pass Pass X
+Pass Pass Pass
