@@ -30,3 +30,11 @@ Pass 2S
 [Auction "S"]
 4S Pass Pass X
 Pass Pass Pass
+
+[Event "Bid best suit when advancing a takeout double"]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:- 95.Q.A97654.J764 - -"]
+[Auction "S"]
+3S Pass Pass X
+4D Pass Pass
