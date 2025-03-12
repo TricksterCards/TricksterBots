@@ -163,7 +163,7 @@ namespace Trickster.Bots
             {
                 suggestions = legalBids.Where(b => b.why.Match(hand, allowTooStrong: true))
                     .OrderByDescending(s => s.why.Points.Max)
-                    .ThenByDescending(s => s.why.Priority)
+                    .ThenBy(s => s.why.Priority)
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min)).ToList();
             }
             else if (legalBids[0].why.BidPhase == BidPhase.Opening)
