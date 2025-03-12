@@ -109,7 +109,7 @@ namespace Trickster.Bots
                     if (advance.declareBid.level == lowestAvailableLevel)
                     {
                         //  0-8 points: bid at the cheapest level (but don't cap points if we're at the game level)
-                        if (lowestAvailableLevel < gameLevel)
+                        if (lowestAvailableLevel < gameLevel - 1)
                             advance.Points.Max = 8;
 
                         advance.HandShape[advance.declareBid.suit].Min = 4;
@@ -117,7 +117,7 @@ namespace Trickster.Bots
                         advance.Validate = hand =>
                         {
                             var counts = BasicBidding.CountsBySuit(hand);
-                            var maxCount = counts.Max(kvp => kvp.Value);
+                            var maxCount = counts.Where(kvp => !bidSuits.Contains(kvp.Key)).Max(kvp => kvp.Value);
                             return counts[advance.declareBid.suit] == maxCount;
                         };
                     }
