@@ -3,3 +3,10 @@
 [Auction "N"]
 Pass Pass 2NT Pass
 Pass Pass
+
+[Event "2NT Response - Stayman"]
+[Deal "S:- - 8654.KQ8.4.KT872 -"]
+[Declarer "S"]
+[Contract "2NT"]
+[Auction "S"]
+2NT Pass 3C

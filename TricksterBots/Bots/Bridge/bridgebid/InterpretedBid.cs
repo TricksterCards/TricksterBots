@@ -226,7 +226,8 @@ namespace Trickster.Bots
             var isUnset = !IsBalanced &&
                 Points.Min == 0 && Points.Max == 37 &&
                 HandShape.All(hs => hs.Value.Min == 0 && hs.Value.Max == 13) &&
-                Aces.Count == 0 && Kings.Count == 0;
+                Aces.Count == 0 && Kings.Count == 0 &&
+                Validate == null;
 
             //  don't match bids with "unset" hand-related values (except "Pass")
             if (bid != BidBase.Pass && isUnset)

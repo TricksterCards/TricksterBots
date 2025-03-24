@@ -1,4 +1,4 @@
-// last updated 2/10/2025 2:08 PM (-06:00)
+// last updated 3/24/2025 3:00 PM (-05:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -61,7 +61,7 @@ namespace TestBots
              {
                 "test_3c_stayman", new[]
                 {
-                    new SaycResult(false, 428, 429), // last run result: 3NT; expected: 3♣;
+                    new SaycResult(true, 429, 429),
                     new SaycResult(true, 432, 432),
                     new SaycResult(false, 431, 402), // last run result: 3♠; expected: X;
                     new SaycResult(false, 431, 440), // last run result: 3♠; expected: 4♥;
