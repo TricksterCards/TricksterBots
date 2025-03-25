@@ -80,6 +80,8 @@ namespace TestBots.Bridge
                         declarerSeat = -1;
                         firstBidderSeat = 0;
                         name = tag.Description;
+                        options = defaultOptions;
+                        optionsJson = string.Empty;
                         break;
                     case "GameOptionsJson":
                         optionsJson = tag.Description;

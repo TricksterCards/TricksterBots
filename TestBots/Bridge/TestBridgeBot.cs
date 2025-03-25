@@ -317,7 +317,8 @@ namespace TestBots
 
         private static string RunBidTest(BidTest test, BridgeBiddingScheme bidding = BridgeBiddingScheme.SAYC)
         {
-            var bot = new BridgeBot(new BridgeOptions { bidding = bidding }, Suit.Unknown);
+            test.options.bidding = bidding;
+            var bot = new BridgeBot(test.options, Suit.Unknown);
             var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
 
             if (test.expectedBid != suggestion)

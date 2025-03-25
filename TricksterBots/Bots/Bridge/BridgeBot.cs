@@ -73,10 +73,11 @@ namespace Trickster.Bots
 
         private static Dictionary<int, List<BidBase>> DescribeSaycBidHistoryBySeat(SuggestBidState<BridgeOptions> state)
         {
+            var botOptions = new BridgeBotOptions(state.options);
             var history = new Dictionary<int, List<BidBase>>();
             var dealerSeat = state.dealerSeat;
             var bidHistory = new BridgeBidHistory(state.players, dealerSeat);
-            var interpretedHistory = InterpretedBid.InterpretHistory(bidHistory);
+            var interpretedHistory = InterpretedBid.InterpretHistory(bidHistory, botOptions);
 
             foreach (var player in state.players)
             {
@@ -86,7 +87,7 @@ namespace Trickster.Bots
                 for (var i = 0; i < player.BidHistory.Count; ++i)
                 {
                     var bid = new BidBase(player.BidHistory[i]);
-                    var interpretedBid = new InterpretedBid(bid.value, interpretedHistory, firstIndex + i * 4);
+                    var interpretedBid = new InterpretedBid(bid.value, interpretedHistory, firstIndex + i * 4, botOptions);
 
                     bid.explanation = new BidExplanation(interpretedBid);
 
@@ -111,9 +112,10 @@ namespace Trickster.Bots
 
         private static List<BidBase> DescribeSaycLegalBids(SuggestBidState<BridgeOptions> state)
         {
+            var botOptions = new BridgeBotOptions(state.options);
             var bids = new List<BidBase>();
             var history = new BridgeBidHistory(state.players, state.dealerSeat);
-            var interpretedHistory = InterpretedBid.InterpretHistory(history);
+            var interpretedHistory = InterpretedBid.InterpretHistory(history, botOptions);
 
             foreach (var legalBid in state.legalBids)
             {
@@ -121,7 +123,7 @@ namespace Trickster.Bots
                 var bid = new BidBase(value);
                 if (legalBid.value != BidBase.NoBid)
                 {
-                    var interpretedBid = new InterpretedBid(value, interpretedHistory, interpretedHistory.Count);
+                    var interpretedBid = new InterpretedBid(value, interpretedHistory, interpretedHistory.Count, botOptions);
                     bid.explanation = new BidExplanation(interpretedBid);
                 }
 
@@ -149,11 +151,12 @@ namespace Trickster.Bots
             if (options.bidding == BridgeBiddingScheme.TwoOverOne)
                 return SuggestBridgitBid(history, hand, vulnerable);
 
-            var interpretedHistory = InterpretedBid.InterpretHistory(history);
+            var botOptions = new BridgeBotOptions(options);
+            var interpretedHistory = InterpretedBid.InterpretHistory(history, botOptions);
             var legalBids = AllPossibleBids().Where(history.IsBidLegal).ToList();
 
             foreach (var legalBid in legalBids)
-                legalBid.why = new InterpretedBid(legalBid.value, interpretedHistory, interpretedHistory.Count);
+                legalBid.why = new InterpretedBid(legalBid.value, interpretedHistory, interpretedHistory.Count, botOptions);
 
             //  get and sort all possible suggestions
             var suggestions = legalBids.Where(b => b.why.Match(hand)).ToList();
@@ -464,10 +467,11 @@ namespace Trickster.Bots
 
         private InterpretedBid.PlayerSummary GetPlayerSummary(SuggestCardState<BridgeOptions> state, int playerSeat)
         {
+            var botOptions = new BridgeBotOptions(options);
             var dealerSeat = FindDealerSeat(state);
             var players = new PlayersCollectionBase(this, state.players);
             var history = new BridgeBidHistory(players, dealerSeat);
-            var interpretedHistory = InterpretedBid.InterpretHistory(history);
+            var interpretedHistory = InterpretedBid.InterpretHistory(history, botOptions);
             var firstPlayerBidIndex = (4 + playerSeat - dealerSeat) % 4;
             var nPlayerExtraBids = (interpretedHistory.Count - 1 - firstPlayerBidIndex) / 4;
             var lastPlayerBidIndex = firstPlayerBidIndex + 4 * nPlayerExtraBids;
@@ -643,10 +647,11 @@ namespace Trickster.Bots
             if (options.variation == BridgeVariation.Mini)
                 return new List<Suit>();
 
+            var botOptions = new BridgeBotOptions(options);
             var dealerSeat = FindDealerSeat(state);
             var players = new PlayersCollectionBase(this, state.players);
             var history = new BridgeBidHistory(players, dealerSeat);
-            var interpretedHistory = InterpretedBid.InterpretHistory(history);
+            var interpretedHistory = InterpretedBid.InterpretHistory(history, botOptions);
             var unbidSuits = SuitRank.stdSuits.Where(suit => interpretedHistory.All(b => b.HandShape[suit].Min <= 2));
             return unbidSuits.ToList();
         }
