@@ -34,16 +34,19 @@ namespace Trickster.Bots
 
         public string AlternatePoints = string.Empty;
 
+        public readonly BridgeBotOptions Options;
+
         public int Priority = 100;
 
         public InterpretedBid()
         {
         }
 
-        public InterpretedBid(int bid, List<InterpretedBid> history, int index)
+        public InterpretedBid(int bid, List<InterpretedBid> history, int index, BridgeBotOptions options)
         {
             Index = index;
             History = history;
+            Options = options;
 
             this.bid = bid;
             bidIsDeclare = DeclareBid.Is(bid);
@@ -154,11 +157,11 @@ namespace Trickster.Bots
             get { return rxSpaceBefore.Replace(BidMessage.ToString(), m => m.Groups[1].Value + " " + m.Groups[2].Value.ToLowerInvariant()); }
         }
 
-        public static List<InterpretedBid> InterpretHistory(BridgeBidHistory bidHistory)
+        public static List<InterpretedBid> InterpretHistory(BridgeBidHistory bidHistory, BridgeBotOptions options)
         {
             var history = new List<InterpretedBid>();
 
-            for (var i = 0; i < bidHistory.Count; i++) history.Add(new InterpretedBid(bidHistory[i], history, i));
+            for (var i = 0; i < bidHistory.Count; i++) history.Add(new InterpretedBid(bidHistory[i], history, i, options));
 
             return history;
         }
@@ -279,13 +282,13 @@ namespace Trickster.Bots
             if (Jacoby2NT.Interpret(this))
                 return true;
 
-            if (JacobyTransfer.Interpret(this))
+            if (!Options.noTransfers && JacobyTransfer.Interpret(this))
                 return true;
 
             if (NegativeDouble.Interpret(this))
                 return true;
 
-            if (Relay.Interpret(this))
+            if (!Options.noTransfers && Relay.Interpret(this))
                 return true;
 
             if (Stayman.Interpret(this))
