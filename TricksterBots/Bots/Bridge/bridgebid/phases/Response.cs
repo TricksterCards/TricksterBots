@@ -143,6 +143,19 @@ namespace Trickster.Bots
                         response.Points.Max = 9;
                         response.IsBalanced = true;
                         response.Description = string.Empty;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 8
+                                && hcp <= 9
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4
+                                && counts[Suit.Diamonds] < 6
+                                && counts[Suit.Clubs] < 6;
+                        };
                     }
                     else
                     {
@@ -168,6 +181,19 @@ namespace Trickster.Bots
                         response.Points.Max = 15;
                         response.IsBalanced = true;
                         response.Description = string.Empty;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 10
+                                && hcp <= 15
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4
+                                && counts[Suit.Diamonds] < 6
+                                && counts[Suit.Clubs] < 6;
+                        };
                     }
                     else if (BridgeBot.IsMajor(response.declareBid.suit))
                     {
@@ -224,6 +250,19 @@ namespace Trickster.Bots
                         response.BidPointType = BidPointType.Hcp;
                         response.BidMessage = BidMessage.Signoff;
                         response.IsBalanced = true;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 18
+                                && hcp <= 19
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4
+                                && counts[Suit.Diamonds] < 6
+                                && counts[Suit.Clubs] < 6;
+                        };
                     }
 
                     break;
@@ -244,6 +283,17 @@ namespace Trickster.Bots
                         response.Points.Max = 10;
                         response.IsBalanced = true;
                         response.Description = string.Empty;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 4
+                                && hcp <= 10
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4;
+                        };
                     }
                     else
                     {
@@ -293,6 +343,17 @@ namespace Trickster.Bots
                         response.BidPointType = BidPointType.Hcp;
                         response.BidMessage = BidMessage.Signoff;
                         response.IsBalanced = true;
+                        //  also use this bid when we're not balanced if nothing else fits
+                        response.AlternateMatches = hand =>
+                        {
+                            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return !BasicBidding.IsBalanced(hand)
+                                && hcp >= 13
+                                && hcp <= 15
+                                && counts[Suit.Spades] < 4
+                                && counts[Suit.Hearts] < 4;
+                        };
                     }
 
                     break;
@@ -375,20 +436,29 @@ namespace Trickster.Bots
                                 response.HandShape[response.declareBid.suit].Min = 3;
                                 response.Description = $"3+ {response.declareBid.suit}";
                             }
+                            //  1H-2S
+                            else if (response.declareBid.suit == Suit.Spades)
+                            {
+                                //  changing suits to a higher-ranking suit
+                                response.BidMessage = BidMessage.Forcing;
+                                response.Points.Min = 17;
+                                response.HandShape[response.declareBid.suit].Min = 5;
+                                response.Description = $"5+ {response.declareBid.suit}; slam interest";
+                            }
                             //  1H-2C
                             //  1H-2D
-                            //  1H-2S
                             //  1S-2C
                             //  1S-2D
                             //  1S-2H
                             else
                             {
-                                //  changing suits
+                                //  changing suits to a lower ranking suit
+                                var min = BridgeBot.IsMinor(response.declareBid.suit) ? 4 : 5;
                                 response.BidMessage = BidMessage.Forcing;
-                                response.Points.Min = response.declareBid.suit > opening.declareBid.suit ? 17 : 11;
-                                response.HandShape[response.declareBid.suit].Min = BridgeBot.IsMinor(response.declareBid.suit) ? 4 : 5;
-                                response.Description =
-                                    $"{response.HandShape[response.declareBid.suit].Min}+ {response.declareBid.suit}{(response.declareBid.suit > opening.declareBid.suit ? "; slam interest" : string.Empty)}";
+                                response.Points.Min = 11;
+                                response.BidPointType = BidPointType.Dummy;
+                                response.HandShape[response.declareBid.suit].Min = min;
+                                response.Description = $"{min}+ {response.declareBid.suit} (may have 3+ {opening.declareBid.suit})";
                             }
 
                             break;
@@ -396,12 +466,16 @@ namespace Trickster.Bots
                         //  1H-2N
                         //  1S-2N
                         case Suit.Unknown:
-                            response.Points.Min = 13;
-                            response.BidPointType = BidPointType.Dummy;
-                            response.BidConvention = BidConvention.Jacoby2NT;
-                            response.BidMessage = BidMessage.Forcing;
-                            response.HandShape[opening.declareBid.suit].Min = 4;
-                            response.Description = $"4+ {opening.declareBid.suit}";
+                            if (overcall.bid == BidBase.Pass)
+                            {
+                                response.Points.Min = 13;
+                                response.BidPointType = BidPointType.Dummy;
+                                response.BidConvention = BidConvention.Jacoby2NT;
+                                response.BidMessage = BidMessage.Forcing;
+                                response.HandShape[opening.declareBid.suit].Min = 4;
+                                response.Description = $"4+ {opening.declareBid.suit}";
+                            }
+                            //  TODO: should we include an alternate meaning for 2NT after interference?
                             break;
                     }
 
@@ -466,23 +540,23 @@ namespace Trickster.Bots
                         case Suit.Hearts:
                         case Suit.Spades:
 
+                            if (response.declareBid.suit == opening.declareBid.suit)
+                            {
+                                //  1H-4H
+                                //  1S-4S
+                                //  usually 5+ card support, a singleton or void, and fewer than 10 points.
+                                response.Points.Max = 10;
+                                response.BidPointType = BidPointType.Dummy;
+                                response.HandShape[response.declareBid.suit].Min = 5;
+                                response.Description = $"5+ {response.declareBid.suit} with a singleton or void";
+                                response.Validate = hand => BasicBidding.CountsBySuit(hand).Any(cs => cs.Value <= 1);
+                            }
+
                             break;
 
                         case Suit.Unknown:
 
                             break;
-                    }
-
-                    if (response.declareBid.suit == opening.declareBid.suit)
-                    {
-                        //  1H-4H
-                        //  1S-4S
-                        //  usually 5+ card support, a singleton or void, and fewer than 10 HCP.
-                        response.Points.Max = 10;
-                        response.BidPointType = BidPointType.Hcp;
-                        response.HandShape[response.declareBid.suit].Min = 5;
-                        response.Description = $"5+ {response.declareBid.suit} with a singleton or void";
-                        response.Validate = hand => BasicBidding.CountsBySuit(hand).Any(cs => cs.Value <= 1);
                     }
 
                     break;
@@ -556,7 +630,7 @@ namespace Trickster.Bots
                             {
                                 //  changing suits
                                 response.BidMessage = BidMessage.Forcing;
-                                response.Points.Min = response.declareBid.suit > opening.declareBid.suit ? 17 : 11;
+                                response.Points.Min = BridgeBot.suitRank[response.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] ? 17 : 11;
                                 response.HandShape[response.declareBid.suit].Min = 5;
                                 response.SetHandShapeMaxesOfOtherSuits(response.declareBid.suit, 6);
                                 response.Description = $"5+ {response.declareBid.suit}; slam interest";
@@ -668,9 +742,10 @@ namespace Trickster.Bots
             }
             else if (response.declareBid.suit == opening.declareBid.suit)
             {
-                if (response.declareBid.level == opening.declareBid.level + 1)
+                if (response.declareBid.level == opening.declareBid.level + 1 && response.declareBid.level <= response.GameLevel)
                 {
                     //  simple raise with 3+ support
+                    response.BidMessage = BidMessage.Signoff;
                     response.HandShape[response.declareBid.suit].Min = 3;
                     response.Description = $"3+ {response.declareBid.suit}";
                 }
@@ -682,9 +757,9 @@ namespace Trickster.Bots
                     response.Description = $"4+ {response.declareBid.suit}";
                 }
             }
-            else
+            else if (response.declareBid.level < response.GameLevel)
             {
-                //  new suit
+                //  new suit below the game level
                 response.BidMessage = BidMessage.Forcing;
                 response.HandShape[response.declareBid.suit].Min = 5;
                 response.IsGood = true;

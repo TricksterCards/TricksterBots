@@ -1,0 +1,17 @@
+[Event "Bid as low as possible when last to bid"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"allowNoTrump\":true,\"minBid\":3}"]
+[Deal "N:.AKQT9.J. - - -"]
+[Auction "E"]
+Pass Pass Pass 3
+
+[Event "Don't raise partner when last to bid"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"callForBest\":true,\"isPartnership\":true}"]
+[Deal "N:.AKQT9.J. - - -"]
+[Auction "E"]
+Pass 3 Pass Pass
+
+[Event "Bid Alone even when last to bid"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1}"]
+[Deal "N:.AKJQT.J. - - -"]
+[Auction "E"]
+Pass Pass Pass Alone

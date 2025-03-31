@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+using Newtonsoft.Json;
 using TestBots.Bridge;
 using Trickster.Bots;
 using Trickster.cloud;
@@ -15,7 +16,7 @@ namespace TestBots
     [TestClass]
     public class TestBridgeBot
     {
-        private static Dictionary<char, Suit> LetterToSuit = new Dictionary<char, Suit> {
+        private static readonly Dictionary<char, Suit> LetterToSuit = new Dictionary<char, Suit> {
             { 'S', Suit.Spades },
             { 'H', Suit.Hearts },
             { 'D', Suit.Diamonds },
@@ -23,7 +24,7 @@ namespace TestBots
             { 'N', Suit.Unknown }
         };
 
-        private static Dictionary<char, char> SuitSymbolToLetter = new Dictionary<char, char> {
+        private static readonly Dictionary<char, char> SuitSymbolToLetter = new Dictionary<char, char> {
             { '♠', 'S' },
             { '♥', 'H' },
             { '♦', 'D' },
@@ -45,6 +46,64 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow("5♥", "{\"cloudBid\":null,\"dealerSeat\":2,\"hand\":[{\"s\":1,\"r\":6},{\"s\":1,\"r\":12},{\"s\":1,\"r\":13},{\"s\":1,\"r\":14},{\"s\":2,\"r\":3},{\"s\":2,\"r\":7},{\"s\":2,\"r\":8},{\"s\":3,\"r\":2},{\"s\":3,\"r\":6},{\"s\":3,\"r\":11},{\"s\":4,\"r\":4},{\"s\":4,\"r\":5},{\"s\":4,\"r\":14}],\"legalBids\":[{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5♣\",\"v\":445},{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5♦\",\"v\":446},{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5♥\",\"v\":448},{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5♠\",\"v\":447},{\"cTP\":true,\"eP\":11,\"l\":5,\"t\":\"5NT\",\"v\":444},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6♣\",\"v\":453},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6♦\",\"v\":454},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6♥\",\"v\":456},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6♠\",\"v\":455},{\"cTP\":true,\"eP\":12,\"l\":6,\"t\":\"6NT\",\"v\":452},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7♣\",\"v\":461},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7♦\",\"v\":462},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7♥\",\"v\":464},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7♠\",\"v\":463},{\"cTP\":true,\"eP\":13,\"l\":7,\"t\":\"7NT\",\"v\":460},{\"cTP\":true,\"t\":\"Pass\",\"v\":-2}],\"players\":[{\"Bid\":-1,\"BidHistory\":[440],\"CardsTaken\":\"\",\"Hand\":\"0U0U0U0U0U0U0U0U0U0U0U0U0U\",\"PlayedCards\":[],\"Seat\":0,\"VoidSuits\":[]},{\"Bid\":-1,\"BidHistory\":[-2],\"CardsTaken\":\"\",\"Hand\":\"0U0U0U0U0U0U0U0U0U0U0U0U0U\",\"PlayedCards\":[],\"Seat\":1,\"VoidSuits\":[]},{\"Bid\":436,\"BidHistory\":[416,436],\"CardsTaken\":\"\",\"Hand\":\"0U0U0U0U0U0U0U0U0U0U0U0U0U\",\"PlayedCards\":[],\"Seat\":2,\"VoidSuits\":[]},{\"Bid\":-2,\"BidHistory\":[-2,-2],\"CardsTaken\":\"\",\"Hand\":\"0U0U0U0U0U0U0U0U0U0U0U0U0U\",\"PlayedCards\":[],\"Seat\":3,\"VoidSuits\":[]}],\"upCard\":null,\"upCardSuit\":0,\"vulnerabilityBySeat\":[false,false,false,false],\"options\":{\"_honors\":{\"honors\":[{\"s\":2,\"r\":14},{\"s\":2,\"r\":13},{\"s\":2,\"r\":12},{\"s\":2,\"r\":10}],\"points\":0,\"seat\":-1},\"allowUndo\":true,\"allowUndoBids\":false,\"bidding\":4,\"miniBridgeBidLevels\":1,\"chicagoPartscore\":0,\"gameCode\":5,\"goodPracticeHandToSeatZero\":false,\"honorsBonus\":false,\"rubberDealLimit\":0,\"variation\":0,\"CompeteBuyIn\":0,\"CompeteFee\":0,\"CompeteWinnings\":0,\"gameOverScore\":2199023255552,\"gamePlayMode\":4,\"gameVisibility\":1,\"isCustom\":true,\"isPartnership\":true,\"noSuggestions\":true,\"noWatching\":true,\"reviewLastDeal\":true,\"scheduledStart\":\"\"},\"player\":{\"Bid\":-1,\"BidHistory\":[440],\"CardsTaken\":\"\",\"Hand\":\"6CQCKCAC3D7D8D2S6SJS4H5HAH\",\"PlayedCards\":[],\"Seat\":0,\"VoidSuits\":[]},\"trumpSuit\":0}",
+            DisplayName="Bridgit handles Blackwood")]
+        public void SnapshotTests(string expected, string snapshot)
+        {
+            var state = JsonConvert.DeserializeObject<SuggestBidState<BridgeOptions>>(snapshot);
+            var bot = new BridgeBot(new BridgeOptions{ bidding = BridgeBiddingScheme.TwoOverOne }, Suit.Unknown);
+            BidBase bid = null;
+
+            try
+            {
+                bid = bot.SuggestBid(state);
+            }
+            catch (Exception err)
+            {
+                Assert.Fail($"Bridgit threw an exception: {err}");
+            }
+
+            if (bid != null)
+                Assert.AreEqual(expected, BidString(bid.value));
+        }
+
+        [TestMethod]
+        [DataRow("7NT", "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C 6NT 6S 6H 6D 6C 7NT 7S 7H 7D 7C", DisplayName = "Bid grand slam in NT")]
+        [DataRow("7♠" , "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C 6NT 6S 6H 6D 6C 7NT 7S 7H 7D 7C", DisplayName = "Bid grand slam in a suit")]
+        [DataRow("3NT", "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid game in NT if slam is not available")]
+        [DataRow("4♠" , "ASKSQSJSAHKHQHJHADKDQDJDAC", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid game in a suit if slam is not available")]
+        [DataRow("1NT", "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in NT")]
+        [DataRow("1♠" , "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in a suit")]
+        [DataRow("1♥" , "JS9S7SAHKHQHJH4H3H8C4C3C2D", "ASQS3S7H2HKCTC6CJD8D6D5D4D", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Bid partscore in a suit (case 2)")]
+        [DataRow("1♥" , "KC9C8C2C9HASQS5SADJD7D4D3D", "ACTC6C3CAHJHTH8H5H3H2H3S2S", "1NT 1S 1H 1D 1C 3NT 4S 4H 5D 5C", DisplayName = "Prefer bidding a major")]
+        [DataRow("2NT", "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTSTHTDTC9S9H9D9C8S8H", "2C 2D 2H 2S 2NT", DisplayName = "Handle fixed bidding in NT")]
+        [DataRow("2♠" , "QSJS3S2SQHJH3H2HQDJD3D2D3C", "KCQCJCTCTS9S8S7S6S5S4S3S2S", "2C 2D 2H 2S 2NT", DisplayName = "Handle fixed bidding in a suit")]
+
+        public void MiniBridgeBidding(string bid, string hand, string partnerHand, string bids)
+        {
+            var legalBids = bids.Split(' ').Select(b => new BidBase(new DeclareBid(int.Parse(b[0].ToString()), LetterToSuit[b[1]]))).ToList();
+            var options = new BridgeOptions { variation = BridgeVariation.Mini };
+            var bot = new BridgeBot(options, Suit.Unknown);
+            var players = new List<PlayerBase>
+            {
+                new PlayerBase { Seat = 0, Hand = hand },
+                new PlayerBase { Seat = 1 },
+                new PlayerBase { Seat = 2, Hand = partnerHand },
+                new PlayerBase { Seat = 3 }
+            };
+            var state = new SuggestBidState<BridgeOptions>
+            {
+                hand = new Hand(players[0].Hand),
+                legalBids = legalBids,
+                player = players[0],
+                players = players
+            };
+            var suggestion = bot.SuggestBid(state);
+
+            Assert.AreEqual(bid, BidString(suggestion.value));
+        }
+
+        [TestMethod]
         public void FuzzPlays()
         {
             var failures = new List<string>();
@@ -53,6 +112,44 @@ namespace TestBots
                 var failure = RunPlayTest(test);
                 if (failure != null)
                     failures.Add(failure);
+            }
+            if (failures.Count > 0)
+                Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
+        }
+
+        [TestMethod]
+        public void BridgitSanityTests()
+        {
+            var failures = new List<string>();
+            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "Bridgit"), "*.pbn");
+            foreach (var file in files)
+            {
+                var text = File.ReadAllText(file);
+                var tests = PTN.ImportTests(text, new BridgeOptions());
+                var filename = Path.GetFileName(file);
+
+                if (!tests.All(t => t.nPlayers == 4 && t.nCardsPerPlayer == 13))
+                {
+                    failures.Add($"{filename}: Not all tests have 4 players with 13 cards each");
+                    continue;
+                }
+
+                foreach (var test in tests)
+                {
+                    if (!string.IsNullOrEmpty(test.bid))
+                    {
+                        // TODO: also validate bid description and metadata match expectations
+                        var failure = RunBidTest(new BidTest(test), BridgeBiddingScheme.TwoOverOne);
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
+                    }
+                    else
+                    {
+                        failures.Add($"{filename}: '{test.type}' must have an expected bid.");
+                    }
+                }
             }
             if (failures.Count > 0)
                 Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
@@ -68,8 +165,14 @@ namespace TestBots
             foreach (var file in files)
             {
                 var text = File.ReadAllText(file);
-                var tests = PBN.ImportTests(text);
+                var tests = PTN.ImportTests(text, new BridgeOptions());
                 var filename = Path.GetFileName(file);
+
+                if (!tests.All(t => t.nPlayers == 4 && t.nCardsPerPlayer == 13))
+                {
+                    failures.Add($"{filename}: Not all tests have 4 players with 13 cards each");
+                    continue;
+                }
 
                 foreach (var test in tests)
                 {
@@ -120,7 +223,7 @@ namespace TestBots
                     var pr = previousResults[i];
                     var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
                     var passed = suggestion == test.expectedBid;
-                    results[testItem.Key].Add(new SaycResult(passed, suggestion));
+                    results[testItem.Key].Add(new SaycResult(passed, suggestion, test.expectedBid));
 
                     if (pr.passed != passed || pr.suggested != suggestion)
                     {
@@ -181,7 +284,7 @@ namespace TestBots
             return new DeclareBid(level, suit);
         }
 
-        private static DeclareBid GetContract(BasicTests.BasicTest test)
+        private static DeclareBid GetContract(BasicTest test)
         {
             var level = int.Parse(test.contract.Substring(0, 1));
             var suit = LetterToSuit[test.contract[1]];
@@ -191,7 +294,7 @@ namespace TestBots
             return new DeclareBid(level, suit, doubleOrRe);
         }
 
-        private static string BidString(int bidValue)
+        public static string BidString(int bidValue)
         {
             switch (bidValue)
             {
@@ -212,9 +315,10 @@ namespace TestBots
             return passed ? "passed" : "failed";
         }
 
-        private static string RunBidTest(BidTest test)
+        private static string RunBidTest(BidTest test, BridgeBiddingScheme bidding = BridgeBiddingScheme.SAYC)
         {
-            var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
+            test.options.bidding = bidding;
+            var bot = new BridgeBot(test.options, Suit.Unknown);
             var suggestion = bot.SuggestBid(new BridgeBidHistory(test.bidHistory), test.hand).value;
 
             if (test.expectedBid != suggestion)
@@ -223,7 +327,7 @@ namespace TestBots
                 return null;
         }
 
-        private static string RunPlayTest(BasicTests.BasicTest test)
+        private static string RunPlayTest(BasicTest test)
         {
             var contract = GetContract(test);
             var cardsPlayedInOrder = "";
@@ -248,19 +352,19 @@ namespace TestBots
             var nextSeat = (test.declarerSeat + 1) % 4;
             for (var i = 0; i < test.plays.Length; i += 4)
             {
-                var trick = test.plays.Skip(i).Take(4).ToList();
+                var trick = new Hand(string.Join("", test.plays.Skip(i).Take(4).ToList()));
                 for (var j = 0; j < trick.Count; j++)
                 {
                     var card = trick[j];
                     var seat = (nextSeat + j) % 4;
                     var player = players[seat];
                     cardsPlayedInOrder += $"{seat}{card}";
-                    if (j > 0 && card[1] != trick[0][1])
-                        player.VoidSuits.Add(LetterToSuit[trick[0][1]]);
+                    if (j > 0 && card.suit != trick[0].suit)
+                        player.VoidSuits.Add(trick[0].suit);
                 }
                 if (trick.Count == 4)
                 {
-                    var topCard = PBN.GetTopCard(trick, test.contract[1]);
+                    var topCard = PTN.GetTopCard(trick, LetterToSuit[test.contract[1]], new BridgeOptions());
                     nextSeat = (nextSeat + trick.IndexOf(topCard)) % 4;
                     players[nextSeat].CardsTaken += string.Join("", trick);
                 }
@@ -333,7 +437,7 @@ namespace TestBots
             }
         }
 
-        private static string UnknownCards(int length = 13)
+        private static string UnknownCards(int length)
         {
             return string.Concat(Enumerable.Repeat("0U", length));
         }
@@ -360,12 +464,12 @@ namespace TestBots
 
             foreach (var result in results)
             {
-                var s = result.Value.Select(r => $"new SaycResult({r.passed.ToString().ToLowerInvariant()}, {r.suggested})");
+                var s = result.Value.Select(r => $"new SaycResult({r.passed.ToString().ToLowerInvariant()}, {r.suggested}, {r.expected}),{r.csComment}");
 
                 sb.AppendLine($@"             {{
                 ""{result.Key}"", new[]
                 {{
-                    {string.Join($",{Environment.NewLine}                    ", s)}
+                    {string.Join($"{Environment.NewLine}                    ", s)}
                 }}
              }},");
             }

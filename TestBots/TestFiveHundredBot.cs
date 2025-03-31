@@ -1,5 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -17,6 +20,130 @@ namespace TestBots
             isPartnership = false,
             players = 3
         };
+
+        [TestMethod]
+        [DataRow(  "6♦", "4D5D6D8D9CKC5H8HQHAH", FiveHundredVariation.Australian, 3,   0,    "",     "",     "",     "",  BidAfterPass.Never, DisplayName = "Keep bid minimal with weak trump")]
+        [DataRow("Pass", "4D5D6D8D9CKC5H8HQHAH", FiveHundredVariation.Australian, 3,   0,    "", "Pass", "Pass",   "6S",  BidAfterPass.Never, DisplayName = "Keep bid minimal with weak trump (Pass)")]
+        [DataRow(  "6♠", "AHKHTH7HKSQSJS8SKCTC", FiveHundredVariation.Australian, 3,   0,    "",     "",     "",     "",  BidAfterPass.Never, DisplayName = "Prefer picking suit with stronger trump")]
+        [DataRow("Pass", "AHKHTH7HKSQSJS8SKCTC", FiveHundredVariation.Australian, 3,   0,  "6S", "Pass", "Pass", "Pass",  BidAfterPass.Never, DisplayName = "Prefer picking suit with stronger trump (at correct level)")]
+        [DataRow(  "7♥", "HJJHQH4H6S9D8D8C7C6C", FiveHundredVariation.Australian, 3,   0, "6NT",     "",   "6H", "Pass",  BidAfterPass.Never, DisplayName = "Raise partner with support")]
+        [DataRow("Pass", "KSJS7SJH9D6DQC5C4CHJ", FiveHundredVariation.Australian, 5,   0, "6NT", "Pass",   "8C", "Pass",  BidAfterPass.Never, DisplayName = "Don't raise past 8 if missing tricks")]
+        [DataRow(  "8♦", "HJASJS7SQHKDQD9D7D4D", FiveHundredVariation.Australian, 3,   0, "6NT", "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Raise with a good fit with partner")]
+        [DataRow( "10♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3,   0, "6NT", "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid 10 if we have it")]
+        [DataRow("Pass", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT", "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Don't bid higher than needed to win")]
+        [DataRow(  "9♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 120, "6NT", "Pass",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Bid just high enough to win the game")]
+        [DataRow(  "8♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT",     "",   "7D", "Pass",  BidAfterPass.Never, DisplayName = "Keep bidding if opponents might overbid but no higher than necessary")]
+        [DataRow("Pass", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT",     "",   "7D", "Pass", BidAfterPass.Always, DisplayName = "Don't bid higher than partner if we can reenter bidding")]
+        [DataRow(  "8♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT", "Pass",   "7D",   "7H",  BidAfterPass.Never, DisplayName = "Overbid opponents but no higher than necessary")]
+        [DataRow(  "8♦", "HJJDJHADKDQDTD9D7D4D", FiveHundredVariation.Australian, 3, 480, "6NT", "Pass",   "7D",   "7H", BidAfterPass.Always, DisplayName = "Overbid opponents even if we can reenter bidding")]
+        [DataRow("Pass", "HJKSJSTS6H5HKC7CKDQD",   FiveHundredVariation.American, 5,   0, "6NT",     "", "Pass",   "8H",  BidAfterPass.Never, DisplayName = "Pass with insufficient strength to overbid opponents")]
+        [DataRow( "7NT", "HJQSKH6HQC5C4CQD7D6D",   FiveHundredVariation.American, 5,   0, "6NT",     "",     "",     "",  BidAfterPass.Never, DisplayName = "Only count the Joker as stopper once in NT")]
+        public void TestBidding(string bid, string hand, FiveHundredVariation variation, int kittySize, int score, string firstBidStr, string lhoBidStr, string partnerBidStr, string rhoBidStr, BidAfterPass bidAfterPass)
+        {
+            var firstBid = new FiveHundredBid(GetBid(firstBidStr));
+            var lhoBid = new FiveHundredBid(GetBid(lhoBidStr));
+            var partnerBid = new FiveHundredBid(GetBid(partnerBidStr));
+            var rhoBid = new FiveHundredBid(GetBid(rhoBidStr));
+            var options = new FiveHundredOptions
+            {
+                bidAfterPass = bidAfterPass,
+                deckSize = 40 + kittySize,
+                variation = variation,
+                whenNullo = FiveHundredWhenNullo.Off,
+            };
+            var players = new[]
+            {
+                new TestPlayer(hand: hand, seat: 0, bid: firstBid, gameScore: score),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 1, bid: lhoBid),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 2, bid: partnerBid, gameScore: score),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 3, bid: rhoBid)
+            };
+            
+            foreach (var p in players.Where(p => p.Bid != BidBase.NoBid))
+                p.BidHistory.Add(p.Bid);
+
+            var bot = GetBot(Suit.Unknown, options);
+            var bidState = new SuggestBidState<FiveHundredOptions>
+            {
+                dealerSeat = 3,
+                hand = new Hand(players[0].Hand),
+                legalBids = GetLegalBids(variation, rhoBid.IsContractor ? rhoBid : partnerBid.IsContractor ? partnerBid : lhoBid.IsContractor ? lhoBid : firstBid.IsContractor ? firstBid : new FiveHundredBid(BidBase.NoBid)),
+                options = options,
+                player = players[0],
+                players = players
+            };
+            var suggestion = bot.SuggestBid(bidState);
+            Assert.AreEqual(bid, suggestion.value == BidBase.Pass ? "Pass" : new FiveHundredBid(suggestion.value).ToString());
+        }
+
+        [TestMethod]
+        [DataRow("Pass", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.Australian,              null, DisplayName = "Don't bid 6NT with Joker and a weak hand in Australian")]
+        [DataRow( "6NT", "HJAS4S5H4HKD4D6C5C4C", FiveHundredVariation.Australian,              null, DisplayName = "Bid 6NT with Joker and a near weak hand in Australian")]
+        [DataRow("Pass", "HJAS4S5H4HKD4D6C5C4C", FiveHundredVariation.Australian,      BidBase.Pass, DisplayName = "Don't bid 6NT with Joker and a near weak hand in Australian if partner passed")]
+        [DataRow( "6NT", "HJASKSAH4H5D4D6C5C4C", FiveHundredVariation.Australian,              null, DisplayName = "Bid 6NT with Joker and a medium hand in Australian")]
+        [DataRow( "iNT", "HJ5S4S5H4H5D4D6C5C4C", FiveHundredVariation.American,                null, DisplayName = "Bid iNT in American")]
+        [DataRow( "6NT", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.Australian,              null, DisplayName = "Bid 6NT with Joker and a strong hand in Australian")]
+        [DataRow("10NT", "HJASKSQSJSTS9S8S7S6S", FiveHundredVariation.American,   (int)Suit.Unknown, DisplayName = "Bid 10NT with Joker and a strong hand in American")]
+        [DataRow( "10♠", "HJJSJCASKSQSTS9S8S7S", FiveHundredVariation.American,   (int)Suit.Unknown, DisplayName = "Bid 10♠ with Joker, a strong hand, and off-Jack in American")]
+        [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,              null, DisplayName = "Don't bid any NT without Joker in Australian (if partner hasn't bid)")]
+        [DataRow("Pass", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian,  (int)Suit.Spades, DisplayName = "Don't bid any NT without Joker in Australian (if partner didn't bid NT)")]
+        [DataRow( "7NT", "ASKSQSAHKHQHACKCADKD", FiveHundredVariation.Australian, (int)Suit.Unknown, DisplayName = "Bid 7NT without Joker if strong in NT and partner bid 6NT")]
+        [DataRow(  "9♠", "HJJSJCASKSQSTS9S7S4D", FiveHundredVariation.American,                null, DisplayName = "Bid natural instead of iNT in American with Joker")]
+        public void Bid6NtWithJoker(string bid, string hand, FiveHundredVariation variation, int? partnerBidSuit)
+        {
+            var partnerBid = BidBase.NoBid;
+            if (partnerBidSuit.HasValue)
+                partnerBid = partnerBidSuit < 0 ? partnerBidSuit.Value : new FiveHundredBid((Suit)partnerBidSuit.Value, 6);
+            var options = new FiveHundredOptions
+            {
+                variation = variation,
+                whenNullo = FiveHundredWhenNullo.Off,
+            };
+            var players = new[]
+            {
+                new TestPlayer(hand: hand, seat: 0),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 1),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 2, bid: partnerBid),
+                new TestPlayer(hand: "0U0U0U0U0U0U0U0U0U0U", seat: 3, bid: BidBase.Pass)
+            };
+            var bot = GetBot(Suit.Unknown, options);
+            var bidState = new SuggestBidState<FiveHundredOptions>
+            {
+                dealerSeat = 3,
+                hand = new Hand(players[0].Hand),
+                legalBids = GetLegalBids(variation, partnerBidSuit > -1 ? 7 : 6),
+                options = options,
+                player = players[0],
+                players = players
+            };
+            var suggestion = bot.SuggestBid(bidState);
+            Assert.AreEqual(bid, suggestion.value == BidBase.Pass ? "Pass" : new FiveHundredBid(suggestion.value).ToString());
+        }
+
+        [TestMethod]
+        public void TrumpBossEvenIfLhoIsVoid()
+        {
+            var options = new FiveHundredOptions
+            {
+                deckSize = 46,
+                variation = FiveHundredVariation.American,
+            };
+            var players = new[]
+            {
+                new TestPlayer(new FiveHundredBid(GetBid("7NT")),   "HJKSQSTSJH9HKC"),
+                new TestPlayer(FiveHundredBid.NotContractorBid,     "0?0?0?0?0?0?0?", cardsTaken: "ADLJKD9D") { VoidSuits = new List<Suit> { Suit.Diamonds }},
+                new TestPlayer(FiveHundredBid.ContractorPartnerBid, "0?0?0?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.NotContractorBid,     "0?0?0?0?0?0?", cardsTaken: "ACJC6C4C"),
+            };
+            var bot = GetBot(Suit.Unknown, options);
+            var cardState = new TestCardState<FiveHundredOptions>(
+                bot,
+                players,
+                trick: "QD"
+            );
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("HJ", $"{suggestion}");
+        }
 
         [TestMethod]
         public void SoloDucksIfEffectivePartnerTakingTrick()
@@ -161,9 +288,57 @@ namespace TestBots
             Assert.AreEqual(expectedCard, $"{suggestion}");
         }
 
+        private static int GetBid(string bid)
+        {
+            if (string.IsNullOrEmpty(bid))
+                return BidBase.NoBid;
+
+            if (bid == "Pass")
+                return BidBase.Pass;
+
+            var level = int.Parse(Regex.Match(bid, @"\d+").Value);
+            var suitString = Regex.Match(bid, @"\D+").Value;
+            var suitNames = Enum.GetNames(typeof(Suit));
+            var suitValues = Enum.GetValues(typeof(Suit));
+            var suitIndex = Array.FindIndex(suitNames, n => n.StartsWith(suitString));
+            var suit = suitIndex == -1 ? Suit.Unknown : (Suit)suitValues.GetValue(suitIndex);
+
+            return new FiveHundredBid(suit, level);
+        }
+
         private static FiveHundredBot GetBot(Suit trumpSuit, FiveHundredOptions options)
         {
             return new FiveHundredBot(options, trumpSuit);
+        }
+
+        private static List<BidBase> GetLegalBids(FiveHundredVariation variation, FiveHundredBid afterBid)
+        {
+            if ((int)afterBid == BidBase.NoBid)
+                return GetLegalBids(variation);
+
+            if (afterBid.Suit == Suit.Unknown)
+                return GetLegalBids(variation, afterBid.Tricks + 1);
+
+            var nextSuitRank = FiveHundredBid.suitRank[afterBid.Suit] + 1;
+            var nextSuit = FiveHundredBid.suitRank.FirstOrDefault(sr => sr.Value == nextSuitRank).Key;
+            return GetLegalBids(variation, afterBid.Tricks, nextSuit);
+        }
+
+        private static List<BidBase> GetLegalBids(FiveHundredVariation variation, int start = FiveHundredBid.MinTricks, Suit startSuit = Suit.Spades)
+        {
+            var bids = new List<BidBase>();
+
+            for (var nTricks = start; nTricks <= FiveHundredBid.MaxTricks; ++nTricks)
+            {
+                var inkle = variation == FiveHundredVariation.American && nTricks == FiveHundredBid.MinTricks;
+                bids.AddRange(FiveHundredBid.suitRank.OrderBy(sr => sr.Value)
+                    .Where(sr => nTricks > start || sr.Value >= FiveHundredBid.suitRank[startSuit])
+                    .Select(sr => new BidBase(new FiveHundredBid(sr.Key, nTricks, inkle))));
+            }
+
+            bids.Add(new BidBase(BidBase.Pass));
+
+            return bids;
         }
     }
 }

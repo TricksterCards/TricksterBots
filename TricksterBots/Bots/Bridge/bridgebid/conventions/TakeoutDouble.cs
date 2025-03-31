@@ -27,6 +27,7 @@ namespace Trickster.Bots
 
             if (bid.BidPhase == BidPhase.Response && bid.History[bid.Index - 1].BidConvention == BidConvention.TakeoutDouble)
                 return Response(bid.History[bid.Index - 2], bid);
+
             if (bid.Index >= 2 && bid.History[bid.Index - 2].BidConvention == BidConvention.TakeoutDouble)
             {
                 Advance(bid);
@@ -51,7 +52,6 @@ namespace Trickster.Bots
             if (!advance.bidIsDeclare)
                 return;
 
-            //  TODO: consider passing if RHO bid
             var opening = advance.History.First(b => b.bid != BidBase.Pass);
             var lowestAvailableLevel = advance.LowestAvailableLevel(advance.declareBid.suit);
 
@@ -63,24 +63,24 @@ namespace Trickster.Bots
                     advance.IsBalanced = true;
                     advance.Description = $"stopper in {opening.declareBid.suit}";
                     advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
-                }
 
-                if (advance.declareBid.level == lowestAvailableLevel)
-                {
-                    //  6-10 points: bid notrump at the cheapest level
-                    advance.Points.Min = 6;
-                    advance.Points.Max = 10;
-                }
-                else if (advance.declareBid.level == lowestAvailableLevel + 1)
-                {
-                    //  11-12 points: bid notrump, jumping a level
-                    advance.Points.Min = 11;
-                    advance.Points.Max = 12;
-                }
-                else if (advance.declareBid.level == 3)
-                {
-                    //  13+ points: bid game in notrump
-                    advance.Points.Min = 13;
+                    if (advance.declareBid.level == lowestAvailableLevel)
+                    {
+                        //  6-10 points: bid notrump at the cheapest level
+                        advance.Points.Min = 6;
+                        advance.Points.Max = 10;
+                    }
+                    else if (advance.declareBid.level == lowestAvailableLevel + 1)
+                    {
+                        //  11-12 points: bid notrump, jumping a level
+                        advance.Points.Min = 11;
+                        advance.Points.Max = 12;
+                    }
+                    else if (advance.declareBid.level == 3)
+                    {
+                        //  13+ points: bid game in notrump
+                        advance.Points.Min = 13;
+                    }
                 }
                 else if (advance.declareBid.level == 4)
                 {
@@ -93,6 +93,7 @@ namespace Trickster.Bots
             else
             {
                 var gameLevel = BridgeBot.IsMajor(advance.declareBid.suit) ? 4 : 5;
+                var bidSuits = advance.History.Where(b => b.bidIsDeclare).Select(b => b.declareBid.suit).Distinct().ToList();
 
                 if (advance.declareBid.suit == opening.declareBid.suit)
                 {
@@ -103,45 +104,58 @@ namespace Trickster.Bots
                     advance.Description = "asking for more information";
                     advance.Validate = hand => false;
                 }
-                else if (advance.declareBid.level == lowestAvailableLevel && advance.declareBid.level <= 2)
+                else if (!bidSuits.Contains(advance.declareBid.suit))
                 {
-                    //  0-8 points: bid at the cheapest level
-                    advance.Points.Max = 8;
-                    advance.HandShape[advance.declareBid.suit].Min = 4;
-                    advance.Description = $"4+ {advance.declareBid.suit}";
-                }
-                else if (advance.declareBid.level == lowestAvailableLevel + 1 && advance.declareBid.level <= 3)
-                {
-                    //  9-11 points: make an invitational bid by jumping a level
-                    advance.Points.Min = 9;
-                    advance.Points.Max = 11;
-                    advance.HandShape[advance.declareBid.suit].Min = 4;
-                    advance.Description = $"4+ {advance.declareBid.suit}; inviting game";
-                }
-                else if (advance.declareBid.level == gameLevel - 1)
-                {
-                    //  4-8 points: make a preemptive bid below game with 6+ cards
-                    advance.Points.Min = 4;
-                    advance.Points.Max = 8;
-                    advance.HandShape[advance.declareBid.suit].Min = 6;
-                    advance.IsPreemptive = true;
-                    advance.Description = $"6+ {advance.declareBid.suit}";
-                }
-                else if (advance.declareBid.level == gameLevel)
-                {
-                    //  12+ points: get the partnership to game
-                    var minCards = BridgeBot.IsMajor(advance.declareBid.suit) ? 4 : 5;
-                    advance.Points.Min = 12;
-                    advance.HandShape[advance.declareBid.suit].Min = minCards;
-                    advance.Description = $"{minCards}+ {advance.declareBid.suit}";
+                    if (advance.declareBid.level == lowestAvailableLevel)
+                    {
+                        //  0-8 points: bid at the cheapest level (but don't cap points if we're at the game level)
+                        if (lowestAvailableLevel < gameLevel - 1)
+                            advance.Points.Max = 8;
+
+                        advance.HandShape[advance.declareBid.suit].Min = 4;
+                        advance.Description = $"4+ {advance.declareBid.suit}";
+                        advance.Validate = hand =>
+                        {
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            var maxCount = counts.Where(kvp => !bidSuits.Contains(kvp.Key)).Max(kvp => kvp.Value);
+                            return counts[advance.declareBid.suit] == maxCount;
+                        };
+                    }
+                    else if (advance.declareBid.level == lowestAvailableLevel + 1 && advance.declareBid.level <= 3)
+                    {
+                        //  9-11 points: make an invitational bid by jumping a level
+                        advance.Points.Min = 9;
+                        advance.Points.Max = 11;
+                        advance.HandShape[advance.declareBid.suit].Min = 4;
+                        advance.Description = $"4+ {advance.declareBid.suit}; inviting game";
+                    }
+                    else if (advance.declareBid.level == gameLevel - 1)
+                    {
+                        //  4-8 points: make a preemptive bid below game with 6+ cards
+                        advance.Points.Min = 4;
+                        advance.Points.Max = 8;
+                        advance.HandShape[advance.declareBid.suit].Min = 6;
+                        advance.IsPreemptive = true;
+                        advance.Description = $"6+ {advance.declareBid.suit}";
+                    }
+                    else if (advance.declareBid.level == gameLevel)
+                    {
+                        //  12+ points: get the partnership to game
+                        var minCards = BridgeBot.IsMajor(advance.declareBid.suit) ? 4 : 5;
+                        advance.Points.Min = 12;
+                        advance.HandShape[advance.declareBid.suit].Min = minCards;
+                        advance.Description = $"{minCards}+ {advance.declareBid.suit}";
+                    }
                 }
             }
         }
 
         private static bool Overcall(InterpretedBid opening, InterpretedBid response, InterpretedBid overcall)
         {
-            //  a double is for takeout over an opening partscore bid (4D or lower)
-            if (overcall.LowestAvailableLevel(Suit.Hearts) > 4)
+            //  a double is for takeout over 4D or lower
+            var level = response?.declareBid?.level ?? opening.declareBid.level;
+            var suit = response?.declareBid?.suit ?? opening.declareBid.suit;
+            if (BridgeBot.IsMinor(suit) ? level > 4 : level >= 4)
                 return false;
 
             var bidSuits = SuitRank.stdSuits.Where(s =>

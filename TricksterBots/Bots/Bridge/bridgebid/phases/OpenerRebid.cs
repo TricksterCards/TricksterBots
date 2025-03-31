@@ -229,6 +229,7 @@ namespace Trickster.Bots
                 if (rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  minimum: lowest available level; may have good 3-card support (13-15 points)
+                    rebid.BidPointType = BidPointType.Dummy;
                     rebid.Points.Min = 13;
                     rebid.Points.Max = 15;
                     rebid.HandShape[rebid.declareBid.suit].Min = 3;
@@ -237,6 +238,7 @@ namespace Trickster.Bots
                 else if (rebid.declareBid.level == lowestAvailableLevel + 1)
                 {
                     //  medium: jump raise (16-18 points)
+                    rebid.BidPointType = BidPointType.Dummy;
                     rebid.Points.Min = 16;
                     rebid.Points.Max = 18;
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
@@ -245,6 +247,7 @@ namespace Trickster.Bots
                 else if (rebid.declareBid.level == lowestAvailableLevel + 2)
                 {
                     //  maximum: double jump (19-21 points)
+                    rebid.BidPointType = BidPointType.Dummy;
                     rebid.Points.Min = 19;
                     rebid.Points.Max = 21;
                     rebid.HandShape[rebid.declareBid.suit].Min = 5;
@@ -293,7 +296,7 @@ namespace Trickster.Bots
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.Description = $"New suit; 4+ {rebid.declareBid.suit}";
                 }
-                else if (rebid.declareBid.suit > opening.declareBid.suit && rebid.declareBid.level == lowestAvailableLevel)
+                else if (BridgeBot.suitRank[rebid.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] && rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  medium: REVERSE in a new suit (16-21 points)
                     rebid.Points.Min = 16;

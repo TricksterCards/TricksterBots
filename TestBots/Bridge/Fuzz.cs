@@ -8,9 +8,12 @@ namespace TestBots.Bridge
 {
     internal class Fuzz
     {
-        public static BasicTests.BasicTest[] GeneratePlayTests(int count)
+        private const string StdSuitLetters = "SHDC";
+        private const string StdCardRanks = " 23456789TJQKA";
+
+        public static BasicTest[] GeneratePlayTests(int count)
         {
-            var tests = new List<BasicTests.BasicTest>();
+            var tests = new List<BasicTest>();
             var random = new Random(1); // Specify a seed so re-runs are deterministic
 
             for (var i = 0; i < count; i++)
@@ -20,7 +23,7 @@ namespace TestBots.Bridge
                 var plays = GetRandomPlayHistory(random, contract[1], hands, declarerSeat, out var nextPlaySeat);
                 var hand = hands[nextPlaySeat];
                 var dummy = plays.Length > 0 ? string.Join("", hands[(declarerSeat + 2) % 4]) : "";
-                tests.Add(new BasicTests.BasicTest()
+                tests.Add(new BasicTest
                 {
                     play = "", // accept any suggestion, so long as we don't error
                     contract = contract,
@@ -53,11 +56,11 @@ namespace TestBots.Bridge
         private static List<string> GetDeck()
         {
             var deck = new List<string>();
-            for (var s = 0; s < PBN.SuitLetters.Length; s++)
+            for (var s = 0; s < StdSuitLetters.Length; s++)
             {
-                for (var r = 1; r < PBN.CardRanks.Length; r++)
+                for (var r = 1; r < StdCardRanks.Length; r++)
                 {
-                    deck.Add($"{PBN.CardRanks[r]}{PBN.SuitLetters[s]}");
+                    deck.Add($"{StdCardRanks[r]}{StdSuitLetters[s]}");
                 }
             }
             return deck;
@@ -161,8 +164,8 @@ namespace TestBots.Bridge
                     plays.Add(card);
                     hand.Remove(card);
 
-                    var rank = PBN.CardRanks.IndexOf(card[0]);
-                    var topRank = PBN.CardRanks.IndexOf(topCard[0]);
+                    var rank = StdCardRanks.IndexOf(card[0]);
+                    var topRank = StdCardRanks.IndexOf(topCard[0]);
                     var isTop = card[1] == trump && topCard[1] != trump || (card[1] == topCard[1] && rank > topRank);
                     if (isTop)
                     {

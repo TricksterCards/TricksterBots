@@ -1,0 +1,15 @@
+[Event "Avoid leading trump on defense"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"numDecks\":2,\"deckSize\":16}"]
+[Deal "N:- QT.QT.K9.JJ - -"]
+[Declarer "N"]
+[Contract "4♣"]
+[Play "E"]
+D9 - - -
+
+[Event "Lead high card with 2+ high cards"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"numDecks\":2,\"deckSize\":16}"]
+[Deal "N:- QT.QT.K9.JJ - -"]
+[Declarer "E"]
+[Contract "4♣"]
+[Play "E"]
+CJ - - -

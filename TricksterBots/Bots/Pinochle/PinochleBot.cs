@@ -11,11 +11,15 @@ namespace Trickster.Bots
         {
         }
 
-        public override DeckType DeckType => options.doubleDeck ? DeckType.Pinochle80 : DeckType.Pinochle48;
-
         public override BidBase SuggestBid(SuggestBidState<PinochleOptions> state)
         {
             var (legalBids, players, player, hand) = (state.legalBids, new PlayersCollectionBase(this, state.players), state.player, state.hand);
+
+            if (legalBids.Any(b => PinochleBid.BidIsNoShoot(b.value)))
+            {
+                //  we're asking the player to shoot or not shoot. for now, always answer no shoot.
+                return PinochleBid.NoShootBid;
+            }
 
             var passBid = legalBids.FirstOrDefault(b => b.value == BidBase.Pass);
 

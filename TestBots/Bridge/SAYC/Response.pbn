@@ -1,0 +1,50 @@
+
+[Event "Respond with game-going strength"]
+[Deal "S:- - 5.KQ9752.A64.AJ4 -"]
+[Auction "S"]
+1S Pass 2H Pass
+
+[Event "Respond to NT with game-going strength"]
+[Deal "E:- - - Q.K73.KQ843.AJ54"]
+[Auction "E"]
+Pass 1NT Pass 3NT
+
+[Event "Don't rebid partner's suit without support"]
+[Deal "W:- Q.KJ95.AJT86.T42 - -"]
+[Declarer "S"]
+[Contract "2S"]
+[Auction "W"]
+Pass 1D Pass 1S
+Pass 1NT
+
+[Event "Respond to a pre-empt without support below game"]
+[Deal "S:- - .K643.AJT93.J976 -"]
+[Auction "S"]
+2S Pass 3D Pass
+
+[Event "Respond to a pre-empt without support above game"]
+[Deal "S:- - .K643.AJT93.J976 -"]
+[Auction "S"]
+4S Pass Pass Pass
+
+[Event "Respond to a pre-empt with support below game"]
+[Deal "S:- - .K64.AJT93.J9763 -"]
+[Auction "S"]
+2H Pass 3H Pass
+
+[Event "Respond to a pre-empt with support above game"]
+[Deal "S:- - .K64.AJT93.J9763 -"]
+[Auction "S"]
+4H Pass Pass Pass
+
+[Event "Use dummy points when responding with support"]
+[Deal "N:5.K983.842.AQT94 - AK3.AJT54.KQ.J85 -"]
+[Auction "N"]
+Pass Pass 1H Pass
+2C Pass 3NT Pass
+4H Pass Pass Pass
+
+[Event "Respond to minor with gap strength (too strong for 1NT; too weak for 2NT)"]
+[Deal "E:- - - QT5.T87.QJ4.AQ93"]
+[Auction "E"]
+Pass 1C Pass 1NT

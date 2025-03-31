@@ -210,9 +210,9 @@ namespace Trickster.Bots
             //  2C-2D-3N-4C
             response.BidConvention = BidConvention.Stayman;
             response.BidMessage = BidMessage.Forcing;
-            response.Points.Min = response.declareBid.level == 1 ? 8 : response.declareBid.level == 2 ? 4 : 0;
+            response.Points.Min = response.declareBid.level <= 2 ? 8 : 4;
             response.Description = "asking for a major";
-            response.Priority = 100; // always prefer Stayman over other bids when valid
+            response.Priority = 1; // always prefer Stayman over other bids when valid
             response.Validate = hand =>
             {
                 //  we should have 4H or 4S (any more and we'll use a transfer instead)

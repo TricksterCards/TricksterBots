@@ -26,6 +26,77 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void PlayHandThatBidItself()
+        {
+            var players = new[]
+            {
+                new TestPlayer(hand: "AC3C"),
+                new TestPlayer(hand: "3H"),
+                new TestPlayer(hand: "4H"),
+                new TestPlayer(hand: "5H"),
+            };
+
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "4C5C6C");
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            //  should try to take tricks when playing "first hand bid itself" (e.g. our bid is BidBase.NoBid)
+            Assert.AreEqual("AC", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected AC");
+        }
+
+        [TestMethod]
+        [DataRow("2H3H", "JH5H",   "", "JH")]
+        [DataRow("3H2H", "JH5H",   "", "JH")]
+        [DataRow("9HTH", "QHJH",   "", "JH")]
+        [DataRow("9HTH", "KHJH",   "", "KH")]
+        [DataRow("TH9H", "QH7H",   "", "QH")]
+        [DataRow("TH9H", "JH7H",   "", "7H")]
+        [DataRow("9HTH", "JH7H",   "", "JH")]
+        [DataRow("7H8H", "QHTH",   "", "QH")]
+        [DataRow("7H8H", "QHTH", "JH", "TH")]
+        public void PlayHighFrom3rdSeat(string trick, string hand, string cardsTaken, string card)
+        {
+            var players = new[]
+            {
+                new TestPlayer(1, hand),
+                new TestPlayer(5),
+                new TestPlayer(1, cardsTaken: cardsTaken),
+                new TestPlayer(5)
+            };
+
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, trick);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual(card, suggestion.ToString());
+        }
+
+        [TestMethod]
+        public void PlayHighFrom3rdSeatWithPlayHistory()
+        {
+            var options = new SpadesOptions
+            {
+                minBid = 4,
+                nilOrZero = SpadesNilOrZero.Zero,
+                isPartnership = true,
+                tenForTwoHundred = true,
+                variation = SpadesVariation.JokerJokerDeuceDeuce
+            };
+
+            var players = new[]
+            {
+                new TestPlayer(5, "ASKSQSTS5S4S", handScore: 2, cardsTaken: "TH6H4H3HAC5CTC4C"),
+                new TestPlayer(2, handScore: 3, cardsTaken: "JDADTD3DKCJC6C3C7H8HKH3S"),
+                new TestPlayer(2, handScore: 2, cardsTaken: "9HAH5HQH9CQC7C8C"),
+                new TestPlayer(4, handScore: 0, cardsTaken: "")
+            };
+
+            var bot = GetBot(options);
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "7S6S");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("QS", suggestion.ToString(), "Play high from 3rd seat");
+        }
+
+        [TestMethod]
         public void DontTakeBagsIfWeCantSetOpponents()
         {
             var players = new[]
@@ -264,15 +335,62 @@ namespace TestBots
         }
 
         [TestMethod]
-        public void TestBids()
+        [DataRow( 4, "2D3D5D6D8DTD  QH 2S3S5S7S9SAS", -1, 0, DisplayName = "Bid 4 with AS and 3 opportunities to cut")]
+        [DataRow(13, "   2S3S4S5S6S7S8S9STSJSQSKSAS", -1, 0, DisplayName = "Bid 13 with all Spades")]
+        [DataRow(13, "  AH 3S4S5S6S7S8S9STSJSQSKSAS", -1, 0, DisplayName = "Bid 13 with highest Spades and one off-suit Ace")]
+        [DataRow(13, "AD AC AH 5S6S7S8S9STSJSQSKSAS", -1, 0, DisplayName = "Bid 13 with highest Spades and all off-suit Aces")]
+        [DataRow( 0, "2C3C4C5C6C7C8C 2D3D4D5D6D7D  ", -1, 0, DisplayName = "Bid Nil with all lowest off-suit cards")]
+        [DataRow( 1, "2C3C4C5C6C7C8C 2D3D4D5D6D7D  ",  0, 0, DisplayName = "Don't bid Nil if partner already bid Nil")]
+        [DataRow( 1, "2C3C4C5C6C7C8C 2D3D4D5D6D  AS", -1, 0, DisplayName = "Bid 1 instead of Nil with no pass")]
+        [DataRow( 0, "2C3C4C5C6C7C8C 2D3D4D5D6D  AS", -1, 1, DisplayName = "Bid Nil instead of 1 with 1-card pass")]
+        [DataRow( 2, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 0, DisplayName = "Bid 2 without a pass")]
+        [DataRow( 2, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 1, DisplayName = "Bid 2 with only 1-card pass")]
+        [DataRow( 0, "2C3C4C5C6C7C8C 2D3D4D5D  ASKS", -1, 2, DisplayName = "Bid Nil instead of 2 with 2-card pass")]
+        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 0, DisplayName = "Bid 4 without a pass")]
+        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 1, DisplayName = "Bid 4 with only 1-card pass")]
+        [DataRow( 5, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 2, DisplayName = "Bid 5 instead of 4 with 2-card pass if partner hasn't bid yet")]
+        [DataRow( 5, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS",  0, 2, DisplayName = "Bid 5 instead of 4 with 2-card pass if partner bid Nil")]
+        [DataRow( 4, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS",  3, 2, DisplayName = "Bid 4 with 2-card pass if partner bid non-Nil")]
+        [DataRow( 0, "2C3C4C5C6C 2D3D4D5D  ASKSQSJS", -1, 4, DisplayName = "Bid Nil instead of 4 with 4-card pass")]
+        [DataRow( 0, "2C3C4C 2D3DAD 2H3H4H ASKSQS3S", -1, 4, DisplayName = "Bid Nil instead of 4 with 4-card pass (case 2)")]
+        [DataRow( 6, "2C3C4C 2D3DAD 2H3H4H ASKSQS3S",  0, 4, DisplayName = "Bid 6 instead of 4 with 4-card pass if partner bid Nil")]
+        [DataRow( 7, "2C3C4C5C6C 2D3D4DAD  ASKSQSJS", -1, 4, DisplayName = "Bid 7 instead of 5 with 4-card pass if partner hasn't bid yet")]
+        [DataRow( 5, "2C3C4C5C6C 2D3D4DAD  ASKSQSJS",  5, 4, DisplayName = "Bid 5 with 4-card pass if partner bid non-Nil")]
+        public void TestBids(int bid, string handStr, int partnerBid, int nilPass)
         {
-            Assert.AreEqual(4, GetSuggestedBid("2D3D5D6D8DTD  QH 2S3S5S7S9SAS", out var hand), $"Expect bid of 4 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(13, GetSuggestedBid("   2S3S4S5S6S7S8S9STSJSQSKSAS", out hand), $"Expect bid of 13 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(13, GetSuggestedBid("  AH 3S4S5S6S7S8S9STSJSQSKSAS", out hand), $"Expect bid of 13 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(13, GetSuggestedBid("AD AC AH 5S6S7S8S9STSJSQSKSAS", out hand), $"Expect bid of 13 for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(0, GetSuggestedBid("2C3C4C5C6C7C8C 2D3D4D5D6D7D  ", out hand), $"Expect bid of Nil for hand {Util.PrettyHand(hand)}");
-            Assert.AreEqual(1, GetSuggestedBid("2C3C4C5C6C7C8C 2D3D4D5D6D7D  ", out hand, 0),
-                $"Expect bid of 1 for hand {Util.PrettyHand(hand)} and partner bid Nil");
+            Assert.AreEqual(bid, GetSuggestedBid(handStr, out var hand, partnerBid, new SpadesOptions { nilPass = nilPass }),
+                $"Expect bid of {bid} for hand {Util.PrettyHand(hand)} if partner bid ${partnerBid} with {nilPass}-card Nil pass");
+        }
+
+
+
+        [TestMethod]
+        public void DontBidNilAfterBlindNil()
+        {
+            var handString = "2C3C4C5C6C7C8C 2D3D4D5D6D7D  ";
+            var players = new[]
+            {
+                new TestPlayer(seat: 0, hand: handString.Replace(" ", string.Empty)),
+                new TestPlayer(seat: 1),
+                new TestPlayer(seat: 2),
+                new TestPlayer(seat: 3, bid: 20 /* Blind Nil */)
+            };
+
+            var legalBids = new List<BidBase>();
+            for (var v = 0; v <= 13; ++v) legalBids.Add(new BidBase(v));
+
+            var hand = new Hand(players[0].Hand);
+            var bidState = new SuggestBidState<SpadesOptions>
+            {
+                player = players[0],
+                players = players,
+                legalBids = legalBids,
+                hand = hand
+            };
+
+            var suggestion = GetBot().SuggestBid(bidState).value;
+
+            Assert.AreEqual(1, suggestion, "Don't bid Nil after Blind Nil");
         }
 
         [TestMethod]
@@ -296,10 +414,13 @@ namespace TestBots
 
         private static SpadesBot GetBot(SpadesOptions options)
         {
+            if (options == null)
+                return GetBot();
+
             return new SpadesBot(options, Suit.Spades);
         }
 
-        private static int GetSuggestedBid(string handString, out Hand hand, int partnerBid = BidBase.NoBid)
+        private static int GetSuggestedBid(string handString, out Hand hand, int partnerBid = BidBase.NoBid, SpadesOptions options = null)
         {
             var players = new[]
             {
@@ -321,7 +442,7 @@ namespace TestBots
                 hand = hand
             };
 
-            return GetBot().SuggestBid(bidState).value;
+            return GetBot(options).SuggestBid(bidState).value;
         }
 
         private static string GetSuggestedPass(int bid)

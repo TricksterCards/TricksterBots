@@ -576,7 +576,7 @@ namespace TestBots
                     new[] { "KQ.AJT.K87.A9876", "4H", "1S P 2H P" }, // p54, h18
                     new[] { "K5.AJ9.AKJ984.A9", "4H", "1H P 1N P" }, // p54, h19 (Maybe 3H?)
                     new[] { "K765.AK87.KQ.A98", "2N", "1D P 1H P" }, // p54, h20
-                    new[] { "K4.AKQJ94.87.A96", "3N", "1D P 1H P" }, // p54, h21
+                    new[] { "K4.AKQJ94.87.A96", "3D", "1D P 1H P" }, // p54, h21 (conservative 3D or gambling 3NT)
 
                     // JumpShift is forcing and thus better than rebidding to show 6 hearts.
                     new[] { "AKJ5.Q2.AQ9842.A", "3C", "P 1H P 1S P" }, // 8-7855840deedca11a0d32bf79b8, N

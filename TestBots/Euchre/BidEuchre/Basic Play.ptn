@@ -1,0 +1,29 @@
+[Event "Trump in low"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1}"]
+[Deal "N:AJ9.K.AT. K.T.J9.AK T.AJ..JT9 Q.Q9.KQ.Q"]
+[Declarer "S"]
+[Contract "3♣"]
+[Play "E"]
+D9 C9 - -
+
+[Event "Double-Deck Bleed Trump"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"numDecks\":2}"]
+[Deal "E:Q99.AJ.AKJT.QJT AAQJ.AQJ.JT.AJT KKT.K99.AQ99.AK JT.KQTT.KQ.KQ99"]
+[Declarer "S"]
+[Contract "6♠"]
+[Play "S"]
+SJ ST ST S9
+SQ SK SJ S9
+CA CK C9 CQ
+CJ SK C9 SQ
+HA H9 HT HJ
+
+[Event "Test"]
+[GameOptionsJson "{\"gameOverScore\":30,\"variation\":1,\"deckSize\":16,\"numDecks\":2}"]
+[Deal "W:KKQ.K.AJ.AQ J.Q.AQ.KKQJ AAJ.KQ.KKJ. Q.AAJJ.Q.AJ"]
+[Declarer "S"]
+[Contract "7♥"]
+[Play "N"]
+HQ DJ HJ HK
+CJ HQ HJ DJ
+SJ HK HA CQ

@@ -17,6 +17,60 @@ Pass 3D 3S Pass
 Pass 3D 3S 5D
 Pass
 
+[Event "Make and advance Michael's cuebid"]
+[Deal "W:- JT95.63.KQT5.KT7 - KQ876.A5.J.AQJ83"]
+[Auction "W"]
+1H Pass Pass 2H
+Pass 2S
+
+[Event "Double of game bid is for penalty, not takeout"]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:- 95.Q.A97654.J764 - -"]
+[Auction "S"]
+4S Pass Pass X
+Pass Pass
+
+[Event "Bid best suit when advancing a takeout double"]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:- 95.Q.A97654.J764 - -"]
+[Auction "S"]
+3S Pass Pass X
+Pass 4D
+
+[Event "Double of 4C is a takeout double"]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:- 95.Q.A97654.J764 - -"]
+[Auction "S"]
+4C Pass Pass X
+Pass 4D
+
+[Event "Double of 4D is a takeout double"]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:- 95.A97654.Q.J764 - -"]
+[Auction "S"]
+4D Pass Pass X
+Pass 4H
+
+[Event "Double of 4H is for penalty, not takeout"]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:- 95.Q.A97654.J764 - -"]
+[Auction "S"]
+4H Pass Pass X
+Pass Pass
+
+[Event "Takeout double avoiding two suits"]
+[Dealer "S"]
+[Vulnerable "None"]
+[Deal "S:- A643.86325..K832 - -"]
+[Auction "S"]
+1S Pass 2H X
+Pass 3C
+
 [Event "Advance a Takeout Double over 1NT"]
 [Deal "N:84.Q9.A832.Q9852 - - -"]
 [Auction "N"]

@@ -4,6 +4,26 @@
 1NT Pass 2H Pass
 2S Pass Pass Pass
 
+[Event "Natural Spades, minimum hand"]
+[GameOptionsJson "{\"noTransfers\":true}"]
+[Deal "N:KT97.KQJ.KQ5.J97 A6.9652.AT6.QT52 J5432.A4.J98.863 Q8.T873.7432.AK4"]
+[Auction "N"]
+1NT Pass 2S Pass
+Pass Pass
+
+[Event "Transfer to Hearts minimum hand"]
+[Deal "N:KQJ.KT97.KQ5.J97 - A4.J5432.J98.863 -"]
+[Auction "N"]
+1NT Pass 2D Pass
+2H Pass Pass Pass
+
+[Event "Natural Hearts, minimum hand"]
+[GameOptionsJson "{\"noTransfers\":true}"]
+[Deal "N:KQJ.KT97.KQ5.J97 - A4.J5432.J98.863 -"]
+[Auction "N"]
+1NT Pass 2H Pass
+Pass Pass
+
 [Event "Transfer to Spades - Invitational, Refused"]
 [Deal "N:KT9.KQJ7.KQ5.J97 5.T983.AJT4.A643 AQ432.654.32.K85 J876.A2.9876.QT2"]
 [Auction "N"]

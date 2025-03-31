@@ -34,16 +34,19 @@ namespace Trickster.Bots
 
         public string AlternatePoints = string.Empty;
 
-        public int Priority = 0;
+        public readonly BridgeBotOptions Options;
+
+        public int Priority = 100;
 
         public InterpretedBid()
         {
         }
 
-        public InterpretedBid(int bid, List<InterpretedBid> history, int index)
+        public InterpretedBid(int bid, List<InterpretedBid> history, int index, BridgeBotOptions options)
         {
             Index = index;
             History = history;
+            Options = options;
 
             this.bid = bid;
             bidIsDeclare = DeclareBid.Is(bid);
@@ -135,14 +138,12 @@ namespace Trickster.Bots
 
                 var preemptString = IsPreemptive ? "; preempt" : string.Empty;
 
-                var bidMessageString = BidMessage == BidMessage.Invitational ? string.Empty : $" [{PrettyBidMessage}]";
-
                 var maxPointsString = Points.Max >= 37 ? "+" : $"-{Points.Max}";
                 var pointTypeString = BidPointType == BidPointType.Hcp ? "HCP" : BidPointType == BidPointType.Dummy ? "dummy points" : "points";
                 var alternateString = string.IsNullOrEmpty(AlternatePoints) ? string.Empty : " or " + AlternatePoints;
                 var pointsString = Points.Min <= 0 && Points.Max >= 37 ? string.Empty : $" ({Points.Min}{maxPointsString} {pointTypeString}{alternateString})";
 
-                return conventionString + distribution + goodString + Description + preemptString + pointsString + bidMessageString;
+                return conventionString + distribution + goodString + Description + preemptString + pointsString;
             }
         }
 
@@ -156,11 +157,11 @@ namespace Trickster.Bots
             get { return rxSpaceBefore.Replace(BidMessage.ToString(), m => m.Groups[1].Value + " " + m.Groups[2].Value.ToLowerInvariant()); }
         }
 
-        public static List<InterpretedBid> InterpretHistory(BridgeBidHistory bidHistory)
+        public static List<InterpretedBid> InterpretHistory(BridgeBidHistory bidHistory, BridgeBotOptions options)
         {
             var history = new List<InterpretedBid>();
 
-            for (var i = 0; i < bidHistory.Count; i++) history.Add(new InterpretedBid(bidHistory[i], history, i));
+            for (var i = 0; i < bidHistory.Count; i++) history.Add(new InterpretedBid(bidHistory[i], history, i, options));
 
             return history;
         }
@@ -186,7 +187,7 @@ namespace Trickster.Bots
             return 1;
         }
 
-        public bool Match(Hand hand)
+        public bool Match(Hand hand, bool allowTooStrong = false)
         {
             if (AlternateMatches != null && AlternateMatches(hand))
                 return true;
@@ -212,7 +213,7 @@ namespace Trickster.Bots
                     throw new Exception("Unknown point type");
             }
 
-            if (Points.Min > points || points > Points.Max)
+            if (Points.Min > points || (points > Points.Max && !allowTooStrong))
                 return false;
 
             var counts = BasicBidding.CountsBySuit(hand);
@@ -225,13 +226,18 @@ namespace Trickster.Bots
             if (Kings.Count != 0 && !Kings.Contains(hand.Count(c => c.rank == Rank.King)))
                 return false;
 
+            var isUnset = !IsBalanced &&
+                Points.Min == 0 && Points.Max == 37 &&
+                HandShape.All(hs => hs.Value.Min == 0 && hs.Value.Max == 13) &&
+                Aces.Count == 0 && Kings.Count == 0 &&
+                Validate == null;
+
             //  don't match bids with "unset" hand-related values (except "Pass")
-            if (bid != BidBase.Pass && !IsBalanced && Points.Min == 0 && Points.Max == 37 &&
-                HandShape.All(hs => hs.Value.Min == 0 && hs.Value.Max == 13) && Aces.Count == 0 && Kings.Count == 0)
+            if (bid != BidBase.Pass && isUnset)
                 return false;
 
-            //  don't allow an unknown pass as a response to a forcing bid without interference
-            if (bid == BidBase.Pass && Description == UnknownDescripton && History.Count >= 2 && History[Index - 1].bid == BidBase.Pass &&
+            //  don't allow an "unset" pass as a response to a forcing bid without interference
+            if (bid == BidBase.Pass && isUnset && History.Count >= 2 && History[Index - 1].bid == BidBase.Pass &&
                 History[Index - 2].BidMessage == BidMessage.Forcing)
                 return false;
 
@@ -276,13 +282,13 @@ namespace Trickster.Bots
             if (Jacoby2NT.Interpret(this))
                 return true;
 
-            if (JacobyTransfer.Interpret(this))
+            if (!Options.noTransfers && JacobyTransfer.Interpret(this))
                 return true;
 
             if (NegativeDouble.Interpret(this))
                 return true;
 
-            if (Relay.Interpret(this))
+            if (!Options.noTransfers && Relay.Interpret(this))
                 return true;
 
             if (Stayman.Interpret(this))

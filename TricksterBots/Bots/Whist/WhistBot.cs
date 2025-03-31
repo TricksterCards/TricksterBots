@@ -11,8 +11,6 @@ namespace Trickster.Bots
         {
         }
 
-        public override DeckType DeckType => options.DeckType;
-
         public override BidBase SuggestBid(SuggestBidState<WhistOptions> state)
         {
             var hand = state.hand;

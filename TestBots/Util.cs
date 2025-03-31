@@ -37,7 +37,7 @@ namespace TestBots
         )
         {
             Bid = bid;
-            BidHistory = new List<int>();
+            BidHistory = bid == BidBase.NoBid ? new List<int>() : new List<int> { bid };
             CardsTaken = cardsTaken;
             GameScore = gameScore;
             Hand = hand;

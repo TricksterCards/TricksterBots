@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,17 +33,19 @@ namespace TestBots
         }
 
         //  use to contruct a test from JsonTests
-        public BidTest(BasicTests.BasicTest test)
+        public BidTest(BasicTest test)
         {
             hand = new Hand(test.hand.Replace(" ", string.Empty));
             bidHistory = ParseBasicTestBidHistory(test.history);
             expectedBid = ParseBasicTestBid(test.bid);
+            options = !string.IsNullOrEmpty(test.optionsJson) ? JsonConvert.DeserializeObject<BridgeOptions>(test.optionsJson) : new BridgeOptions();
             type = test.type;
         }
 
         public IReadOnlyList<int> bidHistory { get; set; }
         public int expectedBid { get; set; }
         public Hand hand { get; set; }
+        public BridgeOptions options { get; set; }
         public string type { get; set; } // used only when parsing from JsonTest
         public Vulnerable vulnerable { get; set; } // used only when parsing a Test_Sayc test
 
