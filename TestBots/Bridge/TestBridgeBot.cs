@@ -201,7 +201,7 @@ namespace TestBots
         [TestMethod]
         public void SaycTestSuite()
         {
-            var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
+            var bot = new BridgeBot(new BridgeOptions { withCappelletti = true }, Suit.Unknown);
             var totalTests = 0;
             var totalPasses = 0;
             var hasVulnerable = 0;

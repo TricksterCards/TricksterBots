@@ -7,8 +7,11 @@ namespace Trickster.Bots
         public BridgeBotOptions(BridgeOptions options)
         {
             noTransfers = options.noTransfers;
+            withCappelletti = options.withCappelletti;
         }
 
         public readonly bool noTransfers;
+
+        public readonly bool withCappelletti;
     }
 }

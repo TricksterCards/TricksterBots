@@ -267,7 +267,7 @@ namespace Trickster.Bots
             if (Blackwood.Interpret(this))
                 return true;
 
-            if (Cappelletti.Interpret(this))
+            if (Options.withCappelletti && Cappelletti.Interpret(this))
                 return true;
 
             if (ControlBid.Interpret(this))
