@@ -714,6 +714,8 @@ namespace Trickster.Bots
             var taken = player.HandScore + (partner?.HandScore ?? 0);
             var need = tricksBid - taken;
 
+            //  TODO: be willing to lose all remaining tricks if opponents win the game by making their bid (and we think we can get them to roll over bags)
+
             //  try to make our bid if we haven't already made it and there are still enough tricks left
             //  treat "sure tricks" like we already have them since we know we'll get them anyway
             return need - sureTricks > 0 && tricksLeft >= need;
@@ -750,21 +752,25 @@ namespace Trickster.Bots
             //  TODO: be willing to take any number of bags if opponents win the game by making their bid
 
             //  look only at non-nil opponents (unless nil tricks help team bid)
-            var bid = lhoBid.Tricks + rhoBid.Tricks;
-            var taken = (lhoBid.IsNotNil || options.failedNilBags == FailedNilBags.HelpsTeamBid ? lho.HandScore : 0) + (rhoBid.IsNotNil || options.failedNilBags == FailedNilBags.HelpsTeamBid ? rho.HandScore : 0);
-            var need = bid - taken;
+            var theirBid = lhoBid.Tricks + rhoBid.Tricks;
+            var theirTaken = (lhoBid.IsNotNil || options.failedNilBags == FailedNilBags.HelpsTeamBid ? lho.HandScore : 0) + (rhoBid.IsNotNil || options.failedNilBags == FailedNilBags.HelpsTeamBid ? rho.HandScore : 0);
+            var theyNeed = theirBid - theirTaken;
 
             //  keep in mind how many bags we'll take
             //  we're willing to take more bags the higher opponents bid since setting them is worth more
-            //var ourBid = playerBid.Tricks + (partnerBid?.Tricks ?? 0);
-            //var allowedBags = Math.Min(bid / 3, 9 - GetBags(player)); 
-            //var requiredBags = Math.Max(MaxTricks - bid - ourBid + 1, 0);
-            //var canAffordBags = !options.tenBagsPenalty || requiredBags <= allowedBags;
-            //  TODO: Update for new options.bagsPenalty property
-            var canAffordBags = true;
+            var canAffordBags = options.BagsThreshold == 0;
+
+            if (!canAffordBags)
+            {
+                var ourBid = playerBid.Tricks + (partnerBid?.Tricks ?? 0);
+                var threshold = options.BagsThreshold == 1 ? 2 : options.BagsThreshold - 1;
+                var allowedBags = Math.Min(theirBid / 3, threshold - GetBags(player));
+                var requiredBags = Math.Max(MaxTricks - theirBid - ourBid + 1, 0);
+                canAffordBags = requiredBags <= allowedBags;
+            }
 
             //  try to set opponents if they haven't made it, enough tricks are left, and we won't take too many bags
-            return need - sureTricks > 0 && tricksLeft >= need && canAffordBags;
+            return tricksLeft - sureTricks >= theyNeed && canAffordBags;
         }
 
         private static int GetBags(PlayerBase player)
