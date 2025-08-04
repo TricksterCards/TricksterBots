@@ -756,10 +756,12 @@ namespace Trickster.Bots
 
             //  keep in mind how many bags we'll take
             //  we're willing to take more bags the higher opponents bid since setting them is worth more
-            var ourBid = playerBid.Tricks + (partnerBid?.Tricks ?? 0);
-            var allowedBags = Math.Min(bid / 3, 9 - GetBags(player)); 
-            var requiredBags = Math.Max(MaxTricks - bid - ourBid + 1, 0);
-            var canAffordBags = !options.tenBagsPenalty || requiredBags <= allowedBags;
+            //var ourBid = playerBid.Tricks + (partnerBid?.Tricks ?? 0);
+            //var allowedBags = Math.Min(bid / 3, 9 - GetBags(player)); 
+            //var requiredBags = Math.Max(MaxTricks - bid - ourBid + 1, 0);
+            //var canAffordBags = !options.tenBagsPenalty || requiredBags <= allowedBags;
+            //  TODO: Update for new options.bagsPenalty property
+            var canAffordBags = true;
 
             //  try to set opponents if they haven't made it, enough tricks are left, and we won't take too many bags
             return need - sureTricks > 0 && tricksLeft >= need && canAffordBags;
