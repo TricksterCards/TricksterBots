@@ -218,7 +218,7 @@ namespace Trickster.Bots
                     est = Math.Ceiling(est + 1);  // add 1 and round up in partnership suicide because with 2 Nil bidders, we're going to take more
             }
 
-            var maxBid = options.tenForTwoHundred ? Math.Min(10, MaxTricks) : MaxTricks;
+            var maxBid = options.tenBonus == SpadesTenBonus.TenFor200 ? Math.Min(10, MaxTricks) : MaxTricks;
             if (IsPartnership)
             {
                 if (partner != null && partner.Bid != BidBase.NoBid)
