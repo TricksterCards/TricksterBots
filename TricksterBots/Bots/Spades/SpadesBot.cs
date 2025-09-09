@@ -773,16 +773,16 @@ namespace Trickster.Bots
             return tricksLeft - sureTricks >= theyNeed && canAffordBags;
         }
 
-        private static int GetBags(PlayerBase player)
+        private int GetBags(PlayerBase player)
         {
             return GetBags(player.GameScore);
         }
 
-        private static int GetBags(long gameScore)
+        private int GetBags(long gameScore)
         {
-            var bags = gameScore % 10;
+            var bags = gameScore % options.BagsThreshold;
             if (bags < 0)
-                bags += 10;
+                bags += options.BagsThreshold;
             return (int)bags;
         }
 
