@@ -775,18 +775,7 @@ namespace Trickster.Bots
 
         private int GetBags(PlayerBase player)
         {
-            return GetBags(player.GameScore);
-        }
-
-        private int GetBags(long gameScore)
-        {
-            if (options.BagsThreshold == 0)
-                return 0;
-
-            var bags = gameScore % options.BagsThreshold;
-            if (bags < 0)
-                bags += options.BagsThreshold;
-            return (int)bags;
+            return options.GetBags(player.GameScore);
         }
 
         private Card TryBustNil(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, Card cardTakingTrick, bool stillNeedToMakeBid, bool isPartnerTakingTrick)
