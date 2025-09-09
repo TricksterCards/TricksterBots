@@ -26,6 +26,23 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void TakeBagsEvenWithSureTricks()
+        {
+            var players = new[]
+            {
+                new TestPlayer(3, "AS3H", handScore: 3),
+                new TestPlayer(3,         handScore: 3),
+                new TestPlayer(3,         handScore: 3),
+                new TestPlayer(3,         handScore: 2),
+            };
+
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, "3C4C5C");
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("AS", suggestion.ToString(), $"Suggested {suggestion.StdNotation}; expected AS");
+        }
+
+        [TestMethod]
         public void PlayHandThatBidItself()
         {
             var players = new[]
