@@ -780,6 +780,9 @@ namespace Trickster.Bots
 
         private int GetBags(long gameScore)
         {
+            if (options.BagsThreshold == 0)
+                return 0;
+
             var bags = gameScore % options.BagsThreshold;
             if (bags < 0)
                 bags += options.BagsThreshold;
