@@ -218,7 +218,7 @@ namespace Trickster.Bots
                     est = Math.Ceiling(est + 1);  // add 1 and round up in partnership suicide because with 2 Nil bidders, we're going to take more
             }
 
-            var maxBid = options.tenForTwoHundred ? Math.Min(10, MaxTricks) : MaxTricks;
+            var maxBid = options.tenBonus == SpadesTenBonus.TenFor200 ? Math.Min(10, MaxTricks) : MaxTricks;
             if (IsPartnership)
             {
                 if (partner != null && partner.Bid != BidBase.NoBid)
@@ -775,18 +775,7 @@ namespace Trickster.Bots
 
         private int GetBags(PlayerBase player)
         {
-            return GetBags(player.GameScore);
-        }
-
-        private int GetBags(long gameScore)
-        {
-            if (options.BagsThreshold == 0)
-                return 0;
-
-            var bags = gameScore % options.BagsThreshold;
-            if (bags < 0)
-                bags += options.BagsThreshold;
-            return (int)bags;
+            return options.GetBags(player.GameScore);
         }
 
         private Card TryBustNil(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, Card cardTakingTrick, bool stillNeedToMakeBid, bool isPartnerTakingTrick)
