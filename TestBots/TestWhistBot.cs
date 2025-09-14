@@ -45,9 +45,26 @@ namespace TestBots
             };
 
             var bot = GetBot(Suit.Clubs);
-            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Clubs);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.IsTrue(suggestion.suit != Suit.Clubs, "Suggested lead is not trump");
+        }
+
+        [TestMethod]
+        public void DontLeadJokersInNT()
+        {
+            var players = new[]
+            {
+                new TestPlayer(1400, "HJQD"),
+                new TestPlayer(1561),
+                new TestPlayer(1400),
+                new TestPlayer(1401)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.IsTrue(suggestion.suit != Suit.Joker, "Suggested lead is not a Joker");
         }
 
         [TestMethod]
@@ -62,7 +79,7 @@ namespace TestBots
             };
 
             var bot = GetBot(Suit.Clubs);
-            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Clubs);
             Assert.IsTrue(new Hand(cardState.player.Hand).Any(c => bot.EffectiveSuit(c) == Suit.Clubs),
                 $"Player's hand {Util.PrettyHand(cardState.player.Hand)} contains trump");
             var suggestion = bot.SuggestNextCard(cardState);
@@ -81,7 +98,7 @@ namespace TestBots
             };
 
             var bot = GetBot(Suit.Clubs);
-            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Clubs);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("3D", suggestion.ToString(), $"Suggested {suggestion.StdNotation} is suit sloughed by partner");
         }
@@ -98,7 +115,7 @@ namespace TestBots
             };
 
             var bot = GetBot(Suit.Clubs);
-            var cardState = new TestCardState<WhistOptions>(bot, players, "HJKC");
+            var cardState = new TestCardState<WhistOptions>(bot, players, "HJKC", trumpSuit: Suit.Clubs);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("TD", suggestion.ToString(), $"Suggested {suggestion.StdNotation} is lowest card of best suit");
         }

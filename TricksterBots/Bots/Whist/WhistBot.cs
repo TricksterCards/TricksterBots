@@ -110,9 +110,17 @@ namespace Trickster.Bots
         public override Card SuggestNextCard(SuggestCardState<WhistOptions> state)
         {
             var bid = new WhistBid(state.player.Bid);
+            var legalCards = state.legalCards;
+
+            // Avoid leading Jokers in NT
+            if (state.trick.Count == 0 && state.trumpSuit == Suit.Unknown && legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))
+            {
+                legalCards = legalCards.Where(c => c.suit != Suit.Joker).ToList();
+            }
+
             return TryTakeEm(state.player,
                 state.trick,
-                state.legalCards,
+                legalCards,
                 state.cardsPlayed,
                 new PlayersCollectionBase(this, state.players),
                 state.isPartnerTakingTrick,
