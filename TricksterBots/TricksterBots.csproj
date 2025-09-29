@@ -8,12 +8,6 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
-  <ItemGroup Condition="'$(Configuration)'=='Debug'">
-    <ProjectReference Include="..\..\Trickster\TricksterBotClasses\TricksterBotClasses.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)'!='Debug'">
-    <PackageReference Include="TricksterBotClasses" Version="1.12.0" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bridgit\BridgeBidder\BridgeBidder.csproj" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
@@ -29,5 +23,6 @@
     <PackageReference Include="System.Text.Encodings.Web" Version="9.0.9" />
     <PackageReference Include="System.Text.Json" Version="9.0.9" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
+    <PackageReference Include="TricksterBotClasses" Version="1.12.0" />
   </ItemGroup>
 </Project>
