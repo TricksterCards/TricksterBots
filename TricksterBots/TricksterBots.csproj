@@ -12,9 +12,7 @@
     <ProjectReference Include="..\..\Trickster\TricksterBotClasses\TricksterBotClasses.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)'!='Debug'">
-    <Reference Include="TricksterBotClasses, Version=1.12.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TricksterBotClasses.1.12.0\lib\netstandard2.0\TricksterBotClasses.dll</HintPath>
-    </Reference>
+    <PackageReference Include="TricksterBotClasses" Version="1.12.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bridgit\BridgeBidder\BridgeBidder.csproj" />
