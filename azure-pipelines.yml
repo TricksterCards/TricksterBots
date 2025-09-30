@@ -33,5 +33,5 @@ steps:
 - task: VSTest@3
   inputs:
     testSelector: 'testAssemblies'
-    testAssemblyVer2: '**\TestBots.dll'
+    testAssemblyVer2: '**\bin\**\TestBots.dll'
     searchFolder: '$(System.DefaultWorkingDirectory)'
