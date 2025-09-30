@@ -17,7 +17,7 @@ namespace TestBots
         /// suits in a Pinochle is trump (Diamonds or Spades)
         /// and not otherwise (Clubs and Hearts).
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(Suit.Clubs,    "QDJDTDTD9DKSQSJSJSAHAHKH", "AHAH9DQD")]
         [DataRow(Suit.Diamonds, "JDQSJSAHAHKHACACKCKCQCQC", "JDQSACAC")]
         [DataRow(Suit.Hearts  , "KDJDTDTDQSJSKCKCQCQCJCJC", "JCJCQCQC")]

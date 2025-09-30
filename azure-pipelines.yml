@@ -13,6 +13,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  NUGET_RESTORE_MSBUILD_ARGS: '/p:Configuration=$(buildConfiguration)'
 
 steps:
 - checkout: self
@@ -30,8 +31,8 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: VSTest@2
+- task: VSTest@3
   inputs:
     testSelector: 'testAssemblies'
-    testAssemblyVer2: '**\TestBots.dll'
+    testAssemblyVer2: '**\bin\**\TestBots.dll'
     searchFolder: '$(System.DefaultWorkingDirectory)'
