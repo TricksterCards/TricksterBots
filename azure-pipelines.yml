@@ -13,6 +13,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  NUGET_RESTORE_MSBUILD_ARGS: '/p:Configuration=$(buildConfiguration)'
 
 steps:
 - checkout: self
