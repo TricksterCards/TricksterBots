@@ -25,14 +25,14 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
   </ItemGroup>
   <Choose>
-    <When Condition="'$(Configuration)' == 'Debug'">
+    <When Condition="'$(Configuration)' != 'Debug'">
       <ItemGroup>
-        <ProjectReference Include="..\..\Trickster\TricksterBotClasses\TricksterBotClasses.csproj" />
+        <PackageReference Include="TricksterBotClasses" Version="1.12.0" />
       </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="TricksterBotClasses" Version="1.12.0" />
+        <ProjectReference Include="..\..\Trickster\TricksterBotClasses\TricksterBotClasses.csproj" />
       </ItemGroup>
     </Otherwise>
   </Choose>
