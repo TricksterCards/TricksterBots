@@ -317,9 +317,9 @@ namespace Trickster.Bots
                                      ?? legalCards.OrderByDescending(RankSort).First();
                     }
                 }
-                else if (tricksNeeded == tricksRemaining)
+                else if (tricksNeeded == tricksRemaining || (tricksNeeded == tricksRemaining - 1 && CountSureTricks(new Hand(player.Hand), cardsPlayed) < tricksNeeded))
                 {
-                    //  we need to take every trick we can to make our bid - try to take it
+                    //  we need to take almost every trick we can to make our bid - try to take it
                     suggestion = legalCards.Where(c =>
                         (EffectiveSuit(c) == EffectiveSuit(trick[0]) && RankSort(c) > RankSort(cardTakingTrick))
                         || (IsTrump(c) && !IsTrump(cardTakingTrick))

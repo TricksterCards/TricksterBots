@@ -284,9 +284,11 @@ namespace TestBots
         }
 
         [TestMethod]
-        [DataRow("QH2H",     "JH",     "QH", 2, DisplayName = "Win covered from 2nd seat when protecting Nil if about to be set")]
+        [DataRow("QH2H",     "JH",     "QH", 2, DisplayName = "Win covered from 2nd seat when protecting Nil if need every trick")]
+        [DataRow("AS5SAD",   "AH",     "5S", 2, DisplayName = "Win covered from 2nd seat when protecting Nil if need almost every trick")]
         [DataRow("QH2H",     "JH",     "2H", 3, DisplayName = "Duck covered from 2nd seat when protecting Nil if already set")]
-        [DataRow("QH2H",     "JH",     "2H", 1, DisplayName = "Duck covered from 2nd seat when protecting Nil")]
+        [DataRow("AS2S",     "KS",     "2S", 1, DisplayName = "Duck covered from 2nd seat when protecting Nil")]
+        [DataRow("QH2H",     "QH",     "2H", 1, DisplayName = "Win covered from 2nd seat when protecting Nil if need almost every trick")]
         [DataRow("QS2C",     "AH",     "QS", 2, DisplayName = "Cut covered from 2nd seat when protecting Nil if about to be set")]
         [DataRow("QS2C",     "AH",     "2C", 3, DisplayName = "Don't cut covered from 2nd seat when protecting Nil if already set")]
         [DataRow("AHQH2H",   "JHTH9H", "QH", 2, DisplayName = "Win from 4th seat with non-boss when protecting Nil")]
