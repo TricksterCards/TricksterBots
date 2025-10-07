@@ -669,6 +669,11 @@ namespace Trickster.Bots
             return sureTricks;
         }
 
+        private long GetTotalPoints(long gameScore)
+        {
+            return new SpadesScore(gameScore, options.BagsThreshold).totalPoints;
+        }
+
         private static bool ShouldTryToBustNil(PlayersCollectionBase players, PlayerBase player)
         {
             if (!players.Opponents(player).Any(p => new SpadesBid(p.Bid).IsNil && p.HandScore == 0))
@@ -776,10 +781,10 @@ namespace Trickster.Bots
                 //  includes adjusting for potential points won/lost from Nil bids
                 var ownPoints = playerBid.IsNotNil ? 10 * playerBid.Tricks : -100;
                 var partnerPoints = partner == null ? -100 : (partnerBid.IsNotNil ? 10 * partnerBid.Tricks : (partner.HandScore > 0 ? -100 : 100));
-                var potentialTeamScore = player.GameScore + ownPoints + partnerPoints;
+                var potentialTeamScore = GetTotalPoints(player.GameScore) + ownPoints + partnerPoints;
                 var lhoPoints = lhoBid.IsNotNil ? 10 * lhoBid.Tricks : (lho.HandScore > 0 ? -100 : 100);
                 var rhoPoints = rhoBid.IsNotNil ? 10 * rhoBid.Tricks : (rho.HandScore > 0 ? -100 : 100);
-                var potentialOpponentScore = lho.GameScore + lhoPoints + rhoPoints;
+                var potentialOpponentScore = GetTotalPoints(lho.GameScore) + lhoPoints + rhoPoints;
                 if (potentialTeamScore >= options.gameOverScore && potentialOpponentScore < potentialTeamScore)
                     return false;
             }
