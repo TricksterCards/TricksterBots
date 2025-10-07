@@ -284,6 +284,57 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow("QH2H",     "JH",     "QH", 2, DisplayName = "Win covered from 2nd seat when protecting Nil if need every trick")]
+        [DataRow("AS5SAD",   "AH",     "5S", 2, DisplayName = "Win covered from 2nd seat when protecting Nil if need almost every trick")]
+        [DataRow("QH2H",     "JH",     "2H", 3, DisplayName = "Duck covered from 2nd seat when protecting Nil if already set")]
+        [DataRow("AS2S",     "KS",     "2S", 1, DisplayName = "Duck covered from 2nd seat when protecting Nil")]
+        [DataRow("QH2H",     "QH",     "2H", 1, DisplayName = "Win covered from 2nd seat when protecting Nil if need almost every trick")]
+        [DataRow("QS2C",     "AH",     "QS", 2, DisplayName = "Cut covered from 2nd seat when protecting Nil if about to be set")]
+        [DataRow("QS2C",     "AH",     "2C", 3, DisplayName = "Don't cut covered from 2nd seat when protecting Nil if already set")]
+        [DataRow("AHQH2H",   "JHTH9H", "QH", 2, DisplayName = "Win from 4th seat with non-boss when protecting Nil")]
+        [DataRow("AHQH2H",   "JHTH9H", "2H", 0, DisplayName = "Duck from 4th seat when protecting Nil if not needed")]
+        [DataRow("AH2H",     "JHTH9H", "AH", 2, DisplayName = "Win from 4th seat with boss when protecting Nil if about to be set")]
+        [DataRow("AH2H",     "JHTH9H", "2H", 3, DisplayName = "Duck from 4th seat with boss when protecting Nil if already set")]
+        [DataRow("AC2CAS2S", "JHTH9H", "2S", 2, DisplayName = "Cut from 4th seat with non-boss when protecting Nil")]
+        [DataRow("AC2CAS",   "JHTH9H", "2C", 2, DisplayName = "Duck from 4th seat with boss Spade when protecting Nil")]
+        [DataRow("AC2CAS",   "JHTH9H", "AS", 3, DisplayName = "Cut from 4th seat with boss Spade when protecting Nil if about to be set")]
+        [DataRow("AC2CAS",   "JHTH9H", "2C", 4, DisplayName = "Duck from 4th seat with boss Spade when protecting Nil if already set")]
+        public void TryToMakeBidWhenProtectingNil(string hand, string trick, string expected, int need)
+        {
+            var players = new[]
+            {
+                new TestPlayer(5, hand, handScore: 5 - need),
+                new TestPlayer(3),
+                new TestPlayer(0),
+                new TestPlayer(5)
+            };
+
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, trick);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual(expected, suggestion.ToString());
+        }
+
+        [TestMethod]
+        [DataRow("ACJC9C",   "4C2CTC", "9C", 2, DisplayName = "Duck from 4th seat when protecting Nil if we can set opps Nil")]
+        [DataRow("QS6SAHTH", "4C2CTC", "TH", 4, DisplayName = "Duck from 4th seat with Spade when protecting Nil if we can set opps Nil")]
+        public void BalanceProtectingAndSettingNil(string hand, string trick, string expected, int need)
+        {
+            var players = new[]
+            {
+                new TestPlayer(5, hand, handScore: 5 - need),
+                new TestPlayer(3),
+                new TestPlayer(0),
+                new TestPlayer(0)
+            };
+
+            var bot = GetBot();
+            var cardState = new TestCardState<SpadesOptions>(bot, players, trick);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual(expected, suggestion.ToString());
+        }
+
+        [TestMethod]
         public void PlayOverHighCardToProtectNilIfNeeded()
         {
             var players = new[]
