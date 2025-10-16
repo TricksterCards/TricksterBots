@@ -39,7 +39,7 @@ namespace Trickster.Bots
             //  2C
             opening.BidConvention = BidConvention.StrongOpening;
             opening.BidMessage = BidMessage.Forcing;
-            opening.BidPointType = BidPointType.Hcp;
+            opening.BidPointType = BidPointType.Distribution;
             opening.Points.Min = 22;
             opening.Description = string.Empty;
             //  TODO: opening.AlternateMatches = (hand, ibid) => BridgeBot.CountTricks(hand) >= 9;

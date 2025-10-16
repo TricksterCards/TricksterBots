@@ -3,3 +3,22 @@
 [Auction "N"]
 1H Pass 2D 2S
 4D Pass Pass Pass
+
+[Event "Rebid opening with interference"]
+[Deal "W:A.AT98432.AKJ.K2 - - -"]
+[Auction "W"]
+2C Pass 2D Pass
+2H Pass 3C Pass
+3H
+
+[Event "Raise responder suit with fit"]
+[Deal "S:K3.AKJT932.AK7.J - - -"]
+[Auction "S"]
+2C Pass 2H Pass
+3H
+
+[Event "Rebid raised opening if too strong"]
+[Deal "S:K3.AKJT932.AK7.T - - -"]
+[Auction "S"]
+1H Pass 2H Pass
+3H
