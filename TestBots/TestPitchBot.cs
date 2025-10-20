@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Trickster.Bots;
 using Trickster.cloud;
 
@@ -131,9 +132,9 @@ namespace TestBots
             var players = new[]
             {
                 new TestPlayer((int)PitchBid.NotPitching, "3H6SQS"),
-                new TestPlayer(GetBid(2, Suit.Spades)),
-                new TestPlayer((int)PitchBid.NotPitching),
-                new TestPlayer((int)PitchBid.NotPitching),
+                new TestPlayer(GetBid(2, Suit.Spades), "0U0U"),
+                new TestPlayer((int)PitchBid.NotPitching, "0U0U"),
+                new TestPlayer((int)PitchBid.NotPitching, "0U0U"),
             };
 
             var bot = new PitchBot(fourPointDrawWithKittyOptions, Suit.Spades);
@@ -191,9 +192,9 @@ namespace TestBots
             var players = new[]
             {
                 new TestPlayer(pitchingSeat == 0 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching, hand),
-                new TestPlayer(pitchingSeat == 1 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching),
-                new TestPlayer(pitchingSeat == 2 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching),
-                new TestPlayer(pitchingSeat == 3 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching),
+                new TestPlayer(pitchingSeat == 1 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching, string.Concat(Enumerable.Repeat("0U", hand.Length/2 - ((trick.Length/2 > 2) ? 1 : 0)))),
+                new TestPlayer(pitchingSeat == 2 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching, string.Concat(Enumerable.Repeat("0U", hand.Length/2 - ((trick.Length/2 > 1) ? 1 : 0)))),
+                new TestPlayer(pitchingSeat == 3 ? GetBid(options.minBid, trump) : (int)PitchBid.NotPitching, string.Concat(Enumerable.Repeat("0U", hand.Length/2 - ((trick.Length/2 > 0) ? 1 : 0)))),
             };
 
             options.lowGoesToTaker = lowToTaker;
@@ -202,6 +203,27 @@ namespace TestBots
             var suggestion = bot.SuggestNextCard(cardState);
 
             Assert.AreEqual(expected, $"{suggestion}");
+        }
+
+        [TestMethod]
+        public void PlayIfOthersFolded()
+        {
+            var baseOptions = tenPointOptions;
+            var trump = Suit.Diamonds;
+            var options = JsonConvert.DeserializeObject<PitchOptions>(JsonConvert.SerializeObject(baseOptions));
+            var players = new[]
+            {
+                new TestPlayer((int)PitchBid.NotPitching, "3H3DTDHJ"),
+                new TestPlayer((int)PitchBid.NotPitching, "0U0U0U0U") { Folded = true },
+                new TestPlayer((int)PitchBid.NotPitching, "0U0U0U0U"),
+                new TestPlayer(GetBid(6, trump), "0U0U0U"),
+            };
+
+            var bot = new PitchBot(options, trump);
+            var cardState = new TestCardState<PitchOptions>(bot, players, "2D", trumpSuit: trump, trumpAnytime: options.playTrump != PitchPlayTrump.FollowSuit);
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            Assert.AreEqual("3D", $"{suggestion}");
         }
 
         private static PitchOptions GetCallForBestOptions(int? callPartnerSeat = null)
