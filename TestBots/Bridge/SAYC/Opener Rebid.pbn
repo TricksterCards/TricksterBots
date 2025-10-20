@@ -4,7 +4,7 @@
 1H Pass 2D 2S
 4D Pass Pass Pass
 
-[Event "Rebid opening with interference"]
+[Event "Rebid suit if partner has nothing"]
 [Deal "W:A.AT98432.AKJ.K2 - - -"]
 [Auction "W"]
 2C Pass 2D Pass
@@ -21,4 +21,4 @@
 [Deal "S:K3.AKJT932.AK7.T - - -"]
 [Auction "S"]
 1H Pass 2H Pass
-3H
+4H
