@@ -35,13 +35,13 @@
 3H
 
 [Event "Response to Jacoby 2NT after 1S (singleton)"]
-[Deal "N:AKQJ3.A.AK86.876 - - -"]
+[Deal "N:AKQT3.A.AK86.876 - - -"]
 [Auction "N"]
 1S Pass 2NT Pass
 3H
 
 [Event "Response to Jacoby 2NT after 1S (good 5-card side suit)"]
-[Deal "N:AKQJ3.A7.AK865.8 - - -"]
+[Deal "N:AKJT3.A7.AK865.8 - - -"]
 [Auction "N"]
 1S Pass 2NT Pass
 4D

@@ -28,6 +28,11 @@ namespace Trickster.Bots
                 return true;
             }
 
+            if (bid.Index >= 8 && bid.History[bid.Index - 8].BidConvention == BidConvention.StrongOpening)
+            {
+                return Interpret2ndRebid(bid.History[bid.Index - 4], bid.History[bid.Index - 2], bid);
+            }
+
             return false;
         }
 
@@ -39,7 +44,7 @@ namespace Trickster.Bots
             //  2C
             opening.BidConvention = BidConvention.StrongOpening;
             opening.BidMessage = BidMessage.Forcing;
-            opening.BidPointType = BidPointType.Hcp;
+            opening.BidPointType = BidPointType.Distribution;
             opening.Points.Min = 22;
             opening.Description = string.Empty;
             //  TODO: opening.AlternateMatches = (hand, ibid) => BridgeBot.CountTricks(hand) >= 9;
@@ -136,6 +141,26 @@ namespace Trickster.Bots
                     return counts[rebid.declareBid.suit] == counts.Max(c => c.Value);
                 };
             }
+        }
+
+        private static bool Interpret2ndRebid(InterpretedBid rebid, InterpretedBid response, InterpretedBid rebid2)
+        {
+            if (response.BidConvention != BidConvention.SecondNegative)
+                return false;
+
+            if (!rebid2.bidIsDeclare || !rebid.bidIsDeclare)
+                return false;
+
+            if (rebid2.declareBid.suit != rebid.declareBid.suit)
+                return false;
+
+            if (rebid2.declareBid.level != rebid.declareBid.level + 1)
+                return false;
+
+            //  Get back to our suit if partner has nothing
+            rebid2.HandShape[rebid2.declareBid.suit] = rebid.HandShape[rebid2.declareBid.suit];
+
+            return true;
         }
 
         private static void InterpretResponderRebid(InterpretedBid response, InterpretedBid rebid, InterpretedBid responderRebid)

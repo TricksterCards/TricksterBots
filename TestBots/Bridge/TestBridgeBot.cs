@@ -230,25 +230,25 @@ namespace TestBots
                         changesFromPrevious++;
 
                         if (pr.passed != passed)
-                            Logger.LogMessage($"!!! Previously, {testItem.Key}[{i}] {PassFail(pr.passed)} but now it {PassFail(passed)}");
+                            Logger.LogMessage($"{Environment.NewLine}!!! Previously, {testItem.Key}[{i}] {PassFail(pr.passed)} but now it {PassFail(passed)}");
 
                         if (pr.suggested != suggestion)
                             Logger.LogMessage(
-                                $"!!! Previously, {testItem.Key}[{i}] suggested {BidString(pr.suggested)} ({pr.suggested}) but now it returned {BidString(suggestion)} ({suggestion})");
+                                $"{Environment.NewLine}!!! Previously, {testItem.Key}[{i}] suggested {BidString(pr.suggested)} ({pr.suggested}) but now it returned {BidString(suggestion)} ({suggestion})");
                     }
 
                     if (passed) passes++;
                 }
 
-                Logger.LogMessage($"{(double)passes / tests.Count:P0} ({passes} / {tests.Count}) of tests in \"{testItem.Key}\" passed");
+                Logger.LogMessage($"{Environment.NewLine}{(double)passes / tests.Count:P0} ({passes} / {tests.Count}) of tests in \"{testItem.Key}\" passed");
 
                 totalTests += tests.Count;
                 totalPasses += passes;
                 hasVulnerable += tests.Count(test => test.vulnerable != BidTest.Vulnerable.Unset);
             }
 
-            Logger.LogMessage($"{Environment.NewLine}Overall, {(double)totalPasses / totalTests:P2} ({totalPasses} / {totalTests}) of tests passed");
-            Logger.LogMessage($"{hasVulnerable} tests have vulnerablility set");
+            Logger.LogMessage($"{Environment.NewLine}{Environment.NewLine}Overall, {(double)totalPasses / totalTests:P2} ({totalPasses} / {totalTests}) of tests passed");
+            Logger.LogMessage($"{Environment.NewLine}{hasVulnerable} tests have vulnerablility set");
 
             if (changesFromPrevious > 0)
                 UpdateSaycResults(results);
@@ -448,7 +448,7 @@ namespace TestBots
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")))
                 return;
 
-            var path = Path.GetFullPath(@"..\..\Bridge\Test_Sayc_Results.cs");
+            var path = Path.GetFullPath(@"..\..\..\Bridge\Test_Sayc_Results.cs");
             if (!File.Exists(path) || (File.GetAttributes(path) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                 return;
 
