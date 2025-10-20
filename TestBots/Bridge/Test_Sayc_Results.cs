@@ -1,4 +1,4 @@
-// last updated 3/24/2025 3:00 PM (-05:00)
+// last updated 10/20/2025 4:48 PM (-05:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -22,7 +22,7 @@ namespace TestBots
              {
                 "test_open_two_nt", new[]
                 {
-                    new SaycResult(true, 420, 420),
+                    new SaycResult(false, 421, 420), // last run result: 2♣; expected: 2NT;
                 }
              },
              {
@@ -608,7 +608,7 @@ namespace TestBots
                     new SaycResult(false, -2, 445), // last run result: Pass; expected: 5♣;
                     new SaycResult(true, 431, 431),
                     new SaycResult(false, -2, 439), // last run result: Pass; expected: 4♠;
-                    new SaycResult(false, -2, 431), // last run result: Pass; expected: 3♠;
+                    new SaycResult(true, 431, 431),
                     new SaycResult(true, -2, -2),
                     new SaycResult(false, 423, 431), // last run result: 2♠; expected: 3♠;
                     new SaycResult(true, 428, 428),
