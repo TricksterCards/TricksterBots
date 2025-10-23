@@ -27,6 +27,35 @@ namespace TestBots
             Assert.AreEqual(OhHellBid.FromTricks(2), GetSuggestedBid("KC 2H3H4H5H6H7H", "AC", out hand, options), $"Expect bid of 2 for hand {Util.PrettyHand(hand)}");
         }
 
+        [TestMethod]
+        [DataRow("KD", "", "KDQD3D", 3, 0, DisplayName = "Lead high trump if need all tricks")]
+        [DataRow("KD", "", "KDQD3D", 4, 1, DisplayName = "Lead high trump if need all tricks")]
+        [DataRow("3D", "", "KDQD3D", 2, 0, DisplayName = "Lead low trump if less than all tricks")]
+        [DataRow("4D", "", "ACKC4D", 3, 0, DisplayName = "Lead highest trump if need all tricks")]
+        [DataRow("KC", "", "KCJCQS", 3, 0, DisplayName = "Lead highest off-suit if need all tricks")]
+        public void LeadHighIfNeedAll(string expectedCard, string trick, string hand, int bid, int handScore)
+        {
+            var options = new OhHellOptions()
+            {
+                players = 3,
+                variation = OhHellVariation.OneToSeven,
+            };
+            var players = new[]
+            {
+                new TestPlayer(OhHellBid.FromTricks(bid), hand, handScore),
+                new TestPlayer(OhHellBid.FromTricks(0)),
+                new TestPlayer(OhHellBid.FromTricks(3)),
+            };
+            var bot = new OhHellBot(options, Suit.Diamonds);
+            var cardState = new TestCardState<OhHellOptions>(
+                bot,
+                players,
+                trick
+            );
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual(expectedCard, $"{suggestion}");
+        }
+
         private static int GetSuggestedBid(string handString, string upCardString, out Hand hand, OhHellOptions options)
         {
             var players = new []
