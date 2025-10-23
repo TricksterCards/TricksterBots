@@ -103,9 +103,28 @@ namespace Trickster.Bots
             var (players, trick, legalCards, cardsPlayed, player, isPartnerTakingTrick, cardTakingTrick) = (new PlayersCollectionBase(this, state.players), state.trick, state.legalCards, state.cardsPlayed,
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
 
+            var bid = new OhHellBid(player.Bid);
+            var hand = new Hand(player.Hand);
+            var sureTricks = CountSureTricks(hand, cardsPlayed);
 
-            if (new OhHellBid(player.Bid).Tricks == player.HandScore)
+            //  if we've already made our bid, try to dump remaining cards
+            if (bid.Tricks + sureTricks == player.HandScore)
                 return TryDumpEm(trick, legalCards, players.Count);
+
+            //  TODO: if we've already lost our bid, choose TryDumpEm vs TryTakeEm based on whether there are too few or too many tricks remaining for the other players
+
+            //  if we need every remaining trick to make our bid, play our strongest card first, starting with trump
+            if (trick.Count == 0 && bid.Tricks == hand.Count)
+            {
+                if (legalCards.Any(IsTrump))
+                    return legalCards.Where(IsTrump).OrderByDescending(RankSort).First();
+
+                var firstBossCard = legalCards.OrderByDescending(RankSort).FirstOrDefault(c => IsCardHigh(c, cardsPlayed));
+                if (firstBossCard != null)
+                    return firstBossCard;
+
+                return legalCards.OrderByDescending(RankSort).First();
+            }
 
             return TryTakeEm(player, trick, legalCards, cardsPlayed, players, isPartnerTakingTrick, cardTakingTrick, false);
         }
