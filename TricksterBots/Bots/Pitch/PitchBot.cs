@@ -220,9 +220,10 @@ namespace Trickster.Bots
                 return SuggestLead(state, players);
 
             var activePlayersCount = players.Count(p => p.IsActivelyPlaying);
+            var remainingPlayers = players.Where(p => p.IsActivelyPlaying && p.Seat != player.Seat && p.Hand.Length == player.Hand.Length).ToList();
 
-            //  last to play
-            if (trick.Count == activePlayersCount - 1)
+            //  last to play or effectively last to play if only our partner(s) remain
+            if (trick.Count == activePlayersCount - 1 || remainingPlayers.All(p => OnSameTeam(players, player, p)))
                 return SuggestCardFromLastSeat(state);
 
             var knownCards = new Hand(player.Hand);
