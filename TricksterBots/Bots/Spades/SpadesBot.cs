@@ -275,11 +275,14 @@ namespace Trickster.Bots
             return highRank - lowRank - 1 - knownCards.Count(c => EffectiveSuit(c) == suit && highRank > RankSort(c) && lowRank < RankSort(c));
         }
 
-        private Card TryProtectNil(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, PlayersCollectionBase players, IReadOnlyList<Card> cardsPlayed)
+        private Card TryProtectNil(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, PlayersCollectionBase players, IReadOnlyList<Card> cardsPlayed, Card cardTakingTrick, PlayerBase trickTaker)
         {
             Card suggestion = null;
             var partner = players.PartnerOf(player);
             var nPlayers = players.Count;
+            var tricksBid = new SpadesBid(player.Bid).Tricks;
+            var tricksNeeded = tricksBid - player.HandScore;
+            var tricksRemaining = player.Hand.Length / 2;
 
             if (trick.Count < nPlayers / 2)
             {
@@ -313,6 +316,14 @@ namespace Trickster.Bots
                         suggestion = legalCards.Where(c => RankSort(c) > partnerHighRankBySuit[EffectiveSuit(c)]).OrderBy(RankSort).FirstOrDefault()
                                      ?? legalCards.OrderByDescending(RankSort).First();
                     }
+                }
+                else if (tricksNeeded == tricksRemaining || (tricksNeeded == tricksRemaining - 1 && CountSureTricks(new Hand(player.Hand), cardsPlayed) < tricksNeeded))
+                {
+                    //  we need to take almost every trick we can to make our bid - try to take it
+                    suggestion = legalCards.Where(c =>
+                        (EffectiveSuit(c) == EffectiveSuit(trick[0]) && RankSort(c) > RankSort(cardTakingTrick))
+                        || (IsTrump(c) && !IsTrump(cardTakingTrick))
+                    ).OrderBy(RankSort).FirstOrDefault();
                 }
                 else if (EffectiveSuit(legalCards[0]) == EffectiveSuit(trick[0]))
                 {
@@ -358,6 +369,30 @@ namespace Trickster.Bots
                 //  partner taking the trick but he/she bid nil - we better try and take it
                 var partnersCard = trick[trick.Count - nPlayers / 2];
                 suggestion = legalCards.Where(c => EffectiveSuit(c) == EffectiveSuit(partnersCard) && RankSort(c) > RankSort(partnersCard)).OrderBy(RankSort).FirstOrDefault() ?? legalCards.Where(IsTrump).OrderBy(RankSort).FirstOrDefault();
+            }
+
+            //  if last to play, if we still need tricks to make our bid (other than sure tricks),
+            //  and if the current trick taker isn't a Nil bid that's about to be set,
+            //  try to take it without wasting a boss card (unless we MUST take this trick to make our bid)
+            if (
+                suggestion == null
+                && trick.Count == nPlayers - 1
+                && tricksNeeded <= tricksRemaining
+                && tricksNeeded > CountSureTricks(new Hand(player.Hand), cardsPlayed)
+                && !(
+                    players.Opponents(player).Any(o => o.Seat == trickTaker.Seat)
+                    && new SpadesBid(trickTaker.Bid).IsNil
+                    && trickTaker.HandScore == 0
+                )
+            )
+            {
+                suggestion = legalCards.Where(c =>
+                    (
+                        (IsTrump(c) && !IsTrump(cardTakingTrick))
+                        || (EffectiveSuit(c) == EffectiveSuit(cardTakingTrick) && RankSort(c) > RankSort(cardTakingTrick))
+                    )
+                    && (tricksNeeded == tricksRemaining || !IsCardHigh(c, cardsPlayed))
+                ).OrderBy(RankSort).FirstOrDefault();
             }
 
             //  return either the suggestion, the lowest non-trump we can, or the lowest trump we can
@@ -644,7 +679,7 @@ namespace Trickster.Bots
                 //  then try to protect my partner's nil bid
                 var partnerBid = new SpadesBid(partner.Bid);
                 if (partnerBid.IsNil && partner.HandScore == 0)
-                    return TryProtectNil(player, trick, legalCards, players, cardsPlayed);
+                    return TryProtectNil(player, trick, legalCards, players, cardsPlayed, cardTakingTrick, trickTaker);
 
                 //  but play for myself if my partner blew their nil bid
                 if (partnerBid.IsNil)
@@ -770,7 +805,7 @@ namespace Trickster.Bots
             }
 
             //  we're not leading: check the trick to determine what to do
-            var targetOffset = (player.Seat - targetNilBidder.Seat + 4) % 4;
+            var targetOffset = (player.Seat - targetNilBidder.Seat + players.Count) % players.Count;
             if (trick.Count > targetOffset)
             {
                 //  nil bidder has played and is taking the trick:
