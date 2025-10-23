@@ -196,6 +196,49 @@ namespace Trickster.Bots
             return cardsBySuit.TryGetValue(suit, out var cards) ? cards : new List<Card>();
         }
 
+        protected int CountSureTricks(Hand hand, IReadOnlyList<Card> cardsPlayed)
+        {
+            //  Our "sure tricks" are trump we'll take no matter how we play our cards.
+            //  When multiple cards combine to form a single "sure trick" we count the lowest one,
+            //  but during play, any uncounted higher-ranked card may actually take the "sure trick"
+
+            //  Examples:
+            //  A, K, _, J, _, _, _ -> 2 sure tricks (A and K)
+            //  A, _, Q, J, _, _, _ -> 2 sure tricks (A and J)
+            //  A, _, Q, _, T, 9, _ -> 2 sure tricks (A and 9)
+            //  A, _, Q, _, T, 9, 8 -> 3 sure tricks (A, 9, and 8)
+
+            var myTrump = hand.Where(IsTrump).ToList();
+            var knownTrump = cardsPlayed.Where(IsTrump).Concat(myTrump).ToList();
+
+            //  we start by expecting to find the highest ranked trump
+            var nextRank = HighRankInSuit(trump);
+            var lostTricks = 0;
+            var sureTricks = 0;
+
+            //  then we walk known trump from high to low
+            foreach (var t in knownTrump.OrderByDescending(RankSort))
+            {
+                //  gaps between known trump are tricks we'll lose
+                var rank = RankSort(t);
+                lostTricks += nextRank - rank;
+
+                //  if the current known trump is in our hand
+                if (myTrump.Any(c => RankSort(c) == rank))
+                {
+                    if (lostTricks <= 0)
+                        sureTricks++; //  then it's a "sure trick" if we're out of lost tricks
+                    else
+                        lostTricks--; //  otherwise "spend" it against a lost trick (if any)
+                }
+
+                //  then move to the next known trump looking for the next expected rank
+                nextRank = rank - 1;
+            }
+
+            return sureTricks;
+        }
+
         protected int HighRankInSuit(Card card)
         {
             return HighRankInSuit(EffectiveSuit(card));
