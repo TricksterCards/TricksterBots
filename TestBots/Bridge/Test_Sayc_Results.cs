@@ -1,4 +1,4 @@
-// last updated 10/20/2025 4:48 PM (-05:00)
+// last updated 11/6/2025 4:37 PM (-06:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -547,21 +547,21 @@ namespace TestBots
                     new SaycResult(true, 432, 432),
                     new SaycResult(true, -2, -2),
                     new SaycResult(true, -2, -2),
-                    new SaycResult(true, -2, -2),
+                    new SaycResult(false, 428, -2), // last run result: 3NT; expected: Pass;
                     new SaycResult(true, 445, 445),
                     new SaycResult(true, 431, 431),
                     new SaycResult(false, 439, 428), // last run result: 4♠; expected: 3NT;
                     new SaycResult(true, 439, 439),
-                    new SaycResult(false, -2, 439), // last run result: Pass; expected: 4♠;
+                    new SaycResult(false, 428, 439), // last run result: 3NT; expected: 4♠;
                     new SaycResult(false, -2, 447), // last run result: Pass; expected: 5♠;
                     new SaycResult(false, -2, 455), // last run result: Pass; expected: 6♠;
-                    new SaycResult(false, 429, 420), // last run result: 3♣; expected: 2NT;
+                    new SaycResult(false, 440, 420), // last run result: 4♥; expected: 2NT;
                     new SaycResult(false, 431, 428), // last run result: 3♠; expected: 3NT;
                     new SaycResult(true, -2, -2),
                     new SaycResult(false, 432, 428), // last run result: 3♥; expected: 3NT;
                     new SaycResult(false, 432, 428), // last run result: 3♥; expected: 3NT;
-                    new SaycResult(false, -2, 428), // last run result: Pass; expected: 3NT;
-                    new SaycResult(false, 432, 420), // last run result: 3♥; expected: 2NT;
+                    new SaycResult(true, 428, 428),
+                    new SaycResult(false, 440, 420), // last run result: 4♥; expected: 2NT;
                     new SaycResult(true, 439, 439),
                     new SaycResult(true, 439, 439),
                     new SaycResult(true, 439, 439),

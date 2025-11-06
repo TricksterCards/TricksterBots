@@ -52,7 +52,7 @@ namespace Trickster.Bots
         }
 
         // https://en.wikipedia.org/wiki/Hand_evaluation#Playing_Tricks
-        public static int CountPlayingTricks(IReadOnlyList<Card> hand)
+        public static int CountPlayingTricks(IReadOnlyList<Card> hand, Suit trump)
         {
             var playingTricks = 0;
             var ranksBySuit = hand.GroupBy(c => c.suit).ToDictionary(g => g.Key, g => g.Select(c => c.rank).OrderByDescending(r => r).ToList());
@@ -71,7 +71,7 @@ namespace Trickster.Bots
                     playingTricks++;
 
                 //  count all cards in excess of 3 as additional tricks
-                if (ranks.Count > 3)
+                if (ranks.Count > 3 && (suit == trump || suit == Suit.Unknown))
                     playingTricks += ranks.Count - 3;
             }
 

@@ -727,7 +727,7 @@ namespace Trickster.Bots
                 {
                     response.BidMessage = BidMessage.Signoff;
                     response.Description = string.Empty;
-                    response.AlternateMatches = hand => 9 <= openerTricks + BasicBidding.CountPlayingTricks(hand);
+                    response.AlternateMatches = hand => 9 <= openerTricks + BasicBidding.CountPlayingTricks(hand, response.declareBid.suit);
                 }
                 else if (response.declareBid.level == 4)
                 {
@@ -757,6 +757,7 @@ namespace Trickster.Bots
                     response.BidMessage = BidMessage.Signoff;
                     response.HandShape[response.declareBid.suit].Min = 4;
                     response.Description = $"4+ {response.declareBid.suit}";
+                    response.AlternateMatches = hand => BasicBidding.CountPlayingTricks(hand, response.declareBid.suit) + openerTricks >= 6 + response.GameLevel;
                 }
             }
             else if (response.declareBid.level < response.GameLevel)
