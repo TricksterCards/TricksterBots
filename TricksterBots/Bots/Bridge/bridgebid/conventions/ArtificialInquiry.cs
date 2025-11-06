@@ -21,6 +21,9 @@ namespace Trickster.Bots
             if (!rebid.bidIsDeclare)
                 return;
 
+            // 2D-2N-3N
+            // 2H-2N-3N
+            // 2S-2N-3N
             if (rebid.declareBid.suit == Suit.Unknown)
             {
                 if (rebid.declareBid.level == 3)
@@ -31,6 +34,9 @@ namespace Trickster.Bots
                     rebid.Description = "Maximum";
                 }
             }
+            // 2D-2N-3D
+            // 2H-2N-3H
+            // 2S-2N-3S
             else if (rebid.declareBid.suit == opening.declareBid.suit)
             {
                 if (rebid.declareBid.level == 3)
@@ -41,6 +47,9 @@ namespace Trickster.Bots
                     rebid.Description = "Minimum";
                 }
             }
+            // 2D-2N-3C/3H/3S
+            // 2H-2N-3C/3D/3S
+            // 2S-2N-3C/3D/3H
             else
             {
                 //  new suit shows maximum and a feature (Ace or protected King/Queen) in that suit

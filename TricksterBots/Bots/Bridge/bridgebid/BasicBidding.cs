@@ -51,6 +51,33 @@ namespace Trickster.Bots
             return highCardPoints;
         }
 
+        // https://en.wikipedia.org/wiki/Hand_evaluation#Playing_Tricks
+        public static int CountPlayingTricks(IReadOnlyList<Card> hand)
+        {
+            var playingTricks = 0;
+            var ranksBySuit = hand.GroupBy(c => c.suit).ToDictionary(g => g.Key, g => g.Select(c => c.rank).OrderByDescending(r => r).ToList());
+
+            foreach (var suit in ranksBySuit.Keys)
+            {
+                var ranks = ranksBySuit[suit];
+
+                if (ranks.Contains(Rank.Ace))
+                    playingTricks++;
+
+                if (ranks.Contains(Rank.King) && ranks.Count > 1)
+                    playingTricks++;
+
+                if (ranks.Contains(Rank.Queen) && ranks.Count > 2)
+                    playingTricks++;
+
+                //  count all cards in excess of 3 as additional tricks
+                if (ranks.Count > 3)
+                    playingTricks += ranks.Count - 3;
+            }
+
+            return playingTricks;
+        }
+
         public static Dictionary<Suit, int> CountsBySuit(Hand hand)
         {
             var counts = hand.GroupBy(c => c.suit).ToDictionary(g => g.Key, g => g.Count());
