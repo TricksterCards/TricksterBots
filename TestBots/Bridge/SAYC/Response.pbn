@@ -48,3 +48,18 @@ Pass Pass 1H Pass
 [Deal "E:- - - QT5.T87.QJ4.AQ93"]
 [Auction "E"]
 Pass 1C Pass 1NT
+
+[Event "Respond to weak 2 with a strong hand"]
+[Deal "S:- - AJ987.KQ.AJ.AK76 -"]
+[Auction "S"]
+2D Pass 3NT
+
+[Event "Respond to weak 2 with 3+ card support"]
+[Deal "S:- - AJ987.KQ.AJ7.K76 -"]
+[Auction "S"]
+2D Pass 3D
+
+[Event "Respond to weak 2 with new suit"]
+[Deal "S:- - AJT87.KQ.AJ.AK76 -"]
+[Auction "S"]
+2D Pass 2S

@@ -713,6 +713,8 @@ namespace Trickster.Bots
             if (!response.bidIsDeclare)
                 return;
 
+            var openerTricks = opening.declareBid.level == 2 ? 5 : 6;
+
             if (response.declareBid.suit == Suit.Unknown)
             {
                 if (response.declareBid.level == 2)
@@ -725,7 +727,7 @@ namespace Trickster.Bots
                 {
                     response.BidMessage = BidMessage.Signoff;
                     response.Description = string.Empty;
-                    //  TODO: when would we do this? Some combination of stoppers and counting tricks?
+                    response.AlternateMatches = hand => 9 <= openerTricks + BasicBidding.CountPlayingTricks(hand, response.declareBid.suit);
                 }
                 else if (response.declareBid.level == 4)
                 {
@@ -755,6 +757,7 @@ namespace Trickster.Bots
                     response.BidMessage = BidMessage.Signoff;
                     response.HandShape[response.declareBid.suit].Min = 4;
                     response.Description = $"4+ {response.declareBid.suit}";
+                    response.AlternateMatches = hand => BasicBidding.CountPlayingTricks(hand, response.declareBid.suit) + openerTricks >= 6 + response.GameLevel;
                 }
             }
             else if (response.declareBid.level < response.GameLevel)
