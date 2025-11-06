@@ -152,6 +152,10 @@ namespace Trickster.Bots
 
         private static bool Overcall(InterpretedBid opening, InterpretedBid response, InterpretedBid overcall)
         {
+            //  a double is never for takeout over an NT opening
+            if (opening.declareBid.suit == Suit.Unknown)
+                return false;
+
             //  a double is for takeout over 4D or lower
             var level = response?.declareBid?.level ?? opening.declareBid.level;
             var suit = response?.declareBid?.suit ?? opening.declareBid.suit;
