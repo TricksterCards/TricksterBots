@@ -2,28 +2,23 @@
 % Leads
 %
 
-% Suit contracts:
-% If dummy has shortness and fewer trumps than declarer,
-% play a trump to prevent ruffing in dummy
+% If holding the highest remaining trump and partner is void in trump, lead it.
 
-[Event "Lead on Defense: Trump if dummy is short with fewer trumps than declarer"]
-[Deal "W:- 65.AKQ.J432.T532 QJT.T.T987.98764 -"]
-[Contract "3S"]
-[Auction "W"]
-2S Pass 3S Pass
-Pass Pass
-[Play "N"]
-HA HT H3 H2
-S5 -  -  -
-
-% If we have one trump left, we should lead it to take two of defender's trumps (if both declarer and dummy still have trump)
-
-[Event "Lead on Defense: Lead last trump if declarer and dummy aren't void"]
-[Deal "N:5.AKQJ.J432.T532 QJT.T987.AKQ.987 - -"]
+[Event "Lead on Defense: Lead boss trump if partner is void"]
+[Deal "N:- KJT.T9.AKQ87.987 AQ.876.J432.T532 -"]
 [Contract "2S"]
 [Play "N"]
-HA H9 H3 H2
-S5 -  -  -
+H2 H9 H6 HA
+H3 SK SA S5
+      SQ
+
+[Event "Lead on Defense: Don't lead boss trump if partner is not void"]
+[Deal "N:- KJT.T9.AKQ87.987 AQ.876.J432.T532 -"]
+[Contract "2S"]
+[Play "N"]
+H2 H9 H6 HA
+S3 SK SA S5
+      H7
 
 % Other defensive rules against both suit and notrump:
 % If dummy has a long side suit that will be good (AKQxx or AQJ10xx),
