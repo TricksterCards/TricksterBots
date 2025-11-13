@@ -556,28 +556,6 @@ namespace Trickster.Bots
             return Suit.Unknown;
         }
 
-        private int CountDeclarersCardsInTrump(SuggestCardState<BridgeOptions> state)
-        {
-            if (options.variation == BridgeVariation.Mini)
-                return 0;
-
-            var declarer = GetDeclarer(state);
-            var summary = GetPlayerSummary(state, declarer.Seat);
-            var nCardsInTrump = 0;
-
-            // Start with the min count we know from bidding
-            if (summary.HandShape.ContainsKey(state.trumpSuit))
-                nCardsInTrump = summary.HandShape[state.trumpSuit].Min;
-
-            if (nCardsInTrump <= 0)
-                return 0;
-
-            // Then subtract cards already played
-            nCardsInTrump -= GetCardsPlayedInOrder(state.cardsPlayedInOrder).Count(sc => sc.seat == declarer.Seat && sc.card.suit == state.trumpSuit);
-
-            return Math.Max(0, nCardsInTrump);
-        }
-
         private List<Card> GetSureWinners(SuggestCardState<BridgeOptions> state)
         {
             var knownCards = state.legalCards.Concat(state.cardsPlayed);
@@ -783,12 +761,6 @@ namespace Trickster.Bots
         {
             // Leads: Suits
 
-            // For opening lead, if playing in declarer's 2nd bid suit - lead trump (skip if first bid suit was NT)
-            var hasLegalTrump = legalCards.Any(c => EffectiveSuit(c) == state.trumpSuit);
-            var declarersFirstBidSuit = GetDeclarer(state).BidHistory.Where(b => DeclareBid.Is(b)).Select(b => new DeclareBid(b).suit).First();
-            if (IsOpeningLead(state) && hasLegalTrump && state.trumpSuit != declarersFirstBidSuit && declarersFirstBidSuit != Suit.Unknown)
-                legalCards = legalCards.Where(c => EffectiveSuit(c) == state.trumpSuit).ToList();
-
             // If you have a 3-card sequence starting with ace, lead that
             var threeCardSequences = GetSequences(legalCards, state.cardsPlayed, minLength: 3, minTopRank: (int)Rank.Ace);
             if (threeCardSequences.Any())
@@ -863,38 +835,17 @@ namespace Trickster.Bots
             if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
                 return sureWinners.First();
 
+            // if we're holding boss trump and partner is void, play it to pull trump
+            var players = new PlayersCollectionBase(this, state.players);
+            var bossTrump = players.PartnerIsVoidInSuit(state.player, state.trumpSuit, state.cardsPlayed)
+                ? state.legalCards.Where(c => IsTrump(c) && IsCardHigh(c, state.cardsPlayed)).FirstOrDefault()
+                : null;
+            if (bossTrump != null)
+                return bossTrump;
+
             // try to win tricks quickly if dummy has a long, good side suit
             if (DummyHasLongGoodSideSuit(state))
                 return TryTakeEm(state);
-
-            // Suit contracts:
-            // If dummy has shortness (2 or fewer cards), four or fewer trump, and the same or fewer trumps than declarer,
-            // play a trump to prevent ruffing in dummy.
-            var dummy = GetDummy(state);
-            var dummyHand = new Hand(dummy.Hand);
-            var nDummyTrump = dummyHand.Count(c => c.suit == state.trumpSuit);
-            var legalTrump = state.legalCards.Where(c => c.suit == state.trumpSuit).ToList();
-            if (state.trumpSuit != Suit.Unknown && state.legalCards.Any(c => c.suit == state.trumpSuit))
-            {
-                var dummyHasShortness = SuitRank.stdSuits.Any(s => s != state.trumpSuit && dummyHand.Count(c => c.suit == s) == 0);
-                if (nDummyTrump > 0 && nDummyTrump <= 4 && dummyHasShortness)
-                {
-                    var nDeclarerTrump = CountDeclarersCardsInTrump(state);
-                    if (nDummyTrump <= nDeclarerTrump)
-                    {
-                        return SuggestDefensiveLeadInSuit(state, legalTrump);
-                    }
-                }
-            }
-
-            // If we have one trump left, we should lead it to take two of defender's trumps (if both declarer and dummy still have trump)
-            var players = new PlayersCollectionBase(this, state.players);
-            var knownCards = state.cardsPlayed.Concat(state.legalCards).ToList();
-            var declarerIsVoidInTrump = players.TargetIsVoidInSuit(state.player, GetDeclarer(state), state.trumpSuit, knownCards.Concat(dummyHand).ToList());
-            if (!declarerIsVoidInTrump && nDummyTrump > 0 && legalTrump.Count() == 1)
-                return legalTrump.First();
-
-            // TODO: allow leading trump if it's the safe choice
 
             // Leads after trick 1: same general rules apply (playing touching honors, etc).
             // * Give priority to returning partner's suit (especially in NT),

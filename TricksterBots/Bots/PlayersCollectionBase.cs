@@ -51,7 +51,12 @@ namespace Trickster.Bots
 
         public bool PartnerIsVoidInSuit(PlayerBase player, Card card, IReadOnlyList<Card> cardsPlayed)
         {
-            return IsPartnership && PartnersOf(player).All(target => TargetIsVoidInSuit(player, target, card, cardsPlayed));
+            return PartnerIsVoidInSuit(player, gameBot.EffectiveSuit(card), cardsPlayed);
+        }
+
+        public bool PartnerIsVoidInSuit(PlayerBase player, Suit suit, IReadOnlyList<Card> cardsPlayed)
+        {
+            return IsPartnership && PartnersOf(player).All(target => TargetIsVoidInSuit(player, target, suit, cardsPlayed));
         }
 
         public PlayerBase PartnerOf(PlayerBase player)
