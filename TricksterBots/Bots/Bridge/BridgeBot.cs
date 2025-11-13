@@ -556,28 +556,6 @@ namespace Trickster.Bots
             return Suit.Unknown;
         }
 
-        private int CountDeclarersCardsInTrump(SuggestCardState<BridgeOptions> state)
-        {
-            if (options.variation == BridgeVariation.Mini)
-                return 0;
-
-            var declarer = GetDeclarer(state);
-            var summary = GetPlayerSummary(state, declarer.Seat);
-            var nCardsInTrump = 0;
-
-            // Start with the min count we know from bidding
-            if (summary.HandShape.ContainsKey(state.trumpSuit))
-                nCardsInTrump = summary.HandShape[state.trumpSuit].Min;
-
-            if (nCardsInTrump <= 0)
-                return 0;
-
-            // Then subtract cards already played
-            nCardsInTrump -= GetCardsPlayedInOrder(state.cardsPlayedInOrder).Count(sc => sc.seat == declarer.Seat && sc.card.suit == state.trumpSuit);
-
-            return Math.Max(0, nCardsInTrump);
-        }
-
         private List<Card> GetSureWinners(SuggestCardState<BridgeOptions> state)
         {
             var knownCards = state.legalCards.Concat(state.cardsPlayed);
@@ -857,9 +835,9 @@ namespace Trickster.Bots
             if (sureWinners.Any() && sureWinners.Count() >= tricksNeededToSet)
                 return sureWinners.First();
 
-            // if we're holding boss trump and partner is void, play it to pull trump (unless dummy/declarer is also void)
+            // if we're holding boss trump and partner is void, play it to pull trump
             var players = new PlayersCollectionBase(this, state.players);
-            var bossTrump = players.PartnerIsVoidInSuit(state.player, trump, state.cardsPlayed) && !players.LhoIsVoidInSuit(state.player, trump, state.cardsPlayed) && !players.RhoIsVoidInSuit(state.player, trump, state.cardsPlayed)
+            var bossTrump = players.PartnerIsVoidInSuit(state.player, state.trumpSuit, state.cardsPlayed)
                 ? state.legalCards.Where(c => IsTrump(c) && IsCardHigh(c, state.cardsPlayed)).FirstOrDefault()
                 : null;
             if (bossTrump != null)
