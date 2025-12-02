@@ -189,6 +189,16 @@ namespace Trickster.Bots
                 return true;
             }
 
+            //  invite game in 2NT when nothing else fits (does not need to be balanced in this case)
+            if (rebid.declareBid.level == 2 && rebid.declareBid.suit == Suit.Unknown)
+            {
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Points.Min = 8;
+                rebid.Points.Max = 9;
+                rebid.Description = "Inviting game";
+                return true;
+            }
+
             return false;
         }
 
