@@ -22,7 +22,7 @@ namespace TestBots
             var bot = GetBot(new HeartsOptions { qsAfterHearts = true });
             var cardState = new TestCardState<HeartsOptions>(bot, players, "9D8D7D", "QS");
             var suggestion = bot.SuggestNextCard(cardState);
-            Assert.IsTrue(suggestion.suit != Suit.Spades, $"Suggested {suggestion.StdNotation}; expected non-spade");
+            Assert.AreNotEqual(Suit.Spades, suggestion.suit, $"Suggested {suggestion.StdNotation}; expected non-spade");
         }
 
         [TestMethod]
@@ -42,7 +42,7 @@ namespace TestBots
             Assert.IsFalse(cardState.legalCards.Contains(new Card("QS")), "Queen of Spades is not legal");
 
             var suggestion = bot.SuggestNextCard(cardState);
-            Assert.IsTrue(suggestion.suit != Suit.Spades, $"Suggested {suggestion.StdNotation}; expected non-spade");
+            Assert.AreNotEqual(Suit.Spades, suggestion.suit, $"Suggested {suggestion.StdNotation}; expected non-spade");
         }
 
         [TestMethod]

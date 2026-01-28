@@ -29,7 +29,7 @@ namespace TestBots
             };
 
             var suggestion = bot.SuggestDiscard(discardState);
-            Assert.AreEqual(6, suggestion.Count, "Discarded 6 cards");
+            Assert.HasCount(suggestion, 6, "Discarded 6 cards");
             Assert.AreEqual(2, suggestion.Count(c => c.suit == Suit.Joker), $"Suggestion {Util.PrettyCards(suggestion)} contains both jokers");
         }
 
@@ -47,7 +47,7 @@ namespace TestBots
             var bot = GetBot(Suit.Clubs);
             var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Clubs);
             var suggestion = bot.SuggestNextCard(cardState);
-            Assert.IsTrue(suggestion.suit != Suit.Clubs, "Suggested lead is not trump");
+            Assert.AreNotEqual(Suit.Clubs, suggestion.suit, "Suggested lead is not trump");
         }
 
         [TestMethod]
@@ -64,7 +64,7 @@ namespace TestBots
             var bot = GetBot(Suit.Unknown);
             var cardState = new TestCardState<WhistOptions>(bot, players);
             var suggestion = bot.SuggestNextCard(cardState);
-            Assert.IsTrue(suggestion.suit != Suit.Joker, "Suggested lead is not a Joker");
+            Assert.AreNotEqual(Suit.Joker, suggestion.suit, "Suggested lead is not a Joker");
         }
 
         [TestMethod]
@@ -83,7 +83,7 @@ namespace TestBots
             Assert.IsTrue(new Hand(cardState.player.Hand).Any(c => bot.EffectiveSuit(c) == Suit.Clubs),
                 $"Player's hand {Util.PrettyHand(cardState.player.Hand)} contains trump");
             var suggestion = bot.SuggestNextCard(cardState);
-            Assert.IsTrue(bot.EffectiveSuit(suggestion) == Suit.Clubs, "Suggested lead is trump");
+            Assert.AreEqual(Suit.Clubs, bot.EffectiveSuit(suggestion), "Suggested lead is trump");
         }
 
         [TestMethod]

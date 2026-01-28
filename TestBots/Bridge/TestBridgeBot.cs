@@ -253,7 +253,7 @@ namespace TestBots
             if (changesFromPrevious > 0)
                 UpdateSaycResults(results);
 
-            Assert.IsTrue(totalPasses >= 500, "At least expected number of tests passed");
+            Assert.IsGreaterThanOrEqualTo(totalPasses, 500, "At least expected number of tests passed");
             Assert.AreEqual(0, changesFromPrevious, $"{changesFromPrevious} test(s) changed results from previous");
         }
 

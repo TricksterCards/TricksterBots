@@ -92,7 +92,7 @@ namespace TestBots
             //  if we have cards in the trick, set stuff about the trick and adjust legal cards 
             if (this.trick.Count > 0)
             {
-                Assert.IsTrue(this.trick.Count < playersCollection.Count, $"{this.trick.Count} cards in trick is too many");
+                Assert.IsLessThan(this.trick.Count, playersCollection.Count, $"{this.trick.Count} cards in trick is too many");
 
                 var highCardIndex = bot.TrickHighCardIndex(this.trick);
                 cardTakingTrick = this.trick[highCardIndex];
