@@ -29,6 +29,7 @@ namespace Trickster.Bots
                 state.player, state.isPartnerTakingTrick, state.cardTakingTrick);
             var nPlayers = players.Count;
             var multiplePlayersHavePoints = players.Count(p => p.HandScore == 0 || p.HandScore == JackOfDiamondsValue) < nPlayers - 1;
+            var trickScore = ScoreTrick(trick);
 
             //  keep track of whether we have the Q♠ or J♦ (these will be null the associated game options are off)
             var hand = new Hand(player.Hand);
@@ -53,8 +54,8 @@ namespace Trickster.Bots
                 return legalCards.Where(c => !IsBlackLady(c) && !IsJackOfDiamonds(c)).OrderBy(c => c.rank).FirstOrDefault() ?? jackOfDiamonds;
             }
 
-            //  this is the first trick of the game where points can't be played
-            if (options.dumpPoints == HeartsDumpPoints.AfterFirstTrick && IsFirstTrick(players))
+            //  this is the first trick of the game where points usually can't be played. there may be points if a player had only point cards
+            if (options.dumpPoints == HeartsDumpPoints.AfterFirstTrick && IsFirstTrick(players) && trickScore <= 0)
             {
                 //  if we're playing with the J♦
                 if (JackOfDiamondsValue < 0)
@@ -76,8 +77,6 @@ namespace Trickster.Bots
             //  if we're able to follow suit, all our legal cards will be of that suit
             if (legalCards.All(c => c.suit == trick[0].suit))
             {
-                var trickScore = ScoreTrick(trick);
-
                 if (trickScore < 0)
                     //  taking this trick will reduce our score, let's try to take it
                     return legalCards.OrderByDescending(RankSort).First();
