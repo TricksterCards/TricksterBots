@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Trickster.Bots;
 using Trickster.cloud;
@@ -21,20 +20,20 @@ namespace TestBots
             //  get the bid using the state-based suggest bid method
             var bidState = new SuggestBidState<EuchreOptions>
             {
-                players = new[]
-                {
+                players =
+                [
                     new TestPlayer(seat: 0, hand: handString),
                     new TestPlayer(seat: 1),
                     new TestPlayer(seat: 2),
                     new TestPlayer(seat: 3)
-                },
+                ],
                 dealerSeat = 3,
                 hand = new Hand(handString),
-                legalBids = new[]
-                {
+                legalBids =
+                [
                     new BidBase((int)EuchreBid.CallMisdeal),
                     new BidBase((int)EuchreBid.NoMisdeal)
-                },
+                ],
                 options = options,
                 upCard = upCard,
                 upCardSuit = upCard.suit
@@ -59,14 +58,14 @@ namespace TestBots
                 passCount = 1
             };
             var suggestion = bot.SuggestPass(passState);
-            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.HasCount(1, suggestion, "One card was passed");
             Assert.AreEqual("9S", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected 9S");
 
             //  second suggestion is non-playing partner passing to maker
             passState.player = new TestPlayer(-3, "9HTHQHKHAHJD");
             passState.hand = new Hand("9HTHQHKHAHJD");
             suggestion = bot.SuggestPass(passState);
-            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.HasCount(1, suggestion, "One card was passed");
             Assert.AreEqual("JD", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected JD");
         }
 
@@ -106,14 +105,14 @@ namespace TestBots
                 passCount = 1
             };
             var suggestion = bot.SuggestPass(passState);
-            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.HasCount(1, suggestion, "One card was passed");
             Assert.AreEqual("TH", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected TH");
 
             //  second suggestion is non-playing partner passing to maker
             passState.player = new TestPlayer(-3, "9D9STSQSAS");
             passState.hand = new Hand("9D9STSQSAS");
             suggestion = bot.SuggestPass(passState);
-            Assert.AreEqual(suggestion.Count, 1, "One card was passed");
+            Assert.HasCount(1, suggestion, "One card was passed");
             Assert.AreEqual("AS", suggestion[0].ToString(), $"Suggested {suggestion[0].StdNotation}; expected AS");
         }
 
@@ -130,7 +129,7 @@ namespace TestBots
 
             var bot = GetBot(Suit.Diamonds);
             var cardState = new TestCardState<EuchreOptions>(bot, players, "9SQSTS");
-            Assert.AreEqual(cardState.legalCards.Count, 5, "All cards are legal");
+            Assert.HasCount(5, cardState.legalCards, "All cards are legal");
             Assert.IsTrue(cardState.isPartnerTakingTrick, "Partner is taking trick");
 
             var suggestion = bot.SuggestNextCard(cardState);
@@ -150,7 +149,7 @@ namespace TestBots
 
             var bot = GetBot(Suit.Diamonds);
             var cardState = new TestCardState<EuchreOptions>(bot, players, "AS");
-            Assert.AreEqual(cardState.legalCards.Count, 5, "All cards are legal");
+            Assert.HasCount(5, cardState.legalCards, "All cards are legal");
             Assert.IsTrue(cardState.isPartnerTakingTrick, "Partner is taking trick");
 
             var suggestion = bot.SuggestNextCard(cardState);
@@ -214,7 +213,7 @@ namespace TestBots
             var players = new[]
             {
                 new TestPlayer(140, "AC9CJHQD"),
-                new TestPlayer(140) { VoidSuits = new List<Suit> { Suit.Diamonds } },
+                new TestPlayer(140) { VoidSuits = [Suit.Diamonds] },
                 new TestPlayer(140),
                 new TestPlayer(102),
             };
@@ -353,7 +352,7 @@ namespace TestBots
             {
                 new TestPlayer(102, "9CQD", 3),
                 new TestPlayer(140),
-                new TestPlayer(140) { VoidSuits = new List<Suit> { Suit.Diamonds }},
+                new TestPlayer(140) { VoidSuits = [Suit.Diamonds] },
                 new TestPlayer(140),
             };
 
@@ -479,8 +478,8 @@ namespace TestBots
 
             var bot = GetBot(Suit.Diamonds);
             var cardState = new TestCardState<EuchreOptions>(bot, players, "AS9S");
-            Assert.AreEqual(GetBidText(cardState.player.Bid), "♦ alone", "Diamonds alone bid is correct");
-            Assert.AreEqual(cardState.legalCards.Count, 5, "All cards are legal");
+            Assert.AreEqual("♦ alone", GetBidText(cardState.player.Bid), "Diamonds alone bid is correct");
+            Assert.HasCount(5, cardState.legalCards, "All cards are legal");
             Assert.IsFalse(cardState.isPartnerTakingTrick, "Partner is not taking trick");
 
             var suggestion = bot.SuggestNextCard(cardState);
@@ -580,21 +579,21 @@ namespace TestBots
             //  get the bid using the state-based suggest bid method
             var bidState = new SuggestBidState<EuchreOptions>
             {
-                players = new[]
-                {
+                players =
+                [
                     new TestPlayer(seat: 0, hand: handString),
                     new TestPlayer(seat: 1),
                     new TestPlayer(seat: 2),
                     new TestPlayer(seat: 3)
-                },
+                ],
                 dealerSeat = 3,
                 hand = new Hand(handString),
-                legalBids = new[]
-                {
+                legalBids =
+                [
                     new BidBase((int)EuchreBid.Make + (int)upCard.suit),
                     new BidBase((int)EuchreBid.MakeAlone + (int)upCard.suit),
                     new BidBase(BidBase.Pass)
-                },
+                ],
                 options = options,
                 upCard = upCard,
                 upCardSuit = upCard.suit
