@@ -139,11 +139,12 @@ namespace TestBots
         }
 
         [TestMethod]
-        public void AvoidTakingQueenSpadesWhenCantDuckBelowWinner()
+        public void PlayLowestCardWhenForcedToTakeQueenSpades()
         {
             // Scenario: Diamond trick, QS was sloughed, bot plays last
-            // Bot has only high diamonds (can't get below 9D) but SHOULD still duck
-            // to avoid taking the QS - playing lower diamond is better than taking trick
+            // Bot has only high diamonds (can't duck below 9D winner)
+            // Bot will be forced to take the trick with QS, so should play lowest card
+            // to minimize damage (preserve high cards for later)
             var players = new[]
             {
                 new TestPlayer(hand: "JDQDKDAH", cardsTaken: "2C3C4C5C"),
@@ -155,7 +156,7 @@ namespace TestBots
             var bot = GetBot();
             // Trick: 3D (led), QS (sloughed), 9D (taking)
             // Bot has JD, QD, KD - all are above 9D so can't duck below winner
-            // But bot should still play lowest diamond (JD) instead of highest
+            // Bot will take the trick with QS, but should play JD (lowest) not KD (highest)
             var cardState = new TestCardState<HeartsOptions>(bot, players, "3DQS9D");
             var suggestion = bot.SuggestNextCard(cardState);
             
