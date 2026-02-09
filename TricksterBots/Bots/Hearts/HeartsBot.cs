@@ -150,6 +150,11 @@ namespace Trickster.Bots
                 //  if we're the last to play, there are points in the trick, and we couldn't get below: play the highest we have avoiding Q♠
                 if (trick.Count == nPlayers - 1)
                 {
+                    //  if the Q♠ is in the trick and we're not following spades (it was sloughed), play lowest card
+                    //  to minimize damage from being forced to take the Q♠
+                    if (!options.noBlackLady && trick.Any(IsBlackLady) && trick[0].suit != Suit.Spades)
+                        return legalCards.OrderBy(RankSort).First();
+
                     if (JackOfDiamondsValue < 0 && trick[0].suit == Suit.Diamonds && !trick.Any(IsJackOfDiamonds) && !cardsPlayed.Any(IsJackOfDiamonds))
                     {
                         //  if we might be able to take the J♦ later, don't throw high diamonds now

@@ -88,6 +88,83 @@ namespace TestBots
             Assert.AreEqual(card, suggestion.ToString());
         }
 
+        [TestMethod]
+        public void DuckWhenQueenSpadesIsSloughedOnDiamondTrick()
+        {
+            // Scenario: Diamond trick, QS was sloughed by another player
+            // Bot plays last and has lower diamonds - should duck to avoid taking QS
+            var players = new[]
+            {
+                new TestPlayer(hand: "4D5D6DAH", cardsTaken: "2C3C4C5C"),
+                new TestPlayer(),
+                new TestPlayer(),
+                new TestPlayer()
+            };
+
+            var bot = GetBot();
+            // Trick: AD (led), QS (sloughed), KD (taking)
+            // Bot has 4D, 5D, 6D - all are below KD, so bot can duck
+            var cardState = new TestCardState<HeartsOptions>(bot, players, "ADQSKD");
+            var suggestion = bot.SuggestNextCard(cardState);
+            
+            // Bot should play a low diamond (4D, 5D, or 6D) to duck, not try to take
+            Assert.IsTrue(suggestion.suit == Suit.Diamonds, $"Suggested {suggestion.StdNotation}; expected a diamond");
+            Assert.IsTrue(suggestion.rank < Rank.King, $"Suggested {suggestion.StdNotation}; expected to duck below King");
+        }
+
+        [TestMethod]
+        public void DuckQueenSpadesOnDiamondTrickWhenPossible()
+        {
+            // Issue scenario: Diamond trick, QS sloughed, bot plays last with lower diamonds
+            // Bot CAN duck but may not be doing so
+            var players = new[]
+            {
+                new TestPlayer(hand: "3D5D7D9DAH", cardsTaken: "2C3C4C5C"),
+                new TestPlayer(),
+                new TestPlayer(),
+                new TestPlayer()
+            };
+
+            var bot = GetBot();
+            // Trick: 4D (led), QS (sloughed), 8D (currently taking)
+            // Bot has 3D, 5D, 7D, 9D
+            // Bot can play 3D, 5D, or 7D to duck (avoid taking QS)
+            // Or play 9D to take the trick with QS
+            var cardState = new TestCardState<HeartsOptions>(bot, players, "4DQS8D");
+            var suggestion = bot.SuggestNextCard(cardState);
+            
+            // Bot MUST duck - should NOT play 9D
+            Assert.IsTrue(suggestion.rank < Rank.Nine, 
+                $"Suggested {suggestion.StdNotation}; expected to duck (3D, 5D, or 7D) to avoid taking Queen of Spades");
+        }
+
+        [TestMethod]
+        public void AvoidTakingQueenSpadesWhenCantDuckBelowWinner()
+        {
+            // Scenario: Diamond trick, QS was sloughed, bot plays last
+            // Bot has only high diamonds (can't get below 9D) but SHOULD still duck
+            // to avoid taking the QS - playing lower diamond is better than taking trick
+            var players = new[]
+            {
+                new TestPlayer(hand: "JDQDKDAH", cardsTaken: "2C3C4C5C"),
+                new TestPlayer(),
+                new TestPlayer(),
+                new TestPlayer()
+            };
+
+            var bot = GetBot();
+            // Trick: 3D (led), QS (sloughed), 9D (taking)
+            // Bot has JD, QD, KD - all are above 9D so can't duck below winner
+            // But bot should still play lowest diamond (JD) instead of highest
+            var cardState = new TestCardState<HeartsOptions>(bot, players, "3DQS9D");
+            var suggestion = bot.SuggestNextCard(cardState);
+            
+            // Bot will take the trick, but should play JD (lowest) not KD (highest)
+            // to minimize losing a high diamond unnecessarily
+            Assert.AreEqual("JD", suggestion.ToString(), 
+                $"Suggested {suggestion.StdNotation}; expected JD (lowest diamond) to minimize damage when forced to take QS");
+        }
+
         private static HeartsBot GetBot()
         {
             return GetBot(new HeartsOptions());
