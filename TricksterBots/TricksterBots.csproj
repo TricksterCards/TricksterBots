@@ -7,6 +7,7 @@
     <Copyright>Copyright ©  2021</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
+    <Configurations>Debug;Release;Local</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bridgit\BridgeBidder\BridgeBidder.csproj" />
@@ -24,7 +25,7 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
   </ItemGroup>
   <Choose>
-    <When Condition="'$(Configuration)' == 'Debug'">
+    <When Condition="'$(Configuration)' == 'Local'">
       <ItemGroup>
         <ProjectReference Include="..\..\Trickster\TricksterBotClasses\TricksterBotClasses.csproj" />
       </ItemGroup>
