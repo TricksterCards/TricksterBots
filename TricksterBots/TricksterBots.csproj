@@ -9,6 +9,12 @@
     <FileVersion>1.0.0.0</FileVersion>
     <Configurations>Debug;Release;Local</Configurations>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Local'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bridgit\BridgeBidder\BridgeBidder.csproj" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
