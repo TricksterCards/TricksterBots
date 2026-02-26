@@ -136,8 +136,8 @@ namespace Trickster.Bots
             }
 
             //  if we're the last to bid, someone has bid, and our partner has the high bid
-            var partner = players.PartnerOf(player);
-            if (partner != null && player.Seat == dealerSeat && highBid >= MinPitchBid && partner.Bid == highBid)
+            var partners = players.PartnersOf(player);
+            if (partners.Length > 0 && player.Seat == dealerSeat && highBid >= MinPitchBid && partners.Any(p => p.Bid == highBid))
             {
                 //  then don't outbid our partner
                 return new BidBase(BidBase.Pass);
@@ -799,7 +799,7 @@ namespace Trickster.Bots
             }
 
             //  else use the normal partner check
-            return players.PartnerOf(p1) == p2;
+            return players.PartnersOf(p1).Contains(p2);
         }
 
         private int CaptureValue(Card card)
