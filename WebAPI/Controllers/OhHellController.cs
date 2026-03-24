@@ -1,20 +1,20 @@
-﻿using System.Web.Http;
+﻿using Microsoft.AspNetCore.Mvc;
 using Trickster.cloud;
 
 namespace Trickster.Bots.Controllers
 {
-    public class OhHellController : ApiController
+    public class OhHellController : ControllerBase
     {
         [HttpPost]
         [Route("suggest/ohhell/bid")]
-        public string SuggestOhHellBid([FromBody] string postData)
+        public string? SuggestOhHellBid([FromBody] string postData)
         {
             return Suggester.SuggestBid<OhHellOptions>(postData, state => new OhHellBot(state.options, state.upCardSuit));
         }
 
         [HttpPost]
         [Route("suggest/ohhell/card")]
-        public string SuggestOhHellCard([FromBody] string postData)
+        public string? SuggestOhHellCard([FromBody] string postData)
         {
             return Suggester.SuggestNextCard<OhHellOptions>(postData, state => new OhHellBot(state.options, state.trumpSuit));
         }
