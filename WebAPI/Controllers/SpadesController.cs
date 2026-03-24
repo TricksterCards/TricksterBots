@@ -3,6 +3,7 @@ using Trickster.cloud;
 
 namespace Trickster.Bots.Controllers
 {
+    [ApiController]
     public class SpadesController : ControllerBase
     {
         [HttpPost]

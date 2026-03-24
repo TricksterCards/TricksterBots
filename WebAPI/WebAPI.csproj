@@ -10,10 +10,17 @@
     <ProjectReference Include="..\TricksterBots\TricksterBots.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="TricksterBotClasses">
-      <HintPath>..\..\Trickster\TricksterBotClasses\bin\Debug\netstandard2.0\TricksterBotClasses.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+  <Choose>
+    <When Condition="'$(Configuration)' == 'Local'">
+      <ItemGroup>
+        <ProjectReference Include="..\..\Trickster\TricksterBotClasses\TricksterBotClasses.csproj" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <PackageReference Include="TricksterBotClasses" Version="1.13.0" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
 </Project>
