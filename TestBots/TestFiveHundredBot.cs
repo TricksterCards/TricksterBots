@@ -203,6 +203,26 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void SignalGoodSuitAvoidsSingletonAce()
+        {
+            var players = new[]
+            {
+                new TestPlayer(FiveHundredBid.ContractorPartnerBid, "ACTH9H8H7S4S3S2S"),
+                new TestPlayer(FiveHundredBid.NotContractorBid, "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(new FiveHundredBid(Suit.Hearts, 7), "0?0?0?0?0?0?0?0?0?"),
+                new TestPlayer(FiveHundredBid.NotContractorBid, "0?0?0?0?0?0?0?0?0?"),
+            };
+            var bot = GetBot(Suit.Hearts, defaultOptions);
+            var cardState = new TestCardState<FiveHundredOptions>(
+                bot,
+                players,
+                trick: "ADTD"
+            );
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("2S", $"{suggestion}");
+        }
+
+        [TestMethod]
         public void PlayHighIn3rdIfMisereIsUnder()
         {
             var players = new[]
