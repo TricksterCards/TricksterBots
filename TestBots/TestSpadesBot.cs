@@ -182,6 +182,32 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void AvoidLeadingSpadesIfOpponentsVoidAndPartnerIsNot()
+        {
+            var options = new SpadesOptions
+            {
+                minBid = 4,
+                nilOrZero = SpadesNilOrZero.Zero,
+                isPartnership = true,
+                tenForTwoHundred = true,
+                variation = SpadesVariation.JokerJokerDeuceAce
+            };
+
+            var players = new[]
+            {
+                new TestPlayer(7, "KSQSTS8SADKD4DTC", 1, cardsTaken: "HJ2S7S2DAS9S4C3D"),
+                new TestPlayer(2) { VoidSuits = [Suit.Spades] },
+                new TestPlayer(3, cardsTaken: "LJ4S6S3S5SKH7H6H") { VoidSuits = [Suit.Hearts] },
+                new TestPlayer(2, cardsTaken: "AH9H4H3H") { VoidSuits = [Suit.Spades] }
+            };
+
+            var bot = GetBot(options);
+            var cardState = new TestCardState<SpadesOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("AD", suggestion.ToString(), "Avoided leading Spades because opponents were void but partner wasn't");
+        }
+
+        [TestMethod]
         public void LeadBossToProtectNil()
         {
             var players = new[]

@@ -491,6 +491,14 @@ namespace Trickster.Bots
                         legalCards = preferredLegalCards;
                 }
 
+                //  if opponents are void in trump but partner isn't, avoid leading trump
+                if (IsPartnership && isLhoVoidInSuit[trump] && isRhoVoidInSuit[trump] && !isPartnerVoidInSuit[trump])
+                {
+                    var preferredLegalCards = legalCards.Where(c => !IsTrump(c)).ToList();
+                    if (preferredLegalCards.Count > 0)
+                        legalCards = preferredLegalCards;
+                }
+
                 var cards = legalCards;
                 var bossCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed)).OrderByDescending(c => cards.Count(c1 => EffectiveSuit(c1) == EffectiveSuit(c))).ToList();
                 if (bossCards.Count > 0)
@@ -498,7 +506,7 @@ namespace Trickster.Bots
                     //  consider leading our "boss" cards favoring boss in our longest suit
                     suggestion = bossCards.First();
                 }
-                else if (!isPartnerVoidInSuit[trump])
+                else if (IsPartnership && !isPartnerVoidInSuit[trump])
                 {
                     //  partner may still have trump: try to lead a suit where partner is known to be void
                     var preferSuits = SuitRank.stdSuits.Where(s => isPartnerVoidInSuit[s]).ToList();
