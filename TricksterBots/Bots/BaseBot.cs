@@ -557,12 +557,12 @@ namespace Trickster.Bots
             if (legalCards.All(IsTrump))
                 return null;
 
-            //  otherwise try to signal a suit where we hold boss and at least one other card, or where we hold a singleton and at least one trump
+            //  otherwise try to signal a suit where we hold boss and at least one other card, or where we hold a non-boss singleton and at least one trump
             var hasTrump = legalCards.Any(IsTrump);
             var suitRange = legalCards.Where(c => !IsTrump(c)).OrderBy(RankSort).GroupBy(EffectiveSuit)
                 .Select(g => new { suit = g.Key, low = g.First(), high = g.Last() }).ToList();
             var signalableSuit = suitRange.FirstOrDefault(sr => sr.high != sr.low && IsCardHigh(sr.high, cardsPlayed))
-                                 ?? suitRange.FirstOrDefault(sr => sr.low == sr.high && hasTrump);
+                                 ?? suitRange.FirstOrDefault(sr => sr.low == sr.high && hasTrump && !IsCardHigh(sr.high, cardsPlayed));
 
             return signalableSuit?.low;
         }
