@@ -11,22 +11,6 @@ namespace Trickster.Bots
                 && bid.Index >= 2
                 && bid.History[bid.Index - 2].BidConvention == BidConvention.MichaelsCuebid)
             {
-                var cuebid = bid.History[bid.Index - 2];
-                if (BridgeBot.IsMajor(cuebid.declareBid.suit) && bid.bidIsDeclare && bid.declareBid.level == 2 && bid.declareBid.suit == Suit.Unknown)
-                {
-                    var otherMajor = cuebid.declareBid.suit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
-                    bid.BidConvention = BidConvention.AskingForMinor;
-                    bid.BidMessage = BidMessage.Forcing;
-                    bid.HandShape[otherMajor].Max = 2;
-                    bid.Description = $"0-2 {otherMajor}";
-                    return true;
-                }
-            }
-
-            if (bid.bidIsDeclare
-                && bid.Index >= 2
-                && bid.History[bid.Index - 2].BidConvention == BidConvention.MichaelsCuebid)
-            {
                 InterpretResponse(bid);
                 return true;
             }
@@ -50,10 +34,9 @@ namespace Trickster.Bots
                 var otherMajor = cuebid.declareBid.suit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
                 bid.BidConvention = BidConvention.AskingForMinor;
                 bid.BidMessage = BidMessage.Forcing;
-                bid.HandShape[Suit.Clubs].Min = 3;
-                bid.HandShape[Suit.Diamonds].Min = 3;
                 bid.HandShape[otherMajor].Max = 2;
-                bid.Description = $"3+ {Suit.Diamonds}, 3+ {Suit.Clubs}, 0-2 {otherMajor}";
+                bid.Description = $"3+ {Suit.Diamonds} or 3+ {Suit.Clubs}, 0-2 {otherMajor}";
+                bid.Validate = hand => hand.Count(c => c.suit == Suit.Diamonds) >= 3 || hand.Count(c => c.suit == Suit.Clubs) >= 3;
             }
             else if (BridgeBot.IsMinor(cuebid.declareBid.suit) && BridgeBot.IsMajor(bid.declareBid.suit) && bid.declareBid.level == bid.LowestAvailableLevel(bid.declareBid.suit))
             {
