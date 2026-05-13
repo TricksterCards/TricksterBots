@@ -19,8 +19,7 @@ namespace Trickster.Bots
                 && bid.Index >= 4
                 && bid.History[bid.Index - 4].BidConvention == BidConvention.MichaelsCuebid)
             {
-                InterpretRebid(bid);
-                return true;
+                return InterpretRebid(bid);
             }
 
             return false;
@@ -64,7 +63,7 @@ namespace Trickster.Bots
             }
         }
 
-        public static void InterpretRebid(InterpretedBid bid)
+        public static bool InterpretRebid(InterpretedBid bid)
         {
             var cuebid = bid.History[bid.Index - 4];
             if (bid.History[bid.Index - 2].BidConvention == BidConvention.AskingForMinor)
@@ -73,6 +72,7 @@ namespace Trickster.Bots
                 {
                     bid.HandShape[bid.declareBid.suit].Min = 5;
                     bid.Description = $"5+ {bid.declareBid.suit}";
+                    return true;
                 }
             }
             else if (bid.declareBid.suit != Suit.Unknown
@@ -84,7 +84,10 @@ namespace Trickster.Bots
                 // Ensure we don't get stuck playing in the cuebid suit if opponents double and partner passes
                 bid.HandShape[bid.declareBid.suit].Min = 5;
                 bid.Description = $"5+ {bid.declareBid.suit}";
+                return true;
             }
+
+            return false;
         }
     }
 }
