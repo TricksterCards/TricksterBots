@@ -60,7 +60,7 @@ namespace Trickster.Bots
             else if (BridgeBot.IsMajor(cuebid.declareBid.suit) && BridgeBot.IsMajor(bid.declareBid.suit) && bid.declareBid.suit != cuebid.declareBid.suit && bid.declareBid.level == bid.LowestAvailableLevel(bid.declareBid.suit))
             {
                 bid.HandShape[bid.declareBid.suit].Min = 3;
-                bid.Description = $"5+ {bid.declareBid.suit}";
+                bid.Description = $"3+ {bid.declareBid.suit}";
             }
         }
 
