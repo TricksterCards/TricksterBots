@@ -1,0 +1,56 @@
+[Event "Advance Michaels cuebid of 2D (3-card Heart support)"]
+[Deal "N:- - - QJ.Q75.T865.8432"]
+[Auction "N"]
+1D 2D Pass 2H
+
+[Event "Advance Michaels cuebid of 2D (3-card Spades support)"]
+[Deal "N:- - - Q75.QJ.T865.8432"]
+[Auction "N"]
+1D 2D Pass 2S
+
+[Event "Advance Michaels cuebid of 2D (3-card Hearts and 4-card Spades support)"]
+[Deal "N:- - - Q754.QJ4.T86.832"]
+[Auction "N"]
+1D 2D Pass 2S
+
+[Event "Advance Michaels cuebid of 2D (4-card Hearts and 3-card Spades support)"]
+[Deal "N:- - - Q74.QJ54.T86.832"]
+[Auction "N"]
+1D 2D Pass 2H
+
+[Event "Advance Michaels cuebid of 2D (3-card Hearts and better 3-card Spades support)"]
+[Deal "N:- - - QJ5.Q74.T864.832"]
+[Auction "N"]
+1D 2D Pass 2S
+
+[Event "Advance Michaels cuebid of 2D (3-card Spades and better 3-card Hearts support)"]
+[Deal "N:- - - Q74.QJ5.T864.832"]
+[Auction "N"]
+1D 2D Pass 2H
+
+[Event "Advance Michaels cuebid of 2H (3-card Spade support)"]
+[Deal "N:- - - QJ5.Q7.T865.8432"]
+[Auction "N"]
+1H 2H Pass 2S
+
+[Event "Advance Michaels cuebid of 2S (3-card Heart support)"]
+[Deal "N:- - - QJ.Q75.T865.8432"]
+[Auction "N"]
+1S 2S Pass 3H
+
+[Event "Advance Michaels cuebid of 2H (4-card Diamond and Club support)"]
+[Deal "N:- - - QJ.Q74.T865.8432"]
+[Auction "N"]
+1H 2H Pass 2NT
+
+[Event "Rebid Michaels cuebid of 2H after 2NT (5+ Diamonds and Spades)"]
+[Deal "N:- AKJ75.3.T8652.84 - -"]
+[Auction "N"]
+1H 2H Pass 2NT
+Pass 3D
+
+[Event "Rebid Michaels cuebid of 2H after Pass (5+ Diamonds and Spades)"]
+[Deal "N:- AKJ75.3.T8652.84 - -"]
+[Auction "N"]
+1H 2H X Pass
+Pass 2S

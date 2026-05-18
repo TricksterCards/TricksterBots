@@ -21,6 +21,9 @@
     <Content Include="Bridge\SAYC\2NT Responses.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Bridge\SAYC\Michaels.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Bridge\SAYC\Overcalls.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

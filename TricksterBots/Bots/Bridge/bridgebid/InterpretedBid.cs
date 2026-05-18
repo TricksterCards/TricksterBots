@@ -285,6 +285,9 @@ namespace Trickster.Bots
             if (!Options.noTransfers && JacobyTransfer.Interpret(this))
                 return true;
 
+            if (MichaelsCuebid.Interpret(this))
+                return true;
+
             if (NegativeDouble.Interpret(this))
                 return true;
 
