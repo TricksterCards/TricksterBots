@@ -27,28 +27,29 @@ namespace Trickster.Bots
 
             var declarer = players.FirstOrDefault(p => new WhistBid(p.Bid).IsDeclareBid);
             var isCurrentSeatDeclarer = player.Seat == declarer?.Seat;
+            var isPartnerDeclarer = declarer != null && players.PartnerOf(player)?.Seat == declarer.Seat;
 
             var partnerSuit = PartnerIntroducedSuitFromAuctionAndSignal(player, players, cardsPlayed, cardsPlayedInOrder);
             if (partnerSuit == Suit.Unknown || !legalCards.Any(c => EffectiveSuit(c) == partnerSuit))
                 return null;
 
-            if (isCurrentSeatDeclarer)
-            {
-                //  NT declarer with no bosses: come back in the suit partner signaled from the lead (lowest card).
-                if (trump != Suit.Unknown || bossCards.Count > 0)
-                    return null;
 
+            if (isCurrentSeatDeclarer && trump == Suit.Unknown)
+            {
+                //  NT declarer: come back in the suit partner signaled from the lead (lowest card).
                 return legalCards
                     .Where(c => EffectiveSuit(c) == partnerSuit)
                     .OrderBy(RankSort)
                     .FirstOrDefault();
+            } else if (isPartnerDeclarer) {
+                // Offensive partner: lead the highest card in partner's suit to show strength.
+                return legalCards
+                    .Where(c => EffectiveSuit(c) == partnerSuit)
+                    .OrderByDescending(RankSort)
+                    .FirstOrDefault();
             }
 
-            //  Offensive partner: lead the highest card in partner's suit to show strength.
-            return legalCards
-                .Where(c => EffectiveSuit(c) == partnerSuit)
-                .OrderByDescending(RankSort)
-                .FirstOrDefault();
+            return null;
         }
 
         protected override Card TrySignalGoodSuitFromLead(PlayerBase player, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed,
