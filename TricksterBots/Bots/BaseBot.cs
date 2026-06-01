@@ -315,20 +315,6 @@ namespace Trickster.Bots
             return options.RankSort(c, trumpSuit);
         }
 
-        //  Override in game-specific bots that need it
-        protected virtual Card TryLeadTowardPartnerIntroducedSuit(PlayerBase player, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed,
-            PlayersCollectionBase players, bool isDefending, IReadOnlyList<Card> bossCards, string cardsPlayedInOrder = null)
-        {
-            return null;
-        }
-
-        //  Override in game-specific bots that need lead-time suit signaling behavior
-        protected virtual Card TrySignalGoodSuitFromLead(PlayerBase player, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed,
-            PlayersCollectionBase players, bool isDefending, IReadOnlyList<Card> bossCards, string cardsPlayedInOrder = null)
-        {
-            return null;
-        }
-
         //  NOTE: If you're going to edit this in a game-specific way, copy the method to your bot and edit it there
         protected Card TryTakeEm(PlayerBase player, IReadOnlyList<Card> trick, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed,
             PlayersCollectionBase players, bool isPartnerTakingTrick,
@@ -408,17 +394,7 @@ namespace Trickster.Bots
                 var bossCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed))
                     .OrderByDescending(c => cards.Count(c1 => EffectiveSuit(c1) == EffectiveSuit(c))).ToList();
 
-                suggestion = TryLeadTowardPartnerIntroducedSuit(player, legalCards, cardsPlayed, players, isDefending, bossCards, cardsPlayedInOrder);
-                if (suggestion != null)
-                {
-                    return suggestion;
-                }
-                suggestion = TrySignalGoodSuitFromLead(player, legalCards, cardsPlayed, players, isDefending, bossCards, cardsPlayedInOrder);
-                if (suggestion != null)
-                {
-                    return suggestion;
-                }
-                else if (bossCards.Count > 0)
+                if (bossCards.Count > 0)
                 {
                     //  consider leading our "boss" cards favoring boss in our longest suit
                     suggestion = bossCards.First();
