@@ -353,11 +353,13 @@ namespace Trickster.Bots
             {
                 if (state.trumpSuit == Suit.Unknown)
                 {
+                    // Don't lead jokers in no-trump
                     if (legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))
                     {
                         legalCards = legalCards.Where(c => c.suit != Suit.Joker).ToList();
                     }
 
+                    // Avoid leading a suit partner is known to be void in
                     var avoidPartnerVoidSuits = SuitRank.stdSuits.Where(s =>
                         players.PartnerIsVoidInSuit(state.player, new Card(s, Rank.Ace), state.cardsPlayed)).ToList();
                     if (avoidPartnerVoidSuits.Count > 0)
