@@ -225,14 +225,17 @@ namespace Trickster.Bots
             if (trump != Suit.Unknown)
                 return null;
 
+            // If for some reason we are leading and this was called, return null
             var firstCardInTrick = trick.FirstOrDefault(IsOfValue);
             if (firstCardInTrick == null)
                 return null;
 
+            // Fall back to TryTakeEm if we can follow suit
             var trickSuit = EffectiveSuit(firstCardInTrick);
             if (legalCards.Any(c => EffectiveSuit(c) == trickSuit))
                 return null;
 
+            // If we have a joker, slough it
             if (legalCards.Any(c => c.suit == Suit.Joker))
                 return legalCards.First(c => c.suit == Suit.Joker);
 
@@ -345,6 +348,7 @@ namespace Trickster.Bots
             var legalCards = state.legalCards;
             var players = new PlayersCollectionBase(this, state.players);
 
+            // Leading suggestions
             if (state.trick.Count == 0)
             {
                 if (state.trumpSuit == Suit.Unknown)
