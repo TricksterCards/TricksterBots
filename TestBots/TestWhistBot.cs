@@ -213,6 +213,27 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void LeadBackPartnerGoodSuit_NT_BidderLeadsLowest()
+        {
+            var declarerNtBid = (int)new WhistBid(Suit.Unknown, 1, true, false);
+            var players = new[]
+            {
+                new TestPlayer(declarerNtBid, "5H8H2C3C", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarersPartnerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown)
+            {
+                cardsPlayedInOrder = "23H32H0AS1KH"
+            };
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("5H", suggestion.ToString(), "NT declarer with no bosses leads lowest back in suit partner signaled from the lead");
+        }
+
+        [TestMethod]
         public void LeadBackSuitPartnerTriedToPromote_NT()
         {
             var players = new[]
