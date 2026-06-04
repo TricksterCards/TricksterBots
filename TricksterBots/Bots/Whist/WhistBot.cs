@@ -225,8 +225,19 @@ namespace Trickster.Bots
                     return low;
             }
 
-            //  return the lowest card from the shortest suit
-            return cards.OrderBy(c => cards.Count(c1 => EffectiveSuit(c1) == c.suit)).ThenBy(RankSort).First();
+            //  try to slough from suits with 3+ cards to avoid hitting unsuitable cards in the singleton/doubleton logic above
+            var longerSuitCards = cards.Where(c => suitCounts.Any(sc => sc.suit == EffectiveSuit(c) && sc.count >= 3)).ToList();
+
+            if (longerSuitCards.Any())
+                return longerSuitCards.OrderBy(c => longerSuitCards.Count(c1 => EffectiveSuit(c1) == EffectiveSuit(c))).ThenBy(RankSort).First();
+
+            //  nothing with 3+ cards left; prefer low from a doubleton over a singleton
+            var doubletonCards = cards.Where(c => suitCounts.Any(sc => sc.suit == EffectiveSuit(c) && sc.count == 2)).ToList();
+
+            if (doubletonCards.Any())
+                return doubletonCards.OrderBy(RankSort).First();
+
+            return cards.OrderBy(RankSort).First();
         }
 
         private Card TryNTSlough(IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, IReadOnlyList<Card> trick, bool isDefending)
