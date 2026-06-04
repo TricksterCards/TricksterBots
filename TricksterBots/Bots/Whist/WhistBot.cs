@@ -121,6 +121,7 @@ namespace Trickster.Bots
                     .OrderBy(RankSort)
                     .FirstOrDefault();
             } else if (isPartnerDeclarer) {
+                // Offensive partner: lead the highest card in partner's suit to show strength.
                 return legalCards
                     .Where(c => EffectiveSuit(c) == partnerSuit)
                     .OrderByDescending(RankSort)
@@ -147,6 +148,7 @@ namespace Trickster.Bots
             if (isCurrentSeatDeclarer)
                 return null;
 
+            //  Detect self-good suits (boss / deck-top + cover + tail), pick the best suit to signal, then lead the lowest card in that suit.
             var knownCards = cardsPlayed.Concat(new Hand(player.Hand)).ToList();
             var candidateSignals = new List<(Suit suit, int suitCount, int rankForSuitOrdering)>();
 
@@ -164,6 +166,8 @@ namespace Trickster.Bots
                     rankForSuitOrdering = RankSort(top);
                 else if (suitCards.Count >= 3)
                 {
+                    // If we have > 3 cards in a suit, and we determine that we can cover the top card with a stopper such
+                    // that it can become the high card, we can signal this suit by leading the lowest card in that suit.
                     if (TopCanBeCovered(top, cardsPlayed))
                         rankForSuitOrdering = RankSort(top);
                 }
@@ -172,6 +176,7 @@ namespace Trickster.Bots
                     candidateSignals.Add((suit, suitCards.Count, rankForSuitOrdering.Value));
             }
 
+            //  Choose a qualifying suit (higher rank then longest suit tiebreak); we lead the lowest legal card in that suit below.
             var bestSuit = candidateSignals
                 .OrderByDescending(c => c.rankForSuitOrdering)
                 .ThenByDescending(c => c.suitCount)
@@ -186,6 +191,7 @@ namespace Trickster.Bots
                     .FirstOrDefault();
             }
 
+            //  If we don't have any winners with cover, we lead lowest in longest suit instead of falling back to trying to take with a boss card.
             var longestSuitGroup = legalCards
                 .GroupBy(EffectiveSuit)
                 .OrderByDescending(g => g.Count())
