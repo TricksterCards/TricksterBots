@@ -160,6 +160,28 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void NT_OffenseSloughWeakSuit()
+        {
+            // NT declaring side: TrySignalGoodSuit routes to LowestCardFromWeakestSuitNT instead of signaling strong suit.
+            // Void in clubs; singleton 2H is not boss while ace of hearts is still unplayed; expect that slough.
+            var declarerNt = (int)new WhistBid(Suit.Unknown, 1, true, true);
+            var players = new[]
+            {
+                new TestPlayer(declarerNt, "2H9S8S7S", seat: 0),
+                new TestPlayer(1400, seat: 1, cardsTaken: "3H4H5H6H7H8H9HTHJHQHKH"),
+                new TestPlayer(1401, seat: 2),
+                new TestPlayer(1400, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, "KC", trumpSuit: Suit.Unknown);
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            Assert.AreEqual("2H", suggestion.ToString(),
+                $"Expected singleton heart slough from weakest-suit logic, got {suggestion.StdNotation}");
+        }
+
+        [TestMethod]
         public void SignalGoodSuitOnFirstSlough_Lead()
         {
             var players = new[]
