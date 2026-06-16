@@ -96,10 +96,46 @@ namespace Trickster.Bots
             return Suit.Unknown;
         }
 
+        private List<Card> BossCards(PlayerBase player, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players)
+        {
+            var bossCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed)).ToList();
+            var bossSuits = bossCards.Select(EffectiveSuit).Distinct().ToList();
+
+            // In any suit where we have boss cards,
+            // check if we can exhaust the remaining cards in that suit
+            // (making any others cards in that suit boss too)
+            foreach (var suit in bossSuits)
+            {
+                var nBossCardsInSuit = bossCards.Count(c => EffectiveSuit(c) == suit);
+                var nLegalCardsInSuit = legalCards.Count(c => EffectiveSuit(c) == suit);
+                if (nLegalCardsInSuit <= nBossCardsInSuit)
+                    continue;
+
+                var nonBossCardsInSuit = legalCards.Where(c => EffectiveSuit(c) == suit && !IsCardHigh(c, cardsPlayed)).ToList();
+
+                // if opponents are both void in the suit, we can effectively exhaust it (partner should help)
+                if (players.OpponentsVoidSuits(player).TryGetValue(suit, out var opponentsVoid) && opponentsVoid)
+                {
+                    bossCards.AddRange(nonBossCardsInSuit);
+                    continue;
+                }
+
+                //  otherwise check if we can pull all other remaining cards in the suit out
+                var nPlayedCardsInSuit = cardsPlayed.Count(c => EffectiveSuit(c) == suit);
+                var nCardsRemainingInSuit = cardsBySuit[suit].Count() - nPlayedCardsInSuit - nLegalCardsInSuit;
+                if (nBossCardsInSuit >= nCardsRemainingInSuit)
+                {
+                    bossCards.AddRange(nonBossCardsInSuit);
+                }
+            }
+
+            return bossCards;
+        }
+
         private Card TryLeadBackInPartnerSuit(PlayerBase player, IReadOnlyList<Card> legalCards,
             IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, bool isDefending, string cardsPlayedInOrder)
         {
-            var bossCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed)).ToList();
+            var bossCards = BossCards(player, legalCards, cardsPlayed, players);
 
             if (CanCashBossCardsToCoverOrSetContract(player, players, bossCards, isDefending))
                 return null;
@@ -136,7 +172,7 @@ namespace Trickster.Bots
             if (trump != Suit.Unknown)
                 return null;
 
-            var bossCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed)).ToList();
+            var bossCards = BossCards(player, legalCards, cardsPlayed, players);
 
             if (CanCashBossCardsToCoverOrSetContract(player, players, bossCards, isDefending))
                 return null;
