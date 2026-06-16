@@ -182,10 +182,11 @@ namespace Trickster.Bots
 
             //  Detect self-good suits (boss / deck-top + cover + tail), pick the best suit to signal, then lead the lowest card in that suit.
             var knownCards = cardsPlayed.Concat(new Hand(player.Hand)).ToList();
-            var candidateSignals = new List<(Suit suit, int suitCount, int rankForSuitOrdering)>();
+            var candidateSignals = new List<(Suit suit, bool isBoss, int suitCount, int rankForSuitOrdering)>();
 
             foreach (var suitGroup in legalCards.GroupBy(EffectiveSuit))
             {
+                var isBoss = false;
                 var suit = suitGroup.Key;
                 var suitCards = suitGroup.OrderByDescending(RankSort).ToList();
                 if (suitCards.Count < 2)
@@ -195,7 +196,10 @@ namespace Trickster.Bots
                 int? rankForSuitOrdering = null;
 
                 if (IsCardHigh(top, knownCards))
+                {
+                    isBoss = true;
                     rankForSuitOrdering = RankSort(top);
+                }
                 else if (suitCards.Count >= 3)
                 {
                     // If we have > 3 cards in a suit, and we determine that we can cover the top card with a stopper such
@@ -205,12 +209,13 @@ namespace Trickster.Bots
                 }
 
                 if (rankForSuitOrdering != null)
-                    candidateSignals.Add((suit, suitCards.Count, rankForSuitOrdering.Value));
+                    candidateSignals.Add((suit, isBoss, suitCards.Count, rankForSuitOrdering.Value));
             }
 
             //  Choose a qualifying suit (higher rank then longest suit tiebreak); we lead the lowest legal card in that suit below.
             var bestSuit = candidateSignals
-                .OrderByDescending(c => c.rankForSuitOrdering)
+                .OrderBy(c => c.isBoss) //  prefer promoting suits over those we already have boss cards in
+                .ThenByDescending(c => c.rankForSuitOrdering)
                 .ThenByDescending(c => c.suitCount)
                 .Select(c => c.suit)
                 .FirstOrDefault();
