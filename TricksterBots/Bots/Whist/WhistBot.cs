@@ -28,22 +28,25 @@ namespace Trickster.Bots
 
         private static int TricksTaken(PlayerBase player)
         {
-            return string.IsNullOrEmpty(player.CardsTaken) ? 0 : player.CardsTaken.Length / 8;
+            return player.HandScore;
         }
 
-        private bool CanCashBossCardsToCoverContract(PlayersCollectionBase players, IReadOnlyList<Card> bossCards)
+        private bool CanCashBossCardsToCoverOrSetContract(PlayerBase player, PlayersCollectionBase players, IReadOnlyList<Card> bossCards, bool isDefending)
         {
             var declarer = players.FirstOrDefault(p => new WhistBid(p.Bid).IsDeclareBid);
             if (declarer == null)
                 return false;
 
             var contract = new WhistBid(declarer.Bid);
-            var partner = players.PartnerOf(declarer);
-            var tricksTaken = TricksTaken(declarer);
+            var partner = players.PartnerOf(player);
+            var tricksTaken = TricksTaken(player);
             if (partner != null)
                 tricksTaken += TricksTaken(partner);
 
-            return tricksTaken + bossCards.Count >= contract.Tricks;
+            if (isDefending)
+                return tricksTaken + bossCards.Count > 13 - contract.Tricks;
+            else
+                return tricksTaken + bossCards.Count >= contract.Tricks;
         }
 
         private Suit PartnerIntroducedSuitFromAuctionAndSignal(PlayerBase player, PlayersCollectionBase players, IReadOnlyList<Card> cardsPlayed,
@@ -56,7 +59,6 @@ namespace Trickster.Bots
             var suit = partner.GoodSuit;
             if (suit != Suit.Unknown && suit != trump)
                 return suit;
-
 
             if (trump == Suit.Unknown)
             {
@@ -97,12 +99,9 @@ namespace Trickster.Bots
         private Card TryLeadBackInPartnerSuit(PlayerBase player, IReadOnlyList<Card> legalCards,
             IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, bool isDefending, string cardsPlayedInOrder)
         {
-            if (isDefending)
-                return null;
-
             var bossCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed)).ToList();
 
-            if (CanCashBossCardsToCoverContract(players, bossCards))
+            if (CanCashBossCardsToCoverOrSetContract(player, players, bossCards, isDefending))
                 return null;
 
             var declarer = players.FirstOrDefault(p => new WhistBid(p.Bid).IsDeclareBid);
@@ -113,7 +112,7 @@ namespace Trickster.Bots
             if (partnerSuit == Suit.Unknown || !legalCards.Any(c => EffectiveSuit(c) == partnerSuit))
                 return null;
 
-            if (isCurrentSeatDeclarer && trump == Suit.Unknown)
+            if ((isCurrentSeatDeclarer || isDefending) && trump == Suit.Unknown)
             {
                 //  NT declarer: come back in the suit partner signaled from the lead (lowest card).
                 return legalCards
@@ -134,19 +133,16 @@ namespace Trickster.Bots
         private Card TrySignalGoodSuitOnLead(PlayerBase player, IReadOnlyList<Card> legalCards,
             IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, bool isDefending, string cardsPlayedInOrder)
         {
-            if (trump != Suit.Unknown || isDefending)
+            if (trump != Suit.Unknown)
                 return null;
 
             var bossCards = legalCards.Where(c => IsCardHigh(c, cardsPlayed)).ToList();
 
-            if (CanCashBossCardsToCoverContract(players, bossCards))
+            if (CanCashBossCardsToCoverOrSetContract(player, players, bossCards, isDefending))
                 return null;
 
             var declarer = players.FirstOrDefault(p => new WhistBid(p.Bid).IsDeclareBid);
             var isCurrentSeatDeclarer = player.Seat == declarer?.Seat;
-
-            if (isCurrentSeatDeclarer)
-                return null;
 
             //  Detect self-good suits (boss / deck-top + cover + tail), pick the best suit to signal, then lead the lowest card in that suit.
             var knownCards = cardsPlayed.Concat(new Hand(player.Hand)).ToList();

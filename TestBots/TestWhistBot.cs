@@ -75,6 +75,40 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void LeadLowInNTWhileBuildingWinners()
+        {
+            var players = new[]
+            {
+                new TestPlayer(new WhistBid(Suit.Unknown, 4, highWins: true), "ASKSQSAC9C", handScore: 5),
+                new TestPlayer(1400),
+                new TestPlayer(1401),
+                new TestPlayer(1400),
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("9C", suggestion.ToString(), "Suggested lead is low");
+        }
+
+        [TestMethod]
+        public void LeadHighInNTWhenCanMakeContract()
+        {
+            var players = new[]
+            {
+                new TestPlayer(new WhistBid(Suit.Unknown, 4, highWins: true), "ASKSQSAC9C", handScore: 6),
+                new TestPlayer(1400),
+                new TestPlayer(1401),
+                new TestPlayer(1400),
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("AS", suggestion.ToString(), "Suggested lead is high");
+        }
+
+        [TestMethod]
         public void DontLeadPartnerVoidSuitInNT_WhenAlternativeExists()
         {
             // Partner is known void in hearts (e.g. from earlier play); leader can lead hearts or diamonds — prefer diamonds (issue #146).
