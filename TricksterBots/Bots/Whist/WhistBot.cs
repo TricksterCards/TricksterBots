@@ -419,8 +419,7 @@ namespace Trickster.Bots
                 players,
                 state.isPartnerTakingTrick,
                 state.cardTakingTrick,
-                isDefending,
-                state.cardsPlayedInOrder);
+                isDefending);
         }
 
         public override List<Card> SuggestPass(SuggestPassState<WhistOptions> state)
