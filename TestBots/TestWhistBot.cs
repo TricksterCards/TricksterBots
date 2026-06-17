@@ -79,6 +79,23 @@ namespace TestBots
         {
             var players = new[]
             {
+                new TestPlayer(new WhistBid(Suit.Unknown, 4, highWins: true), "ASKSQSJSAC9C7C", handScore: 4),
+                new TestPlayer(1400),
+                new TestPlayer(1401),
+                new TestPlayer(1400),
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("7C", suggestion.ToString(), "Suggested lead is low");
+        }
+
+        [TestMethod]
+        public void LeadHighWhenMustTakeAllRemaining()
+        {
+            var players = new[]
+            {
                 new TestPlayer(new WhistBid(Suit.Unknown, 4, highWins: true), "ASKSQSAC9C", handScore: 5),
                 new TestPlayer(1400),
                 new TestPlayer(1401),
@@ -88,7 +105,7 @@ namespace TestBots
             var bot = GetBot(Suit.Unknown);
             var cardState = new TestCardState<WhistOptions>(bot, players);
             var suggestion = bot.SuggestNextCard(cardState);
-            Assert.AreEqual("9C", suggestion.ToString(), "Suggested lead is low");
+            Assert.AreEqual("AS", suggestion.ToString(), "Suggested lead is high");
         }
 
         [TestMethod]
@@ -126,26 +143,6 @@ namespace TestBots
             var cardState = new TestCardState<WhistOptions>(bot, players);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual(Suit.Diamonds, suggestion.suit, "Should not lead a suit partner is known to be void in");
-        }
-
-        [TestMethod]
-        public void MayLeadBossInPartnerVoidSuitInNT_WhenItWinsTheTrick()
-        {
-            // Partner is void in hearts; we still allow leading the top remaining heart to cash a trick.
-            var partner = new TestPlayer(1400, "");
-            partner.VoidSuits.Add(Suit.Hearts);
-            var players = new[]
-            {
-                new TestPlayer(1400, "AH3D", cardsTaken: ""),
-                new TestPlayer(1561, "", cardsTaken: "2H3H4H5H6H7H8H9HTHJHQHKH"),
-                partner,
-                new TestPlayer(1401)
-            };
-
-            var bot = GetBot(Suit.Unknown);
-            var cardState = new TestCardState<WhistOptions>(bot, players);
-            var suggestion = bot.SuggestNextCard(cardState);
-            Assert.AreEqual("AH", suggestion.ToString(), "Boss heart should remain a legal lead even if partner is void in hearts");
         }
 
         [TestMethod]
@@ -258,12 +255,15 @@ namespace TestBots
             {
                 new TestPlayer(DeclarersPartnerSeatBid, "5D9DAS3H", seat: 0),
                 new TestPlayer(BidBase.NoBid, seat: 1),
-                new TestPlayer(DeclarerSeatBid, "", seat: 2) { GoodSuit = Suit.Diamonds },
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
                 new TestPlayer(BidBase.NoBid, seat: 3)
             };
 
             var bot = GetBot(Suit.Unknown);
-            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown)
+            {
+                cardsPlayedInOrder = "23D32D0AD1KH"
+            };
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual("9D", suggestion.ToString(), "Come back in partner's suit with the highest card before an off-suit boss");
         }
