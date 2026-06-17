@@ -137,7 +137,7 @@ namespace Trickster.Bots
 
             if ((isCurrentSeatDeclarer || isDefending) && trump == Suit.Unknown)
             {
-                //  NT declarer: come back in the suit partner signaled from the lead (lowest card).
+                //  NT declarer/defender: come back in the suit partner signaled from the lead (lowest card).
                 return legalCards
                     .Where(c => EffectiveSuit(c) == partnerSuit)
                     .OrderBy(RankSort)
@@ -154,7 +154,7 @@ namespace Trickster.Bots
         }
 
         private Card TrySignalGoodSuitOnLead(PlayerBase player, IReadOnlyList<Card> legalCards,
-            IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, bool isDefending, string cardsPlayedInOrder)
+            IReadOnlyList<Card> cardsPlayed, PlayersCollectionBase players, bool isDefending)
         {
             if (trump != Suit.Unknown)
                 return null;
@@ -163,9 +163,6 @@ namespace Trickster.Bots
 
             if (CanOrMustCashBossCards(player, players, bossCards, isDefending))
                 return null;
-
-            var declarer = players.FirstOrDefault(p => new WhistBid(p.Bid).IsDeclareBid);
-            var isCurrentSeatDeclarer = player.Seat == declarer?.Seat;
 
             //  Detect self-good suits (boss / deck-top + cover + tail), pick the best suit to signal, then lead the lowest card in that suit.
             var knownCards = cardsPlayed.Concat(legalCards).ToList();
@@ -411,44 +408,41 @@ namespace Trickster.Bots
             var legalCards = state.legalCards;
             var players = new PlayersCollectionBase(this, state.players);
 
-            // Leading suggestions
-            if (state.level > 0 && state.trick.Count == 0)
+            // Leading suggestions for NT
+            if (state.level > 0 && state.trick.Count == 0 && state.trumpSuit == Suit.Unknown)
             {
-                if (state.trumpSuit == Suit.Unknown)
+                // Don't lead jokers in no-trump
+                if (legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))
                 {
-                    // Don't lead jokers in no-trump
-                    if (legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))
-                    {
-                        legalCards = legalCards.Where(c => c.suit != Suit.Joker).ToList();
-                    }
+                    legalCards = legalCards.Where(c => c.suit != Suit.Joker).ToList();
+                }
 
-                    // Avoid leading a suit partner is known to be void in
-                    var avoidPartnerVoidSuits = SuitRank.stdSuits.Where(s =>
-                        players.PartnerIsVoidInSuit(state.player, new Card(s, Rank.Ace), state.cardsPlayed)).ToList();
-                    if (avoidPartnerVoidSuits.Count > 0)
-                    {
-                        var withoutPartnerVoidLead = legalCards.Where(c =>
-                            !avoidPartnerVoidSuits.Contains(EffectiveSuit(c)) || IsCardHigh(c, state.cardsPlayed)).ToList();
-                        if (withoutPartnerVoidLead.Count > 0)
-                            legalCards = withoutPartnerVoidLead;
-                    }
+                // Avoid leading a suit partner is known to be void in
+                var avoidPartnerVoidSuits = SuitRank.stdSuits.Where(s =>
+                    players.PartnerIsVoidInSuit(state.player, new Card(s, Rank.Ace), state.cardsPlayed)).ToList();
+                if (avoidPartnerVoidSuits.Count > 0)
+                {
+                    var withoutPartnerVoidLead = legalCards.Where(c =>
+                        !avoidPartnerVoidSuits.Contains(EffectiveSuit(c)) || IsCardHigh(c, state.cardsPlayed)).ToList();
+                    if (withoutPartnerVoidLead.Count > 0)
+                        legalCards = withoutPartnerVoidLead;
                 }
 
                 var leadBack = TryLeadBackInPartnerSuit(state.player, legalCards, state.cardsPlayed, players, isDefending, state.cardsPlayedInOrder);
                 if (leadBack != null)
                     return leadBack;
 
-                var signal = TrySignalGoodSuitOnLead(state.player, legalCards, state.cardsPlayed, players, isDefending, state.cardsPlayedInOrder);
+                var signal = TrySignalGoodSuitOnLead(state.player, legalCards, state.cardsPlayed, players, isDefending);
                 if (signal != null)
                     return signal;
             }
-            else if (state.level > 0)
+            else if (state.level > 0 && state.trick.Count > 0)
             {
                 var slough = TryNTSlough(legalCards, state.cardsPlayed, state.trick, isDefending);
                 if (slough != null)
                     return slough;
             }
-            else
+            else if (state.level == 0)
             {
                 // Avoid leading Jokers in NT
                 if (state.trick.Count == 0 && state.trumpSuit == Suit.Unknown && legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))

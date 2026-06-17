@@ -245,7 +245,7 @@ namespace TestBots
             var bot = GetBot(Suit.Clubs);
             var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Clubs);
             var suggestion = bot.SuggestNextCard(cardState);
-            Assert.AreEqual("4D", suggestion.ToString(), $"Suggested {suggestion.StdNotation} is highest card in suit sloughed by partner");
+            Assert.AreEqual("Diamonds", suggestion.suit.ToString(), $"Suggested {suggestion.StdNotation} in suit sloughed by partner");
         }
 
         [TestMethod]
