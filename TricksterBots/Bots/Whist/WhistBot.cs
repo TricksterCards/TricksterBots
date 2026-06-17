@@ -296,15 +296,6 @@ namespace Trickster.Bots
             return null;
         }
 
-        protected override Card TrySignalGoodSuit(PlayerBase player, IReadOnlyList<Card> legalCards, IReadOnlyList<Card> cardsPlayed, bool isDefending)
-        {
-            //  In no-trump, slough jokers before signaling a good suit (jokers are dead in NT)
-            if (trump == Suit.Unknown && legalCards.Any(c => c.suit == Suit.Joker))
-                return legalCards.First(c => c.suit == Suit.Joker);
-
-            return base.TrySignalGoodSuit(player, legalCards, cardsPlayed, isDefending);
-        }
-
         public override BidBase SuggestBid(SuggestBidState<WhistOptions> state)
         {
             var hand = state.hand;
@@ -409,7 +400,7 @@ namespace Trickster.Bots
             var players = new PlayersCollectionBase(this, state.players);
 
             // Leading suggestions for NT
-            if (state.level > 0 && state.trick.Count == 0 && state.trumpSuit == Suit.Unknown)
+            if (state.trick.Count == 0 && state.trumpSuit == Suit.Unknown)
             {
                 // Don't lead jokers in no-trump
                 if (legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))
@@ -436,19 +427,11 @@ namespace Trickster.Bots
                 if (signal != null)
                     return signal;
             }
-            else if (state.level > 0 && state.trick.Count > 0)
+            else if (state.trick.Count > 0)
             {
                 var slough = TryNTSlough(legalCards, state.cardsPlayed, state.trick, isDefending);
                 if (slough != null)
                     return slough;
-            }
-            else if (state.level == 0)
-            {
-                // Avoid leading Jokers in NT
-                if (state.trick.Count == 0 && state.trumpSuit == Suit.Unknown && legalCards.Any(c => c.suit == Suit.Joker) && legalCards.Any(c => c.suit != Suit.Joker))
-                {
-                    legalCards = legalCards.Where(c => c.suit != Suit.Joker).ToList();
-                }
             }
 
             return TryTakeEm(state.player,
