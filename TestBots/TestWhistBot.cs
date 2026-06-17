@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Trickster.Bots;
 using Trickster.cloud;
@@ -8,6 +9,12 @@ namespace TestBots
     [TestClass]
     public class TestWhistBot
     {
+        // Declare bid on the actual declarer (partner across the table from the lead)
+        private static readonly int DeclarerSeatBid = (int)new WhistBid(Suit.Clubs, 3, false, true);
+
+        // Bid for the leading player so Whist treats them as offense (partner bid), not defense
+        private static readonly int DeclarersPartnerSeatBid = (int)WhistBid.DeclarerPartnerBid;
+
         [TestMethod]
         public void DiscardJokersInNT()
         {
@@ -68,6 +75,105 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void LeadLowInNTWhileBuildingWinners()
+        {
+            var players = new[]
+            {
+                new TestPlayer(new WhistBid(Suit.Unknown, 4, highWins: true), "ASKSQSJSAC9C7C", handScore: 4),
+                new TestPlayer(1400),
+                new TestPlayer(1401),
+                new TestPlayer(1400),
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("7C", suggestion.ToString(), "Suggested lead is low");
+        }
+
+        [TestMethod]
+        public void LeadHighWhenMustTakeAllRemaining()
+        {
+            var players = new[]
+            {
+                new TestPlayer(new WhistBid(Suit.Unknown, 4, highWins: true), "ASKSQSAC9C", handScore: 5),
+                new TestPlayer(1400),
+                new TestPlayer(1401),
+                new TestPlayer(1400),
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("AS", suggestion.ToString(), "Suggested lead is high");
+        }
+
+        [TestMethod]
+        public void LeadHighInNTWhenCanMakeContract()
+        {
+            var players = new[]
+            {
+                new TestPlayer(new WhistBid(Suit.Unknown, 4, highWins: true), "ASKSQSAC9C", handScore: 6),
+                new TestPlayer(1400),
+                new TestPlayer(1401),
+                new TestPlayer(1400),
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("AS", suggestion.ToString(), "Suggested lead is high");
+        }
+
+        [TestMethod]
+        public void DontLeadPartnerVoidSuitInNT_WhenAlternativeExists()
+        {
+            // Partner is known void in hearts (e.g. from earlier play); leader can lead hearts or diamonds — prefer diamonds (issue #146).
+            var partner = new TestPlayer(1400, "");
+            partner.VoidSuits.Add(Suit.Hearts);
+            var players = new[]
+            {
+                new TestPlayer(1400, "2H3D"),
+                new TestPlayer(1561),
+                partner,
+                new TestPlayer(1401)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual(Suit.Diamonds, suggestion.suit, "Should not lead a suit partner is known to be void in");
+        }
+
+        [TestMethod]
+        public void NT_OpeningLead_TryTakeEmCannotLeadNonBossFromPartnerVoidSuit()
+        {
+            // Regression for PR #377: legalCards is narrowed before TryTakeEm so non-boss hearts are removed
+            // when partner is known void. TryTakeEm only draws from that list (including LowestCardFromWeakestSuit),
+            // so it must never return 5H even though 5H is in the physical hand.
+            var partner = new TestPlayer(1400, "");
+            partner.VoidSuits.Add(Suit.Hearts);
+            var players = new[]
+            {
+                new TestPlayer(1400, "AH5H9D2D", cardsTaken: ""),
+                new TestPlayer(1561, "", cardsTaken: "2H3H4H6H7H8H"),
+                partner,
+                new TestPlayer(1401, "", cardsTaken: "9HTHJHQHKH")
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown);
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            Assert.AreNotEqual(
+                "5H",
+                suggestion.ToString(),
+                "Non-boss heart must be filtered out before TryTakeEm; otherwise dumping logic could lead it from a partner-void suit");
+            if (suggestion.suit == Suit.Hearts)
+                Assert.AreEqual(Rank.Ace, suggestion.rank, "Only the boss heart should remain playable in hearts for this layout");
+        }
+
+        [TestMethod]
         public void SloughJokerFirstWhenVoidInNT()
         {
             var players = new[]
@@ -82,6 +188,28 @@ namespace TestBots
             var cardState = new TestCardState<WhistOptions>(bot, players, "2C", trumpSuit: Suit.Unknown);
             var suggestion = bot.SuggestNextCard(cardState);
             Assert.AreEqual(Suit.Joker, suggestion.suit, $"Suggested {suggestion.StdNotation} should be a Joker when void in NT");
+        }
+
+        [TestMethod]
+        public void NT_OffenseSloughWeakSuit()
+        {
+            // NT declaring side: TrySignalGoodSuit routes to LowestCardFromWeakestSuitNT instead of signaling strong suit.
+            // Void in clubs; singleton 2H is not boss while ace of hearts is still unplayed; expect that slough.
+            var declarerNt = (int)new WhistBid(Suit.Unknown, 1, true, true);
+            var players = new[]
+            {
+                new TestPlayer(declarerNt, "2H9S8S7S", seat: 0),
+                new TestPlayer(1400, seat: 1, cardsTaken: "3H4H5H6H7H8H9HTHJHQHKH"),
+                new TestPlayer(1401, seat: 2),
+                new TestPlayer(1400, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, "KC", trumpSuit: Suit.Unknown);
+            var suggestion = bot.SuggestNextCard(cardState);
+
+            Assert.AreEqual("2H", suggestion.ToString(),
+                $"Expected singleton heart slough from weakest-suit logic, got {suggestion.StdNotation}");
         }
 
         [TestMethod]
@@ -108,16 +236,226 @@ namespace TestBots
         {
             var players = new[]
             {
-                new TestPlayer(1564, "4D3DTH2S", cardsTaken: "2C3C4C5C6C7C8C9CTCJCQCLJHJKCTDAC"),
-                new TestPlayer(1400),
-                new TestPlayer(1401) { GoodSuit = Suit.Diamonds },
-                new TestPlayer(1400)
+                new TestPlayer(DeclarersPartnerSeatBid, "4D3DTH2S", cardsTaken: "2C3C4C5C6C7C8C9CTCJCQCLJHJKCTDAC"),
+                new TestPlayer(BidBase.NoBid),
+                new TestPlayer(DeclarerSeatBid, "") { GoodSuit = Suit.Diamonds },
+                new TestPlayer(BidBase.NoBid)
             };
 
             var bot = GetBot(Suit.Clubs);
             var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Clubs);
             var suggestion = bot.SuggestNextCard(cardState);
-            Assert.AreEqual("3D", suggestion.ToString(), $"Suggested {suggestion.StdNotation} is suit sloughed by partner");
+            Assert.AreEqual("Diamonds", suggestion.suit.ToString(), $"Suggested {suggestion.StdNotation} in suit sloughed by partner");
+        }
+
+        [TestMethod]
+        public void LeadBackPartnerGoodSuit_NT()
+        {
+            var players = new[]
+            {
+                new TestPlayer(DeclarersPartnerSeatBid, "5D9DAS3H", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown)
+            {
+                cardsPlayedInOrder = "23D32D0AD1KH"
+            };
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("9D", suggestion.ToString(), "Come back in partner's suit with the highest card before an off-suit boss");
+        }
+
+        [TestMethod]
+        public void LeadBackPartnerGoodSuit_NT_BidderLeadsLowest()
+        {
+            var declarerNtBid = (int)new WhistBid(Suit.Unknown, 1, true, false);
+            var players = new[]
+            {
+                new TestPlayer(declarerNtBid, "5H8H2C3C", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarersPartnerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown)
+            {
+                cardsPlayedInOrder = "23H32H0AS1KH"
+            };
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("5H", suggestion.ToString(), "NT declarer with no bosses leads lowest back in suit partner signaled from the lead");
+        }
+
+        [TestMethod]
+        public void LeadBackSuitPartnerTriedToPromote_NT()
+        {
+            var players = new[]
+            {
+                //  Our hand has a boss elsewhere (AS) and multiple hearts in the suit partner appears to be promoting.
+                new TestPlayer(DeclarersPartnerSeatBid, "3H8HAS", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                //  Partner (seat 2) led 3H; KH later in the trick is higher in the lead suit (promoting hearts).
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown)
+            {
+                cardsPlayedInOrder = "23H32H0AS1KH"
+            };
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("8H", suggestion.ToString(), "Lead highest back in suit partner appeared to promote before a boss in another suit");
+        }
+
+        [TestMethod]
+        public void LeadBackPartnerPromotedSuitAgainBeforeOtherBoss_NT()
+        {
+            var firstLeadPlayers = new[]
+            {
+                new TestPlayer(DeclarersPartnerSeatBid, "8HQHAS", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var firstLeadState = new TestCardState<WhistOptions>(bot, firstLeadPlayers, trumpSuit: Suit.Unknown)
+            {
+                cardsPlayedInOrder = "23H32H0AS1KH"
+            };
+            var firstSuggestion = bot.SuggestNextCard(firstLeadState);
+            Assert.AreEqual("QH", firstSuggestion.ToString(), "First lead should be the highest card in partner's promoted suit");
+
+            var secondLeadPlayers = new[]
+            {
+                new TestPlayer(DeclarersPartnerSeatBid, "8HAS", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var secondLeadState = new TestCardState<WhistOptions>(bot, secondLeadPlayers, trumpSuit: Suit.Unknown)
+            {
+                cardsPlayedInOrder = "23H32H0AS1KH"
+            };
+            var secondSuggestion = bot.SuggestNextCard(secondLeadState);
+            Assert.AreEqual("8H", secondSuggestion.ToString(), "If still on lead, continue with highest remaining card in partner's suit before off-suit boss cards");
+        }
+
+        [TestMethod]
+        public void LeadSignalFromLead_NT_LeadsLowestFromSelectedSuit()
+        {
+            var players = new[]
+            {
+                new TestPlayer(DeclarersPartnerSeatBid, "AH9H3HAS", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("3H", suggestion.ToString(), "With no partner suit to lead back, select the good suit and lead lowest in it");
+        }
+
+        [TestMethod]
+        public void LeadSignalFromLead_NT_BossAndCoverLeadsLowerCard()
+        {
+            var players = new[]
+            {
+                new TestPlayer(DeclarersPartnerSeatBid, "AH3HAS", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("3H", suggestion.ToString(), "Doubleton with deck-top boss may signal by leading the lower card");
+        }
+
+        [TestMethod]
+        public void LeadSignalFromLead_NT_KingDoubletonDoesNotUnstopSuit()
+        {
+            var players = new[]
+            {
+                new TestPlayer(DeclarersPartnerSeatBid, "KH3HQS6S5S", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("5S", suggestion.ToString(), "Do not lead from king-doubleton because it strips the stopper");
+        }
+
+        [TestMethod]
+        public void LeadSignalFromLead_NT_KingStopperTripletonLeadsLowestInGoodSuit()
+        {
+            var players = new[]
+            {
+                new TestPlayer(DeclarersPartnerSeatBid, "KHQH3HAS", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("3H", suggestion.ToString(), "With top + stopper cover + one more, lead the lowest card in the selected good suit");
+        }
+
+        [TestMethod]
+        public void LeadSignalFromLead_NT_LeadsLowestFromLongestSuitFallback()
+        {
+            // No partner-introduced suit, no qualifying "good suit" signal pattern, but we still choose a lead inside
+            // TrySignalGoodSuitFromLead: lowest card in the longest suit (before TryTakeEm would cash a boss).
+            var players = new[]
+            {
+                new TestPlayer(DeclarersPartnerSeatBid, "3D4D5D3H2HAS", seat: 0),
+                new TestPlayer(BidBase.NoBid, seat: 1),
+                new TestPlayer(DeclarerSeatBid, "", seat: 2),
+                new TestPlayer(BidBase.NoBid, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("3D", suggestion.ToString(), "Longest suit is diamonds; lead lowest there, not spade boss");
+        }
+
+        [TestMethod]
+        public void SkipLeadTowardPartnerWhenBossCardsCoverRemainingContract_NT()
+        {
+            var partnerHeartBid = new WhistBid(Suit.Hearts, 3, true, false);
+            //  Declarer bid must match a 7-trick contract so that tricks already won (6) plus one boss covers the bid.
+            var declarerNt7Tricks = (int)new WhistBid(Suit.Unknown, 1, true, false);
+            //  Six tricks already won by declarer + partner; contract is 7. One boss (AS) is enough to cover the last trick,
+            //  so we skip leading back toward partner's auction suit and cash a boss instead.
+            //  24 cards (48 chars) = 6 tricks; must be an even-length card string for Hand parsing
+            var sixTricksWon =
+                "2C3C4C5C6C7C8C9CTCJCQCKCAC2D3D4D5D6D7D8D9DTDJD";
+            var players = new[]
+            {
+                new TestPlayer(declarerNt7Tricks, "8HAS", seat: 0) { CardsTaken = sixTricksWon },
+                new TestPlayer(1400, seat: 1),
+                new TestPlayer(BidBase.NoBid, seat: 2) { BidHistory = new List<int> { partnerHeartBid } },
+                new TestPlayer(1400, seat: 3)
+            };
+
+            var bot = GetBot(Suit.Unknown);
+            var cardState = new TestCardState<WhistOptions>(bot, players, trumpSuit: Suit.Unknown);
+            var suggestion = bot.SuggestNextCard(cardState);
+            Assert.AreEqual("AS", suggestion.ToString(), "Cash boss when tricks already won plus bosses meet the contract");
         }
 
         [TestMethod]
