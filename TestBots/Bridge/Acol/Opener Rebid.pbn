@@ -1,0 +1,35 @@
+[Event "Rebid 1NT with 15-16 balanced"]
+[Deal "N:K43.QJ3.AK32.Q85 - - -"]
+[Auction "N"]
+1D Pass 1S Pass
+1NT Pass Pass Pass
+
+[Event "Jump rebid 2NT with 17-18 balanced"]
+[Deal "N:AQ4.KJ3.AK32.985 - - -"]
+[Auction "N"]
+1D Pass 1H Pass
+2NT Pass Pass Pass
+
+[Event "Double jump rebid 3NT with 19 balanced"]
+[Deal "N:AQ4.KJ3.AK32.Q85 - - -"]
+[Auction "N"]
+1D Pass 1H Pass
+3NT Pass Pass Pass
+
+[Event "Raise responder's major with 4-card support"]
+[Deal "N:KQ54.A3.KJ432.85 - - -"]
+[Auction "N"]
+1D Pass 1S Pass
+2S Pass Pass Pass
+
+[Event "Accept 2NT invitation with a maximum weak 1NT"]
+[Deal "N:KQ4.KJ3.A432.J85 - - -"]
+[Auction "N"]
+1NT Pass 2NT Pass
+3NT Pass Pass Pass
+
+[Event "Decline 2NT invitation with a minimum weak 1NT"]
+[Deal "N:K43.QJ3.A432.Q85 - - -"]
+[Auction "N"]
+1NT Pass 2NT Pass
+Pass Pass Pass

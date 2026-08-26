@@ -1,0 +1,41 @@
+[Event "Single raise with 4-card support"]
+[Deal "N:- - K54.Q863.32.T732 -"]
+[Auction "N"]
+1H Pass 2H Pass
+Pass Pass
+
+[Event "Limit raise with 4-card support"]
+[Deal "N:- - K54.QJ86.A2.T732 -"]
+[Auction "N"]
+1H Pass 3H Pass
+Pass Pass
+
+[Event "1NT response without support"]
+[Deal "N:- - K54.86.QJ532.T73 -"]
+[Auction "N"]
+1H Pass 1NT Pass
+Pass Pass
+
+[Event "New suit at the 1-level"]
+[Deal "N:- - AQ54.863.J53.Q73 -"]
+[Auction "N"]
+1D Pass 1S Pass
+Pass Pass
+
+[Event "New suit at the 2-level with 9+"]
+[Deal "N:- - A54.86.J53.AQJ73 -"]
+[Auction "N"]
+1S Pass 2C Pass
+Pass Pass
+
+[Event "Strong jump shift"]
+[Deal "N:- - AKQ54.86.KQ53.A3 -"]
+[Auction "N"]
+1H Pass 2S Pass
+Pass Pass
+
+[Event "Raise to game with 13-15 and 4-card support"]
+[Deal "N:- - K54.Q863.A.KT732 -"]
+[Auction "N"]
+1H Pass 4H Pass
+Pass Pass

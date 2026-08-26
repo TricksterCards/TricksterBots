@@ -156,6 +156,43 @@ namespace TestBots
         }
 
         [TestMethod]
+        public void AcolTestFiles()
+        {
+            var failures = new List<string>();
+            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "Acol"), "*.pbn");
+            foreach (var file in files)
+            {
+                var text = File.ReadAllText(file);
+                var tests = PTN.ImportTests(text, new BridgeOptions());
+                var filename = Path.GetFileName(file);
+
+                if (!tests.All(t => t.nPlayers == 4 && t.nCardsPerPlayer == 13))
+                {
+                    failures.Add($"{filename}: Not all tests have 4 players with 13 cards each");
+                    continue;
+                }
+
+                foreach (var test in tests)
+                {
+                    if (!string.IsNullOrEmpty(test.bid))
+                    {
+                        var failure = RunBidTest(new BidTest(test), BridgeBiddingScheme.Acol);
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
+                    }
+                    else
+                    {
+                        failures.Add($"{filename}: '{test.type}' must have an expected bid.");
+                    }
+                }
+            }
+            if (failures.Count > 0)
+                Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
+        }
+
+        [TestMethod]
         public void SaycTestFiles()
         {
             var failures = new List<string>();

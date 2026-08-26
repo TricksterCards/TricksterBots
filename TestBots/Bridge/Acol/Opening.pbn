@@ -1,0 +1,44 @@
+[Event "Weak 1NT with balanced 12 HCP"]
+[Deal "N:K43.QJ3.A432.Q85 - - -"]
+[Auction "N"]
+1NT Pass Pass Pass
+
+[Event "Open a suit with balanced 15 HCP (too strong for weak 1NT)"]
+[Deal "N:K43.QJ3.AK32.Q85 - - -"]
+[Auction "N"]
+1D Pass Pass Pass
+
+[Event "Open 1H with 4-4 in the majors"]
+[Deal "N:AQ54.KQ63.K52.A7 - - -"]
+[Auction "N"]
+1H Pass Pass Pass
+
+[Event "Open a 4-card spade suit"]
+[Deal "N:AQJ4.K63.K52.A73 - - -"]
+[Auction "N"]
+1S Pass Pass Pass
+
+[Event "Open on the Rule of 19"]
+[Deal "N:AQ543.QJ543.32.2 - - -"]
+[Auction "N"]
+1S Pass Pass Pass
+
+[Event "Weak two in spades"]
+[Deal "N:KQJ983.72.654.82 - - -"]
+[Auction "N"]
+2S Pass Pass Pass
+
+[Event "Open 2NT with 20-22 balanced"]
+[Deal "N:AQ4.KQJ3.KQ5.AJ8 - - -"]
+[Auction "N"]
+2NT Pass Pass Pass
+
+[Event "Pass with a weak hand"]
+[Deal "N:87654.432.T2.432 - - -"]
+[Auction "N"]
+Pass Pass Pass Pass
+
+[Event "Preempt 3H with a 7-card suit"]
+[Deal "N:84.KQJ8632.65.42 - - -"]
+[Auction "N"]
+3H Pass Pass Pass

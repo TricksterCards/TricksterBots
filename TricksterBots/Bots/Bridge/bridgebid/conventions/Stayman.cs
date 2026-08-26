@@ -193,8 +193,8 @@ namespace Trickster.Bots
             if (rebid.declareBid.level == 2 && rebid.declareBid.suit == Suit.Unknown)
             {
                 rebid.BidPointType = BidPointType.Hcp;
-                rebid.Points.Min = 8;
-                rebid.Points.Max = 9;
+                rebid.Points.Min = InterpretedBid.InvitationalPoints - opening.Points.Min;
+                rebid.Points.Max = rebid.GamePoints - 1 - opening.Points.Min;
                 rebid.Description = "Inviting game";
                 return true;
             }
@@ -220,7 +220,8 @@ namespace Trickster.Bots
             //  2C-2D-3N-4C
             response.BidConvention = BidConvention.Stayman;
             response.BidMessage = BidMessage.Forcing;
-            response.Points.Min = response.declareBid.level <= 2 ? 8 : 4;
+            //  over a weak NT (Acol), Stayman promises at least invitational values
+            response.Points.Min = response.declareBid.level <= 2 ? (response.Options.bidding == BridgeBiddingScheme.Acol ? 11 : 8) : 4;
             response.Description = "asking for a major";
             response.Priority = 1; // always prefer Stayman over other bids when valid
             response.Validate = hand =>

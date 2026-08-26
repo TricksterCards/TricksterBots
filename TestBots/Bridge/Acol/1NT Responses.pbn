@@ -1,0 +1,36 @@
+[Event "Pass 1NT below invitational values"]
+[Deal "N:- - QJ4.863.QJ52.973 -"]
+[Auction "N"]
+1NT Pass Pass Pass
+
+[Event "Invite with 2NT over 1NT"]
+[Deal "N:- - QJ4.K63.KJ52.Q73 -"]
+[Auction "N"]
+1NT Pass 2NT Pass
+Pass Pass
+
+[Event "Raise 1NT to game with 13+"]
+[Deal "N:- - QJ4.K63.KJ52.A73 -"]
+[Auction "N"]
+1NT Pass 3NT Pass
+Pass Pass
+
+[Event "Stayman then invite with 2NT"]
+[Deal "N:- - AQ54.K632.K52.83 -"]
+[Auction "N"]
+1NT Pass 2C Pass
+2D Pass 2NT Pass
+Pass Pass
+
+[Event "Transfer then pass with a weak takeout"]
+[Deal "N:- - KQ543.86.J53.973 -"]
+[Auction "N"]
+1NT Pass 2H Pass
+2S Pass Pass Pass
+
+[Event "Natural weak takeout without transfers"]
+[GameOptionsJson "{\"noTransfers\":true}"]
+[Deal "N:- - KQ543.86.J53.973 -"]
+[Auction "N"]
+1NT Pass 2S Pass
+Pass Pass
