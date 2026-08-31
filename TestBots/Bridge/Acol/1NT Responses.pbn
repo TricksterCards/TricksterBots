@@ -34,3 +34,9 @@ Pass Pass
 [Auction "N"]
 1NT Pass 2S Pass
 Pass Pass
+
+[Event "No cuebid-Stayman after interference; bid naturally"]
+[Deal "N:- - AQ54.K3.KJ52.Q73 -"]
+[Auction "N"]
+1NT 2H 3NT Pass
+Pass Pass

@@ -7,6 +7,10 @@ namespace Trickster.Bots
     {
         public static bool CanUseAfter(InterpretedBid opening, InterpretedBid overcall)
         {
+            //  negative doubles only apply after a suit opening (a double of an overcall of 1NT is penalty)
+            if (!opening.bidIsDeclare || opening.declareBid.suit == Suit.Unknown)
+                return false;
+
             //  the negative double is used through 2S over a suited overcall to show support for unbid major(s)
             if (!overcall.bidIsDeclare || overcall.declareBid.suit == Suit.Unknown || overcall.declareBid.level > 2)
                 return false;

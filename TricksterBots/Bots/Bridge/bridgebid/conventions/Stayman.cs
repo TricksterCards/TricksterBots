@@ -22,7 +22,9 @@ namespace Trickster.Bots
         {
             if (CanUseStayman(bid)) return InterpretStayman(bid);
 
-            if (CanUseAlternateStayman(bid)) return InterpretCuebidStayman(bid.History[bid.Index - 1], bid);
+            //  Acol plays "system off" over a suit overcall of 1NT, so no cuebid-Stayman substitute
+            if (bid.Options.bidding != BridgeBiddingScheme.Acol && CanUseAlternateStayman(bid))
+                return InterpretCuebidStayman(bid.History[bid.Index - 1], bid);
 
             if (bid.Index >= 4 && bid.History[bid.Index - 2].BidConvention == BidConvention.Stayman)
             {
