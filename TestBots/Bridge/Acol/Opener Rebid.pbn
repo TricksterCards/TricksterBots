@@ -39,3 +39,21 @@
 [Auction "N"]
 1NT Pass 2NT Pass
 Pass Pass Pass
+
+[Event "Accept 2NT invitation after a suit opening"]
+[Deal "N:AQ.KQJ83.A93.J85 - - -"]
+[Auction "N"]
+1H Pass 2NT Pass
+3NT Pass Pass Pass
+
+[Event "Decline 2NT invitation after a suit opening"]
+[Deal "N:KQJ8.A943.7.Q852 - - -"]
+[Auction "N"]
+1H Pass 2NT Pass
+Pass Pass Pass
+
+[Event "Accept 2NT invitation with 17 balanced (customer reported hand)"]
+[Deal "N:Q8.KT98.AK73.AJ7 - - -"]
+[Auction "N"]
+1H Pass 2NT Pass
+3NT Pass Pass Pass

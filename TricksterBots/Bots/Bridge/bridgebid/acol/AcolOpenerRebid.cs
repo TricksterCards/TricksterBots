@@ -141,8 +141,21 @@ namespace Trickster.Bots
             }
             else if (rebid.declareBid.suit == Suit.Unknown)
             {
+                //  a natural 2NT response (10-12) already limited responder's hand, so place the
+                //  contract instead of using the NT ladder (which would misread 4NT as a jump)
+                if (response.bidIsDeclare && response.declareBid.suit == Suit.Unknown && response.declareBid.level == 2 &&
+                    response.BidConvention == BidConvention.None)
+                {
+                    if (rebid.declareBid.level == 3)
+                    {
+                        rebid.Points.Min = 13;
+                        rebid.BidPointType = BidPointType.Hcp;
+                        rebid.BidMessage = BidMessage.Signoff;
+                        rebid.Description = "Accept invitation and sign-off at game";
+                    }
+                }
                 //  rebidding notrump after a suit opening shows a balanced hand too strong for 1NT
-                if (rebid.declareBid.level == lowestAvailableLevel)
+                else if (rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  1x-1y-1N (or 2N over a 2-level response): 15-16
                     rebid.Points.Min = 15;
