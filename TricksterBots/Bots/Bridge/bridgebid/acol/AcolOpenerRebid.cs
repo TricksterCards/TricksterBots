@@ -1,3 +1,4 @@
+using System;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -171,15 +172,22 @@ namespace Trickster.Bots
             }
             else if (response.bidIsDeclare && rebid.declareBid.suit == response.declareBid.suit)
             {
-                //  raising responder's suit promises 4-card support (responder may hold only 4)
+                //  raise with enough support for an 8-card fit given responder's promised length
+                //  (a 2-level major response promised 5, so a 3-card raise is enough)
+                var minSupport = Math.Min(Math.Max(8 - response.HandShape[rebid.declareBid.suit].Min, 3), 4);
+
                 if (rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  minimum raise (12-15)
                     rebid.BidPointType = BidPointType.Dummy;
                     rebid.Points.Min = 12;
                     rebid.Points.Max = 15;
-                    rebid.HandShape[rebid.declareBid.suit].Min = 4;
-                    rebid.Description = $"Minimum raise; 4+ {rebid.declareBid.suit}";
+                    rebid.HandShape[rebid.declareBid.suit].Min = minSupport;
+                    rebid.Description = $"Minimum raise; {minSupport}+ {rebid.declareBid.suit}";
+
+                    //  prefer supporting a known 8-card major fit over other minimum rebids
+                    if (BridgeBot.IsMajor(rebid.declareBid.suit))
+                        rebid.Priority = 50;
                 }
                 else if (rebid.declareBid.level == lowestAvailableLevel + 1)
                 {

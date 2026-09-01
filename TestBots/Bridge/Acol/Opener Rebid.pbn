@@ -22,6 +22,12 @@
 1D Pass 1S Pass
 2S Pass Pass Pass
 
+[Event "Raise a 2-level major response with 3-card support"]
+[Deal "N:AT963.K54.KQ52.8 - - -"]
+[Auction "N"]
+1S Pass 2H Pass
+3H Pass Pass Pass
+
 [Event "Accept 2NT invitation with a maximum weak 1NT"]
 [Deal "N:KQ4.KJ3.A432.J85 - - -"]
 [Auction "N"]

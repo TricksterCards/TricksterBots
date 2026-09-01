@@ -295,11 +295,13 @@ namespace Trickster.Bots
                     else if (BridgeBot.suitRank[response.declareBid.suit] < BridgeBot.suitRank[openSuit])
                     {
                         //  new suit at the 2-level (non-jump): 9+ points, natural and forcing
+                        //  a 2-level major response (2H over 1S) promises 5+ since opener may raise with 3
+                        var minCardsInSuit = BridgeBot.IsMinor(response.declareBid.suit) ? 4 : 5;
                         response.Points.Min = 9;
                         response.BidMessage = BidMessage.Forcing;
-                        response.HandShape[response.declareBid.suit].Min = 4;
+                        response.HandShape[response.declareBid.suit].Min = minCardsInSuit;
                         response.SetHandShapeMaxesOfOtherSuits(response.declareBid.suit, 6);
-                        response.Description = $"4+ {response.declareBid.suit}";
+                        response.Description = $"{minCardsInSuit}+ {response.declareBid.suit}";
                     }
                     else
                     {

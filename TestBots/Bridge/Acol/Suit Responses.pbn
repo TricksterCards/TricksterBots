@@ -28,6 +28,18 @@ Pass Pass
 1S Pass 2C Pass
 Pass Pass
 
+[Event "2H response to 1S promises 5+ hearts"]
+[Deal "N:- - A54.KQ863.J53.73 -"]
+[Auction "N"]
+1S Pass 2H Pass
+Pass Pass
+
+[Event "With only 4 hearts respond in a minor instead"]
+[Deal "N:- - 654.KQ86.J5.AQ73 -"]
+[Auction "N"]
+1S Pass 2C Pass
+Pass Pass
+
 [Event "Strong jump shift"]
 [Deal "N:- - AKQ54.86.KQ53.A3 -"]
 [Auction "N"]
