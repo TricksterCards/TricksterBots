@@ -205,8 +205,21 @@ namespace Trickster.Bots
             }
             else if (rebid.declareBid.suit == Suit.Unknown)
             {
+                //  a natural 2NT response already limited responder's hand, so place the
+                //  contract instead of using the NT ladder (which would misread 4NT as a jump)
+                if (response.bidIsDeclare && response.declareBid.suit == Suit.Unknown && response.declareBid.level == 2 &&
+                    response.BidConvention == BidConvention.None)
+                {
+                    if (rebid.declareBid.level == 3)
+                    {
+                        rebid.Points.Min = 13;
+                        rebid.BidPointType = BidPointType.Hcp;
+                        rebid.BidMessage = BidMessage.Signoff;
+                        rebid.Description = "Sign-off at game";
+                    }
+                }
                 //  rebidding notrump
-                if (rebid.declareBid.level == lowestAvailableLevel)
+                else if (rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  minimum: lowest available level (13-15 points)
                     rebid.Points.Min = 13;

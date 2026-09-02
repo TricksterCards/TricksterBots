@@ -22,3 +22,9 @@
 [Auction "S"]
 1H Pass 2H Pass
 4H
+
+[Event "Place contract at 3NT after a natural 2NT response"]
+[Deal "N:AQ4.KJ3.Q32.AK85 - - -"]
+[Auction "N"]
+1C Pass 2NT Pass
+3NT
