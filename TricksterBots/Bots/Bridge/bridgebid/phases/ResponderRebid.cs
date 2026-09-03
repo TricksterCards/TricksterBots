@@ -52,9 +52,11 @@ namespace Trickster.Bots
                 //  TODO: validate knowing count of Aces will help decision to bid slam
                 bid.Validate = hand => false;
             }
-            else if (bid.declareBid.level == bid.GameLevel && ((isNT && partnerSummary.IsBalanced) || playerMinOfSuit > 0 || partnerMinOfSuit > 0))
+            else if (bid.declareBid.level == bid.GameLevel && (isNT || playerMinOfSuit > 0 || partnerMinOfSuit > 0))
             {
-                //  sign-off at game of a previously bid suit: 3NT, 4H, 4S, 5C, 5D
+                //  sign-off at game of a previously bid suit or in notrump: 3NT, 4H, 4S, 5C, 5D
+                //  (3NT does not require a balanced partner; with game values and no fit it's the standard spot,
+                //  and suit games still rank higher when a fit is known)
                 bid.Points.Min = bid.GamePoints - partnerSummary.Points.Min;
                 bid.BidMessage = BidMessage.Signoff;
                 bid.Description = "Sign-off at game";
