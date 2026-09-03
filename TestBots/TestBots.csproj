@@ -33,6 +33,12 @@
     <Content Include="Bridge\SAYC\Blackwood.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Bridge\SAYC\Control Bids.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Bridge\SAYC\Gerber.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Bridge\Bridgit\Basic.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

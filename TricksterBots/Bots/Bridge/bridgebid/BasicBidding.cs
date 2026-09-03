@@ -11,6 +11,62 @@ namespace Trickster.Bots
     {
         private static readonly Suit[] BasicSuits = { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades };
 
+        /// <summary>
+        ///     Determines whether learning partner's count of Aces can actually change our slam decision.
+        /// </summary>
+        public static bool AceAskIsUseful(Hand hand, int partnerMinPoints)
+        {
+            //  with a void, Aces are the wrong question (controls matter more)
+            var counts = CountsBySuit(hand);
+            if (SuitRank.stdSuits.Any(s => counts[s] == 0))
+                return false;
+
+            var aces = hand.Count(c => c.rank == Rank.Ace);
+
+            //  with 2 or fewer Aces the answer decides whether to bid a small slam at all
+            if (aces <= 2)
+                return true;
+
+            //  otherwise the answer (and a follow-up ask for Kings) only decides between small and grand slam
+            if (ComputeHighCardPoints(hand) + partnerMinPoints < InterpretedBid.GrandSlamPoints)
+                return false;
+
+            //  holding every Ace and King there's nothing left to ask about
+            return aces < 4 || hand.Count(c => c.rank == Rank.King) < 4;
+        }
+
+        /// <summary>
+        ///     Counts how many cards of the given rank the partnership is missing.
+        /// </summary>
+        /// <param name="partnerCounts">the counts partner's answer to our ask allows for (empty if we never asked)</param>
+        public static int MissingCount(Hand hand, Rank rank, IReadOnlyList<int> partnerCounts)
+        {
+            var mine = hand.Count(c => c.rank == rank);
+
+            //  where partner's answer was ambiguous, assume the fewest they could hold
+            var partners = partnerCounts.Where(c => c + mine <= 4).DefaultIfEmpty(0).Min();
+
+            return 4 - mine - partners;
+        }
+
+        /// <summary>
+        ///     Determines whether learning partner's count of Kings can actually change our slam decision.
+        /// </summary>
+        /// <param name="partnerAces">the counts of Aces partner's answer to our Ace ask allows for</param>
+        public static bool KingAskIsUseful(Hand hand, IReadOnlyList<int> partnerAces, int partnerMinPoints)
+        {
+            //  asking for Kings promises the partnership holds all the Aces
+            if (!partnerAces.Contains(4 - hand.Count(c => c.rank == Rank.Ace)))
+                return false;
+
+            //  holding every King there's nothing left to ask about
+            if (hand.Count(c => c.rank == Rank.King) == 4)
+                return false;
+
+            //  Kings only matter here for choosing between a small and a grand slam
+            return ComputeHighCardPoints(hand) + partnerMinPoints >= InterpretedBid.GrandSlamPoints;
+        }
+
         public static int ComputeDistributionPoints(Hand hand)
         {
             var distributionPoints = 0;
