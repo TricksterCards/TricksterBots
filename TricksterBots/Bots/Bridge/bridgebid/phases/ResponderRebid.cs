@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System.Linq;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -41,16 +42,26 @@ namespace Trickster.Bots
                 bid.BidMessage = BidMessage.Signoff;
                 bid.Description = $"{(bid.declareBid.level == 6 ? "Small" : "Grand")} slam";
             }
-            else if (bid.declareBid.level == 4 && isNT)
+            else if (bid.declareBid.level == 4 && isNT && HasAgreedTrumpSuit(playerSummary, partnerSummary))
             {
-                //  4N
+                //  4N with a known trump fit: Blackwood
                 bid.Points.Min = InterpretedBid.SmallSlamPoints - 1 - partnerSummary.Points.Min;
                 bid.BidPointType = BidPointType.Hcp;
                 bid.BidConvention = BidConvention.Blackwood;
                 bid.BidMessage = BidMessage.Forcing;
                 bid.Description = "asking for Aces";
-                //  TODO: validate knowing count of Aces will help decision to bid slam
-                bid.Validate = hand => false;
+                bid.Priority = 10; // prefer asking over settling for game when the ask is useful
+                bid.Validate = hand => BasicBidding.AceAskIsUseful(hand, partnerSummary.Points.Min);
+            }
+            else if (bid.declareBid.level == 4 && isNT)
+            {
+                //  4N without a trump fit: natural and quantitative, inviting 6N
+                bid.Points.Min = InterpretedBid.SmallSlamPoints - 2 - partnerSummary.Points.Min;
+                bid.Points.Max = InterpretedBid.SmallSlamPoints - 1 - partnerSummary.Points.Min;
+                bid.BidPointType = BidPointType.Hcp;
+                bid.IsBalanced = true;
+                bid.BidMessage = BidMessage.Invitational;
+                bid.Description = "Inviting slam";
             }
             else if (bid.declareBid.level == bid.GameLevel && ((isNT && partnerSummary.IsBalanced) || playerMinOfSuit > 0 || partnerMinOfSuit > 0))
             {
@@ -111,6 +122,11 @@ namespace Trickster.Bots
                     if (bid.HandShape[bid.declareBid.suit].Min > 0) bid.Description += $"; {bid.HandShape[bid.declareBid.suit].Min}+ {bid.declareBid.suit}";
                 }
             }
+        }
+
+        private static bool HasAgreedTrumpSuit(InterpretedBid.PlayerSummary playerSummary, InterpretedBid.PlayerSummary partnerSummary)
+        {
+            return SuitRank.stdSuits.Any(s => playerSummary.HandShape[s].Min + partnerSummary.HandShape[s].Min >= 8);
         }
     }
 }

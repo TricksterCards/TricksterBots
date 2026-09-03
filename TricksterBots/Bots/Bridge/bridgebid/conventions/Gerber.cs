@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -18,7 +19,7 @@ namespace Trickster.Bots
                 return true;
             }
 
-            if (bid.Index >= 4 && bid.History[bid.Index - 4].BidConvention == BidConvention.Gerber && bid.History[bid.Index - 4].declareBid.level == 4)
+            if (bid.Index >= 4 && bid.History[bid.Index - 4].BidConvention == BidConvention.Gerber)
                 return InterpretRebid(bid);
 
             return false;
@@ -32,8 +33,8 @@ namespace Trickster.Bots
             bid.BidConvention = BidConvention.Gerber;
             bid.BidMessage = BidMessage.Forcing;
             bid.Description = "asking for Aces";
-            //  TODO: validate knowing how many aces our partner has will actually help us place the contract (often "control bids" are better here)
-            bid.Validate = hand => false;
+            bid.Priority = 10; // prefer asking over settling for game when the ask is useful
+            bid.Validate = hand => BasicBidding.AceAskIsUseful(hand, partnerSummary.Points.Min);
         }
 
         private static bool InterpretRebid(InterpretedBid bid)
@@ -41,21 +42,63 @@ namespace Trickster.Bots
             if (!bid.bidIsDeclare)
                 return false;
 
+            var ask = bid.History[bid.Index - 4];
+            var answer = bid.History[bid.Index - 2];
             var db = bid.declareBid;
 
-            if (db.level == 5 && db.suit == Suit.Clubs)
+            if (ask.declareBid.level == 4 && db.level == 5 && db.suit == Suit.Clubs)
             {
+                var partnerSummary = new InterpretedBid.PlayerSummary(bid.History, bid.Index - 2);
                 bid.BidConvention = BidConvention.Gerber;
                 bid.BidMessage = BidMessage.Forcing;
                 bid.Description = "asking for Kings";
-                //  TODO (SAYC Booklet): asking for kings guarantees that the partnership holds all the aces
-                bid.Validate = hand => false;
+                bid.Priority = 5; // prefer asking over settling for a small slam when the ask is useful
+                bid.Validate = hand => BasicBidding.KingAskIsUseful(hand, answer.Aces, partnerSummary.Points.Min);
                 return true;
             }
 
-            //  TODO (SAYC Booklet): if the player using Gerber makes any bid other than 5C, that is to play (including 4NT)
+            return InterpretPlacement(bid, ask, answer);
+        }
 
-            return false;
+        //  (SAYC Booklet) if the player using Gerber makes any bid other than 5C, that is to play (including 4NT)
+        private static bool InterpretPlacement(InterpretedBid bid, InterpretedBid ask, InterpretedBid answer)
+        {
+            var db = bid.declareBid;
+            var askedForKings = ask.declareBid.level == 5;
+
+            //  when we asked for Kings, partner's count of Aces came from their answer to the previous ask
+            var aceAnswer = askedForKings && bid.Index >= 6 ? bid.History[bid.Index - 6] : answer;
+
+            if (db.level == 7)
+            {
+                bid.Description = "Grand slam";
+                bid.Priority = 9; // prefer the grand slam over the small slam when nothing is missing
+                bid.Validate = hand => BasicBidding.MissingCount(hand, Rank.Ace, aceAnswer.Aces) == 0 && askedForKings &&
+                                       BasicBidding.MissingCount(hand, Rank.King, answer.Kings) == 0;
+            }
+            else if (db.level == 6)
+            {
+                bid.Description = "Small slam";
+                bid.Validate = hand => BasicBidding.MissingCount(hand, Rank.Ace, aceAnswer.Aces) <= 1;
+            }
+            else if (db.level == bid.GameLevel && !askedForKings)
+            {
+                bid.Description = "Missing too many Aces for slam";
+                bid.Validate = hand => BasicBidding.MissingCount(hand, Rank.Ace, aceAnswer.Aces) > 1;
+            }
+            else
+            {
+                return false;
+            }
+
+            bid.BidMessage = BidMessage.Signoff;
+            bid.Priority = Math.Min(bid.Priority, 10); // prefer placing the contract based on the answer we asked for
+
+            if (db.suit != Suit.Unknown)
+                //  partner's notrump bid said nothing about our suit, so we need to be able to play it opposite a singleton
+                bid.HandShape[db.suit].Min = 6;
+
+            return true;
         }
 
         private static void InterpretResponse(InterpretedBid bid)
