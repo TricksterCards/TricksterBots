@@ -44,14 +44,14 @@ namespace Trickster.Bots
                 //  a cuebid advance when overcall was also a cuebid is unknown (for now)
                 //  TODO: Determine if there are conditions where this makes sense
             }
-            else if (opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.level == opening.declareBid.level + 1 && advance.declareBid.suit != Suit.Unknown)
+            else if (opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.level <= 3 && advance.declareBid.level == advance.LowestAvailableLevel(advance.declareBid.suit, true) && advance.declareBid.suit != Suit.Unknown)
             {
                 //  cuebid the oppenents' suit to show support with 10+ points
                 advance.BidConvention = BidConvention.Cuebid;
                 advance.BidMessage = BidMessage.Forcing;
                 advance.Points.Min = 10;
                 advance.HandShape[overcall.declareBid.suit].Min = 3;
-                advance.Description = string.Empty;
+                advance.Description = $"3+ {overcall.declareBid.suit} (usually)";
             }
             else if (overcall.declareBid.suit == advance.declareBid.suit)
             {
