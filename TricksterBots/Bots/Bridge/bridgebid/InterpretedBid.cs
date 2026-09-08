@@ -195,7 +195,7 @@ namespace Trickster.Bots
             if (IsBalanced && !BasicBidding.IsBalanced(hand))
                 return false;
 
-            if (IsGood && !BasicBidding.IsGoodSuit(hand, declareBid.suit))
+            if (IsGood && !BasicBidding.IsGoodSuit(hand, declareBid.suit, HandShape[declareBid.suit].Min))
                 return false;
 
             var points = BasicBidding.ComputeHighCardPoints(hand);

@@ -144,7 +144,7 @@ namespace Trickster.Bots
                             rebid.Points.Max = 18;
                             rebid.HandShape[rebid.declareBid.suit].Min = 4;
                             rebid.Description = "inviting game";
-                            rebid.Validate = hand => !BasicBidding.IsGoodSuit(hand, rebid.declareBid.suit);
+                            rebid.Validate = hand => !BasicBidding.IsGoodSuit(hand, rebid.declareBid.suit, 4);
                         }
                         else
                         {
