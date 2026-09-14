@@ -80,6 +80,8 @@ namespace Trickster.Bots
                             opening.Points.Max = 14;
                             opening.BidPointType = BidPointType.Hcp;
                             opening.IsBalanced = true;
+                            opening.HandShape[Suit.Hearts].Max = 4;
+                            opening.HandShape[Suit.Spades].Max = 4;
                             opening.Description = string.Empty;
                             //  always prefer the weak 1NT over a suit opening with a balanced minimum
                             opening.Priority = 50;
