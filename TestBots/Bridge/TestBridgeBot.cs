@@ -116,6 +116,8 @@ namespace TestBots
         [DataRow("2♥", 60, "K73.AQ84.KJ5.Q92", "1NT Pass 2D Pass", DisplayName = "60 on: still complete a Jacoby transfer")]
         [DataRow("5♣", 60, "87.8.KQJ7532.J84", "1H 3D Pass 4NT Pass", DisplayName = "60 on: still answer Blackwood")]
         [DataRow("Pass", 60, "AQJ84.K92.K73.85", "1S Pass 2D Pass", DisplayName = "60 on: pass partner's forcing 2D with a 7-card fit")]
+        [DataRow("Pass", 60, "A5.AKJ72.KQ4.Q93", "1H Pass 2H X", DisplayName = "60 on: pass partner's doubled 2H (game doubled or not)")]
+        [DataRow("Pass", 40, "AQ3.K73.K5.AJ642", "1C Pass 1H X", DisplayName = "40 on: pass partner's doubled 1H (1HX = 60 makes game)")]
         public void RubberPartscoreBidding(string expected, int partscore, string hand, string auction)
         {
             var bot = new BridgeBot(new BridgeOptions { variation = BridgeVariation.Rubber }, Suit.Unknown);

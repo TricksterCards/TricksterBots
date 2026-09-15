@@ -398,12 +398,15 @@ namespace Trickster.Bots
             if (why.declareBid.level >= 6 || slamConventions.Contains(why.BidConvention))
                 return bid;
 
-            //  find the current contract; if it has been (re)doubled, let the normal logic handle it
+            //  find the current contract, noting whether it has been doubled or redoubled (which multiplies its trick score)
             InterpretedBid current = null;
+            var multiplier = 1;
             for (var i = history.Count - 1; i >= 0; --i)
             {
-                if (history[i].bid == BridgeBid.Double || history[i].bid == BridgeBid.Redouble)
-                    return bid;
+                if (history[i].bid == BridgeBid.Redouble)
+                    multiplier = 4;
+                else if (history[i].bid == BridgeBid.Double && multiplier == 1)
+                    multiplier = 2;
 
                 if (history[i].bidIsDeclare)
                 {
@@ -425,7 +428,7 @@ namespace Trickster.Bots
 
             //  pass if partner's contract already makes game and is a strain we're happy to play in
             var currentIsPartners = current != null && current.Index == history.Count - 2;
-            if (currentIsPartners && TrickScore(current.declareBid) >= needed && IsPlayableContract(current, partnerSummary, hand))
+            if (currentIsPartners && TrickScore(current.declareBid) * multiplier >= needed && IsPlayableContract(current, partnerSummary, hand))
                 return legalBids.First(b => b.value == BidBase.Pass);
 
             //  otherwise, if our natural bid overshoots game, bid the cheapest game-making level in the same strain instead
