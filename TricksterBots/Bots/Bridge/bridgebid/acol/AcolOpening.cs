@@ -24,7 +24,7 @@ namespace Trickster.Bots
             {
                 case 1:
                     opening.Points.Min = 12;
-                    opening.Points.Max = 19;
+                    opening.Points.Max = 22;
 
                     if (db.suit != Suit.Unknown && opening.Index < 2)
                     {

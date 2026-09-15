@@ -47,3 +47,9 @@ Pass Pass Pass Pass
 [Deal "W:AK854.Q86.64.K75 - - -"]
 [Auction "W"]
 1S - - -
+
+[Event "Open 1S with an unbalanced 20 HCP hand"]
+[Deal "N:AK987.AK63.A.QT4 - - -"]
+[Auction "N"]
+1S Pass Pass Pass
+
