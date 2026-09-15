@@ -436,13 +436,13 @@ namespace Trickster.Bots
                 return bid;
 
             var suit = why.declareBid.suit;
-            var inStrain = legalBids.Where(b => b.why.bidIsDeclare && b.why.declareBid.suit == suit).ToList();
-            var target = Math.Max(MinGameLevel(suit, needed), inStrain.Min(b => b.why.declareBid.level));
+            var naturalInStrain = legalBids.Where(b => b.why.bidIsDeclare && b.why.declareBid.suit == suit && b.why.BidConvention == BidConvention.None).ToList();
+            var target = Math.Max(MinGameLevel(suit, needed), naturalInStrain.Min(b => b.why.declareBid.level));
             if (why.declareBid.level <= target)
                 return bid;
 
-            var lowered = inStrain.FirstOrDefault(b => b.why.declareBid.level == target);
-            return lowered != null && lowered.why.BidConvention == BidConvention.None ? lowered : bid;
+            var lowered = naturalInStrain.FirstOrDefault(b => b.why.declareBid.level == target);
+            return lowered ?? bid;
         }
 
         private static bool IsPlayableContract(InterpretedBid contract, InterpretedBid.PlayerSummary partnerSummary, Hand hand)
