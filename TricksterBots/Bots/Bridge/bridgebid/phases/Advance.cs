@@ -31,6 +31,14 @@ namespace Trickster.Bots
             {
                 //  TODO: advance a notrump overcall
             }
+            else if (overcall.IsPreemptive)
+            {
+                Response.InterpretResponseToPreempt(overcall, advance.History[advance.Index - 1], advance);
+                //  Keep a new-suit advance constructive, even opposite a weak jump overcall.
+                if (advance.declareBid.suit != Suit.Unknown && advance.declareBid.suit != overcall.declareBid.suit &&
+                    advance.declareBid.level < advance.GameLevel)
+                    advance.Points.Min = 11;
+            }
             else
             {
                 AdvanceSuitedOvercall(opening, overcall, advance);
