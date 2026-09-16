@@ -57,3 +57,10 @@ Pass Pass Pass
 [Auction "N"]
 1H Pass 2NT Pass
 3NT Pass Pass Pass
+
+[Event "Invite game with 17 HCP after 1NT response to 1S opening"]
+[Deal "N:Q85.98.Q94.QJT54 - KJ92.KJT.AJ63.A7 -"]
+[Auction "N"]
+Pass Pass 1S Pass
+1NT Pass 2NT Pass
+Pass

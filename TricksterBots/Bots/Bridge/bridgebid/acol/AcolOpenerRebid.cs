@@ -141,6 +141,10 @@ namespace Trickster.Bots
             }
             else if (rebid.declareBid.suit == Suit.Unknown)
             {
+                //  Acol: a natural 1NT response to an opening suit does not shift the NT rebid ladder
+                if (response.bidIsDeclare && response.declareBid.suit == Suit.Unknown && response.declareBid.level == 1 && response.BidConvention == BidConvention.None)
+                    lowestAvailableLevel = 1;
+
                 //  a natural 2NT response (10-12) already limited responder's hand, so place the
                 //  contract instead of using the NT ladder (which would misread 4NT as a jump)
                 if (response.bidIsDeclare && response.declareBid.suit == Suit.Unknown && response.declareBid.level == 2 &&
@@ -261,6 +265,9 @@ namespace Trickster.Bots
                     rebid.Points.Max = 18;
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.Description = $"New suit; 4+ {rebid.declareBid.suit}";
+                    //  at the 2-level a balanced hand rebids NT instead
+                    if (rebid.declareBid.level == 2)
+                        rebid.Validate = hand => !BasicBidding.IsBalanced(hand);
                 }
                 else if (BridgeBot.suitRank[rebid.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] && rebid.declareBid.level == lowestAvailableLevel)
                 {
