@@ -28,19 +28,19 @@ namespace Trickster.Bots
 
                     if (db.suit != Suit.Unknown && opening.Index < 2)
                     {
-                        //  use the Rule of 19 in 1st or 2nd seat
+                        //  use the Rule of 20 in 1st or 2nd seat
                         opening.AlternateMatches = hand =>
                         {
-                            //  our HCP + count of cards in our two longest suits must be 19 or more to open
+                            //  our HCP + count of cards in our two longest suits must be 20 or more to open
                             var hcp = BasicBidding.ComputeHighCardPoints(hand);
                             var counts = BasicBidding.CountsBySuit(hand);
                             var topCounts = counts.Values.OrderByDescending(v => v).ToList();
                             var total = hcp + topCounts[0] + topCounts[1];
                             //  still validate if we match the correct hand shape to ensure we pick the right suit
-                            return total >= 19 && counts[opening.declareBid.suit] >= opening.HandShape[opening.declareBid.suit].Min &&
+                            return total >= 20 && counts[opening.declareBid.suit] >= opening.HandShape[opening.declareBid.suit].Min &&
                                    (opening.Validate == null || opening.Validate(hand));
                         };
-                        opening.AlternatePoints = "Rule of 19";
+                        opening.AlternatePoints = "Rule of 20";
                     }
 
                     switch (db.suit)
