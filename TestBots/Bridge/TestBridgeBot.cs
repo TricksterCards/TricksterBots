@@ -135,6 +135,86 @@ namespace TestBots
             Assert.AreEqual(bid, BidString(suggestion.value));
         }
 
+        //  hands are given as spades.hearts.diamonds.clubs; auctions start with the dealer (North) and the bot bids next
+        [TestMethod]
+        [DataRow("Pass", 60, "A5.AKJ72.KQ4.Q93", "1H Pass 2H Pass", DisplayName = "60 on: pass partner's raise to 2H (game)")]
+        [DataRow("Pass", 60, "A5.AKJ872.K4.Q93", "1H Pass 2H Pass", DisplayName = "60 on: pass partner's raise rather than rebid 3H")]
+        [DataRow("Pass", 40, "A5.AKJ72.KQ4.Q93", "1H Pass 2H Pass", DisplayName = "40 on: pass partner's raise to 2H (40+60=100)")]
+        [DataRow("3♥", 30, "A5.AKJ72.KQ4.Q93", "1H Pass 2H Pass", DisplayName = "30 on: 2H is not yet game; bid the cheapest game level")]
+        [DataRow("Pass", 80, "Q73.J92.984.A652", "1C Pass", DisplayName = "80 on: pass partner's 1C opening with 4 clubs")]
+        [DataRow("1NT", 60, "Q7.AKJ84.KQ3.QJ2", "1H Pass 1S Pass", DisplayName = "60 on: lower a 2NT rebid to 1NT (game)")]
+        [DataRow("1♠", 80, "KJ852.74.Q93.J62", "1C Pass", DisplayName = "80 on: still show a 5-card major at the 1-level")]
+        [DataRow("2♥", 60, "K73.AQ84.KJ5.Q92", "1NT Pass 2C Pass", DisplayName = "60 on: still answer Stayman")]
+        [DataRow("2♥", 60, "K73.AQ84.KJ5.Q92", "1NT Pass 2D Pass", DisplayName = "60 on: still complete a Jacoby transfer")]
+        [DataRow("5♣", 60, "87.8.KQJ7532.J84", "1H 3D Pass 4NT Pass", DisplayName = "60 on: still answer Blackwood")]
+        [DataRow("Pass", 60, "AQJ84.K92.K73.85", "1S Pass 2D Pass", DisplayName = "60 on: pass partner's forcing 2D with a 7-card fit")]
+        [DataRow("Pass", 60, "A5.AKJ72.KQ4.Q93", "1H Pass 2H X", DisplayName = "60 on: pass partner's doubled 2H (game doubled or not)")]
+        [DataRow("Pass", 40, "AQ3.K73.K5.AJ642", "1C Pass 1H X", DisplayName = "40 on: pass partner's doubled 1H (1HX = 60 makes game)")]
+        public void RubberPartscoreBidding(string expected, int partscore, string hand, string auction)
+        {
+            var bot = new BridgeBot(new BridgeOptions { variation = BridgeVariation.Rubber }, Suit.Unknown);
+            var history = new BridgeBidHistory(auction.Split(' ').Select(GetBid));
+            var unfiltered = bot.SuggestBid(history, ParseHand(hand)).value;
+            var suggestion = bot.SuggestBid(history, ParseHand(hand), "None", partscore).value;
+
+            if (expected == "Pass")
+                Assert.AreNotEqual(BidBase.Pass, unfiltered, "test setup: expected a non-pass suggestion without the partscore");
+
+            Assert.AreEqual(expected, BidString(suggestion));
+        }
+
+        //  cases where the partscore filter must leave the normal SAYC suggestion untouched
+        [TestMethod]
+        [DataRow(60, "AK3.KQ4.KJ52.A7", "1NT Pass", DisplayName = "60 on: keep bidding when slam is plausible")]
+        [DataRow(60, "AQJ84.K942.K7.85", "1S Pass 2D Pass", DisplayName = "60 on: don't pass partner's 2D without a fit")]
+        [DataRow(60, "73.KJ92.Q84.A652", "1H 2S", DisplayName = "60 on: never pass out an opponent's contract")]
+        [DataRow(60, "A5.AKJ72.KQ4.Q93", "Pass", DisplayName = "60 on: opening bids are unaffected")]
+        public void RubberPartscoreBiddingUnchanged(int partscore, string hand, string auction)
+        {
+            var bot = new BridgeBot(new BridgeOptions { variation = BridgeVariation.Rubber }, Suit.Unknown);
+            var history = new BridgeBidHistory(auction.Split(' ').Select(GetBid));
+            var unfiltered = bot.SuggestBid(history, ParseHand(hand)).value;
+            var filtered = bot.SuggestBid(history, ParseHand(hand), "None", partscore).value;
+
+            Assert.AreNotEqual(BidBase.Pass, unfiltered, "test setup: expected a non-pass suggestion");
+            Assert.AreEqual(BidString(unfiltered), BidString(filtered));
+        }
+
+        [TestMethod]
+        [DataRow("Pass", BridgeVariation.Rubber, DisplayName = "Rubber: partscore read from GameScore")]
+        [DataRow("4♥", BridgeVariation.Chicago, DisplayName = "Chicago: partscore ignored")]
+        public void PartscoreFromGameScore(string expected, BridgeVariation variation)
+        {
+            var options = new BridgeOptions { variation = variation };
+            var bot = new BridgeBot(options, Suit.Unknown);
+            var gameScore = (int)(long)new BridgeScore { contractPoints = 60 };
+            var players = new List<PlayerBase>
+            {
+                new TestPlayer(GetBid("1H"), "AS5SAHKHJH7H2HKDQD4DQC9C3C", gameScore: gameScore, seat: 0),
+                new TestPlayer(GetBid("Pass"), UnknownCards(13), seat: 1),
+                new TestPlayer(GetBid("2H"), UnknownCards(13), gameScore: gameScore, seat: 2),
+                new TestPlayer(GetBid("Pass"), UnknownCards(13), seat: 3)
+            };
+            var state = new SuggestBidState<BridgeOptions>
+            {
+                dealerSeat = 0,
+                hand = new Hand(players[0].Hand),
+                options = options,
+                player = players[0],
+                players = players,
+                vulnerabilityBySeat = new[] { false, false, false, false }
+            };
+
+            Assert.AreEqual(expected, BidString(bot.SuggestBid(state).value));
+        }
+
+        private static Hand ParseHand(string hand)
+        {
+            const string suitLetters = "SHDC";
+            var parts = hand.Split('.');
+            return new Hand(parts.SelectMany((ranks, i) => ranks.Select(r => new Card($"{r}{suitLetters[i]}"))));
+        }
+
         [TestMethod]
         public void FuzzPlays()
         {

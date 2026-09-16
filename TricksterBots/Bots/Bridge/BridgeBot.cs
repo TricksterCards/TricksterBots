@@ -26,6 +26,24 @@ namespace Trickster.Bots
             { Suit.Spades, 4 }
         };
 
+        //  conventions that signal a slam investigation is underway; never interfere with these
+        private static readonly HashSet<BidConvention> slamConventions = new HashSet<BidConvention>
+        {
+            BidConvention.Blackwood,
+            BidConvention.AnswerBlackwood,
+            BidConvention.Gerber,
+            BidConvention.AnswerGerber,
+            BidConvention.ControlBid
+        };
+
+        //  conventions whose bid strain is still a genuine suit the partnership is willing to play in
+        private static readonly HashSet<BidConvention> naturalStrainConventions = new HashSet<BidConvention>
+        {
+            BidConvention.None,
+            BidConvention.AcceptJacobyTransfer,
+            BidConvention.AcceptRelay
+        };
+
         public BridgeBot(BridgeOptions options, Suit trumpSuit) : base(options, trumpSuit)
         {
         }
@@ -143,10 +161,11 @@ namespace Trickster.Bots
             var vulnerable = state.vulnerabilityBySeat.All(v => v) ? "All" :
                 !state.vulnerabilityBySeat.Any(v => v) ? "None" :
                 state.vulnerabilityBySeat[state.player.Seat] ? "NS" : "EW";
-            return SuggestBid(history, hand, vulnerable);
+            var partscore = options.variation == BridgeVariation.Rubber ? (int)new BridgeScore(state.player.GameScore).contractPoints : 0;
+            return SuggestBid(history, hand, vulnerable, partscore);
         }
 
-        public BidBase SuggestBid(BridgeBidHistory history, Hand hand, string vulnerable = "None")
+        public BidBase SuggestBid(BridgeBidHistory history, Hand hand, string vulnerable = "None", int partscore = 0)
         {
             if (options.bidding == BridgeBiddingScheme.TwoOverOne)
                 return SuggestBridgitBid(history, hand, vulnerable);
@@ -178,7 +197,7 @@ namespace Trickster.Bots
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min)).ToList();
             }
             else
-                //  in other phases, prefer finding the best fit first (prioritizing majors), then higher minimum points
+            //  in other phases, prefer finding the best fit first (prioritizing majors), then higher minimum points
             {
                 suggestions = suggestions
                     .OrderBy(s => s.why.Priority)
@@ -189,6 +208,10 @@ namespace Trickster.Bots
 
             //  then favor the most "descriptive" one
             var bid = suggestions.FirstOrDefault() ?? FindBestFit(hand, legalBids, interpretedHistory) ?? legalBids.First(b => b.value == BidBase.Pass);
+
+            //  in rubber bridge, stop bidding once our partscore plus the contract reaches game (unless slam is in the picture)
+            if (partscore > 0)
+                bid = PlayToTheScore(bid, legalBids, interpretedHistory, hand, partscore);
 
             return bid;
         }
@@ -341,6 +364,105 @@ namespace Trickster.Bots
             bids.Add(new BidBase(BidBase.Pass));
 
             return bids.Select(bb => new BidWhy(bb)).ToList();
+        }
+
+        //  undoubled trick score for a contract (points "below the line" in rubber bridge)
+        internal static int TrickScore(DeclareBid db)
+        {
+            if (db.suit == Suit.Unknown)
+                return 40 + 30 * (db.level - 1);
+
+            return (IsMajor(db.suit) ? 30 : 20) * db.level;
+        }
+
+        //  lowest level in the given strain whose trick score reaches the points still needed for game
+        internal static int MinGameLevel(Suit suit, int needed)
+        {
+            for (var level = 1; level < 7; ++level)
+                if (TrickScore(new DeclareBid(level, suit)) >= needed)
+                    return level;
+
+            return 7;
+        }
+
+        //  in rubber bridge with a partscore, stop once partner's contract is game (or bid the cheapest game-making level)
+        private static BidWhy PlayToTheScore(BidWhy bid, IReadOnlyList<BidWhy> legalBids, IReadOnlyList<InterpretedBid> history, Hand hand, int partscore)
+        {
+            var why = bid.why;
+
+            //  only declare bids in a partnership auction are candidates for adjustment
+            if (!why.bidIsDeclare || why.BidPhase == BidPhase.Opening)
+                return bid;
+
+            //  leave slam auctions alone
+            if (why.declareBid.level >= 6 || slamConventions.Contains(why.BidConvention))
+                return bid;
+
+            //  find the current contract, noting whether it has been doubled or redoubled (which multiplies its trick score)
+            var (current, multiplier) = GetCurrentBidAndMultiplier(history);
+
+            if (current != null && slamConventions.Contains(current.BidConvention))
+                return bid;
+
+            //  if the partnership may have slam values, keep bidding normally
+            var partnerSummary = history.Count >= 2 ? new InterpretedBid.PlayerSummary(history, history.Count - 2) : null;
+            var ourPoints = BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
+            if (ourPoints + (partnerSummary?.Points.Min ?? 0) >= InterpretedBid.SmallSlamPoints)
+                return bid;
+
+            var needed = 100 - partscore;
+
+            //  pass if partner's contract already makes game and is a strain we're happy to play in
+            var currentIsPartners = current != null && current.Index == history.Count - 2;
+            if (currentIsPartners && TrickScore(current.declareBid) * multiplier >= needed && IsPlayableContract(current, partnerSummary, hand))
+                return legalBids.First(b => b.value == BidBase.Pass);
+
+            //  otherwise, if our natural bid overshoots game, bid the cheapest game-making level in the same strain instead
+            if (why.BidConvention != BidConvention.None || why.IsPreemptive)
+                return bid;
+
+            var suit = why.declareBid.suit;
+            var naturalInStrain = legalBids.Where(b => b.why.bidIsDeclare && b.why.declareBid.suit == suit && b.why.BidConvention == BidConvention.None).ToList();
+            var target = Math.Max(MinGameLevel(suit, needed), naturalInStrain.Min(b => b.why.declareBid.level));
+            if (why.declareBid.level <= target)
+                return bid;
+
+            var lowered = naturalInStrain.FirstOrDefault(b => b.why.declareBid.level == target);
+            return lowered ?? bid;
+        }
+
+        private static (InterpretedBid current, int multiplier) GetCurrentBidAndMultiplier(IReadOnlyList<InterpretedBid> history)
+        {
+            InterpretedBid current = null;
+            var multiplier = 1;
+            for (var i = history.Count - 1; i >= 0; --i)
+            {
+                if (history[i].bid == BridgeBid.Redouble)
+                    multiplier = 4;
+                else if (history[i].bid == BridgeBid.Double && multiplier == 1)
+                    multiplier = 2;
+
+                if (history[i].bidIsDeclare)
+                {
+                    current = history[i];
+                    break;
+                }
+            }
+            return (current, multiplier);
+        }
+
+        private static bool IsPlayableContract(InterpretedBid contract, InterpretedBid.PlayerSummary partnerSummary, Hand hand)
+        {
+            var db = contract.declareBid;
+
+            if (db.suit == Suit.Unknown)
+                return contract.BidConvention == BidConvention.None;
+
+            if (!naturalStrainConventions.Contains(contract.BidConvention))
+                return false;
+
+            var fit = partnerSummary.HandShape[db.suit].Min + hand.Count(c => c.suit == db.suit);
+            return fit >= (db.level <= 2 ? 7 : 8);
         }
 
         private static BidWhy FindBestFit(Hand hand, IEnumerable<BidWhy> legalBids, IReadOnlyList<InterpretedBid> history)
@@ -743,7 +865,7 @@ namespace Trickster.Bots
                 // Tie-break by determining stronger suit (most HCP)
                 .OrderByDescending(sc => BasicBidding.ComputeHighCardPoints(sc.Value))
                 .Select(sc => sc.Key);
-            var bestSuit = longestSuits.First(); 
+            var bestSuit = longestSuits.First();
 
             // Prefer dummy's weakest suit (if after opening lead)
             var dummysWeakestSuit = GetDummysWeakestSuit(state);
@@ -872,7 +994,8 @@ namespace Trickster.Bots
             var dummysLongSuits = dummyCardsBySuit.Where(suitAndCards => suitAndCards.Value.Count == dummysLongSuitLength);
 
             var knownCards = state.cardsPlayed.Concat(state.legalCards).ToList();
-            var preferredDiscardsBySuit = GetCardsBySuit(state.legalCards).OrderBy(suitAndCards => {
+            var preferredDiscardsBySuit = GetCardsBySuit(state.legalCards).OrderBy(suitAndCards =>
+            {
                 var suit = suitAndCards.Key;
 
                 // Don't discard trump
