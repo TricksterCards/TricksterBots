@@ -197,7 +197,7 @@ namespace Trickster.Bots
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min)).ToList();
             }
             else
-                //  in other phases, prefer finding the best fit first (prioritizing majors), then higher minimum points
+            //  in other phases, prefer finding the best fit first (prioritizing majors), then higher minimum points
             {
                 suggestions = suggestions
                     .OrderBy(s => s.why.Priority)
@@ -399,21 +399,7 @@ namespace Trickster.Bots
                 return bid;
 
             //  find the current contract, noting whether it has been doubled or redoubled (which multiplies its trick score)
-            InterpretedBid current = null;
-            var multiplier = 1;
-            for (var i = history.Count - 1; i >= 0; --i)
-            {
-                if (history[i].bid == BridgeBid.Redouble)
-                    multiplier = 4;
-                else if (history[i].bid == BridgeBid.Double && multiplier == 1)
-                    multiplier = 2;
-
-                if (history[i].bidIsDeclare)
-                {
-                    current = history[i];
-                    break;
-                }
-            }
+            var (current, multiplier) = GetCurrentBidAndMultiplier(history);
 
             if (current != null && slamConventions.Contains(current.BidConvention))
                 return bid;
@@ -443,6 +429,26 @@ namespace Trickster.Bots
 
             var lowered = naturalInStrain.FirstOrDefault(b => b.why.declareBid.level == target);
             return lowered ?? bid;
+        }
+
+        private static (InterpretedBid current, int multiplier) GetCurrentBidAndMultiplier(IReadOnlyList<InterpretedBid> history)
+        {
+            InterpretedBid current = null;
+            var multiplier = 1;
+            for (var i = history.Count - 1; i >= 0; --i)
+            {
+                if (history[i].bid == BridgeBid.Redouble)
+                    multiplier = 4;
+                else if (history[i].bid == BridgeBid.Double && multiplier == 1)
+                    multiplier = 2;
+
+                if (history[i].bidIsDeclare)
+                {
+                    current = history[i];
+                    break;
+                }
+            }
+            return (current, multiplier);
         }
 
         private static bool IsPlayableContract(InterpretedBid contract, InterpretedBid.PlayerSummary partnerSummary, Hand hand)
@@ -859,7 +865,7 @@ namespace Trickster.Bots
                 // Tie-break by determining stronger suit (most HCP)
                 .OrderByDescending(sc => BasicBidding.ComputeHighCardPoints(sc.Value))
                 .Select(sc => sc.Key);
-            var bestSuit = longestSuits.First(); 
+            var bestSuit = longestSuits.First();
 
             // Prefer dummy's weakest suit (if after opening lead)
             var dummysWeakestSuit = GetDummysWeakestSuit(state);
@@ -988,7 +994,8 @@ namespace Trickster.Bots
             var dummysLongSuits = dummyCardsBySuit.Where(suitAndCards => suitAndCards.Value.Count == dummysLongSuitLength);
 
             var knownCards = state.cardsPlayed.Concat(state.legalCards).ToList();
-            var preferredDiscardsBySuit = GetCardsBySuit(state.legalCards).OrderBy(suitAndCards => {
+            var preferredDiscardsBySuit = GetCardsBySuit(state.legalCards).OrderBy(suitAndCards =>
+            {
                 var suit = suitAndCards.Key;
 
                 // Don't discard trump
