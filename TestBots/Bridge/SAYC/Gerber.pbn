@@ -1,0 +1,30 @@
+
+[Event "Use Gerber over partner's 1NT opening with slam interest"]
+[Deal "N:- - AKQJ65.KQ4.KQ3.2 -"]
+[Auction "N"]
+1NT Pass 4C
+
+[Event "Ask for Kings after Gerber when the partnership holds all the Aces"]
+[Deal "N:- - AKQJ65.AK4.AK3.2 -"]
+[Auction "N"]
+1NT Pass 4C Pass
+4H Pass 5C
+
+[Event "Bid a grand slam after Gerber when the partnership holds all Aces and Kings"]
+[Deal "N:- - AKQJ65.AK4.AK3.2 -"]
+[Auction "N"]
+1NT Pass 4C Pass
+4H Pass 5C Pass
+5H Pass 7S
+
+[Event "Bid a small slam after Gerber shows only one Ace is missing"]
+[Deal "N:- - AKQJ65.KQ4.KQ3.2 -"]
+[Auction "N"]
+1NT Pass 4C Pass
+4S Pass 6S
+
+[Event "Sign off at game after Gerber shows too many Aces are missing"]
+[Deal "N:- - AKQJ65.KQ4.KQ3.2 -"]
+[Auction "N"]
+1NT Pass 4C Pass
+4D Pass 4S

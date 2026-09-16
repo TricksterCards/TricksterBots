@@ -1,0 +1,20 @@
+
+[Event "Control bid with a side suit where we could lose the first two tricks"]
+[Deal "N:AQ.AKQ742.A65.43 - - -"]
+[Auction "N"]
+1H Pass 3H Pass
+4D
+
+[Event "Bid a small slam after partner shows a control in our weak suit"]
+[Deal "N:AQ.AKQ742.A65.43 - - -"]
+[Auction "N"]
+1H Pass 3H Pass
+4D Pass 5C Pass
+6H
+
+[Event "Sign off at game after partner shows no interest in slam"]
+[Deal "N:AQ.AKQ742.A65.43 - - -"]
+[Auction "N"]
+1H Pass 3H Pass
+4D Pass 4H Pass
+Pass
