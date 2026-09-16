@@ -32,6 +32,38 @@ namespace TestBots
         };
 
         [TestMethod]
+        [DataRow(BridgeBiddingScheme.Acol, 3, Suit.Hearts, "Good 7-card Hearts suit; preempt (6-10 HCP)")]
+        [DataRow(BridgeBiddingScheme.Acol, 4, Suit.Hearts, "Good 8-card Hearts suit; preempt (6-10 HCP)")]
+        [DataRow(BridgeBiddingScheme.Acol, 5, Suit.Clubs, "Good 9-card Clubs suit; preempt (6-10 HCP)")]
+        [DataRow(BridgeBiddingScheme.SAYC, 3, Suit.Hearts, "Good 7-card Hearts suit; preempt (5-11 HCP)")]
+        [DataRow(BridgeBiddingScheme.SAYC, 4, Suit.Hearts, "Good 8-card Hearts suit; preempt (5-11 HCP)")]
+        [DataRow(BridgeBiddingScheme.SAYC, 5, Suit.Clubs, "Good 9-card Clubs suit; preempt (5-11 HCP)")]
+        public void PreemptExplanations(BridgeBiddingScheme scheme, int level, Suit suit, string expectedDescription)
+        {
+            var options = new BridgeOptions { bidding = scheme };
+            var bot = new BridgeBot(options, Suit.Unknown);
+            var players = new List<PlayerBase>
+            {
+                new PlayerBase { Seat = 0, BidHistory = new List<int>() },
+                new PlayerBase { Seat = 1, BidHistory = new List<int>() },
+                new PlayerBase { Seat = 2, BidHistory = new List<int>() },
+                new PlayerBase { Seat = 3, BidHistory = new List<int>() }
+            };
+            var bid = new DeclareBid(level, suit);
+            var state = new SuggestBidState<BridgeOptions>
+            {
+                dealerSeat = 0,
+                legalBids = new List<BidBase> { new BidBase(bid) },
+                options = options,
+                player = players[0],
+                players = players
+            };
+
+            var legalBids = bot.DescribeLegalBids(state);
+            Assert.AreEqual(expectedDescription, legalBids[0].explanation.Description);
+        }
+
+        [TestMethod]
         public void BasicTests()
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);

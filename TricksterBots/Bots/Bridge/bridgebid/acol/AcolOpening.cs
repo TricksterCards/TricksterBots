@@ -150,7 +150,9 @@ namespace Trickster.Bots
                             if (opening.Index < 3)
                             {
                                 //  preempt only if we're not in 4th seat
-                                opening.Points.Max = 11;
+                                opening.Points.Min = 6;
+                                opening.Points.Max = 10;
+                                opening.BidPointType = BidPointType.Hcp;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
                                 opening.Description = $"7-card {db.suit} suit";
@@ -186,7 +188,9 @@ namespace Trickster.Bots
                             if (opening.Index < 3)
                             {
                                 //  preempt only if we're not in 4th seat
-                                opening.Points.Max = 11;
+                                opening.Points.Min = 6;
+                                opening.Points.Max = 10;
+                                opening.BidPointType = BidPointType.Hcp;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
                                 opening.Description = $"8-card {db.suit} suit";
@@ -219,7 +223,9 @@ namespace Trickster.Bots
                             if (opening.Index < 3)
                             {
                                 //  preempt only if we're not in 4th seat
-                                opening.Points.Max = 11;
+                                opening.Points.Min = 6;
+                                opening.Points.Max = 10;
+                                opening.BidPointType = BidPointType.Hcp;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
                                 opening.Description = $"9-card {db.suit} suit";
