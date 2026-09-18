@@ -244,14 +244,6 @@ namespace Trickster.Bots
                     rebid.Points.Max = 18;
                     rebid.HandShape[rebid.declareBid.suit].Min = 6;
                     rebid.Description = $"Jump rebid; 6+ {rebid.declareBid.suit}";
-
-                    //  4m is not game, so a minor also takes the 19-21 / 7+ hands that would double jump in a major
-                    if (BridgeBot.IsMinor(rebid.declareBid.suit))
-                        rebid.AlternateMatches = hand =>
-                        {
-                            var points = BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
-                            return 19 <= points && points <= 21 && hand.Count(c => c.suit == rebid.declareBid.suit) >= 7;
-                        };
                 }
                 else if (rebid.declareBid.level == lowestAvailableLevel + 2 && BridgeBot.IsMajor(rebid.declareBid.suit))
                 {

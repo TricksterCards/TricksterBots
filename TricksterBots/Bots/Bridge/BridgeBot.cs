@@ -181,10 +181,10 @@ namespace Trickster.Bots
             var suggestions = legalBids.Where(b => b.why.Match(hand)).ToList();
 
             //  if nothing matched, include bids we were too strong for (preferring strongest bids)
-            if (!suggestions.Any())
+            if (!suggestions.Any(b => b.value != BidBase.Pass))
             {
                 suggestions = legalBids.Where(b => b.why.Match(hand, allowTooStrong: true))
-                    .OrderByDescending(s => s.why.Points.Max)
+                    .OrderByDescending(s => s.why.Points.Min)
                     .ThenBy(s => s.why.Priority)
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min)).ToList();
             }
