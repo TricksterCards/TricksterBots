@@ -64,3 +64,15 @@ Pass Pass Pass
 Pass Pass 1S Pass
 1NT Pass 2NT Pass
 Pass
+
+[Event "Jump rebid 3D rather than 4 of a minor with a strong 8-card suit (customer reported hand)"]
+[Deal "N:KT982.73..QJ9873 A4.92.AKQ75432.A J65.AKJ865.96.K2 Q73.QT4.JT8.T654"]
+[Auction "N"]
+Pass 1D 1H Pass
+Pass 3D
+
+[Event "Double jump rebid to game in a major with 19-21 and 7+ cards"]
+[Deal "N:A4.AKQ75432.92.A - - -"]
+[Auction "N"]
+1H Pass 1S Pass
+4H
