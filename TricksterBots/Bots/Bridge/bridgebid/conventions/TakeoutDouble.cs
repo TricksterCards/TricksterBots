@@ -95,7 +95,7 @@ namespace Trickster.Bots
                 var gameLevel = BridgeBot.IsMajor(advance.declareBid.suit) ? 4 : 5;
                 var bidSuits = advance.History.Where(b => b.bidIsDeclare).Select(b => b.declareBid.suit).Distinct().ToList();
 
-                if (advance.declareBid.suit == opening.declareBid.suit)
+                if (advance.declareBid.suit == opening.declareBid.suit && advance.declareBid.suit != Suit.Unknown)
                 {
                     //  cuebid
                     advance.BidConvention = BidConvention.Cuebid;
@@ -198,7 +198,7 @@ namespace Trickster.Bots
             var opening = rebid.History.First(b => b.bid != BidBase.Pass);
 
             //  TODO: should this be level limited?
-            if (rebid.declareBid.suit == opening.declareBid.suit)
+            if (rebid.declareBid.suit == opening.declareBid.suit && rebid.declareBid.suit != Suit.Unknown)
             {
                 rebid.BidConvention = BidConvention.Cuebid;
                 rebid.BidMessage = BidMessage.Forcing;

@@ -1,0 +1,13 @@
+[Event "Bid 3NT with game values and no fit after a jump shift (customer reported hand)"]
+[Deal "E:- - - Q86.T652.J9.AJ85"]
+[Auction "E"]
+Pass 1D Pass 1H
+Pass 2S Pass 3NT
+Pass Pass Pass
+
+[Event "Prefer game in the major with a fit after a jump shift"]
+[Deal "E:- - - KJ63.T652.9.AJ85"]
+[Auction "E"]
+Pass 1D Pass 1H
+Pass 2S Pass 4S
+Pass Pass Pass

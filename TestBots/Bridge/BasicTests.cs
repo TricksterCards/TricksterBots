@@ -188,7 +188,7 @@
             {
                 history = new[] { "1♣", "Pass", "1♥", "Pass", "2♥", "Pass" },
                 hand = "AS5S AHQHTH9H QC7C3C2C JD3D2D", // 13 HCP
-                bid = "Pass", // There may be a better bid here but we used to bid 4S, which was definitely wrong
+                bid = "3NT", // game values opposite the raise (13-15); we used to bid 4S (wrong), then Pass (misses game)
                 type = "Responder Rebid"
             },
 

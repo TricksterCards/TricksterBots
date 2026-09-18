@@ -1,5 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <Content Include="Bridge\Acol\*.pbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Bridge\SAYC\1NT Basic.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

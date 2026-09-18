@@ -56,7 +56,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static void InterpretCuebidResponse(InterpretedBid opening, InterpretedBid response)
+        internal static void InterpretCuebidResponse(InterpretedBid opening, InterpretedBid response)
         {
             // From "Competitive Bidding" section on page 7 of ACBL SAYC System Booklet
             // https://web2.acbl.org/documentlibrary/play/SP3%20(bk)%20single%20pages.pdf
@@ -269,7 +269,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static void InterpretResponseTo2NT(InterpretedBid response)
+        internal static void InterpretResponseTo2NT(InterpretedBid response)
         {
             switch (response.declareBid.level)
             {
@@ -360,7 +360,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static void InterpretResponseTo3NT(InterpretedBid response)
+        internal static void InterpretResponseTo3NT(InterpretedBid response)
         {
             if (response.declareBid.level > 4)
                 return;
@@ -705,7 +705,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static void InterpretResponseToPreempt(InterpretedBid opening, InterpretedBid overcall, InterpretedBid response)
+        internal static void InterpretResponseToPreempt(InterpretedBid opening, InterpretedBid overcall, InterpretedBid response)
         {
             if (response.bid == BidBase.Pass)
                 response.Description = "Unsuitable hand to continue";
@@ -770,7 +770,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static bool IsCuebidResponse(InterpretedBid overcall, InterpretedBid response)
+        internal static bool IsCuebidResponse(InterpretedBid overcall, InterpretedBid response)
         {
             return overcall.bidIsDeclare &&
                    response.bidIsDeclare &&

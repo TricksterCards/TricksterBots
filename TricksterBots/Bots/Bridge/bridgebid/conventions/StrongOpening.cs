@@ -45,7 +45,8 @@ namespace Trickster.Bots
             opening.BidConvention = BidConvention.StrongOpening;
             opening.BidMessage = BidMessage.Forcing;
             opening.BidPointType = BidPointType.Distribution;
-            opening.Points.Min = 22;
+            //  Acol uses a 23+ threshold for the strong 2C opening
+            opening.Points.Min = opening.Options.bidding == BridgeBiddingScheme.Acol ? 23 : 22;
             opening.Description = string.Empty;
             //  TODO: opening.AlternateMatches = (hand, ibid) => BridgeBot.CountTricks(hand) >= 9;
 

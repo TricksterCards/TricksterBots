@@ -83,13 +83,13 @@ namespace Trickster.Bots
         {
             if (state.options.bidding == BridgeBiddingScheme.TwoOverOne)
                 return BridgitAdapter.DescribeBidHistoryBySeat(state);
-            if (state.options.bidding == BridgeBiddingScheme.SAYC)
-                return DescribeSaycBidHistoryBySeat(state);
+            if (state.options.bidding == BridgeBiddingScheme.SAYC || state.options.bidding == BridgeBiddingScheme.Acol)
+                return DescribeInterpretedBidHistoryBySeat(state);
 
             return base.DescribeBidHistoryBySeat(state);
         }
 
-        private static Dictionary<int, List<BidBase>> DescribeSaycBidHistoryBySeat(SuggestBidState<BridgeOptions> state)
+        private static Dictionary<int, List<BidBase>> DescribeInterpretedBidHistoryBySeat(SuggestBidState<BridgeOptions> state)
         {
             var botOptions = new BridgeBotOptions(state.options);
             var history = new Dictionary<int, List<BidBase>>();
@@ -122,13 +122,13 @@ namespace Trickster.Bots
         {
             if (state.options.bidding == BridgeBiddingScheme.TwoOverOne)
                 return BridgitAdapter.DescribeLegalBids(state);
-            if (state.options.bidding == BridgeBiddingScheme.SAYC)
-                return DescribeSaycLegalBids(state);
+            if (state.options.bidding == BridgeBiddingScheme.SAYC || state.options.bidding == BridgeBiddingScheme.Acol)
+                return DescribeInterpretedLegalBids(state);
 
             return base.DescribeLegalBids(state);
         }
 
-        private static List<BidBase> DescribeSaycLegalBids(SuggestBidState<BridgeOptions> state)
+        private static List<BidBase> DescribeInterpretedLegalBids(SuggestBidState<BridgeOptions> state)
         {
             var botOptions = new BridgeBotOptions(state.options);
             var bids = new List<BidBase>();
@@ -181,10 +181,10 @@ namespace Trickster.Bots
             var suggestions = legalBids.Where(b => b.why.Match(hand)).ToList();
 
             //  if nothing matched, include bids we were too strong for (preferring strongest bids)
-            if (!suggestions.Any())
+            if (!suggestions.Any(b => b.value != BidBase.Pass))
             {
                 suggestions = legalBids.Where(b => b.why.Match(hand, allowTooStrong: true))
-                    .OrderByDescending(s => s.why.Points.Max)
+                    .OrderByDescending(s => s.why.Points.Min)
                     .ThenBy(s => s.why.Priority)
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min)).ToList();
             }
