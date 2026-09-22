@@ -76,3 +76,15 @@ Pass 3D
 [Auction "N"]
 1H Pass 1S Pass
 4H
+
+[Event "Rebid new suit at the 2-level with 5-4 shape rather than rebidding 5-card opening suit"]
+[Deal "S:Q9.J8.Q9542.AKJ5 - - -"]
+[Auction "S"]
+1D Pass 1S Pass
+2C
+
+[Event "Rebid 5-card opening suit with minimum when second suit would be a reverse"]
+[Deal "S:Q9.KJ85.Q9542.A5 - - -"]
+[Auction "S"]
+1D Pass 1S Pass
+2D

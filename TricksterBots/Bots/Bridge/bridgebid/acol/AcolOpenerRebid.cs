@@ -236,6 +236,45 @@ namespace Trickster.Bots
                     rebid.Points.Max = 15;
                     rebid.HandShape[rebid.declareBid.suit].Min = 5;
                     rebid.Description = $"Minimum rebid; 5+ {rebid.declareBid.suit}";
+                    rebid.Validate = hand =>
+                    {
+                        var counts = BasicBidding.CountsBySuit(hand);
+
+                        //  with a 6+ card suit, rebidding the suit is always acceptable
+                        if (counts[opening.declareBid.suit] >= 6)
+                            return true;
+
+                        //  with only 5 cards in the opening suit, do not rebid it if we can raise partner's suit
+                        if (response.bidIsDeclare && response.declareBid.suit != Suit.Unknown)
+                        {
+                            var minSupport = Math.Min(Math.Max(8 - response.HandShape[response.declareBid.suit].Min, 3), 4);
+                            if (counts[response.declareBid.suit] >= minSupport)
+                                return false;
+                        }
+
+                        //  also do not rebid a 5-card suit if we hold an unbid 4+ card side suit
+                        //  that can be bid at the 1-level or as a non-reversing bid at the 2-level
+                        foreach (var s in SuitRank.stdSuits)
+                        {
+                            if (s == opening.declareBid.suit || (response.bidIsDeclare && s == response.declareBid.suit))
+                                continue;
+
+                            if (counts[s] >= 4)
+                            {
+                                var level = rebid.LowestAvailableLevel(s);
+                                //  any unbid 4-card suit available at the 1-level should be shown
+                                if (level == 1)
+                                    return false;
+
+                                //  at the 2-level, a non-reversing suit (lower-ranking than opening suit)
+                                //  should be shown when unbalanced (balanced hands rebid NT instead)
+                                if (level == 2 && BridgeBot.suitRank[s] < BridgeBot.suitRank[opening.declareBid.suit] && !BasicBidding.IsBalanced(hand))
+                                    return false;
+                            }
+                        }
+
+                        return true;
+                    };
                 }
                 else if (rebid.declareBid.level == lowestAvailableLevel + 1)
                 {
