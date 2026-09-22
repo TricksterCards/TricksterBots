@@ -11,3 +11,10 @@ Pass Pass Pass
 Pass 1D Pass 1H
 Pass 2S Pass 4S
 Pass Pass Pass
+
+[Event "Get to game with a known 8-card fit"]
+[Deal "S:- - Q63.AJ9.QJ6.A763 -"]
+[Auction "S"]
+Pass Pass 1NT Pass
+2D Pass 2H Pass
+2NT Pass 4H
