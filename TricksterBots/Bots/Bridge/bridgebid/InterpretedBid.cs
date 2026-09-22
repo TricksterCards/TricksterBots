@@ -138,7 +138,7 @@ namespace Trickster.Bots
 
                 var preemptString = IsPreemptive ? "; preempt" : string.Empty;
 
-                var maxPointsString = Points.Max >= 37 ? "+" : $"-{Points.Max}";
+                var maxPointsString = Points.Max >= 37 ? "+" : Points.Max > Points.Min ? $"-{Points.Max}" : string.Empty;
                 var pointTypeString = BidPointType == BidPointType.Hcp ? "HCP" : BidPointType == BidPointType.Dummy ? "dummy points" : "points";
                 var alternateString = string.IsNullOrEmpty(AlternatePoints) ? string.Empty : " or " + AlternatePoints;
                 var pointsString = Points.Min <= 0 && Points.Max >= 37 ? string.Empty : $" ({Points.Min}{maxPointsString} {pointTypeString}{alternateString})";
