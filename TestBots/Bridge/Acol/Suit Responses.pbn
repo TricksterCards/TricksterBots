@@ -46,6 +46,11 @@ Pass Pass
 1H Pass 2S Pass
 Pass Pass
 
+[Event "Bid higher-ranking of 5-5 minors rather than jump shift with 14 HCP (customer reported hand)"]
+[Deal "S:- - - T.T8.AKT73.AK963"]
+[Auction "S"]
+Pass 1H Pass 2D
+
 [Event "Raise to game with 13-15 and 4-card support"]
 [Deal "N:- - K54.Q863.A.KT732 -"]
 [Auction "N"]

@@ -302,11 +302,21 @@ namespace Trickster.Bots
                         response.HandShape[response.declareBid.suit].Min = minCardsInSuit;
                         response.SetHandShapeMaxesOfOtherSuits(response.declareBid.suit, 6);
                         response.Description = $"{minCardsInSuit}+ {response.declareBid.suit}";
+                        //  with two 5+ card suits, bid the higher-ranking one first
+                        response.Validate = hand =>
+                        {
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            var mine = counts[response.declareBid.suit];
+                            return !SuitRank.stdSuits.Any(s => s != openSuit && s != response.declareBid.suit &&
+                                BridgeBot.suitRank[s] > BridgeBot.suitRank[response.declareBid.suit] &&
+                                counts[s] >= 5 && counts[s] == mine);
+                        };
                     }
                     else
                     {
-                        //  jump shift: strong (16+) with a good 5+ card suit
+                        //  jump shift: strong (16+ HCP) with a good 5+ card suit
                         response.Points.Min = 16;
+                        response.BidPointType = BidPointType.Hcp;
                         response.BidMessage = BidMessage.Forcing;
                         response.HandShape[response.declareBid.suit].Min = 5;
                         response.Description = $"Strong jump shift; 5+ {response.declareBid.suit} and slam interest";
@@ -339,8 +349,9 @@ namespace Trickster.Bots
                     }
                     else
                     {
-                        //  jump shift: strong (16+) with a good 5+ card suit
+                        //  jump shift: strong (16+ HCP) with a good 5+ card suit
                         response.Points.Min = 16;
+                        response.BidPointType = BidPointType.Hcp;
                         response.BidMessage = BidMessage.Forcing;
                         response.HandShape[response.declareBid.suit].Min = 5;
                         response.Description = $"Strong jump shift; 5+ {response.declareBid.suit} and slam interest";
