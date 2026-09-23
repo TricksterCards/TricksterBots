@@ -126,6 +126,9 @@ namespace Trickster.Bots
                 advance.HandShape[advance.declareBid.suit].Min = 5;
                 advance.IsGood = true;
                 advance.Description = $"5+ {advance.declareBid.suit}";
+
+                if (advance.Options.bidding == BridgeBiddingScheme.Acol)
+                    advance.BidMessage = BidMessage.Forcing;
             }
         }
     }

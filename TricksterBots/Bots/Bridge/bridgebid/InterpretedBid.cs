@@ -337,7 +337,9 @@ namespace Trickster.Bots
                         OpenerRebid.Interpret(this);
                     break;
                 case BidPhase.OvercallRebid:
-                    //  TODO: OvercallRebid.Interpret(this);
+                    if (isAcol)
+                        AcolOvercallRebid.Interpret(this);
+                    //  else: TODO: OvercallRebid.Interpret(this);
                     break;
                 case BidPhase.ResponderRebid:
                     ResponderRebid.Interpret(this);
