@@ -175,8 +175,23 @@ namespace Trickster.Bots
             foreach (var s in bidSuits) overcall.HandShape[s].Max = 2;
             foreach (var s in unbidSuits) overcall.HandShape[s].Min = 4;
             overcall.Description = "4+ cards in every unbid suit";
+
+            //  still double with 4+ cards in another unbid major, to look for a major fit
+            bool prefersSuitOvercall(Hand hand)
+            {
+                var counts = BasicBidding.CountsBySuit(hand);
+                return unbidSuits.Any(s => overcall.LowestAvailableLevel(s, true) <= 2
+                    && Bots.Overcall.IsStrongSuitOvercall(overcall, hand, s)
+                    && !unbidSuits.Any(o => o != s && BridgeBot.IsMajor(o) && counts[o] >= 4)
+                );
+            }
+
+            overcall.Validate = hand => !prefersSuitOvercall(hand);
             overcall.AlternateMatches = hand =>
             {
+                if (prefersSuitOvercall(hand))
+                    return false;
+
                 //  if we can bid 1NT (balanced; 15-18 HCP) we'll defer to that instead
                 var hcp = BasicBidding.ComputeHighCardPoints(hand);
                 if (15 <= hcp && hcp <= 18 && overcall.LowestAvailableLevel(Suit.Unknown, true) == 1 && BasicBidding.IsBalanced(hand))

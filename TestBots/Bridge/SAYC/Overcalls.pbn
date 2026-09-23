@@ -76,3 +76,28 @@ Pass 3C
 [Auction "N"]
 Pass 1NT X Pass
 Pass
+
+[Event "Strong hand bids a good 6+ card suit rather than doubling a forcing response"]
+[Deal "E:- - - AKQ962.A.J.KJ987"]
+[Auction "E"]
+1H Pass 2D 2S
+
+[Event "Strong hand with long clubs overcalls 2C rather than doubling a forcing response"]
+[Deal "E:- - - K32.7.A4.AKQJ943"]
+[Auction "E"]
+1D Pass 1H 2C
+
+[Event "Strong hand with long clubs and 4 spades still doubles a forcing response"]
+[Deal "E:- - - AJ32.7.4.AKQJ943"]
+[Auction "E"]
+1D Pass 1H X
+
+[Event "Strong hand with 4-4 in the unbid suits still doubles a forcing response"]
+[Deal "E:- - - AKJ4.72.Q2.AKJ85"]
+[Auction "E"]
+1H Pass 2D X
+
+[Event "Strong hand doubles a non-forcing response"]
+[Deal "E:- - - AKQ962.A.J2.KJ98"]
+[Auction "E"]
+1H Pass 2H X

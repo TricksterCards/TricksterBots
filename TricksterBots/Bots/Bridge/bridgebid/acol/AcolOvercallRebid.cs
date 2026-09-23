@@ -12,7 +12,7 @@ namespace Trickster.Bots
 
             if (!rebid.bidIsDeclare)
             {
-                if (advance.bidIsDeclare && advance.BidMessage == BidMessage.Forcing)
+                if (rebid.bid != BidBase.Pass || advance.bidIsDeclare && advance.BidMessage == BidMessage.Forcing)
                     return;
 
                 rebid.Points.Max = 15;
@@ -22,6 +22,12 @@ namespace Trickster.Bots
 
             if (!overcall.bidIsDeclare)
                 return;
+
+            if (advance.bid == BidBase.Pass)
+            {
+                RebidAfterPass(overcall, rebid);
+                return;
+            }
 
             if (advance.bidIsDeclare)
             {
@@ -37,6 +43,34 @@ namespace Trickster.Bots
                 {
                     RebidAfterNTAdvance(overcall, advance, rebid);
                 }
+            }
+        }
+
+        private static void RebidAfterPass(InterpretedBid overcall, InterpretedBid rebid)
+        {
+            var suit = rebid.declareBid.suit;
+            if (suit == Suit.Unknown || rebid.declareBid.level > 4 || rebid.declareBid.level != rebid.LowestAvailableLevel(suit, true))
+                return;
+
+            var bidSuits = rebid.History.Where(b => b.bidIsDeclare).Select(b => b.declareBid.suit).ToList();
+
+            if (suit == overcall.declareBid.suit)
+            {
+                rebid.Points.Min = 16;
+                rebid.HandShape[suit].Min = 6;
+                rebid.Description = $"Rebid {suit}; 6+ {suit} and extra values";
+                //  with a 5+ card unbid suit, show it instead
+                rebid.Validate = hand =>
+                {
+                    var counts = BasicBidding.CountsBySuit(hand);
+                    return !SuitRank.stdSuits.Any(s => !bidSuits.Contains(s) && counts[s] >= 5);
+                };
+            }
+            else if (!bidSuits.Contains(suit))
+            {
+                rebid.Points.Min = 16;
+                rebid.HandShape[suit].Min = 5;
+                rebid.Description = $"Second suit; 5+ {suit} and extra values";
             }
         }
 

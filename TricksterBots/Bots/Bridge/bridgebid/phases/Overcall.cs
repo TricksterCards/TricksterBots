@@ -100,6 +100,7 @@ namespace Trickster.Bots
                             overcall.IsGood = true;
                             overcall.Description = $"5+ {db.suit}";
                             overcall.HandShape[db.suit].Min = 5;
+                            overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
                             return;
 
                         //  (1C)-1N
@@ -138,6 +139,7 @@ namespace Trickster.Bots
                                 overcall.HandShape[db.suit].Min = 5;
                                 overcall.IsGood = true;
                                 overcall.Description = $"5+ {db.suit}";
+                                overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
                             }
                             //  (1C)-2D
                             //  (1C)-2H
@@ -185,6 +187,17 @@ namespace Trickster.Bots
             //  jump overcalls are preemptive, showing the same value as an opening bid at the same level
             //  versus an opening preempt, an overcall in a suit or notrump is natural; a cuebid is Michaels (handled above)
             Opening.Interpret(overcall);
+        }
+
+        //  over a forcing response we're sure to bid again, so an 18+ hand with a good 6+ card suit bids it instead of doubling
+        public static bool IsStrongSuitOvercall(InterpretedBid overcall, Hand hand, Suit suit)
+        {
+            var opponentsLastBid = overcall.History[overcall.Index - 1];
+            if (opponentsLastBid.BidPhase != BidPhase.Response || opponentsLastBid.BidMessage != BidMessage.Forcing)
+                return false;
+
+            return BasicBidding.CountsBySuit(hand)[suit] >= 6 && BasicBidding.IsGoodSuit(hand, suit, 6) &&
+                   BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand) >= 18;
         }
     }
 }
