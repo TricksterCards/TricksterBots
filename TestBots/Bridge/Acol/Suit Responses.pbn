@@ -56,3 +56,26 @@ Pass 1H Pass 2D
 [Auction "N"]
 1H Pass 4H Pass
 Pass Pass
+
+[Event "Balanced 9 with only a 4-card minor responds 1NT rather than 2C"]
+[Deal "N:- - 942.954.K76.AQ53 -"]
+[Auction "N"]
+1S Pass 1NT
+
+[Event "Passed hand with a balanced 9 and a 4-card minor responds 1NT"]
+[Deal "W:- 942.954.K76.AQ53 - -"]
+[Auction "W"]
+Pass Pass Pass 1S
+Pass 1NT
+
+[Event "Passed hand with a balanced 11 and a 4-card minor responds 2NT"]
+[Deal "W:- 942.Q54.K76.AQ53 - -"]
+[Auction "W"]
+Pass Pass Pass 1S
+Pass 2NT
+
+[Event "Passed hand with a 5-card minor bids it at the 2-level"]
+[Deal "W:- 942.954.K7.AQ653 - -"]
+[Auction "W"]
+Pass Pass Pass 1S
+Pass 2C

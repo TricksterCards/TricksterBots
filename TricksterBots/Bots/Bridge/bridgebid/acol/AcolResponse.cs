@@ -244,6 +244,8 @@ namespace Trickster.Bots
         private static void InterpretResponseToSuit(InterpretedBid opening, InterpretedBid overcall, InterpretedBid response)
         {
             var openSuit = opening.declareBid.suit;
+            //  responder's own earlier call can only have been a pass
+            var isPassedHand = response.Index >= 4 && response.History[response.Index - 4].bid == BidBase.Pass;
 
             switch (response.declareBid.level)
             {
@@ -258,13 +260,14 @@ namespace Trickster.Bots
                     }
                     else
                     {
-                        //  new suit at the 1-level: natural and forcing
+                        //  new suit at the 1-level: natural and forcing (unless by a passed hand)
                         response.Points.Min = 6;
-                        response.BidMessage = BidMessage.Forcing;
+                        if (!isPassedHand)
+                            response.BidMessage = BidMessage.Forcing;
                         response.HandShape[response.declareBid.suit].Min =
                             BridgeBot.IsMajor(response.declareBid.suit) && NegativeDouble.CanUseAfter(opening, overcall) ? 5 : 4;
                         response.SetHandShapeMaxesOfOtherSuits(response.declareBid.suit, 6);
-                        response.Description = $"{response.HandShape[response.declareBid.suit].Min}+ {response.declareBid.suit}";
+                        response.Description = $"{response.HandShape[response.declareBid.suit].Min}+ {response.declareBid.suit}{(isPassedHand ? "; non-forcing" : string.Empty)}";
                     }
 
                     break;
@@ -294,19 +297,26 @@ namespace Trickster.Bots
                     }
                     else if (BridgeBot.suitRank[response.declareBid.suit] < BridgeBot.suitRank[openSuit])
                     {
-                        //  new suit at the 2-level (non-jump): 9+ points, natural and forcing
+                        //  new suit at the 2-level (non-jump): 9+ points, natural and forcing (unless by a passed hand)
                         //  a 2-level major response (2H over 1S) promises 5+ since opener may raise with 3
                         var minCardsInSuit = BridgeBot.IsMinor(response.declareBid.suit) ? 4 : 5;
                         response.Points.Min = 9;
-                        response.BidMessage = BidMessage.Forcing;
+                        if (!isPassedHand)
+                            response.BidMessage = BidMessage.Forcing;
                         response.HandShape[response.declareBid.suit].Min = minCardsInSuit;
                         response.SetHandShapeMaxesOfOtherSuits(response.declareBid.suit, 6);
-                        response.Description = $"{minCardsInSuit}+ {response.declareBid.suit}";
-                        //  with two 5+ card suits, bid the higher-ranking one first
+                        response.Description = $"{minCardsInSuit}+ {response.declareBid.suit}{(isPassedHand ? "; non-forcing" : string.Empty)}";
                         response.Validate = hand =>
                         {
                             var counts = BasicBidding.CountsBySuit(hand);
                             var mine = counts[response.declareBid.suit];
+
+                            //  balanced hands with only a 4-card suit prefer NT on a minimum or when partner may pass
+                            if (mine == 4 && BasicBidding.IsBalanced(hand) &&
+                                (isPassedHand || BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand) < 10))
+                                return false;
+
+                            //  with two 5+ card suits, bid the higher-ranking one first
                             return !SuitRank.stdSuits.Any(s => s != openSuit && s != response.declareBid.suit &&
                                 BridgeBot.suitRank[s] > BridgeBot.suitRank[response.declareBid.suit] &&
                                 counts[s] >= 5 && counts[s] == mine);
