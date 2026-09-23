@@ -89,6 +89,24 @@ Pass 3D
 1D Pass 1S Pass
 2D
 
+[Event "Higher-ranking 2-level new suit after a 2-over-1 response is not a reverse"]
+[Deal "E:AQ52.K986.Q.K983 - J3.KJT4.AJ754.A2 -"]
+[Auction "E"]
+1H Pass 2D Pass
+2S Pass 4H
+
+[Event "Delayed game raise with 5-card support after a 2-over-1 response"]
+[Deal "E:AQ52.K986.Q.K983 - J3.AJ754.KJT4.A2 -"]
+[Auction "E"]
+1H Pass 2D Pass
+2S Pass 4H
+
+[Event "Show 4-card spades rather than rebid 5-card hearts after a 2-over-1 response"]
+[Deal "E:AQ52.KJ986.4.K93 - - -"]
+[Auction "E"]
+1H Pass 2C Pass
+2S
+
 [Event "Rebid a strong lower-ranking second suit at the 3-level"]
 [Deal "S:- AK982.86.K.AJ763 - -"]
 [Auction "S"]

@@ -65,6 +65,10 @@ namespace Trickster.Bots
         private static void RebidSuitOpening(InterpretedBid opening, InterpretedBid response, InterpretedBid rebid)
         {
             var lowestAvailableLevel = rebid.LowestAvailableLevel(rebid.declareBid.suit);
+            //  a new suit by opener after a non-jump 2-level response is natural and forcing, never a reverse
+            var afterTwoOverOne = response.bidIsDeclare && response.declareBid.level == 2 &&
+                response.declareBid.suit != Suit.Unknown &&
+                BridgeBot.suitRank[response.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit];
 
             if (response.bidIsDeclare && opening.declareBid.suit == response.declareBid.suit)
             {
@@ -268,7 +272,7 @@ namespace Trickster.Bots
 
                                 //  at the 2-level, a non-reversing suit (lower-ranking than opening suit)
                                 //  should be shown when unbalanced (balanced hands rebid NT instead)
-                                if (level == 2 && BridgeBot.suitRank[s] < BridgeBot.suitRank[opening.declareBid.suit] && !BasicBidding.IsBalanced(hand))
+                                if (level == 2 && (BridgeBot.suitRank[s] < BridgeBot.suitRank[opening.declareBid.suit] || afterTwoOverOne) && !BasicBidding.IsBalanced(hand))
                                     return false;
                             }
                         }
@@ -298,13 +302,15 @@ namespace Trickster.Bots
                 //  new suit
                 if (rebid.declareBid.level == 1 ||
                     rebid.declareBid.level == 2 &&
-                    BridgeBot.suitRank[rebid.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit])
+                    (BridgeBot.suitRank[rebid.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit] || afterTwoOverOne))
                 {
                     //  minimum: not reversing (wide range 12-18)
                     rebid.Points.Min = 12;
                     rebid.Points.Max = 18;
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.Description = $"New suit; 4+ {rebid.declareBid.suit}";
+                    if (afterTwoOverOne)
+                        rebid.BidMessage = BidMessage.Forcing;
                     //  at the 2-level a balanced hand rebids NT instead
                     if (rebid.declareBid.level == 2)
                         rebid.Validate = hand => !BasicBidding.IsBalanced(hand);
