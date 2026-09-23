@@ -321,6 +321,19 @@ namespace Trickster.Bots
                     //  ensure we don't use a reverse with a flat (4-3-3-3) hand
                     rebid.Validate = hand => !BasicBidding.IsFlat(hand);
                 }
+                else if (rebid.declareBid.level == lowestAvailableLevel &&
+                    rebid.declareBid.level >= 3 &&
+                    BridgeBot.suitRank[rebid.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit])
+                {
+                    // Acol's 1S-2H-3C rebid is a forcing second suit:
+                    // 5+ cards in the opening suit and 4+ cards in the new suit.
+                    rebid.Points.Min = 16;
+                    rebid.Points.Max = 18;
+                    rebid.BidMessage = BidMessage.Forcing;
+                    rebid.HandShape[rebid.declareBid.suit].Min = 4;
+                    rebid.HandShape[opening.declareBid.suit].Min = 5;
+                    rebid.Description = $"New suit; 4+ {rebid.declareBid.suit} and 5+ {opening.declareBid.suit}";
+                }
                 else if (rebid.declareBid.level == lowestAvailableLevel + 1)
                 {
                     //  jump shift in a new suit (19-21)

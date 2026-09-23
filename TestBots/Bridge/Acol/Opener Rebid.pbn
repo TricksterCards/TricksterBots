@@ -88,3 +88,9 @@ Pass 3D
 [Auction "S"]
 1D Pass 1S Pass
 2D
+
+[Event "Rebid a strong lower-ranking second suit at the 3-level"]
+[Deal "S:- AK982.86.K.AJ763 - -"]
+[Auction "S"]
+Pass 1S Pass 2H
+Pass 3C
