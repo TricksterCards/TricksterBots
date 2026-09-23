@@ -87,7 +87,7 @@ namespace Trickster.Bots
                             //  1x-2x-<new suit>: help-suit game try
                             rebid.BidConvention = BidConvention.HelpSuitGameTry;
                             rebid.BidMessage = BidMessage.Forcing;
-                            rebid.Points.Min = 12;
+                            rebid.Points.Min = 16;
                             rebid.Points.Max = 18;
                             rebid.HandShape[rebid.declareBid.suit].Min = 4;
                             rebid.Description = "inviting game";
@@ -198,7 +198,7 @@ namespace Trickster.Bots
                 {
                     //  minimum raise (12-15)
                     rebid.BidPointType = BidPointType.Dummy;
-                    rebid.Points.Min = 16;
+                    rebid.Points.Min = 12;
                     rebid.Points.Max = 15;
                     rebid.HandShape[rebid.declareBid.suit].Min = minSupport;
                     rebid.Description = $"Minimum raise; {minSupport}+ {rebid.declareBid.suit}";
