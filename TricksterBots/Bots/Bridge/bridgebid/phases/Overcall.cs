@@ -97,10 +97,18 @@ namespace Trickster.Bots
                         case Suit.Spades:
                             overcall.Points.Min = 7;
                             overcall.Points.Max = 17;
-                            overcall.IsGood = true;
-                            overcall.Description = $"5+ {db.suit}";
+                            overcall.Description = $"5+ {db.suit}; good if under 12 HCP";
                             overcall.HandShape[db.suit].Min = 5;
                             overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
+                            //  with opening values any 5-card suit will do at the 1-level, unless 1NT describes the hand better
+                            overcall.Validate = hand =>
+                            {
+                                if (BasicBidding.IsGoodSuit(hand, db.suit, 5))
+                                    return true;
+
+                                var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                                return hcp >= 12 && !(BasicBidding.IsBalanced(hand) && hcp >= 15 && hcp <= 18);
+                            };
                             return;
 
                         //  (1C)-1N

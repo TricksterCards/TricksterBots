@@ -1,4 +1,14 @@
 
+[Event "Opening values overcall a weak 5-card suit at the 1-level"]
+[Deal "N:- AK.Q5.A8732.JT64 - -"]
+[Auction "N"]
+1C 1D
+
+[Event "Minimum hand does not overcall a weak 5-card suit"]
+[Deal "N:- 862.K5.Q8732.K64 - -"]
+[Auction "N"]
+1C Pass
+
 [Event "Strong hand bids a good 6+ card suit rather than doubling a forcing response"]
 [Deal "E:- - - AKQ962.A.J.KJ987"]
 [Auction "E"]
