@@ -9,6 +9,11 @@
 [Auction "N"]
 1C Pass
 
+[Event "Very weak 6-5 hand does not bid Unusual 2NT"]
+[Deal "E:- 7.3.87632.QJT764 - -"]
+[Auction "E"]
+1H Pass
+
 [Event "Strong hand bids a good 6+ card suit rather than doubling a forcing response"]
 [Deal "E:- - - AKQ962.A.J.KJ987"]
 [Auction "E"]

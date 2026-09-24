@@ -180,6 +180,7 @@ namespace Trickster.Bots
                 //  a jump overcall of 2NT shows at least 5–5 in the lowest two unbid suits.
                 overcall.BidConvention = BidConvention.UnusualNotrump;
                 overcall.BidMessage = BidMessage.Forcing;
+                overcall.Points.Min = 8;
 
                 var bidSuits = overcall.SuitsBid;
                 var twoLow = SuitRank.stdSuits.Where(s => !bidSuits.Contains(s)).OrderBy(s => BridgeBot.suitRank[s]).Take(2).ToList();
