@@ -257,6 +257,7 @@ namespace Trickster.Bots
                         response.Points.Max = 9;
                         response.HandShape[openSuit].Max = 3;
                         response.Description = $"No fit; 0-3 {openSuit}";
+                        Response.RequireStopperInOvercall(overcall, response);
                     }
                     else
                     {
@@ -264,10 +265,22 @@ namespace Trickster.Bots
                         response.Points.Min = 6;
                         if (!isPassedHand)
                             response.BidMessage = BidMessage.Forcing;
-                        response.HandShape[response.declareBid.suit].Min =
-                            BridgeBot.IsMajor(response.declareBid.suit) && NegativeDouble.CanUseAfter(opening, overcall) ? 5 : 4;
+                        var otherMajor = response.declareBid.suit == Suit.Spades ? Suit.Hearts : Suit.Spades;
+                        var negativeDoubleAvailable = BridgeBot.IsMajor(response.declareBid.suit) && NegativeDouble.CanUseAfter(opening, overcall);
+                        var otherMajorUnbid = negativeDoubleAvailable && openSuit != otherMajor && overcall.declareBid.suit != otherMajor;
+                        //  a negative double showing only this major needs 5+ to bid it; one showing both majors leaves 4 for a 1M bid
+                        response.HandShape[response.declareBid.suit].Min = negativeDoubleAvailable && !otherMajorUnbid ? 5 : 4;
                         response.SetHandShapeMaxesOfOtherSuits(response.declareBid.suit, 6);
                         response.Description = $"{response.HandShape[response.declareBid.suit].Min}+ {response.declareBid.suit}{(isPassedHand ? "; non-forcing" : string.Empty)}";
+                        if (otherMajorUnbid)
+                        {
+                            //  with 4-4 in the majors, make a negative double instead
+                            response.Validate = hand =>
+                            {
+                                var counts = BasicBidding.CountsBySuit(hand);
+                                return counts[response.declareBid.suit] > 4 || counts[otherMajor] < 4;
+                            };
+                        }
                     }
 
                     break;
