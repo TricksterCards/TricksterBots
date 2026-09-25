@@ -22,3 +22,15 @@
 [Auction "S"]
 1H Pass 2H Pass
 4H
+
+[Event "Jump rebid 3D rather than 4 of a minor with a strong 8-card suit"]
+[Deal "N:KT982.73..QJ9873 A4.92.AKQ75432.A J65.AKJ865.96.K2 Q73.QT4.JT8.T654"]
+[Auction "N"]
+Pass 1D 1H Pass
+Pass 3D
+
+[Event "Place contract at 3NT after a natural 2NT response"]
+[Deal "N:AQ4.KJ3.Q32.AK85 - - -"]
+[Auction "N"]
+1C Pass 2NT Pass
+3NT

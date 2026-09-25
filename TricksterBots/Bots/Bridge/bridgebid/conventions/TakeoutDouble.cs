@@ -95,7 +95,7 @@ namespace Trickster.Bots
                 var gameLevel = BridgeBot.IsMajor(advance.declareBid.suit) ? 4 : 5;
                 var bidSuits = advance.History.Where(b => b.bidIsDeclare).Select(b => b.declareBid.suit).Distinct().ToList();
 
-                if (advance.declareBid.suit == opening.declareBid.suit)
+                if (advance.declareBid.suit == opening.declareBid.suit && advance.declareBid.suit != Suit.Unknown)
                 {
                     //  cuebid
                     advance.BidConvention = BidConvention.Cuebid;
@@ -175,8 +175,23 @@ namespace Trickster.Bots
             foreach (var s in bidSuits) overcall.HandShape[s].Max = 2;
             foreach (var s in unbidSuits) overcall.HandShape[s].Min = 4;
             overcall.Description = "4+ cards in every unbid suit";
+
+            //  still double with 4+ cards in another unbid major, to look for a major fit
+            bool prefersSuitOvercall(Hand hand)
+            {
+                var counts = BasicBidding.CountsBySuit(hand);
+                return unbidSuits.Any(s => overcall.LowestAvailableLevel(s, true) <= 2
+                    && Bots.Overcall.IsStrongSuitOvercall(overcall, hand, s)
+                    && !unbidSuits.Any(o => o != s && BridgeBot.IsMajor(o) && counts[o] >= 4)
+                );
+            }
+
+            overcall.Validate = hand => !prefersSuitOvercall(hand);
             overcall.AlternateMatches = hand =>
             {
+                if (prefersSuitOvercall(hand))
+                    return false;
+
                 //  if we can bid 1NT (balanced; 15-18 HCP) we'll defer to that instead
                 var hcp = BasicBidding.ComputeHighCardPoints(hand);
                 if (15 <= hcp && hcp <= 18 && overcall.LowestAvailableLevel(Suit.Unknown, true) == 1 && BasicBidding.IsBalanced(hand))
@@ -198,7 +213,7 @@ namespace Trickster.Bots
             var opening = rebid.History.First(b => b.bid != BidBase.Pass);
 
             //  TODO: should this be level limited?
-            if (rebid.declareBid.suit == opening.declareBid.suit)
+            if (rebid.declareBid.suit == opening.declareBid.suit && rebid.declareBid.suit != Suit.Unknown)
             {
                 rebid.BidConvention = BidConvention.Cuebid;
                 rebid.BidMessage = BidMessage.Forcing;

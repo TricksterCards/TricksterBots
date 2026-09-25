@@ -31,6 +31,14 @@ namespace Trickster.Bots
             {
                 //  TODO: advance a notrump overcall
             }
+            else if (overcall.IsPreemptive)
+            {
+                Response.InterpretResponseToPreempt(overcall, advance.History[advance.Index - 1], advance);
+                //  Keep a new-suit advance constructive, even opposite a weak jump overcall.
+                if (advance.declareBid.suit != Suit.Unknown && advance.declareBid.suit != overcall.declareBid.suit &&
+                    advance.declareBid.level < advance.GameLevel)
+                    advance.Points.Min = 11;
+            }
             else
             {
                 AdvanceSuitedOvercall(opening, overcall, advance);
@@ -39,19 +47,19 @@ namespace Trickster.Bots
 
         private static void AdvanceSuitedOvercall(InterpretedBid opening, InterpretedBid overcall, InterpretedBid advance)
         {
-            if (opening.declareBid.suit == overcall.declareBid.suit && opening.declareBid.suit == advance.declareBid.suit)
+            if (opening.declareBid.suit == overcall.declareBid.suit && opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.suit != Suit.Unknown)
             {
                 //  a cuebid advance when overcall was also a cuebid is unknown (for now)
                 //  TODO: Determine if there are conditions where this makes sense
             }
-            else if (opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.level == opening.declareBid.level + 1)
+            else if (opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.level <= 3 && advance.declareBid.level == advance.LowestAvailableLevel(advance.declareBid.suit, true) && advance.declareBid.suit != Suit.Unknown)
             {
                 //  cuebid the oppenents' suit to show support with 10+ points
                 advance.BidConvention = BidConvention.Cuebid;
                 advance.BidMessage = BidMessage.Forcing;
                 advance.Points.Min = 10;
                 advance.HandShape[overcall.declareBid.suit].Min = 3;
-                advance.Description = string.Empty;
+                advance.Description = $"3+ {overcall.declareBid.suit} (usually)";
             }
             else if (overcall.declareBid.suit == advance.declareBid.suit)
             {
@@ -118,6 +126,9 @@ namespace Trickster.Bots
                 advance.HandShape[advance.declareBid.suit].Min = 5;
                 advance.IsGood = true;
                 advance.Description = $"5+ {advance.declareBid.suit}";
+
+                if (advance.Options.bidding == BridgeBiddingScheme.Acol)
+                    advance.BidMessage = BidMessage.Forcing;
             }
         }
     }

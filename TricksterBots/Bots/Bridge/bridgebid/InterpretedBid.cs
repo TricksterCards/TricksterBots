@@ -138,7 +138,7 @@ namespace Trickster.Bots
 
                 var preemptString = IsPreemptive ? "; preempt" : string.Empty;
 
-                var maxPointsString = Points.Max >= 37 ? "+" : $"-{Points.Max}";
+                var maxPointsString = Points.Max >= 37 ? "+" : Points.Max > Points.Min ? $"-{Points.Max}" : string.Empty;
                 var pointTypeString = BidPointType == BidPointType.Hcp ? "HCP" : BidPointType == BidPointType.Dummy ? "dummy points" : "points";
                 var alternateString = string.IsNullOrEmpty(AlternatePoints) ? string.Empty : " or " + AlternatePoints;
                 var pointsString = Points.Min <= 0 && Points.Max >= 37 ? string.Empty : $" ({Points.Min}{maxPointsString} {pointTypeString}{alternateString})";
@@ -195,7 +195,7 @@ namespace Trickster.Bots
             if (IsBalanced && !BasicBidding.IsBalanced(hand))
                 return false;
 
-            if (IsGood && !BasicBidding.IsGoodSuit(hand, declareBid.suit))
+            if (IsGood && !BasicBidding.IsGoodSuit(hand, declareBid.suit, HandShape[declareBid.suit].Min))
                 return false;
 
             var points = BasicBidding.ComputeHighCardPoints(hand);
@@ -308,25 +308,38 @@ namespace Trickster.Bots
 
         private void InterpretPhase()
         {
+            var isAcol = Options.bidding == BridgeBiddingScheme.Acol;
+
             switch (BidPhase)
             {
                 case BidPhase.Opening:
-                    Opening.Interpret(this);
+                    if (isAcol)
+                        AcolOpening.Interpret(this);
+                    else
+                        Opening.Interpret(this);
                     break;
                 case BidPhase.Overcall:
                     Overcall.Interpret(this);
                     break;
                 case BidPhase.Response:
-                    Response.Interpret(this);
+                    if (isAcol)
+                        AcolResponse.Interpret(this);
+                    else
+                        Response.Interpret(this);
                     break;
                 case BidPhase.Advance:
                     Advance.Interpret(this);
                     break;
                 case BidPhase.OpenerRebid:
-                    OpenerRebid.Interpret(this);
+                    if (isAcol)
+                        AcolOpenerRebid.Interpret(this);
+                    else
+                        OpenerRebid.Interpret(this);
                     break;
                 case BidPhase.OvercallRebid:
-                    //  TODO: OvercallRebid.Interpret(this);
+                    if (isAcol)
+                        AcolOvercallRebid.Interpret(this);
+                    //  else: TODO: OvercallRebid.Interpret(this);
                     break;
                 case BidPhase.ResponderRebid:
                     ResponderRebid.Interpret(this);

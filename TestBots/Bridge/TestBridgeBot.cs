@@ -32,6 +32,38 @@ namespace TestBots
         };
 
         [TestMethod]
+        [DataRow(BridgeBiddingScheme.Acol, 3, Suit.Hearts, "Good 7-card Hearts suit; preempt (6-10 HCP)")]
+        [DataRow(BridgeBiddingScheme.Acol, 4, Suit.Hearts, "Good 8-card Hearts suit; preempt (6-10 HCP)")]
+        [DataRow(BridgeBiddingScheme.Acol, 5, Suit.Clubs, "Good 9-card Clubs suit; preempt (6-10 HCP)")]
+        [DataRow(BridgeBiddingScheme.SAYC, 3, Suit.Hearts, "Good 7-card Hearts suit; preempt (5-11 HCP)")]
+        [DataRow(BridgeBiddingScheme.SAYC, 4, Suit.Hearts, "Good 8-card Hearts suit; preempt (5-11 HCP)")]
+        [DataRow(BridgeBiddingScheme.SAYC, 5, Suit.Clubs, "Good 9-card Clubs suit; preempt (5-11 HCP)")]
+        public void PreemptExplanations(BridgeBiddingScheme scheme, int level, Suit suit, string expectedDescription)
+        {
+            var options = new BridgeOptions { bidding = scheme };
+            var bot = new BridgeBot(options, Suit.Unknown);
+            var players = new List<PlayerBase>
+            {
+                new PlayerBase { Seat = 0, BidHistory = new List<int>() },
+                new PlayerBase { Seat = 1, BidHistory = new List<int>() },
+                new PlayerBase { Seat = 2, BidHistory = new List<int>() },
+                new PlayerBase { Seat = 3, BidHistory = new List<int>() }
+            };
+            var bid = new DeclareBid(level, suit);
+            var state = new SuggestBidState<BridgeOptions>
+            {
+                dealerSeat = 0,
+                legalBids = new List<BidBase> { new BidBase(bid) },
+                options = options,
+                player = players[0],
+                players = players
+            };
+
+            var legalBids = bot.DescribeLegalBids(state);
+            Assert.AreEqual(expectedDescription, legalBids[0].explanation.Description);
+        }
+
+        [TestMethod]
         public void BasicTests()
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);
@@ -222,6 +254,43 @@ namespace TestBots
                     {
                         // TODO: also validate bid description and metadata match expectations
                         var failure = RunBidTest(new BidTest(test), BridgeBiddingScheme.TwoOverOne);
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
+                    }
+                    else
+                    {
+                        failures.Add($"{filename}: '{test.type}' must have an expected bid.");
+                    }
+                }
+            }
+            if (failures.Count > 0)
+                Assert.Fail($"{failures.Count} test{(failures.Count == 1 ? "" : "s")} failed.\n{string.Join("\n", failures)}");
+        }
+
+        [TestMethod]
+        public void AcolTestFiles()
+        {
+            var failures = new List<string>();
+            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var files = Directory.GetFiles(Path.Combine(dir, "Bridge", "Acol"), "*.pbn");
+            foreach (var file in files)
+            {
+                var text = File.ReadAllText(file);
+                var tests = PTN.ImportTests(text, new BridgeOptions());
+                var filename = Path.GetFileName(file);
+
+                if (!tests.All(t => t.nPlayers == 4 && t.nCardsPerPlayer == 13))
+                {
+                    failures.Add($"{filename}: Not all tests have 4 players with 13 cards each");
+                    continue;
+                }
+
+                foreach (var test in tests)
+                {
+                    if (!string.IsNullOrEmpty(test.bid))
+                    {
+                        var failure = RunBidTest(new BidTest(test), BridgeBiddingScheme.Acol);
                         if (failure != null)
                             failures.Add($"{filename}: {failure}");
                     }

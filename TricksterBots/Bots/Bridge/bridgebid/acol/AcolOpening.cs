@@ -1,15 +1,16 @@
-﻿using System.Linq;
+using System.Linq;
 using Trickster.cloud;
 
 namespace Trickster.Bots
 {
-    internal class Opening
+    //  Modern "Standard English" Acol: weak 1NT, 4-card majors, weak twos, 2C as the only strong opening
+    internal class AcolOpening
     {
         public static void Interpret(InterpretedBid opening)
         {
             if (opening.bid == BidBase.Pass)
             {
-                opening.Points.Max = 12;
+                opening.Points.Max = 11;
                 opening.Description = "Weak hand & no good, long suits";
                 return;
             }
@@ -22,8 +23,8 @@ namespace Trickster.Bots
             switch (db.level)
             {
                 case 1:
-                    opening.Points.Min = 13;
-                    opening.Points.Max = 21;
+                    opening.Points.Min = 12;
+                    opening.Points.Max = 22;
 
                     if (db.suit != Suit.Unknown && opening.Index < 2)
                     {
@@ -46,44 +47,16 @@ namespace Trickster.Bots
                     {
                         //  1C
                         //  1D
-                        case Suit.Clubs:
-                        case Suit.Diamonds:
-                            var otherMinor = db.suit == Suit.Clubs ? Suit.Diamonds : Suit.Clubs;
-                            // A 1D opener suggests a four-card or longer suit, since 1C is preferred on hands
-                            // where a three - card minor suit must be opened.The exception is a hand with 4–4–3–2
-                            // shape: four spades, four hearts, three diamonds, and two clubs, which is opened 1D.
-                            opening.HandShape[db.suit].Min = db.suit == Suit.Clubs ? 3 : 4;
-                            opening.HandShape[otherMinor].Max = 6;
-                            opening.HandShape[Suit.Hearts].Max = 4;
-                            opening.HandShape[Suit.Spades].Max = 4;
-                            opening.Description = db.suit == Suit.Clubs ? "3+ Clubs; no 5-card major" : "3+ Diamonds (usually 4+); no 5-card major";
-                            opening.Validate = hand =>
-                            {
-                                var counts = BasicBidding.CountsBySuit(hand);
-                                return counts[db.suit] > counts[otherMinor] ||
-                                       counts[db.suit] == counts[otherMinor] && counts[db.suit] >= 4 && db.suit == Suit.Diamonds ||
-                                       counts[db.suit] == 3 && db.suit == Suit.Clubs;
-                            };
-                            //  assume 4+ Diamonds, but allow matching 3+ to accommodate 4-4-3-2 distribution
-                            if (db.suit == Suit.Diamonds) opening.HandShape[db.suit].MinMatch = 3;
-                            break;
-
                         //  1H
                         //  1S
+                        case Suit.Clubs:
+                        case Suit.Diamonds:
                         case Suit.Hearts:
                         case Suit.Spades:
-                            var otherMajor = db.suit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
-                            opening.HandShape[db.suit].Min = 5;
-                            opening.HandShape[otherMajor].Max = 6;
-                            opening.HandShape[Suit.Clubs].Max = 8;
-                            opening.HandShape[Suit.Diamonds].Max = 8;
-                            opening.Description = $"5+ {db.suit}";
-                            opening.Validate = hand =>
-                            {
-                                var counts = BasicBidding.CountsBySuit(hand);
-                                return counts[db.suit] > counts[otherMajor] ||
-                                       counts[db.suit] == counts[otherMajor] && db.suit == Suit.Spades;
-                            };
+                            opening.HandShape[db.suit].Min = 4;
+                            opening.Description = $"4+ {db.suit}";
+                            opening.Validate = hand => IsPreferredSuit(hand, db.suit);
+
                             if (db.suit == Suit.Spades && opening.Index == 3)
                             {
                                 //  use the Rule of 15 in 4th seat
@@ -103,11 +76,15 @@ namespace Trickster.Bots
 
                         //  1N
                         case Suit.Unknown:
-                            opening.Points.Min = 15;
-                            opening.Points.Max = 17;
+                            opening.Points.Min = 12;
+                            opening.Points.Max = 14;
                             opening.BidPointType = BidPointType.Hcp;
                             opening.IsBalanced = true;
+                            opening.HandShape[Suit.Hearts].Max = 4;
+                            opening.HandShape[Suit.Spades].Max = 4;
                             opening.Description = string.Empty;
+                            //  always prefer the weak 1NT over a suit opening with a balanced minimum
+                            opening.Priority = 50;
                             break;
                     }
 
@@ -127,8 +104,8 @@ namespace Trickster.Bots
                             if (opening.Index < 3)
                             {
                                 //  consider a weak 2 if we're not in 4th seat
-                                opening.Points.Min = 5;
-                                opening.Points.Max = 11;
+                                opening.Points.Min = 6;
+                                opening.Points.Max = 10;
                                 opening.BidPointType = BidPointType.Hcp;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
@@ -150,10 +127,9 @@ namespace Trickster.Bots
                         //  2N
                         case Suit.Unknown:
                             opening.Points.Min = 20;
-                            opening.Points.Max = 21;
+                            opening.Points.Max = 22;
                             opening.BidPointType = BidPointType.Hcp;
                             opening.IsBalanced = true;
-
                             opening.Description = string.Empty;
                             break;
                     }
@@ -174,8 +150,8 @@ namespace Trickster.Bots
                             if (opening.Index < 3)
                             {
                                 //  preempt only if we're not in 4th seat
-                                opening.Points.Min = 5;
-                                opening.Points.Max = 11;
+                                opening.Points.Min = 6;
+                                opening.Points.Max = 10;
                                 opening.BidPointType = BidPointType.Hcp;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
@@ -212,8 +188,8 @@ namespace Trickster.Bots
                             if (opening.Index < 3)
                             {
                                 //  preempt only if we're not in 4th seat
-                                opening.Points.Min = 5;
-                                opening.Points.Max = 11;
+                                opening.Points.Min = 6;
+                                opening.Points.Max = 10;
                                 opening.BidPointType = BidPointType.Hcp;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
@@ -247,8 +223,8 @@ namespace Trickster.Bots
                             if (opening.Index < 3)
                             {
                                 //  preempt only if we're not in 4th seat
-                                opening.Points.Min = 5;
-                                opening.Points.Max = 11;
+                                opening.Points.Min = 6;
+                                opening.Points.Max = 10;
                                 opening.BidPointType = BidPointType.Hcp;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
@@ -261,6 +237,26 @@ namespace Trickster.Bots
 
                     break;
             }
+        }
+
+        //  open the longest suit; with equal-length suits prefer the higher-ranking,
+        //  except open 1H with exactly four cards in each major
+        private static bool IsPreferredSuit(Hand hand, Suit suit)
+        {
+            var counts = BasicBidding.CountsBySuit(hand);
+            var max = counts.Values.Max();
+
+            if (counts[suit] != max)
+                return false;
+
+            var tied = SuitRank.stdSuits.Where(s => counts[s] == max).ToList();
+            if (tied.Count == 1)
+                return true;
+
+            if (max == 4 && tied.Contains(Suit.Hearts) && tied.Contains(Suit.Spades))
+                return suit == Suit.Hearts;
+
+            return suit == tied.OrderByDescending(s => BridgeBot.suitRank[s]).First();
         }
     }
 }

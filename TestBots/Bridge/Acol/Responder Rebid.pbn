@@ -1,0 +1,20 @@
+[Event "Bid 3NT with game values and no fit after a jump shift (customer reported hand)"]
+[Deal "E:- - - Q86.T652.J9.AJ85"]
+[Auction "E"]
+Pass 1D Pass 1H
+Pass 2S Pass 3NT
+Pass Pass Pass
+
+[Event "Prefer game in the major with a fit after a jump shift"]
+[Deal "E:- - - KJ63.T652.9.AJ85"]
+[Auction "E"]
+Pass 1D Pass 1H
+Pass 2S Pass 4S
+Pass Pass Pass
+
+[Event "Get to game with a known 8-card fit"]
+[Deal "S:- - Q63.AJ9.QJ6.A763 -"]
+[Auction "S"]
+Pass Pass 1NT Pass
+2D Pass 2H Pass
+2NT Pass 4H

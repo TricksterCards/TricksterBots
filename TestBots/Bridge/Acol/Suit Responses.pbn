@@ -1,0 +1,92 @@
+[Event "Single raise with 4-card support"]
+[Deal "N:- - K54.Q863.32.T732 -"]
+[Auction "N"]
+1H Pass 2H Pass
+Pass Pass
+
+[Event "Limit raise with 4-card support"]
+[Deal "N:- - K54.QJ86.A2.T732 -"]
+[Auction "N"]
+1H Pass 3H Pass
+Pass Pass
+
+[Event "1NT response without support"]
+[Deal "N:- - K54.86.QJ532.T73 -"]
+[Auction "N"]
+1H Pass 1NT Pass
+Pass Pass
+
+[Event "New suit at the 1-level"]
+[Deal "N:- - AQ54.863.J53.Q73 -"]
+[Auction "N"]
+1D Pass 1S Pass
+Pass Pass
+
+[Event "New suit at the 2-level with 9+"]
+[Deal "N:- - A54.86.J53.AQJ73 -"]
+[Auction "N"]
+1S Pass 2C Pass
+Pass Pass
+
+[Event "2H response to 1S promises 5+ hearts"]
+[Deal "N:- - A54.KQ863.J53.73 -"]
+[Auction "N"]
+1S Pass 2H Pass
+Pass Pass
+
+[Event "With only 4 hearts respond in a minor instead"]
+[Deal "N:- - 654.KQ86.J5.AQ73 -"]
+[Auction "N"]
+1S Pass 2C Pass
+Pass Pass
+
+[Event "Strong jump shift"]
+[Deal "N:- - AKQ54.86.KQ53.A3 -"]
+[Auction "N"]
+1H Pass 2S Pass
+Pass Pass
+
+[Event "Bid higher-ranking of 5-5 minors rather than jump shift with 14 HCP (customer reported hand)"]
+[Deal "S:- - - T.T8.AKT73.AK963"]
+[Auction "S"]
+Pass 1H Pass 2D
+
+[Event "Raise to game with 13-15 and 4-card support"]
+[Deal "N:- - K54.Q863.A.KT732 -"]
+[Auction "N"]
+1H Pass 4H Pass
+Pass Pass
+
+[Event "Balanced 9 with only a 4-card minor responds 1NT rather than 2C"]
+[Deal "N:- - 942.954.K76.AQ53 -"]
+[Auction "N"]
+1S Pass 1NT
+
+[Event "Passed hand with a balanced 9 and a 4-card minor responds 1NT"]
+[Deal "W:- 942.954.K76.AQ53 - -"]
+[Auction "W"]
+Pass Pass Pass 1S
+Pass 1NT
+
+[Event "Passed hand with a balanced 11 and a 4-card minor responds 2NT"]
+[Deal "W:- 942.Q54.K76.AQ53 - -"]
+[Auction "W"]
+Pass Pass Pass 1S
+Pass 2NT
+
+[Event "Passed hand with a 5-card minor bids it at the 2-level"]
+[Deal "W:- 942.954.K7.AQ653 - -"]
+[Auction "W"]
+Pass Pass Pass 1S
+Pass 2C
+
+[Event "Passed hand bids a 4-card spade suit over an overcall rather than a negative double with only 2 hearts"]
+[Deal "S:KQJ4.A9.9864.953 - - -"]
+[Auction "S"]
+Pass Pass 1C 1D
+1S
+
+[Event "No 1NT response over an overcall without a stopper in the overcalled suit"]
+[Deal "N:- - K32.Q53.8642.Q73 -"]
+[Auction "N"]
+1C 1D Pass

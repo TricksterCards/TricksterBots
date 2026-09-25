@@ -1,0 +1,18 @@
+[Event "Raise partner's weak two with 3-card support"]
+[Deal "N:- - A54.J53.A432.T73 -"]
+[Auction "N"]
+2S Pass 3S Pass
+Pass Pass
+
+[Event "Strong 2C opening with 23+ points"]
+[Deal "N:AKQJ85.AKQ.A93.4 - - -"]
+[Auction "N"]
+2C Pass 2D Pass
+2S Pass 4S Pass
+Pass Pass
+
+[Event "Negative 2D response to 2C"]
+[Deal "N:- - 654.8632.J53.973 -"]
+[Auction "N"]
+2C Pass 2D Pass
+2NT Pass Pass Pass

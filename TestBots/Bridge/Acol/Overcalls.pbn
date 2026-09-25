@@ -1,0 +1,64 @@
+
+[Event "Opening values overcall a weak 5-card suit at the 1-level"]
+[Deal "N:- AK.Q5.A8732.JT64 - -"]
+[Auction "N"]
+1C 1D
+
+[Event "Minimum hand does not overcall a weak 5-card suit"]
+[Deal "N:- 862.K5.Q8732.K64 - -"]
+[Auction "N"]
+1C Pass
+
+[Event "Very weak 6-5 hand does not bid Unusual 2NT"]
+[Deal "E:- 7.3.87632.QJT764 - -"]
+[Auction "E"]
+1H Pass
+
+[Event "Strong hand bids a good 6+ card suit rather than doubling a forcing response"]
+[Deal "E:- - - AKQ962.A.J.KJ987"]
+[Auction "E"]
+1H Pass 2D 2S
+
+[Event "Strong hand with long clubs overcalls 2C rather than doubling a forcing response"]
+[Deal "E:- - - K32.7.A4.AKQJ943"]
+[Auction "E"]
+1D Pass 1H 2C
+
+[Event "Strong hand with long clubs and 4 spades still doubles a forcing response"]
+[Deal "E:- - - AJ32.7.4.AKQJ943"]
+[Auction "E"]
+1D Pass 1H X
+
+[Event "Strong hand with 4-4 in the unbid suits still doubles a forcing response"]
+[Deal "E:- - - AKJ4.72.Q2.AKJ85"]
+[Auction "E"]
+1H Pass 2D X
+
+[Event "Strong hand doubles a non-forcing response"]
+[Deal "E:- - - AKQ962.A.J2.KJ98"]
+[Auction "E"]
+1H Pass 2H X
+
+[Event "Strong overcaller shows a second suit after partner passes"]
+[Deal "E:- - - AKQ962.A.J.KJ987"]
+[Auction "E"]
+1H Pass 2D 2S
+2H Pass Pass 3C
+
+[Event "Strong overcaller shows a second suit at the 4-level after partner passes"]
+[Deal "E:- - - AKQ962.A.J.KJ987"]
+[Auction "E"]
+1H Pass 2D 2S
+3H Pass Pass 4C
+
+[Event "Strong one-suited overcaller rebids the suit after partner passes"]
+[Deal "E:- - - AKQJ62.A2.J2.K98"]
+[Auction "E"]
+1H Pass 2D 2S
+3H Pass Pass 3S
+
+[Event "Minimum overcaller passes after partner passes"]
+[Deal "E:- - - KQJ962.72.J2.K98"]
+[Auction "E"]
+1D Pass 1H 1S
+2H Pass Pass Pass
