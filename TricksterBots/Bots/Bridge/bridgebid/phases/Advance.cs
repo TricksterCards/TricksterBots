@@ -102,18 +102,31 @@ namespace Trickster.Bots
                     advance.Validate = hand => false;
                 }
                 //  advancing in notrump, e.g. (1C)-1H-(P)-1N
-                else if (advance.declareBid.level == overcall.declareBid.level)
+                else if (advance.declareBid.level == 1)
                 {
+                    advance.BidPointType = BidPointType.Hcp;
                     advance.Points.Min = 6;
                     advance.Points.Max = 10;
                     advance.IsBalanced = true;
                     advance.Description = $"stopper in {opening.declareBid.suit}";
                     advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
                 }
-                else if (advance.declareBid.level == overcall.declareBid.level + 1)
+                //  e.g. (1C)-1H-(P)-2N or (1S)-2D-(X)-2N
+                else if (advance.declareBid.level == 2)
                 {
+                    advance.BidPointType = BidPointType.Hcp;
                     advance.Points.Min = 11;
                     advance.Points.Max = 12;
+                    advance.IsBalanced = true;
+                    advance.Description = $"stopper in {opening.declareBid.suit}";
+                    advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
+                }
+                //  e.g. (1C)-1H-(P)-3N or (1S)-2D-(P)-3N
+                else if (advance.declareBid.level == 3)
+                {
+                    advance.BidPointType = BidPointType.Hcp;
+                    advance.Points.Min = 13;
+                    advance.Points.Max = 16;
                     advance.IsBalanced = true;
                     advance.Description = $"stopper in {opening.declareBid.suit}";
                     advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
