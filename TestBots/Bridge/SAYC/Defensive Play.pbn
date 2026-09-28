@@ -135,6 +135,16 @@ D6 D7 DJ D5
 D6 D7 DK D5
 -  -  DA -
 
+% Off-suit ace isn't a sure setting trick while declarer still has trump.
+% Exercises GetSureWinners' trump-void check: our 6 trumps + 1 played + 6 with declarer.
+
+[Event "Lead on Defense: Off-suit boss is not sure trick if declarer may have trump"]
+[Deal "N:.K9876.KQJ4.T987 8765432..A2.KQJ3 - -"]
+[Contract "6S"]
+[Play "W"]
+H2 HK S2 H3
+-  -  CK -
+
 % View AQ as a sequence once the K is played (and similar positions)
 
 [Event "Lead on Defense: Top of Effective Non-Doubleton Sequence"]
@@ -428,3 +438,13 @@ C8 -  C2 CA
 [Play "S"]
 H2 HJ HA H5
 HT -  H7 H8
+
+[Event "3rd Hand Defense: Trump if partner is winning but LHO might have high"]
+[Deal "S:- - 3.K86.KQ.T985432 Q52.9752.JT9763."]
+[Declarer "S"]
+[Contract "4H"]
+[Play "W"]
+SA S3 S2 S6
+DA DQ D3 D2
+CA C2 D6 C7
+C6 C3 H2 -

@@ -687,7 +687,7 @@ namespace Trickster.Bots
                 // Don't count off suit boss cards if opponents still have trump (excluding those who have already played to the trick)
                 // Also don't count off suit boss cards if the trick already contains trump
                 var players = new PlayersCollectionBase(this, state.players);
-                if (state.trick.Any(IsTrump) || !players.LhoIsVoidInSuit(state.player, state.trumpSuit, knownCards) || (state.trick.Count == 0 && !players.RhoIsVoidInSuit(state.player, state.trumpSuit, knownCards)))
+                if (state.trick.Any(IsTrump) || !players.LhoIsVoidInSuit(state.player, state.trumpSuit, state.cardsPlayed) || (state.trick.Count == 0 && !players.RhoIsVoidInSuit(state.player, state.trumpSuit, state.cardsPlayed)))
                     bossCards = bossCards.Where(c => c.suit == state.trumpSuit);
             }
 
@@ -1181,7 +1181,7 @@ namespace Trickster.Bots
                 return SuggestDefensiveDiscard(state);
 
             // If partner is winning and 4th seat is void, play low
-            var isFourthSeatVoid = players.LhoIsVoidInSuit(state.player, ledCard, knownCards);
+            var isFourthSeatVoid = players.LhoIsVoidInSuit(state.player, ledCard, state.cardsPlayed);
             if (state.isPartnerTakingTrick && isFourthSeatVoid)
                 return SuggestDefensiveDiscard(state);
 
