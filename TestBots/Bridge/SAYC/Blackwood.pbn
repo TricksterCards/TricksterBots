@@ -6,3 +6,38 @@
 [Auction "W"]
 1H 3D Pass 4NT
 Pass 5C
+
+[Event "Use Blackwood with a fit and a control in every side suit"]
+[Deal "N:- - A5.KQJ94.KQ3.KQ2 -"]
+[Auction "N"]
+1S Pass 3H Pass
+4H Pass 4NT
+
+[Event "Ask for Kings after Blackwood when the partnership holds all the Aces"]
+[Deal "N:- - AKQ.AKQ42.KQJ.32 -"]
+[Auction "N"]
+1S Pass 3H Pass
+4H Pass 4NT Pass
+5H Pass 5NT
+
+[Event "Bid a grand slam when the partnership holds all the Aces and Kings"]
+[Deal "N:- - AKQ.AKQ42.KQJ.32 -"]
+[Auction "N"]
+1S Pass 3H Pass
+4H Pass 4NT Pass
+5H Pass 5NT Pass
+6D Pass 7H
+
+[Event "Bid a small slam after Blackwood shows only one Ace is missing"]
+[Deal "N:- - A5.KQJ94.KQ3.KQ2 -"]
+[Auction "N"]
+1S Pass 3H Pass
+4H Pass 4NT Pass
+5H Pass 6H
+
+[Event "Sign off at the five level after Blackwood shows two Aces are missing"]
+[Deal "N:- - A5.KQJ94.KQ3.KQ2 -"]
+[Auction "N"]
+1S Pass 3H Pass
+4H Pass 4NT Pass
+5D Pass 5H

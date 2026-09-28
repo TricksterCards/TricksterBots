@@ -1,4 +1,6 @@
-﻿using Trickster.cloud;
+﻿using System;
+using System.Linq;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -12,7 +14,7 @@ namespace Trickster.Bots
                 return true;
             }
 
-            if (bid.Index >= 4 && bid.History[bid.Index - 4].BidConvention == BidConvention.Blackwood && bid.History[bid.Index - 4].declareBid.level == 4)
+            if (bid.Index >= 4 && bid.History[bid.Index - 4].BidConvention == BidConvention.Blackwood)
                 return InterpretRebid(bid);
 
             return false;
@@ -23,17 +25,62 @@ namespace Trickster.Bots
             if (!bid.bidIsDeclare)
                 return false;
 
+            var ask = bid.History[bid.Index - 4];
+            var answer = bid.History[bid.Index - 2];
             var db = bid.declareBid;
 
-            if (db.level == 5 && db.suit == Suit.Unknown)
+            if (ask.declareBid.level == 4 && db.level == 5 && db.suit == Suit.Unknown)
             {
+                var partnerSummary = new InterpretedBid.PlayerSummary(bid.History, bid.Index - 2);
                 bid.BidConvention = BidConvention.Blackwood;
                 bid.Description = "asking for Kings";
-                //  TODO: add a bid.Validate to determine when we should ask for Kings
+                bid.Priority = 5; // prefer asking over settling for a small slam when the ask is useful
+                bid.Validate = hand => BasicBidding.KingAskIsUseful(hand, answer.Aces, partnerSummary.Points.Min);
                 return true;
             }
 
-            return false;
+            return InterpretPlacement(bid, ask, answer);
+        }
+
+        private static bool InterpretPlacement(InterpretedBid bid, InterpretedBid ask, InterpretedBid answer)
+        {
+            var summary = new InterpretedBid.TeamSummary(bid.History, bid.Index - 2);
+            var trump = summary.HandShape.Where(hs => hs.Value.Min >= 8).Select(hs => hs.Key).FirstOrDefault();
+            var db = bid.declareBid;
+
+            if (db.suit != trump)
+                return false;
+
+            var askedForKings = ask.declareBid.level == 5;
+
+            //  when we asked for Kings, partner's count of Aces came from their answer to the previous ask
+            var aceAnswer = askedForKings && bid.Index >= 6 ? bid.History[bid.Index - 6] : answer;
+
+            if (db.level == 7)
+            {
+                bid.Description = "Grand slam";
+                bid.Priority = 9; // prefer the grand slam over the small slam when nothing is missing
+                bid.Validate = hand => BasicBidding.MissingCount(hand, Rank.Ace, aceAnswer.Aces) == 0 && askedForKings &&
+                                       BasicBidding.MissingCount(hand, Rank.King, answer.Kings) == 0;
+            }
+            else if (db.level == 6)
+            {
+                bid.Description = "Small slam";
+                bid.Validate = hand => BasicBidding.MissingCount(hand, Rank.Ace, aceAnswer.Aces) <= 1;
+            }
+            else if (db.level == 5 && !askedForKings)
+            {
+                bid.Description = "Missing too many Aces for slam";
+                bid.Validate = hand => BasicBidding.MissingCount(hand, Rank.Ace, aceAnswer.Aces) > 1;
+            }
+            else
+            {
+                return false;
+            }
+
+            bid.BidMessage = BidMessage.Signoff;
+            bid.Priority = Math.Min(bid.Priority, 10); // prefer placing the contract based on the answer we asked for
+            return true;
         }
 
         private static void InterpretResponse(InterpretedBid bid)
