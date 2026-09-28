@@ -132,6 +132,10 @@ namespace Trickster.Bots
                     advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
                 }
             }
+            else if (advance.declareBid.suit == opening.declareBid.suit)
+            {
+                //  TODO: a jump cuebid of opener's suit (e.g. splinter or strong raise) is unknown (for now)
+            }
             else
             {
                 //  advancing in a new suit, e.g. (1C)-1H-(P)-1S
