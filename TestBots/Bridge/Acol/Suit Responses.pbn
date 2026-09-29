@@ -95,3 +95,8 @@ Pass Pass 1C 1D
 [Deal "E:- - 97.87.KJ983.T743 -"]
 [Auction "E"]
 1C Pass Pass
+
+[Event "Pass with too few HCP for 1NT response"]
+[Deal "W:- - AJ65.53.T9.T8732 -"]
+[Auction "W"]
+1D 1S Pass

@@ -255,6 +255,7 @@ namespace Trickster.Bots
                         //  1x-1N: no support, no suit to show at the 1-level
                         response.Points.Min = 6;
                         response.Points.Max = 9;
+                        response.BidPointType = BidPointType.Hcp;
                         response.HandShape[openSuit].Max = 3;
                         response.Description = $"No fit; 0-3 {openSuit}";
                         Response.RequireStopperInOvercall(overcall, response);
