@@ -90,3 +90,8 @@ Pass Pass 1C 1D
 [Deal "N:- - K32.Q53.8642.Q73 -"]
 [Auction "N"]
 1C 1D Pass
+
+[Event "No shortness points when raising a minor: pass with 4 HCP"]
+[Deal "E:- - 97.87.KJ983.T743 -"]
+[Auction "E"]
+1C Pass Pass

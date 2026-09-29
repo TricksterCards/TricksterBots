@@ -304,7 +304,8 @@ namespace Trickster.Bots
                         var minCardsInSuit = 8 - opening.HandShape[openSuit].Min;
                         response.Points.Min = 6;
                         response.Points.Max = 9;
-                        response.BidPointType = BidPointType.Dummy;
+                        if (BridgeBot.IsMajor(openSuit))
+                            response.BidPointType = BidPointType.Dummy;
                         response.HandShape[response.declareBid.suit].Min = minCardsInSuit;
                         response.Description = $"Single raise; {minCardsInSuit}+ {response.declareBid.suit}";
                     }
@@ -366,7 +367,8 @@ namespace Trickster.Bots
                         var minCardsInSuit = 8 - opening.HandShape[openSuit].Min;
                         response.Points.Min = 10;
                         response.Points.Max = 12;
-                        response.BidPointType = BidPointType.Dummy;
+                        if (BridgeBot.IsMajor(openSuit))
+                            response.BidPointType = BidPointType.Dummy;
                         response.HandShape[response.declareBid.suit].Min = minCardsInSuit;
                         response.Description = $"Limit raise; {minCardsInSuit}+ {response.declareBid.suit}";
                     }
