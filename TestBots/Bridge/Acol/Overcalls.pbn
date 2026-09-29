@@ -14,6 +14,47 @@
 [Auction "E"]
 1H Pass
 
+[Event "Strong 6-5 minor two-suiter bids Unusual 2NT rather than doubling"]
+[Deal "N:- - - .AK.AQT982.AQT54"]
+[Auction "N"]
+Pass Pass 1S 2NT
+
+[Event "Advancer gives preference to the longer minor after Unusual 2NT"]
+[Deal "N:- 8743.QJ52.J43.72 - -"]
+[Auction "N"]
+Pass Pass 1S 2NT
+Pass 3D
+
+[Event "Advancer gives preference to clubs after Unusual 2NT"]
+[Deal "N:- 8743.QJ52.72.J43 - -"]
+[Auction "N"]
+Pass Pass 1S 2NT
+Pass 3C
+
+[Event "Weak Unusual 2NT passes partner's preference"]
+[Deal "N:- - - 5.43.KQJ87.KJ865"]
+[Auction "N"]
+Pass Pass 1S 2NT
+Pass 3D Pass Pass
+
+[Event "Medium-strength Unusual 2NT invites game after partner's preference"]
+[Deal "N:- - - 2.K.AQJ87.KQ8654"]
+[Auction "N"]
+Pass Pass 1S 2NT
+Pass 3D Pass 4D
+
+[Event "Strong Unusual 2NT bids game after partner's diamond preference"]
+[Deal "N:- - - .AK.AQT982.AQT54"]
+[Auction "N"]
+Pass Pass 1S 2NT
+Pass 3D Pass 5D
+
+[Event "Strong Unusual 2NT bids game after partner's club preference"]
+[Deal "N:- - - .AK.AQT982.AQT54"]
+[Auction "N"]
+Pass Pass 1S 2NT
+Pass 3C Pass 5C
+
 [Event "Strong hand bids a good 6+ card suit rather than doubling a forcing response"]
 [Deal "E:- - - AKQ962.A.J.KJ987"]
 [Auction "E"]

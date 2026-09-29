@@ -303,6 +303,9 @@ namespace Trickster.Bots
             if (TakeoutDouble.Interpret(this))
                 return true;
 
+            if (UnusualNotrump.Interpret(this))
+                return true;
+
             return false;
         }
 

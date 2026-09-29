@@ -199,9 +199,11 @@ namespace Trickster.Bots
             else
             //  in other phases, prefer finding the best fit first (prioritizing majors), then higher minimum points
             {
+                //  a bid matched via AlternateMatches may show a major the hand doesn't actually hold
+                var counts = BasicBidding.CountsBySuit(hand);
                 suggestions = suggestions
                     .OrderBy(s => s.why.Priority)
-                    .ThenBy(s => s.why.HandShape.Any(hs => IsMajor(hs.Key) && hs.Value.Min >= 3) ? 0 : 1)
+                    .ThenBy(s => s.why.HandShape.Any(hs => IsMajor(hs.Key) && hs.Value.Min >= 3 && counts[hs.Key] >= hs.Value.Min) ? 0 : 1)
                     .ThenByDescending(s => s.why.HandShape.Max(hs => hs.Value.Min))
                     .ThenByDescending(s => s.why.Points.Min).ToList();
             }
