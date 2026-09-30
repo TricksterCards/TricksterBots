@@ -40,12 +40,33 @@ namespace Trickster.Bots
             }
             else if (Response.IsCuebidResponse(overcall, response))
             {
-                Response.InterpretCuebidResponse(opening, response);
+                InterpretCuebidRaise(opening, response);
             }
             else
             {
                 InterpretResponseToSuit(opening, overcall, response);
             }
+        }
+
+        //  responder's own earlier call can only have been a pass
+        private static bool IsPassedHand(InterpretedBid response)
+        {
+            return response.Index >= 4 && response.History[response.Index - 4].bid == BidBase.Pass;
+        }
+
+        //  modern Acol: a cue-bid of the overcall shows a good raise (limit raise or better), not a game force
+        private static void InterpretCuebidRaise(InterpretedBid opening, InterpretedBid response)
+        {
+            var openSuit = opening.declareBid.suit;
+            var minSupport = BridgeBot.IsMajor(openSuit) ? 3 : 4;
+            response.Points.Min = 10;
+            if (IsPassedHand(response))
+                response.Points.Max = 12;
+            if (BridgeBot.IsMajor(openSuit))
+                response.BidPointType = BidPointType.Dummy;
+            response.BidMessage = BidMessage.Forcing;
+            response.HandShape[openSuit].Min = minSupport;
+            response.Description = $"Good raise; {minSupport}+ {openSuit}";
         }
 
         private static void InterpretPass(InterpretedBid opening, InterpretedBid response)
@@ -244,8 +265,7 @@ namespace Trickster.Bots
         private static void InterpretResponseToSuit(InterpretedBid opening, InterpretedBid overcall, InterpretedBid response)
         {
             var openSuit = opening.declareBid.suit;
-            //  responder's own earlier call can only have been a pass
-            var isPassedHand = response.Index >= 4 && response.History[response.Index - 4].bid == BidBase.Pass;
+            var isPassedHand = IsPassedHand(response);
 
             switch (response.declareBid.level)
             {
@@ -298,11 +318,12 @@ namespace Trickster.Bots
                         if (BridgeBot.IsMinor(openSuit))
                             response.NoFourCardMajors();
                         response.Description = "Natural, inviting game";
+                        Response.RequireStopperInOvercall(overcall, response);
                     }
                     else if (response.declareBid.suit == openSuit)
                     {
-                        //  1x-2x: single raise (6-9 with 4+ support)
-                        var minCardsInSuit = 8 - opening.HandShape[openSuit].Min;
+                        //  1x-2x: single raise (6-9 with 4+ support, or 3+ in a major over an overcall)
+                        var minCardsInSuit = overcall.bidIsDeclare && BridgeBot.IsMajor(openSuit) ? 3 : 8 - opening.HandShape[openSuit].Min;
                         response.Points.Min = 6;
                         response.Points.Max = 9;
                         if (BridgeBot.IsMajor(openSuit))

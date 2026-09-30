@@ -100,3 +100,26 @@ Pass Pass 1C 1D
 [Deal "W:- - AJ65.53.T9.T8732 -"]
 [Auction "W"]
 1D 1S Pass
+
+[Event "Passed hand cue-bids the overcall with 10 points and 3-card support rather than 2NT"]
+[Deal "E:- T63.QT4.KT5.KQT4 - -"]
+[Auction "E"]
+Pass Pass Pass 1H
+1S 2S
+
+[Event "Single raise over an overcall with 3-card support"]
+[Deal "N:- - T63.K84.QJ52.J74 -"]
+[Auction "N"]
+1H 1S 2H
+
+[Event "Passed hand bids 2NT over an overcall with a stopper"]
+[Deal "W:- KJ3.Q4.KT52.QT74 - -"]
+[Auction "W"]
+Pass Pass Pass 1H
+1S 2NT
+
+[Event "Passed hand without a stopper in the overcalled suit bids a 5-card minor rather than 2NT"]
+[Deal "W:- 863.K4.KQ5.Q9742 - -"]
+[Auction "W"]
+Pass Pass Pass 1H
+1S 2C

@@ -112,3 +112,21 @@ Pass 3D
 [Auction "S"]
 Pass 1S Pass 2H
 Pass 3C
+
+[Event "Return to 3H with a minimum after partner's cue-bid raise"]
+[Deal "N:K5.AJ984.KQ3.962 - - -"]
+[Auction "N"]
+1H 1S 2S Pass
+3H
+
+[Event "Return to 3H with a minimum and only 4 hearts after partner's cue-bid raise"]
+[Deal "N:KJ84.AQ84.5.Q962 - - -"]
+[Auction "N"]
+1H 1S 2S Pass
+3H
+
+[Event "Accept partner's cue-bid raise with 16 points"]
+[Deal "N:K5.AKJ84.KQ3.962 - - -"]
+[Auction "N"]
+1H 1S 2S Pass
+4H

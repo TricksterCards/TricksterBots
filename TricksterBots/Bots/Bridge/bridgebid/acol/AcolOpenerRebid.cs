@@ -62,6 +62,27 @@ namespace Trickster.Bots
                     }
         }
 
+        //  responder's cue-bid showed a good raise (10+); other rebids are left uninterpreted for now
+        private static void RebidAfterCuebidRaise(InterpretedBid opening, InterpretedBid rebid)
+        {
+            var suit = opening.declareBid.suit;
+            if (rebid.declareBid.suit != suit)
+                return;
+
+            if (rebid.declareBid.level == rebid.GameLevel)
+            {
+                rebid.BidMessage = BidMessage.Signoff;
+                rebid.Points.Min = 15;
+                rebid.Description = "Accept the invitation; sign-off at game";
+            }
+            else if (rebid.declareBid.level == rebid.LowestAvailableLevel(suit))
+            {
+                //  not a signoff: an unpassed responder may hold game values
+                rebid.Points.Max = 14;
+                rebid.Description = "Minimum; declining the invitation";
+            }
+        }
+
         private static void RebidSuitOpening(InterpretedBid opening, InterpretedBid response, InterpretedBid rebid)
         {
             var lowestAvailableLevel = rebid.LowestAvailableLevel(rebid.declareBid.suit);
@@ -69,6 +90,12 @@ namespace Trickster.Bots
             var afterTwoOverOne = response.bidIsDeclare && response.declareBid.level == 2 &&
                 response.declareBid.suit != Suit.Unknown &&
                 BridgeBot.suitRank[response.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit];
+
+            if (Response.IsCuebidResponse(rebid.History[rebid.Index - 3], response))
+            {
+                RebidAfterCuebidRaise(opening, rebid);
+                return;
+            }
 
             if (response.bidIsDeclare && opening.declareBid.suit == response.declareBid.suit)
             {
