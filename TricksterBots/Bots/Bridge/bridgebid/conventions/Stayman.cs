@@ -222,6 +222,7 @@ namespace Trickster.Bots
             //  2C-2D-3N-4C
             response.BidConvention = BidConvention.Stayman;
             response.BidMessage = BidMessage.Forcing;
+            response.BidPointType = BidPointType.Hcp;
             //  over a weak NT (Acol), Stayman promises at least invitational values
             response.Points.Min = response.declareBid.level <= 2 ? (response.Options.bidding == BridgeBiddingScheme.Acol ? 11 : 8) : 4;
             response.Description = "asking for a major";
