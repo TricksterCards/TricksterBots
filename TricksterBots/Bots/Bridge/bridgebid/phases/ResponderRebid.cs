@@ -32,6 +32,19 @@ namespace Trickster.Bots
                 return;
             }
 
+            if (!isNT && playerMinOfSuit > 0 && partnerMinOfSuit == 0 && bid.declareBid.level < bid.GameLevel &&
+                bid.declareBid.level == bid.LowestAvailableLevel(bid.declareBid.suit, true) &&
+                playerSummary.Points.Max + partnerSummary.Points.Min < InterpretedBid.InvitationalPoints)
+            {
+                //  responder already denied invitational values, so rebidding a long suit is to play
+                bid.Points.Max = playerSummary.Points.Max;
+                bid.BidPointType = BidPointType.Hcp;
+                bid.BidMessage = BidMessage.Signoff;
+                bid.HandShape[bid.declareBid.suit].Min = 6;
+                bid.Description = $"To play; 6+ {bid.declareBid.suit}";
+                return;
+            }
+
             if (bid.declareBid.level >= 6)
             {
                 //  6X, 7X

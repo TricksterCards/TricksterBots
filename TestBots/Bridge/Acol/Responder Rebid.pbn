@@ -24,3 +24,9 @@ Pass Pass 1NT Pass
 [Auction "S"]
 1D 1S 2C 2D
 2H Pass 3D
+
+[Event "Rebid a long minor to play in a misfit after a 1NT overcall"]
+[Deal "S:- - J742.3.2.AQT7653 -"]
+[Auction "S"]
+1H 1NT 2C Pass
+2D Pass 3C

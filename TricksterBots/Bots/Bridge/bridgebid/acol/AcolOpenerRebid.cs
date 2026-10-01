@@ -89,7 +89,8 @@ namespace Trickster.Bots
             //  a new suit by opener after a non-jump 2-level response is natural and forcing, never a reverse
             var afterTwoOverOne = response.bidIsDeclare && response.declareBid.level == 2 &&
                 response.declareBid.suit != Suit.Unknown &&
-                BridgeBot.suitRank[response.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit];
+                BridgeBot.suitRank[response.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit] &&
+                !AcolResponse.IsOverNTOvercall(rebid.History[rebid.Index - 3]);
 
             if (Response.IsCuebidResponse(rebid.History[rebid.Index - 3], response))
             {

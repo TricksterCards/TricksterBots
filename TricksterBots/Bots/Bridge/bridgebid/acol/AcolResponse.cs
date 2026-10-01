@@ -15,6 +15,12 @@ namespace Trickster.Bots
             {
                 InterpretPass(opening, response);
             }
+            else if (response.bid == BridgeBid.Double && IsOverNTOvercall(overcall))
+            {
+                //  1x-(1N)-X: penalty, the values to defend
+                response.Points.Min = 9;
+                response.BidPointType = BidPointType.Hcp;
+            }
             else if (response.bid == BridgeBid.Double || response.bid == BridgeBid.Redouble)
             {
                 //  leave as penalty double/redouble by default
@@ -46,6 +52,12 @@ namespace Trickster.Bots
             {
                 InterpretResponseToSuit(opening, overcall, response);
             }
+        }
+
+        internal static bool IsOverNTOvercall(InterpretedBid overcall)
+        {
+            return overcall.bidIsDeclare && overcall.declareBid.level == 1 && overcall.declareBid.suit == Suit.Unknown &&
+                overcall.BidConvention == BidConvention.None;
         }
 
         //  responder's own earlier call can only have been a pass
@@ -319,6 +331,14 @@ namespace Trickster.Bots
                             response.NoFourCardMajors();
                         response.Description = "Natural, inviting game";
                         Response.RequireStopperInOvercall(overcall, response);
+                    }
+                    else if (response.declareBid.suit != openSuit && IsOverNTOvercall(overcall))
+                    {
+                        //  1x-(1N)-2y: natural and non-forcing; stronger hands double
+                        response.Points.Max = 8;
+                        response.BidPointType = BidPointType.Hcp;
+                        response.HandShape[response.declareBid.suit].Min = 5;
+                        response.Description = $"Competitive; 5+ {response.declareBid.suit}";
                     }
                     else if (response.declareBid.suit == openSuit)
                     {
