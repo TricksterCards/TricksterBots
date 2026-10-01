@@ -24,3 +24,8 @@ Pass
 [Deal "N:- - - K4.AQ5.KJ84.Q973"]
 [Auction "N"]
 1H 1S Pass 3NT
+
+[Event "Simple raise advance"]
+[Deal "S:- - - KJT.J98642.QJ.86"]
+[Auction "S"]
+1D 1S 2C 2S

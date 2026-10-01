@@ -57,9 +57,12 @@ namespace Trickster.Bots
                 //  cuebid the oppenents' suit to show support with 10+ points
                 advance.BidConvention = BidConvention.Cuebid;
                 advance.BidMessage = BidMessage.Forcing;
-                advance.Points.Min = 10;
+                advance.Points.Min = advance.Options.bidding == BridgeBiddingScheme.Acol ? 11 : 10;
                 advance.HandShape[overcall.declareBid.suit].Min = 3;
                 advance.Description = $"3+ {overcall.declareBid.suit} (usually)";
+
+                if (BridgeBot.IsMajor(overcall.declareBid.suit))
+                    advance.BidPointType = BidPointType.Dummy;
             }
             else if (overcall.declareBid.suit == advance.declareBid.suit)
             {
@@ -68,10 +71,13 @@ namespace Trickster.Bots
                 if (advance.declareBid.level == overcall.declareBid.level + 1)
                 {
                     advance.Points.Min = 6;
-                    advance.Points.Max = 9;
+                    advance.Points.Max = advance.Options.bidding == BridgeBiddingScheme.Acol ? 10 : 9;
                     advance.HandShape[advance.declareBid.suit].Min = 3;
                     advance.HandShape[advance.declareBid.suit].Max = 3;
                     advance.Description = $"Raise; 3+ {advance.declareBid.suit}";
+
+                    if (BridgeBot.IsMajor(advance.declareBid.suit))
+                        advance.BidPointType = BidPointType.Dummy;
                 }
 
                 //  0-9 points = jump raise with 4-card support, e.g. (1C)-1H-(P)-3H
