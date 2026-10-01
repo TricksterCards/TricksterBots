@@ -18,3 +18,9 @@ Pass Pass Pass
 Pass Pass 1NT Pass
 2D Pass 2H Pass
 2NT Pass 4H
+
+[Event "Show support for partner's 5-card minor"]
+[Deal "S:- - A87.5.A97.JT9732 -"]
+[Auction "S"]
+1D 1S 2C 2D
+2H Pass 3D

@@ -338,6 +338,13 @@ namespace Trickster.Bots
                     rebid.Description = $"New suit; 4+ {rebid.declareBid.suit}";
                     if (afterTwoOverOne)
                         rebid.BidMessage = BidMessage.Forcing;
+                    //  with 4-4 we'd have opened the higher suit (except 4-4 majors opens 1H)
+                    if (BridgeBot.suitRank[rebid.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit] &&
+                        !(opening.declareBid.suit == Suit.Hearts && rebid.declareBid.suit == Suit.Spades))
+                    {
+                        rebid.HandShape[opening.declareBid.suit].Min = 5;
+                        rebid.Description = $"New suit; 4+ {rebid.declareBid.suit} and 5+ {opening.declareBid.suit}";
+                    }
                     //  at the 2-level a balanced hand rebids NT instead
                     if (rebid.declareBid.level == 2)
                         rebid.Validate = hand => !BasicBidding.IsBalanced(hand);

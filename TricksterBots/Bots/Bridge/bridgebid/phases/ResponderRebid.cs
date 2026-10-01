@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System.Linq;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -103,8 +104,18 @@ namespace Trickster.Bots
                     {
                         //  with no info from partner in our suit...
                         if (bid.declareBid.level < bid.GameLevel)
+                        {
                             //  we need 6+ cards to rebid our suit below game
                             bid.HandShape[bid.declareBid.suit].Min = 6;
+                            //  with a known 8-card fit in partner's suit, show support instead of rebidding a minor
+                            if (BridgeBot.IsMinor(bid.declareBid.suit))
+                                bid.Validate = hand =>
+                                {
+                                    var counts = BasicBidding.CountsBySuit(hand);
+                                    return !SuitRank.stdSuits.Any(s => s != bid.declareBid.suit &&
+                                        partnerSummary.HandShape[s].Min > 0 && counts[s] + partnerSummary.HandShape[s].Min >= 8);
+                                };
+                        }
                         else if (bid.declareBid.level == bid.GameLevel)
                             //  we need 7+ cards to rebid our suit at game
                             bid.HandShape[bid.declareBid.suit].Min = 7;
