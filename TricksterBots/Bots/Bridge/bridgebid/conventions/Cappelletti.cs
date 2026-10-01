@@ -40,7 +40,7 @@ namespace Trickster.Bots
                 //  (1N)-2C-(P)-P
                 advance.HandShape[Suit.Clubs].Min = 6;
                 advance.Description = "Good 6+ Clubs";
-                advance.Validate = hand => BasicBidding.IsGoodSuit(hand, Suit.Clubs);
+                advance.Validate = hand => BasicBidding.IsGoodSuit(hand, Suit.Clubs, 6);
             }
 
             if (advance.bid == BridgeBid.Redouble)
@@ -93,7 +93,7 @@ namespace Trickster.Bots
                 //  (1N)-2D-(P)-P
                 advance.HandShape[Suit.Diamonds].Min = 6;
                 advance.Description = "Good 6+ Diamonds";
-                advance.Validate = hand => BasicBidding.IsGoodSuit(hand, Suit.Diamonds);
+                advance.Validate = hand => BasicBidding.IsGoodSuit(hand, Suit.Diamonds, 6);
             }
 
             if (!advance.bidIsDeclare)
@@ -360,12 +360,11 @@ namespace Trickster.Bots
                     case Suit.Clubs:
                         //  (1N)-2C
                         //  (1N)-P-(P)-2C
-                        overcall.IsGood = true;
-                        overcall.Description = "6+ card suit";
+                        overcall.Description = "Good 6+ card suit";
                         overcall.Validate = hand =>
                         {
                             var counts = BasicBidding.CountsBySuit(hand);
-                            return SuitRank.stdSuits.Any(suit => counts[suit] >= 6 && BasicBidding.IsGoodSuit(hand, suit));
+                            return SuitRank.stdSuits.Any(suit => counts[suit] >= 6 && BasicBidding.IsGoodSuit(hand, suit, 6));
                         };
                         break;
 

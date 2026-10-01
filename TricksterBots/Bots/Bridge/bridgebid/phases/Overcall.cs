@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -18,25 +19,18 @@ namespace Trickster.Bots
 
             var db = overcall.declareBid;
             var lowestLevel = overcall.LowestAvailableLevel(db.suit, true);
-
-            var cueSuit = Suit.Unknown;
+            var cueSuits = new List<Suit>();
             var opponentsLastBid = overcall.History[overcall.Index - 1];
             var opponentsPreviousBid = overcall.Index >= 3 ? overcall.History[overcall.Index - 3] : null;
-            if (opponentsLastBid.bidIsDeclare && opponentsPreviousBid != null && opponentsPreviousBid.bidIsDeclare)
-            {
-                if (opponentsLastBid.declareBid.suit == opponentsPreviousBid.declareBid.suit) cueSuit = opponentsLastBid.declareBid.suit;
-            }
-            else if (opponentsLastBid.bidIsDeclare)
-            {
-                cueSuit = opponentsLastBid.declareBid.suit;
-            }
-            else if (opponentsPreviousBid != null && opponentsPreviousBid.bidIsDeclare)
-            {
-                cueSuit = opponentsPreviousBid.declareBid.suit;
-            }
+
+            if (opponentsLastBid.bidIsDeclare && opponentsLastBid.declareBid.suit != Suit.Unknown)
+                cueSuits.Add(opponentsLastBid.declareBid.suit);
+            if (opponentsPreviousBid != null && opponentsPreviousBid.bidIsDeclare && opponentsPreviousBid.declareBid.suit != Suit.Unknown && !cueSuits.Contains(opponentsPreviousBid.declareBid.suit))
+                cueSuits.Add(opponentsPreviousBid.declareBid.suit);
 
             //  check for a cuebid (bidding opponent's suit at the lowest available level)
-            if (cueSuit != Suit.Unknown && db.suit == cueSuit && db.level == lowestLevel)
+            //  Note: if the opponents have bid multiple suits then a cuebid is considered natural
+            if (cueSuits.Count == 1 && cueSuits.Contains(db.suit) && db.level == lowestLevel)
             {
                 //  cuebid case
                 overcall.BidConvention = BidConvention.MichaelsCuebid;
@@ -48,7 +42,7 @@ namespace Trickster.Bots
 
                 //  (1C)-2C, (2C)-3C, ...
                 //  (1D)-2D, (2D)-2D, ...
-                if (BridgeBot.IsMinor(cueSuit))
+                if (BridgeBot.IsMinor(db.suit))
                 {
                     overcall.Points.Min = 8;
                     overcall.HandShape[Suit.Hearts].Min = 5;
@@ -63,12 +57,12 @@ namespace Trickster.Bots
                     overcall.Points.Min = 10;
 
                     //  the other major has at least 5 cards
-                    var otherMajor = cueSuit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
+                    var otherMajor = db.suit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
                     overcall.HandShape[otherMajor].Min = 5;
                     overcall.HandShape[otherMajor].Max = 8;
 
                     //  the cue'd major can't have more than 3 cards (due to 5-5 in other suits)
-                    overcall.HandShape[cueSuit].Max = 3;
+                    overcall.HandShape[db.suit].Max = 3;
 
                     //  the minors can't have more than 8
                     overcall.HandShape[Suit.Clubs].Max = 8;
@@ -103,9 +97,18 @@ namespace Trickster.Bots
                         case Suit.Spades:
                             overcall.Points.Min = 7;
                             overcall.Points.Max = 17;
-                            overcall.IsGood = true;
-                            overcall.Description = $"5+ {db.suit}";
+                            overcall.Description = $"5+ {db.suit}; good if under 12 HCP";
                             overcall.HandShape[db.suit].Min = 5;
+                            overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
+                            //  with opening values any 5-card suit will do at the 1-level, unless 1NT describes the hand better
+                            overcall.Validate = hand =>
+                            {
+                                if (BasicBidding.IsGoodSuit(hand, db.suit, 5))
+                                    return true;
+
+                                var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                                return hcp >= 12 && !(BasicBidding.IsBalanced(hand) && hcp >= 15 && hcp <= 18);
+                            };
                             return;
 
                         //  (1C)-1N
@@ -144,6 +147,7 @@ namespace Trickster.Bots
                                 overcall.HandShape[db.suit].Min = 5;
                                 overcall.IsGood = true;
                                 overcall.Description = $"5+ {db.suit}";
+                                overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
                             }
                             //  (1C)-2D
                             //  (1C)-2H
@@ -176,6 +180,7 @@ namespace Trickster.Bots
                 //  a jump overcall of 2NT shows at least 5–5 in the lowest two unbid suits.
                 overcall.BidConvention = BidConvention.UnusualNotrump;
                 overcall.BidMessage = BidMessage.Forcing;
+                overcall.Points.Min = 8;
 
                 var bidSuits = overcall.SuitsBid;
                 var twoLow = SuitRank.stdSuits.Where(s => !bidSuits.Contains(s)).OrderBy(s => BridgeBot.suitRank[s]).Take(2).ToList();
@@ -191,6 +196,17 @@ namespace Trickster.Bots
             //  jump overcalls are preemptive, showing the same value as an opening bid at the same level
             //  versus an opening preempt, an overcall in a suit or notrump is natural; a cuebid is Michaels (handled above)
             Opening.Interpret(overcall);
+        }
+
+        //  over a forcing response we're sure to bid again, so an 18+ hand with a good 6+ card suit bids it instead of doubling
+        public static bool IsStrongSuitOvercall(InterpretedBid overcall, Hand hand, Suit suit)
+        {
+            var opponentsLastBid = overcall.History[overcall.Index - 1];
+            if (opponentsLastBid.BidPhase != BidPhase.Response || opponentsLastBid.BidMessage != BidMessage.Forcing)
+                return false;
+
+            return BasicBidding.CountsBySuit(hand)[suit] >= 6 && BasicBidding.IsGoodSuit(hand, suit, 6) &&
+                   BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand) >= 18;
         }
     }
 }

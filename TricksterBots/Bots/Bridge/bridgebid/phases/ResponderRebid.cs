@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System.Linq;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -31,6 +32,19 @@ namespace Trickster.Bots
                 return;
             }
 
+            if (!isNT && playerMinOfSuit > 0 && partnerMinOfSuit == 0 && bid.declareBid.level < bid.GameLevel &&
+                bid.declareBid.level == bid.LowestAvailableLevel(bid.declareBid.suit, true) &&
+                playerSummary.Points.Max + partnerSummary.Points.Min < InterpretedBid.InvitationalPoints)
+            {
+                //  responder already denied invitational values, so rebidding a long suit is to play
+                bid.Points.Max = playerSummary.Points.Max;
+                bid.BidPointType = BidPointType.Hcp;
+                bid.BidMessage = BidMessage.Signoff;
+                bid.HandShape[bid.declareBid.suit].Min = 6;
+                bid.Description = $"To play; 6+ {bid.declareBid.suit}";
+                return;
+            }
+
             if (bid.declareBid.level >= 6)
             {
                 //  6X, 7X
@@ -52,9 +66,11 @@ namespace Trickster.Bots
                 //  TODO: validate knowing count of Aces will help decision to bid slam
                 bid.Validate = hand => false;
             }
-            else if (bid.declareBid.level == bid.GameLevel && ((isNT && partnerSummary.IsBalanced) || playerMinOfSuit > 0 || partnerMinOfSuit > 0))
+            else if (bid.declareBid.level == bid.GameLevel && (isNT || playerMinOfSuit > 0 || partnerMinOfSuit > 0))
             {
-                //  sign-off at game of a previously bid suit: 3NT, 4H, 4S, 5C, 5D
+                //  sign-off at game of a previously bid suit or in notrump: 3NT, 4H, 4S, 5C, 5D
+                //  (3NT does not require a balanced partner; with game values and no fit it's the standard spot,
+                //  and suit games still rank higher when a fit is known)
                 bid.Points.Min = bid.GamePoints - partnerSummary.Points.Min;
                 bid.BidMessage = BidMessage.Signoff;
                 bid.Description = "Sign-off at game";
@@ -101,8 +117,18 @@ namespace Trickster.Bots
                     {
                         //  with no info from partner in our suit...
                         if (bid.declareBid.level < bid.GameLevel)
+                        {
                             //  we need 6+ cards to rebid our suit below game
                             bid.HandShape[bid.declareBid.suit].Min = 6;
+                            //  with a known 8-card fit in partner's suit, show support instead of rebidding a minor
+                            if (BridgeBot.IsMinor(bid.declareBid.suit))
+                                bid.Validate = hand =>
+                                {
+                                    var counts = BasicBidding.CountsBySuit(hand);
+                                    return !SuitRank.stdSuits.Any(s => s != bid.declareBid.suit &&
+                                        partnerSummary.HandShape[s].Min > 0 && counts[s] + partnerSummary.HandShape[s].Min >= 8);
+                                };
+                        }
                         else if (bid.declareBid.level == bid.GameLevel)
                             //  we need 7+ cards to rebid our suit at game
                             bid.HandShape[bid.declareBid.suit].Min = 7;
