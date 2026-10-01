@@ -123,3 +123,8 @@ Pass Pass Pass 1H
 [Auction "W"]
 Pass Pass Pass 1H
 1S 2C
+
+[Event "No shortness points when raising a minor (choose 2-level instead of 3-level)"]
+[Deal "S:- - 93.Q4.A9642.QJT4 -"]
+[Auction "S"]
+1D Pass 2D Pass

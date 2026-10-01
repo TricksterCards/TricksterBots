@@ -62,8 +62,8 @@ namespace Trickster.Bots
             response.Points.Min = 10;
             if (IsPassedHand(response))
                 response.Points.Max = 12;
-            if (BridgeBot.IsMajor(openSuit))
-                response.BidPointType = BidPointType.Dummy;
+            //  minor raises aim for 3NT, so count HCP only
+            response.BidPointType = BridgeBot.IsMajor(openSuit) ? BidPointType.Dummy : BidPointType.Hcp;
             response.BidMessage = BidMessage.Forcing;
             response.HandShape[openSuit].Min = minSupport;
             response.Description = $"Good raise; {minSupport}+ {openSuit}";
@@ -326,8 +326,7 @@ namespace Trickster.Bots
                         var minCardsInSuit = overcall.bidIsDeclare && BridgeBot.IsMajor(openSuit) ? 3 : 8 - opening.HandShape[openSuit].Min;
                         response.Points.Min = 6;
                         response.Points.Max = 9;
-                        if (BridgeBot.IsMajor(openSuit))
-                            response.BidPointType = BidPointType.Dummy;
+                        response.BidPointType = BridgeBot.IsMajor(openSuit) ? BidPointType.Dummy : BidPointType.Hcp;
                         response.HandShape[response.declareBid.suit].Min = minCardsInSuit;
                         response.Description = $"Single raise; {minCardsInSuit}+ {response.declareBid.suit}";
                     }
@@ -346,6 +345,11 @@ namespace Trickster.Bots
                         {
                             var counts = BasicBidding.CountsBySuit(hand);
                             var mine = counts[response.declareBid.suit];
+
+                            //  limited hands with a fit for partner's minor raise directly
+                            if (BridgeBot.IsMinor(openSuit) && counts[openSuit] >= 8 - opening.HandShape[openSuit].Min &&
+                                BasicBidding.ComputeHighCardPoints(hand) <= 12)
+                                return false;
 
                             //  balanced hands with only a 4-card suit prefer NT on a minimum or when partner may pass
                             if (mine == 4 && BasicBidding.IsBalanced(hand) &&
@@ -389,8 +393,7 @@ namespace Trickster.Bots
                         var minCardsInSuit = 8 - opening.HandShape[openSuit].Min;
                         response.Points.Min = 10;
                         response.Points.Max = 12;
-                        if (BridgeBot.IsMajor(openSuit))
-                            response.BidPointType = BidPointType.Dummy;
+                        response.BidPointType = BridgeBot.IsMajor(openSuit) ? BidPointType.Dummy : BidPointType.Hcp;
                         response.HandShape[response.declareBid.suit].Min = minCardsInSuit;
                         response.Description = $"Limit raise; {minCardsInSuit}+ {response.declareBid.suit}";
                     }
