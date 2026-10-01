@@ -130,3 +130,15 @@ Pass 3C
 [Auction "N"]
 1H 1S 2S Pass
 4H
+
+[Event "Pass a minimum 5-4 in the minors over interference rather than reverse or rebid a 5-card suit"]
+[Deal "E:- T3.76.AQT8.KQ854 - -"]
+[Auction "E"]
+Pass 1C Pass 1H
+1S Pass
+
+[Event "Free rebid of a 5-card suit over interference with extra values"]
+[Deal "E:- Q3.76.AQT8.KQJ54 - -"]
+[Auction "E"]
+Pass 1C Pass 1H
+1S 2C

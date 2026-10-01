@@ -275,6 +275,11 @@ namespace Trickster.Bots
                         if (counts[opening.declareBid.suit] >= 6)
                             return true;
 
+                        //  over interference, a bare minimum with only 5 cards passes rather than make a free rebid
+                        if (rebid.History[rebid.Index - 1].bid != BidBase.Pass &&
+                            BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand) < 15)
+                            return false;
+
                         //  with only 5 cards in the opening suit, do not rebid it if we can raise partner's suit
                         if (response.bidIsDeclare && response.declareBid.suit != Suit.Unknown)
                         {
