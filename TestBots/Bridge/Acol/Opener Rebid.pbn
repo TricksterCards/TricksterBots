@@ -142,3 +142,9 @@ Pass 1C Pass 1H
 [Auction "E"]
 Pass 1C Pass 1H
 1S 2C
+
+[Event "Invite game with 3S holding 17 balanced after a single raise"]
+[Deal "S:AK97.K52.KJ53.KT - - -"]
+[Auction "S"]
+1S Pass 2S Pass
+3S

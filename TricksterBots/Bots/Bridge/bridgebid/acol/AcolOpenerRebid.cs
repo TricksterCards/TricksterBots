@@ -127,11 +127,12 @@ namespace Trickster.Bots
                         }
                         else
                         {
-                            //  1x-2x-3x: re-raise inviting game
+                            //  1x-2x-3x: re-raise inviting game; a 4-card major suffices opposite responder's 4+ support
+                            var minLength = BridgeBot.IsMajor(rebid.declareBid.suit) ? 4 : 5;
                             rebid.Points.Min = 16;
                             rebid.Points.Max = 18;
-                            rebid.HandShape[rebid.declareBid.suit].Min = 5;
-                            rebid.Description = $"Inviting game; 5+ {rebid.declareBid.suit}";
+                            rebid.HandShape[rebid.declareBid.suit].Min = minLength;
+                            rebid.Description = $"Inviting game; {minLength}+ {rebid.declareBid.suit}";
                         }
                     }
                     else if (rebid.declareBid.level == rebid.GameLevel)
