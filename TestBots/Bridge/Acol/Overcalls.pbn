@@ -9,6 +9,11 @@
 [Auction "N"]
 1C Pass
 
+[Event "Constructive hand overcalls a 5-card suit that passes the Suit Quality Test"]
+[Deal "N:- - KJ942.QT76.J9.A2 -"]
+[Auction "N"]
+Pass 1H 1S
+
 [Event "Very weak 6-5 hand does not bid Unusual 2NT"]
 [Deal "E:- 7.3.87632.QJT764 - -"]
 [Auction "E"]

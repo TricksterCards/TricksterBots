@@ -95,15 +95,16 @@ namespace Trickster.Bots
                         case Suit.Diamonds:
                         case Suit.Hearts:
                         case Suit.Spades:
+                            var isAcol = overcall.Options.bidding == BridgeBiddingScheme.Acol;
                             overcall.Points.Min = 7;
                             overcall.Points.Max = 17;
-                            overcall.Description = $"5+ {db.suit}; good if under 12 HCP";
+                            overcall.Description = isAcol ? $"5+ {db.suit}; suit quality 7+ if under 12 HCP" : $"5+ {db.suit}; good if under 12 HCP";
                             overcall.HandShape[db.suit].Min = 5;
                             overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
                             //  with opening values any 5-card suit will do at the 1-level, unless 1NT describes the hand better
                             overcall.Validate = hand =>
                             {
-                                if (BasicBidding.IsGoodSuit(hand, db.suit, 5))
+                                if (isAcol ? SuitQuality(hand, db.suit) >= 7 : BasicBidding.IsGoodSuit(hand, db.suit, 5))
                                     return true;
 
                                 var hcp = BasicBidding.ComputeHighCardPoints(hand);
@@ -196,6 +197,12 @@ namespace Trickster.Bots
             //  jump overcalls are preemptive, showing the same value as an opening bid at the same level
             //  versus an opening preempt, an overcall in a suit or notrump is natural; a cuebid is Michaels (handled above)
             Opening.Interpret(overcall);
+        }
+
+        //  Suit Quality Test: suit length plus honours (A, K, Q, J, 10) should be at least the number of tricks contracted for
+        public static int SuitQuality(Hand hand, Suit suit)
+        {
+            return hand.Count(c => c.suit == suit) + hand.Count(c => c.suit == suit && c.rank >= Rank.Ten);
         }
 
         //  over a forcing response we're sure to bid again, so an 18+ hand with a good 6+ card suit bids it instead of doubling
