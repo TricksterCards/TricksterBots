@@ -1,0 +1,46 @@
+[Event "Doubler with 22+ balanced and stoppers bids game in notrump after a forced advance"]
+[Deal "W:- - - AKQ.AJ84.AT.AKJ9"]
+[Auction "W"]
+Pass Pass 1S X
+Pass 2C 2D 3NT
+
+[Event "Doubler with 19-21 balanced and a stopper bids notrump at the cheapest level"]
+[Deal "W:- - - AQ5.KQ4.AJ5.KJ32"]
+[Auction "W"]
+Pass Pass 1S X
+Pass 2C Pass 2NT
+
+[Event "Doubler with 22-23 balanced and a stopper jumps to 2NT to invite game"]
+[Deal "W:- - - K32.AQ5.AKJ4.KQ5"]
+[Auction "W"]
+Pass Pass 1H X
+Pass 1S Pass 2NT
+[Event "Doubler with 16-18 and 4-card support makes a single raise of advancer's major"]
+[Deal "W:- - - KJ84.Q763.AKJ8.A"]
+[Auction "W"]
+Pass Pass 1C X
+Pass 1S Pass 2S
+
+[Event "Doubler with 19-21 and 4-card support jump raises advancer's major rather than bid notrump"]
+[Deal "W:- - - KJ84.A976.AKQ.A8"]
+[Auction "W"]
+Pass Pass 1C X
+Pass 1S Pass 3S
+
+[Event "Doubler with 19-21, a minor fit and no stopper jump raises advancer's minor"]
+[Deal "W:- - - AK84.AQ7.KQJ9.98"]
+[Auction "W"]
+Pass Pass 1C X
+Pass 1D Pass 3D
+
+[Event "Doubler with a strong hand and no stopper or fit cuebids"]
+[Deal "W:- - - AKJ4.AJ76.AKQ.98"]
+[Auction "W"]
+Pass Pass 1C X
+Pass 1D Pass 2C
+
+[Event "Doubler with 22+ and a 6-card suit makes a jump shift"]
+[Deal "W:- - - KJ9.AQJ832.KQ.AJ"]
+[Auction "W"]
+Pass Pass 1C X
+Pass 1D Pass 2H

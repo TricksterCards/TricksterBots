@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -211,33 +212,174 @@ namespace Trickster.Bots
                 return;
 
             var opening = rebid.History.First(b => b.bid != BidBase.Pass);
+            var suit = rebid.declareBid.suit;
 
-            //  TODO: should this be level limited?
-            if (rebid.declareBid.suit == opening.declareBid.suit && rebid.declareBid.suit != Suit.Unknown)
+            if (suit == opening.declareBid.suit && suit != Suit.Unknown)
             {
+                //  cuebid: 19+ points without a better descriptive bid (other bids describing shape are preferred when sorting)
                 rebid.BidConvention = BidConvention.Cuebid;
                 rebid.BidMessage = BidMessage.Forcing;
                 rebid.Points.Min = 19;
                 rebid.Description = "asking for more information";
-                //  TODO: should the bot sometimes bid this?
-                rebid.Validate = hand => false;
+                if (!IsMinimumSuitAdvance(advance) || rebid.declareBid.level > 3 || rebid.declareBid.level != rebid.LowestAvailableLevel(suit, true))
+                    rebid.Validate = hand => false;
             }
-            else if (rebid.declareBid.suit == advance.declareBid.suit)
+            else if (suit == advance.declareBid.suit && suit != Suit.Unknown)
             {
-                //  TODO: combine our points with strength shown by advancer to decide how to bid
-                //var advancerSummary = new InterpretedBid.PlayerSummary(advance.History, advance.Index % 4);
+                RaiseAdvance(advance, rebid);
             }
-            else if (rebid.declareBid.suit == Suit.Unknown)
+            else if (suit == Suit.Unknown)
             {
-                //  TODO: what do we do here?
+                NotrumpRebid(advance, rebid);
             }
-            else if (rebid.declareBid.level == rebid.LowestAvailableLevel(rebid.declareBid.suit))
+            else if (!OpponentSuits(rebid).Contains(suit))
             {
-                //  new suit at lowest available level shows 18+ points and 5+ cards
+                NewSuitRebid(advance, rebid);
+            }
+        }
+
+        private static bool IsMinimumSuitAdvance(InterpretedBid advance)
+        {
+            return advance.declareBid.suit != Suit.Unknown && advance.BidConvention != BidConvention.Cuebid && !advance.IsPreemptive && advance.Points.Max <= 8;
+        }
+
+        private static List<Suit> OpponentSuits(InterpretedBid rebid)
+        {
+            return rebid.History
+                .Where(b => (rebid.Index - b.Index) % 2 == 1 && b.bidIsDeclare && b.declareBid.suit != Suit.Unknown)
+                .Select(b => b.declareBid.suit).Distinct().ToList();
+        }
+
+        //  returns the HCP range (and description prefix) for a notrump rebid at this level, or null if not defined
+        private static (int min, int max, string prefix)? NotrumpRange(InterpretedBid rebid, int level)
+        {
+            //  a direct 1NT overcall shows 15-18 HCP, so doubling then bidding notrump shows more
+            //  Acol: cheapest NT 19-21, jump to 2NT 22-23, 3NT 24+ (or 22+ when 2NT was the cheapest)
+            //  SAYC: cheapest 1NT 18-20 or 2NT 19-21, jump to 2NT 21-22, 3NT 23+ (or 22+ when 2NT was the cheapest)
+            var isAcol = rebid.Options.bidding == BridgeBiddingScheme.Acol;
+            var lowestAvailableLevel = rebid.LowestAvailableLevel(Suit.Unknown, true);
+            if (level == lowestAvailableLevel && level <= 2)
+            {
+                var min = isAcol || level == 2 ? 19 : 18;
+                return (min, min + 2, string.Empty);
+            }
+
+            if (level == lowestAvailableLevel + 1 && level == 2)
+            {
+                var min = isAcol ? 22 : 21;
+                return (min, min + 1, "inviting game; ");
+            }
+
+            if (level == 3 && lowestAvailableLevel < 3)
+                return (lowestAvailableLevel == 2 ? 22 : isAcol ? 24 : 23, 37, string.Empty);
+
+            return null;
+        }
+
+        private static bool HasStoppers(Hand hand, IEnumerable<Suit> suits)
+        {
+            return suits.All(s => BasicBidding.HasStopper(hand, s));
+        }
+
+        private static void RaiseAdvance(InterpretedBid advance, InterpretedBid rebid)
+        {
+            if (!IsMinimumSuitAdvance(advance))
+                return;
+
+            //  raise with 4+ support: single raise 16-18 (through the 3-level), jump raise 19-21, game (beyond a jump) 22+
+            var suit = rebid.declareBid.suit;
+            var level = rebid.declareBid.level;
+            var lowestAvailableLevel = rebid.LowestAvailableLevel(suit, true);
+            if (level == lowestAvailableLevel && level <= 3)
+            {
+                rebid.Points.Min = 16;
+                rebid.Points.Max = 18;
+                rebid.Description = $"4+ {suit}; inviting game";
+            }
+            else if (level == lowestAvailableLevel + 1 && level <= rebid.GameLevel)
+            {
+                rebid.Points.Min = 19;
+                rebid.Points.Max = 21;
+                rebid.Description = level >= rebid.GameLevel ? $"4+ {suit}" : $"4+ {suit}; strongly inviting game";
+            }
+            else if (level == rebid.GameLevel && level > lowestAvailableLevel + 1)
+            {
+                rebid.Points.Min = 22;
+                rebid.BidMessage = BidMessage.Signoff;
+                rebid.Description = $"4+ {suit}";
+            }
+            else
+            {
+                return;
+            }
+
+            rebid.BidPointType = BidPointType.Hcp;
+            rebid.HandShape[suit].Min = 4;
+
+            //  prefer notrump over raising a minor when balanced with stoppers and strong enough
+            var notrump = NotrumpRange(rebid, rebid.LowestAvailableLevel(Suit.Unknown, true));
+            if (BridgeBot.IsMinor(suit) && notrump.HasValue)
+            {
+                var opponentSuits = OpponentSuits(rebid);
+                rebid.Validate = hand => !(BasicBidding.IsBalanced(hand) && HasStoppers(hand, opponentSuits) &&
+                                           BasicBidding.ComputeHighCardPoints(hand) >= notrump.Value.min);
+            }
+        }
+
+        private static void NewSuitRebid(InterpretedBid advance, InterpretedBid rebid)
+        {
+            var suit = rebid.declareBid.suit;
+            var level = rebid.declareBid.level;
+            var lowestAvailableLevel = rebid.LowestAvailableLevel(suit);
+            if (level == lowestAvailableLevel)
+            {
+                //  new suit at lowest available level shows 18-21 points and 5+ cards
                 rebid.Points.Min = 18;
-                rebid.HandShape[rebid.declareBid.suit].Min = 5;
-                rebid.Description = $"5+ {rebid.declareBid.suit}";
+                rebid.Points.Max = 21;
+                rebid.HandShape[suit].Min = 5;
+                rebid.Description = $"5+ {suit}";
             }
+            else if (level == lowestAvailableLevel + 1 && level <= 3)
+            {
+                //  jump in a new suit shows 22+ points and a good 6+ card suit
+                rebid.Points.Min = 22;
+                rebid.HandShape[suit].Min = 6;
+                rebid.Description = $"Jump shift; 6+ {suit}";
+            }
+            else
+            {
+                return;
+            }
+
+            //  with 4+ card support for advancer's major, prefer raising it
+            if (BridgeBot.IsMajor(advance.declareBid.suit))
+                rebid.Validate = hand => BasicBidding.CountsBySuit(hand)[advance.declareBid.suit] < 4;
+        }
+
+        private static void NotrumpRebid(InterpretedBid advance, InterpretedBid rebid)
+        {
+            //  only define these over a minimum (0-8 point) suit advance
+            if (!IsMinimumSuitAdvance(advance))
+                return;
+
+            var range = NotrumpRange(rebid, rebid.declareBid.level);
+            if (!range.HasValue)
+                return;
+
+            rebid.Points.Min = range.Value.min;
+            rebid.Points.Max = range.Value.max;
+            if (rebid.declareBid.level == 3)
+                rebid.BidMessage = BidMessage.Signoff;
+
+            var opponentSuits = OpponentSuits(rebid);
+
+            rebid.BidPointType = BidPointType.Hcp;
+            rebid.IsBalanced = true;
+            rebid.Description = $"{range.Value.prefix}stoppers in {string.Join(" and ", opponentSuits)}";
+            if (BridgeBot.IsMajor(advance.declareBid.suit))
+                //  with 4+ card support for advancer's major, prefer raising it
+                rebid.HandShape[advance.declareBid.suit].Max = 3;
+            rebid.Validate = hand => HasStoppers(hand, opponentSuits);
         }
 
         private static bool Response(InterpretedBid opening, InterpretedBid response)
