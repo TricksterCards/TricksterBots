@@ -43,6 +43,11 @@ Pass Pass Pass Pass
 [Auction "N"]
 3H Pass Pass Pass
 
+[Event "Preempt 3D with an 8-card minor rather than open 1D (fails the Rule of 20)"]
+[Deal "W:- 75.A9.KJT87432.4 - -"]
+[Auction "W"]
+Pass 3D Pass -
+
 [Event "Open a 5-card major with balanced 12 HCP"]
 [Deal "W:AK854.Q86.64.K75 - - -"]
 [Auction "W"]

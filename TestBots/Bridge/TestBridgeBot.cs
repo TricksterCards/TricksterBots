@@ -33,6 +33,7 @@ namespace TestBots
 
         [TestMethod]
         [DataRow(BridgeBiddingScheme.Acol, 3, Suit.Hearts, "Good 7-card Hearts suit; preempt (6-10 HCP)")]
+        [DataRow(BridgeBiddingScheme.Acol, 3, Suit.Diamonds, "Good 7-8 card Diamonds suit; preempt (6-10 HCP)")]
         [DataRow(BridgeBiddingScheme.Acol, 4, Suit.Hearts, "Good 8-card Hearts suit; preempt (6-10 HCP)")]
         [DataRow(BridgeBiddingScheme.Acol, 5, Suit.Clubs, "Good 9-card Clubs suit; preempt (6-10 HCP)")]
         [DataRow(BridgeBiddingScheme.SAYC, 3, Suit.Hearts, "Good 7-card Hearts suit; preempt (5-11 HCP)")]

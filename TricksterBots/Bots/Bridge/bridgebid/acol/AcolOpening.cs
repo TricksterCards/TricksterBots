@@ -28,6 +28,9 @@ namespace Trickster.Bots
 
                     if (db.suit != Suit.Unknown && opening.Index < 2)
                     {
+                        //  distribution is accounted for by the Rule of 20, so otherwise require 12+ HCP
+                        opening.BidPointType = BidPointType.Hcp;
+
                         //  use the Rule of 20 in 1st or 2nd seat
                         opening.AlternateMatches = hand =>
                         {
@@ -155,9 +158,12 @@ namespace Trickster.Bots
                                 opening.BidPointType = BidPointType.Hcp;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
-                                opening.Description = $"7-card {db.suit} suit";
                                 opening.HandShape[db.suit].Min = 7;
-                                opening.HandShape[db.suit].Max = 7;
+
+                                //  with an 8-card minor, stay at the 3-level to keep 3NT in the picture
+                                var max = BridgeBot.IsMajor(db.suit) ? 7 : 8;
+                                opening.HandShape[db.suit].Max = max;
+                                opening.Description = max == 7 ? $"7-card {db.suit} suit" : $"7-8 card {db.suit} suit";
                             }
 
                             break;
@@ -177,12 +183,9 @@ namespace Trickster.Bots
                 case 4:
                     switch (db.suit)
                     {
-                        //  4C
-                        //  4D
                         //  4H
                         //  4S
-                        case Suit.Clubs:
-                        case Suit.Diamonds:
+                        //  (8-card minors open at the 3-level and 9-card minors at the 5-level)
                         case Suit.Hearts:
                         case Suit.Spades:
                             if (opening.Index < 3)
