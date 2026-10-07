@@ -30,3 +30,10 @@ Pass 3H Pass 4H
 [Auction "S"]
 1C 1H Pass 2H
 Pass 3H Pass Pass
+
+[Event "Rebid a six-card suit without a stopper in the unbid suit after responder's game-forcing new suit"]
+[Deal "E:- AK8542.Q4.Q2.543 - -"]
+[Auction "E"]
+Pass 1S Pass 2C
+Pass 2S Pass 3H
+Pass 3S

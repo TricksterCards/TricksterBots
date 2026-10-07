@@ -238,10 +238,11 @@ namespace Trickster.Bots
                 var unbidSuits = SuitRank.stdSuits.Where(s => !context.OurSuits.Contains(s) && !opponentSuits.Contains(s)).ToList();
                 bid.Validate = hand =>
                 {
-                    //  no shortness in a suit nobody has bid unless it's a stopper (e.g. a singleton Ace)
+                    //  with only one suit left unbid, notrump promises a stopper in it;
+                    //  otherwise just avoid shortness in a suit nobody has bid unless it's a stopper (e.g. a singleton Ace)
                     var counts = BasicBidding.CountsBySuit(hand);
                     return opponentSuits.All(s => BasicBidding.HasStopper(hand, s)) &&
-                           unbidSuits.All(s => counts[s] >= 2 || BasicBidding.HasStopper(hand, s));
+                           unbidSuits.All(s => (unbidSuits.Count > 1 && counts[s] >= 2) || BasicBidding.HasStopper(hand, s));
                 };
                 return true;
             }
@@ -295,7 +296,8 @@ namespace Trickster.Bots
             {
                 var counts = BasicBidding.CountsBySuit(hand);
                 var combined = counts[suit] + partnerShape[suit].Min;
-                return otherSuits.All(s => counts[s] + partnerShape[s].Min <= combined);
+                //  only a real (8+ card) fit elsewhere outweighs rebidding our own long suit
+                return otherSuits.All(s => counts[s] + partnerShape[s].Min <= Math.Max(combined, 7));
             };
         }
 
