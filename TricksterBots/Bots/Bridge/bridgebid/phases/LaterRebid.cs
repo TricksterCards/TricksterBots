@@ -108,9 +108,10 @@ namespace Trickster.Bots
                     bid.Description = "Accept invitation";
                 }
                 else if (isCheapest && level == 3 && BridgeBot.IsMajor(suit) && suit != context.PartnerStrain &&
-                         !context.OpponentSuits.Contains(suit) && context.Partner.HandShape[suit].Min >= 4)
+                         !context.OpponentSuits.Contains(suit) && context.Partner.HandShape[suit].Min >= 4 &&
+                         context.PartnerBidNaturally(suit))
                 {
-                    //  delayed 3-card support lets partner choose between 3NT and the major
+                    //  delayed 3-card support lets partner choose between 3NT and the major (partner's bid suit may be 5+)
                     bid.Points.Min = GamePoints(Suit.Unknown) - context.PartnerInviteValue(Suit.Unknown);
                     bid.HandShape[suit].Min = 3;
                     bid.HandShape[suit].Max = 3;
@@ -344,6 +345,12 @@ namespace Trickster.Bots
             }
 
             public Suit PartnerStrain => PartnerLast.bidIsDeclare ? PartnerLast.declareBid.suit : Suit.Unknown;
+
+            public bool PartnerBidNaturally(Suit suit)
+            {
+                return Bid.History.Any(b => (Bid.Index - b.Index) % 4 == 2 && b.bidIsDeclare && b.declareBid.suit == suit &&
+                                            b.BidConvention == BidConvention.None);
+            }
 
             //  accept an invitation when we're above the middle of partner's range (but stay conservative about 5m)
             public int PartnerInviteValue(Suit gameStrain)

@@ -1,4 +1,4 @@
-// last updated 10/6/2026 10:48 AM (-05:00)
+// last updated 10/7/2026 12:41 PM (-05:00)
 using System.Collections.Generic;
 
 namespace TestBots
@@ -52,7 +52,7 @@ namespace TestBots
                 "test_invitational_stayman", new[]
                 {
                     new SaycResult(true, 431, 431),
-                    new SaycResult(false, 431, 440), // last run result: 3♠; expected: 4♥;
+                    new SaycResult(true, 440, 440),
                     new SaycResult(true, 439, 439),
                     new SaycResult(true, 424, 424),
                     new SaycResult(true, 432, 432),
@@ -64,7 +64,7 @@ namespace TestBots
                     new SaycResult(true, 429, 429),
                     new SaycResult(true, 432, 432),
                     new SaycResult(false, 431, 402), // last run result: 3♠; expected: X;
-                    new SaycResult(false, 431, 440), // last run result: 3♠; expected: 4♥;
+                    new SaycResult(true, 440, 440),
                 }
              },
              {

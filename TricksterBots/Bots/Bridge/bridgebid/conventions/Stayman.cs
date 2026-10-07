@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -160,11 +161,21 @@ namespace Trickster.Bots
 
             if (rebid.declareBid.level <= 3 && BridgeBot.IsMajor(rebid.declareBid.suit) && rebid.declareBid.suit != answer.declareBid.suit)
             {
-                //  show a 5-card major by bidding it (implies 4 of the other major)
                 var otherMajor = rebid.declareBid.suit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
-                rebid.HandShape[rebid.declareBid.suit].Min = 5;
-                rebid.HandShape[otherMajor].Min = 4;
-                rebid.Description = $"5+ {rebid.declareBid.suit} and 4+ {otherMajor}";
+                if (BridgeBot.IsMajor(answer.declareBid.suit))
+                {
+                    //  after opener shows the other major: 4 cards at the 2-level, 5+ when jumping
+                    rebid.HandShape[rebid.declareBid.suit].Min = rebid.declareBid.level == 2 ? 4 : 5;
+                    InferOtherMajor(answer, rebid);
+                    rebid.Description = $"{rebid.HandShape[rebid.declareBid.suit].Min}+ {rebid.declareBid.suit}; denies 4 {otherMajor}";
+                }
+                else
+                {
+                    //  show a 5-card major by bidding it (implies 4 of the other major)
+                    rebid.HandShape[rebid.declareBid.suit].Min = 5;
+                    rebid.HandShape[otherMajor].Min = 4;
+                    rebid.Description = $"5+ {rebid.declareBid.suit} and 4+ {otherMajor}";
+                }
 
                 if (rebid.declareBid.level == 2)
                 {
@@ -198,10 +209,33 @@ namespace Trickster.Bots
                 rebid.Points.Min = InterpretedBid.InvitationalPoints - opening.Points.Min;
                 rebid.Points.Max = rebid.GamePoints - 1 - opening.Points.Min;
                 rebid.Description = "Inviting game";
+                InferOtherMajor(answer, rebid);
+                return true;
+            }
+
+            if (rebid.declareBid.level == 3 && rebid.declareBid.suit == Suit.Unknown)
+            {
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Points.Min = rebid.GamePoints - opening.Points.Min;
+                rebid.BidMessage = BidMessage.Signoff;
+                rebid.Description = "Sign-off at game";
+                InferOtherMajor(answer, rebid);
                 return true;
             }
 
             return false;
+        }
+
+        //  Stayman promised a 4-card major, so not raising the one opener showed means holding the other
+        private static void InferOtherMajor(InterpretedBid answer, InterpretedBid rebid)
+        {
+            var shown = answer.declareBid.suit;
+            if (!BridgeBot.IsMajor(shown) || rebid.declareBid.suit == shown)
+                return;
+
+            var other = shown == Suit.Hearts ? Suit.Spades : Suit.Hearts;
+            rebid.HandShape[shown].Max = Math.Min(rebid.HandShape[shown].Max, 3);
+            rebid.HandShape[other].Min = Math.Max(rebid.HandShape[other].Min, 4);
         }
 
         private static bool InterpretStayman(InterpretedBid response)
