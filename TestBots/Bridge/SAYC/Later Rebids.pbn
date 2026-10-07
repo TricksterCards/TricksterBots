@@ -1,0 +1,20 @@
+[Event "Accept a game invitation with a strong 5-5 hand and a void"]
+[Deal "S:- KJ763.AKQT8.862. - -"]
+[Auction "S"]
+Pass 1S 2D X
+Pass 2H Pass 3H
+Pass 4H
+
+[Event "Decline a game invitation with a minimum 5-4 hand"]
+[Deal "S:- KJ763.AQ84.62.Q5 - -"]
+[Auction "S"]
+Pass 1S 2D X
+Pass 2H Pass 3H
+Pass Pass
+
+[Event "Accept partner's sign-off"]
+[Deal "S:5.AKJ642.Q73.Q83 - - -"]
+[Auction "S"]
+1H Pass 1S Pass
+2H Pass 2S Pass
+Pass

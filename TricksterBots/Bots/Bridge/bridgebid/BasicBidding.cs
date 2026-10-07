@@ -38,6 +38,28 @@ namespace Trickster.Bots
             return dummyPoints;
         }
 
+        public static int ComputeFitPoints(Hand hand, Suit trump, bool asDummy)
+        {
+            //  revalue once a trump fit is known: declarer adds length + side shortness, dummy adds side shortness only
+            var counts = CountsBySuit(hand);
+            var points = ComputeHighCardPoints(hand);
+            if (!asDummy)
+                points += ComputeDistributionPoints(hand);
+
+            var fullDummyValue = asDummy && counts[trump] >= 4;
+            foreach (var suit in BasicSuits.Where(s => s != trump))
+            {
+                if (counts[suit] == 0)
+                    points += fullDummyValue ? 5 : 3;
+                else if (counts[suit] == 1)
+                    points += fullDummyValue ? 3 : 2;
+                else if (counts[suit] == 2 && asDummy)
+                    points += 1;
+            }
+
+            return points;
+        }
+
         public static int ComputeHighCardPoints(IReadOnlyList<Card> hand)
         {
             var highCardPoints = 0;

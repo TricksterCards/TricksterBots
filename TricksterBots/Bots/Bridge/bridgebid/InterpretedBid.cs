@@ -88,6 +88,9 @@ namespace Trickster.Bots
 
         public HandValidator AlternateMatches { get; set; }
 
+        //  overrides BidPointType when matching (BidPointType still drives the description)
+        public Func<Hand, int> PointCounter { get; set; }
+
         public int GameLevel => declareBid.suit == Suit.Unknown ? 3 : BridgeBot.IsMajor(declareBid.suit) ? 4 : 5;
 
         public int GamePoints => declareBid.suit == Suit.Unknown ? 25 : BridgeBot.IsMajor(declareBid.suit) ? 26 : 29;
@@ -198,20 +201,7 @@ namespace Trickster.Bots
             if (IsGood && !BasicBidding.IsGoodSuit(hand, declareBid.suit, HandShape[declareBid.suit].Min))
                 return false;
 
-            var points = BasicBidding.ComputeHighCardPoints(hand);
-            switch (BidPointType)
-            {
-                case BidPointType.Distribution:
-                    points += BasicBidding.ComputeDistributionPoints(hand);
-                    break;
-                case BidPointType.Dummy:
-                    points += BasicBidding.ComputeDummyPoints(hand);
-                    break;
-                case BidPointType.Hcp:
-                    break;
-                default:
-                    throw new Exception("Unknown point type");
-            }
+            var points = PointCounter?.Invoke(hand) ?? ComputePoints(hand);
 
             if (Points.Min > points || (points > Points.Max && !allowTooStrong))
                 return false;
@@ -243,6 +233,22 @@ namespace Trickster.Bots
 
             //  run any custom-validation required for this bid
             return Validate == null || Validate(hand);
+        }
+
+        private int ComputePoints(Hand hand)
+        {
+            var points = BasicBidding.ComputeHighCardPoints(hand);
+            switch (BidPointType)
+            {
+                case BidPointType.Distribution:
+                    return points + BasicBidding.ComputeDistributionPoints(hand);
+                case BidPointType.Dummy:
+                    return points + BasicBidding.ComputeDummyPoints(hand);
+                case BidPointType.Hcp:
+                    return points;
+                default:
+                    throw new Exception("Unknown point type");
+            }
         }
 
         public void NoFourCardMajors()
@@ -348,7 +354,11 @@ namespace Trickster.Bots
                     ResponderRebid.Interpret(this);
                     break;
                 case BidPhase.AdvanceRebid:
-                    //  TODO: AdvanceRebid.Interpret(this);
+                    LaterRebid.Interpret(this);
+                    break;
+                case BidPhase.Unknown:
+                    if (LaterRebid.Applies(this))
+                        LaterRebid.Interpret(this);
                     break;
             }
         }

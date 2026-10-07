@@ -185,7 +185,7 @@ namespace Trickster.Bots
             if (rebid.declareBid.level == 3 && BridgeBot.IsMinor(rebid.declareBid.suit))
             {
                 //  (SAYC Booklet): if responder rebids three of either minor, he shows slam interest and at least a five-card suit
-                rebid.Points.Min = InterpretedBid.SmallSlamPoints - opening.Points.Min;
+                rebid.Points.Min = InterpretedBid.SmallSlamPoints - opening.Points.Max;
                 rebid.HandShape[rebid.declareBid.suit].Min = 5;
                 rebid.Description = $"5+ {rebid.declareBid.suit}; slam interest";
                 return true;
