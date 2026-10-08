@@ -88,6 +88,9 @@ namespace Trickster.Bots
 
         public HandValidator AlternateMatches { get; set; }
 
+        //  overrides BidPointType when matching (BidPointType still drives the description)
+        public Func<Hand, int> PointCounter { get; set; }
+
         public int GameLevel => declareBid.suit == Suit.Unknown ? 3 : BridgeBot.IsMajor(declareBid.suit) ? 4 : 5;
 
         public int GamePoints => declareBid.suit == Suit.Unknown ? 25 : BridgeBot.IsMajor(declareBid.suit) ? 26 : 29;
@@ -138,7 +141,7 @@ namespace Trickster.Bots
 
                 var preemptString = IsPreemptive ? "; preempt" : string.Empty;
 
-                var maxPointsString = Points.Max >= 37 ? "+" : $"-{Points.Max}";
+                var maxPointsString = Points.Max >= 37 ? "+" : Points.Max > Points.Min ? $"-{Points.Max}" : string.Empty;
                 var pointTypeString = BidPointType == BidPointType.Hcp ? "HCP" : BidPointType == BidPointType.Dummy ? "dummy points" : "points";
                 var alternateString = string.IsNullOrEmpty(AlternatePoints) ? string.Empty : " or " + AlternatePoints;
                 var pointsString = Points.Min <= 0 && Points.Max >= 37 ? string.Empty : $" ({Points.Min}{maxPointsString} {pointTypeString}{alternateString})";
@@ -195,23 +198,10 @@ namespace Trickster.Bots
             if (IsBalanced && !BasicBidding.IsBalanced(hand))
                 return false;
 
-            if (IsGood && !BasicBidding.IsGoodSuit(hand, declareBid.suit))
+            if (IsGood && !BasicBidding.IsGoodSuit(hand, declareBid.suit, HandShape[declareBid.suit].Min))
                 return false;
 
-            var points = BasicBidding.ComputeHighCardPoints(hand);
-            switch (BidPointType)
-            {
-                case BidPointType.Distribution:
-                    points += BasicBidding.ComputeDistributionPoints(hand);
-                    break;
-                case BidPointType.Dummy:
-                    points += BasicBidding.ComputeDummyPoints(hand);
-                    break;
-                case BidPointType.Hcp:
-                    break;
-                default:
-                    throw new Exception("Unknown point type");
-            }
+            var points = PointCounter?.Invoke(hand) ?? ComputePoints(hand);
 
             if (Points.Min > points || (points > Points.Max && !allowTooStrong))
                 return false;
@@ -243,6 +233,22 @@ namespace Trickster.Bots
 
             //  run any custom-validation required for this bid
             return Validate == null || Validate(hand);
+        }
+
+        private int ComputePoints(Hand hand)
+        {
+            var points = BasicBidding.ComputeHighCardPoints(hand);
+            switch (BidPointType)
+            {
+                case BidPointType.Distribution:
+                    return points + BasicBidding.ComputeDistributionPoints(hand);
+                case BidPointType.Dummy:
+                    return points + BasicBidding.ComputeDummyPoints(hand);
+                case BidPointType.Hcp:
+                    return points;
+                default:
+                    throw new Exception("Unknown point type");
+            }
         }
 
         public void NoFourCardMajors()
@@ -303,36 +309,56 @@ namespace Trickster.Bots
             if (TakeoutDouble.Interpret(this))
                 return true;
 
+            if (UnusualNotrump.Interpret(this))
+                return true;
+
             return false;
         }
 
         private void InterpretPhase()
         {
+            var isAcol = Options.bidding == BridgeBiddingScheme.Acol;
+
             switch (BidPhase)
             {
                 case BidPhase.Opening:
-                    Opening.Interpret(this);
+                    if (isAcol)
+                        AcolOpening.Interpret(this);
+                    else
+                        Opening.Interpret(this);
                     break;
                 case BidPhase.Overcall:
                     Overcall.Interpret(this);
                     break;
                 case BidPhase.Response:
-                    Response.Interpret(this);
+                    if (isAcol)
+                        AcolResponse.Interpret(this);
+                    else
+                        Response.Interpret(this);
                     break;
                 case BidPhase.Advance:
                     Advance.Interpret(this);
                     break;
                 case BidPhase.OpenerRebid:
-                    OpenerRebid.Interpret(this);
+                    if (isAcol)
+                        AcolOpenerRebid.Interpret(this);
+                    else
+                        OpenerRebid.Interpret(this);
                     break;
                 case BidPhase.OvercallRebid:
-                    //  TODO: OvercallRebid.Interpret(this);
+                    if (isAcol)
+                        AcolOvercallRebid.Interpret(this);
+                    //  else: TODO: OvercallRebid.Interpret(this);
                     break;
                 case BidPhase.ResponderRebid:
                     ResponderRebid.Interpret(this);
                     break;
                 case BidPhase.AdvanceRebid:
-                    //  TODO: AdvanceRebid.Interpret(this);
+                    LaterRebid.Interpret(this);
+                    break;
+                case BidPhase.Unknown:
+                    if (LaterRebid.Applies(this))
+                        LaterRebid.Interpret(this);
                     break;
             }
         }

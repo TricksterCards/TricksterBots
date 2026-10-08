@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System.Linq;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -64,7 +65,7 @@ namespace Trickster.Bots
                     }
         }
 
-        private static void RebidPreemptOpening(InterpretedBid opening, InterpretedBid response, InterpretedBid rebid)
+        internal static void RebidPreemptOpening(InterpretedBid opening, InterpretedBid response, InterpretedBid rebid)
         {
             if (!response.bidIsDeclare || !rebid.bidIsDeclare || response.BidMessage == BidMessage.Signoff)
                 return;
@@ -144,7 +145,7 @@ namespace Trickster.Bots
                             rebid.Points.Max = 18;
                             rebid.HandShape[rebid.declareBid.suit].Min = 4;
                             rebid.Description = "inviting game";
-                            rebid.Validate = hand => !BasicBidding.IsGoodSuit(hand, rebid.declareBid.suit);
+                            rebid.Validate = hand => !BasicBidding.IsGoodSuit(hand, rebid.declareBid.suit, 4);
                         }
                         else
                         {
@@ -205,8 +206,21 @@ namespace Trickster.Bots
             }
             else if (rebid.declareBid.suit == Suit.Unknown)
             {
+                //  a natural 2NT response already limited responder's hand, so place the
+                //  contract instead of using the NT ladder (which would misread 4NT as a jump)
+                if (response.bidIsDeclare && response.declareBid.suit == Suit.Unknown && response.declareBid.level == 2 &&
+                    response.BidConvention == BidConvention.None)
+                {
+                    if (rebid.declareBid.level == 3)
+                    {
+                        rebid.Points.Min = 13;
+                        rebid.BidPointType = BidPointType.Hcp;
+                        rebid.BidMessage = BidMessage.Signoff;
+                        rebid.Description = "Sign-off at game";
+                    }
+                }
                 //  rebidding notrump
-                if (rebid.declareBid.level == lowestAvailableLevel)
+                else if (rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  minimum: lowest available level (13-15 points)
                     rebid.Points.Min = 13;
@@ -273,7 +287,7 @@ namespace Trickster.Bots
                     rebid.HandShape[rebid.declareBid.suit].Min = 6;
                     rebid.Description = $"Jump rebid; 6+ {rebid.declareBid.suit}";
                 }
-                else if (rebid.declareBid.level == lowestAvailableLevel + 2)
+                else if (rebid.declareBid.level == lowestAvailableLevel + 2 && BridgeBot.IsMajor(rebid.declareBid.suit))
                 {
                     //  maximum: double-jump rebid (19-21 points)
                     rebid.Points.Min = 19;

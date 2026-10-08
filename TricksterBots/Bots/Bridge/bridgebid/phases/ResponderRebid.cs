@@ -1,4 +1,6 @@
-﻿using Trickster.cloud;
+﻿using System;
+using System.Linq;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -31,6 +33,19 @@ namespace Trickster.Bots
                 return;
             }
 
+            if (!isNT && playerMinOfSuit > 0 && partnerMinOfSuit == 0 && bid.declareBid.level < bid.GameLevel &&
+                bid.declareBid.level == bid.LowestAvailableLevel(bid.declareBid.suit, true) &&
+                playerSummary.Points.Max + partnerSummary.Points.Min < InterpretedBid.InvitationalPoints)
+            {
+                //  responder already denied invitational values, so rebidding a long suit is to play
+                bid.Points.Max = playerSummary.Points.Max;
+                bid.BidPointType = BidPointType.Hcp;
+                bid.BidMessage = BidMessage.Signoff;
+                bid.HandShape[bid.declareBid.suit].Min = 6;
+                bid.Description = $"To play; 6+ {bid.declareBid.suit}";
+                return;
+            }
+
             if (bid.declareBid.level >= 6)
             {
                 //  6X, 7X
@@ -52,12 +67,18 @@ namespace Trickster.Bots
                 //  TODO: validate knowing count of Aces will help decision to bid slam
                 bid.Validate = hand => false;
             }
-            else if (bid.declareBid.level == bid.GameLevel && ((isNT && partnerSummary.IsBalanced) || playerMinOfSuit > 0 || partnerMinOfSuit > 0))
+            else if (bid.declareBid.level == bid.GameLevel && (isNT || playerMinOfSuit > 0 || partnerMinOfSuit > 0))
             {
-                //  sign-off at game of a previously bid suit: 3NT, 4H, 4S, 5C, 5D
+                //  sign-off at game of a previously bid suit or in notrump: 3NT, 4H, 4S, 5C, 5D
+                //  (3NT does not require a balanced partner; with game values and no fit it's the standard spot,
+                //  and suit games still rank higher when a fit is known)
                 bid.Points.Min = bid.GamePoints - partnerSummary.Points.Min;
                 bid.BidMessage = BidMessage.Signoff;
                 bid.Description = "Sign-off at game";
+
+                //  opposite an unbalanced partner, 3NT needs a balanced-ish hand and the unbid/opponents' suits stopped
+                if (isNT && !partnerSummary.IsBalanced)
+                    bid.Validate = NotrumpValidator(bid);
             }
             else if (bid.declareBid.level == (isNT ? 2 : 3))
             {
@@ -95,14 +116,26 @@ namespace Trickster.Bots
                     if (partnerMinOfSuit > 0)
                     {
                         //  if partner has shown length, ensure 8+ card combined fit in chosen suit
-                        bid.HandShape[bid.declareBid.suit].Min = 8 - partnerSummary.HandShape[bid.declareBid.suit].Min;
+                        //  (if partner raised a suit we've shown, the fit is agreed, so our shown length is enough)
+                        var fitLength = 8 - partnerSummary.HandShape[bid.declareBid.suit].Min;
+                        bid.HandShape[bid.declareBid.suit].Min = playerMinOfSuit >= 4 && partnerMinOfSuit >= 3 ? Math.Min(fitLength, playerMinOfSuit) : fitLength;
                     }
                     else if (playerMinOfSuit > 0)
                     {
                         //  with no info from partner in our suit...
                         if (bid.declareBid.level < bid.GameLevel)
+                        {
                             //  we need 6+ cards to rebid our suit below game
                             bid.HandShape[bid.declareBid.suit].Min = 6;
+                            //  with a known 8-card fit in partner's suit, show support instead of rebidding a minor
+                            if (BridgeBot.IsMinor(bid.declareBid.suit))
+                                bid.Validate = hand =>
+                                {
+                                    var counts = BasicBidding.CountsBySuit(hand);
+                                    return !SuitRank.stdSuits.Any(s => s != bid.declareBid.suit &&
+                                        partnerSummary.HandShape[s].Min > 0 && counts[s] + partnerSummary.HandShape[s].Min >= 8);
+                                };
+                        }
                         else if (bid.declareBid.level == bid.GameLevel)
                             //  we need 7+ cards to rebid our suit at game
                             bid.HandShape[bid.declareBid.suit].Min = 7;
@@ -111,6 +144,24 @@ namespace Trickster.Bots
                     if (bid.HandShape[bid.declareBid.suit].Min > 0) bid.Description += $"; {bid.HandShape[bid.declareBid.suit].Min}+ {bid.declareBid.suit}";
                 }
             }
+        }
+
+        //  no singleton/void, plus a stopper in every suit our side hasn't bid naturally (including the opponents' suits and
+        //  an artificial fourth suit), unless partner has bid notrump naturally (showing a balanced hand with those stoppers)
+        internal static HandValidator NotrumpValidator(InterpretedBid bid)
+        {
+            var ourBids = bid.History.Take(bid.Index).Where(b => (bid.Index - b.Index) % 2 == 0 && b.bidIsDeclare && b.BidConvention == BidConvention.None).ToList();
+            if (ourBids.Any(b => (bid.Index - b.Index) % 4 == 2 && b.declareBid.suit == Suit.Unknown))
+                return hand => true;
+
+            var ourSuits = ourBids.Where(b => b.declareBid.suit != Suit.Unknown).Select(b => b.declareBid.suit).ToList();
+            var suitsToStop = SuitRank.stdSuits.Where(s => !ourSuits.Contains(s)).ToList();
+
+            return hand =>
+            {
+                var counts = BasicBidding.CountsBySuit(hand);
+                return SuitRank.stdSuits.All(s => counts[s] >= 2) && suitsToStop.All(s => BasicBidding.HasStopper(hand, s));
+            };
         }
     }
 }

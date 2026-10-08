@@ -63,3 +63,14 @@ Pass 1C Pass 1NT
 [Deal "S:- - AJT87.KQ.AJ.AK76 -"]
 [Auction "S"]
 2D Pass 2S
+
+[Event "Bid a 4-card spade suit over a 1D overcall rather than a negative double with only 2 hearts"]
+[Deal "S:KQJ4.A9.9864.953 - - -"]
+[Auction "S"]
+Pass Pass 1C 1D
+1S
+
+[Event "No 1NT response over an overcall without a stopper in the overcalled suit"]
+[Deal "N:- - K32.Q53.8642.Q73 -"]
+[Auction "N"]
+1C 1D Pass

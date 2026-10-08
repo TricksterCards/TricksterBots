@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -19,14 +20,14 @@ namespace Trickster.Bots
                 return true;
             }
 
-            if (bid.bidIsDeclare && bid.Index >= 6 && bid.History[bid.Index - 4].BidConvention == BidConvention.JacobyTransfer)
+            if ((bid.bidIsDeclare || bid.bid == BidBase.Pass) && bid.Index >= 6 && bid.History[bid.Index - 4].BidConvention == BidConvention.JacobyTransfer)
             {
                 InterpretResponderRebid(bid.History[bid.Index - 4], bid.History[bid.Index - 2], bid);
                 return true;
             }
 
             // Now check for opener's re-rebid to place contract TODO: Need to go to slam in some cases?
-            if (bid.bidIsDeclare && bid.Index >= 8 && bid.History[bid.Index - 4].BidConvention == BidConvention.AcceptJacobyTransfer)
+            if ((bid.bidIsDeclare || bid.bid == BidBase.Pass) && bid.Index >= 8 && bid.History[bid.Index - 4].BidConvention == BidConvention.AcceptJacobyTransfer)
             {
                 PlaceContract(bid.History[bid.Index - 4], bid.History[bid.Index -2], bid);
                 return true;
@@ -94,7 +95,9 @@ namespace Trickster.Bots
                 //  1N-2D-3H
                 //  1N-2D-3S
                 //  ...
-                accept.Points.Min = 17;
+                var ntOpening = GetNtOpening(transfer);
+                var ntMax = ntOpening?.Points.Max < 37 ? ntOpening.Points.Max : 17;
+                accept.Points.Min = ntMax;
                 accept.BidPointType = BidPointType.Dummy;
                 accept.HandShape[accept.declareBid.suit].Min = 4;
                 accept.Description = $"super-accept; 4+ {accept.declareBid.suit}";
@@ -112,9 +115,15 @@ namespace Trickster.Bots
             if (accept.declareBid.suit != transferSuit)
                 return;
 
+            var ntOpening = GetNtOpening(transfer);
+            var ntMin = ntOpening?.Points.Min > 0 ? ntOpening.Points.Min : 15;
+            var ntMax = ntOpening?.Points.Max < 37 ? ntOpening.Points.Max : 17;
+
             if (rebid.bid == BidBase.Pass)
             {
-                rebid.Points.Max = 7;
+                var nextLevel = accept.declareBid.level + 1;
+                var targetPoints = nextLevel <= 3 ? InterpretedBid.InvitationalPoints : 25;
+                rebid.Points.Max = Math.Max(0, targetPoints - 1 - ntMin);
                 rebid.BidPointType = BidPointType.Hcp;
                 return;
             }
@@ -126,8 +135,8 @@ namespace Trickster.Bots
             {
                 if (rebid.declareBid.level == 3)
                 {
-                    rebid.Points.Min = 8;
-                    rebid.Points.Max = 9;
+                    rebid.Points.Min = InterpretedBid.InvitationalPoints - ntMin;
+                    rebid.Points.Max = 25 - 1 - ntMin;
                     rebid.BidPointType = BidPointType.Hcp;
                     rebid.HandShape[transferSuit].Min = 6;
                     rebid.Description = $"Inviting game; 6+ {transferSuit}";
@@ -137,9 +146,10 @@ namespace Trickster.Bots
                 if (rebid.declareBid.level == 4)
                 {
                     // If opener has super-accepted the transfer then game can be bid with weaker hand
-                    if (accept.declareBid.level == 3)
+                    var isSuperAccept = accept.declareBid.level == transfer.declareBid.level + 1;
+                    if (isSuperAccept)
                     {
-                        rebid.Points.Min = 6;
+                        rebid.Points.Min = Math.Max(0, InterpretedBid.InvitationalPoints - ntMax);
                         rebid.BidPointType = BidPointType.Hcp;
                         rebid.HandShape[transferSuit].Min = 5;
                         rebid.Description = $"Sign-off at game; 5+ {transferSuit}";
@@ -147,7 +157,7 @@ namespace Trickster.Bots
                     }
                     else
                     {
-                        rebid.Points.Min = 10;
+                        rebid.Points.Min = Math.Max(0, 25 - ntMin);
                         rebid.BidPointType = BidPointType.Hcp;
                         rebid.HandShape[transferSuit].Min = 6;
                         rebid.Description = $"Sign-off at game; 6+ {transferSuit}";
@@ -160,8 +170,8 @@ namespace Trickster.Bots
             {
                 if (rebid.declareBid.level == 2)
                 {
-                    rebid.Points.Min = 8;
-                    rebid.Points.Max = 9;
+                    rebid.Points.Min = InterpretedBid.InvitationalPoints - ntMin;
+                    rebid.Points.Max = 25 - 1 - ntMin;
                     rebid.BidPointType = BidPointType.Hcp;
                     rebid.HandShape[transferSuit].Max = 5;
                     rebid.HandShape[transferSuit].Min = 5;
@@ -170,7 +180,7 @@ namespace Trickster.Bots
                 }
                 if (rebid.declareBid.level == 3)
                 {
-                    rebid.Points.Min = 10;
+                    rebid.Points.Min = 25 - ntMin;
                     rebid.BidPointType = BidPointType.Hcp;
                     rebid.HandShape[transferSuit].Max = 5;
                     rebid.HandShape[transferSuit].Min = 5;
@@ -187,27 +197,35 @@ namespace Trickster.Bots
             if (accept.declareBid == null || responderRebid.declareBid == null)
                 return; // TODO: Handle X, etc...
 
-            if (rebid.declareBid == null)
-                return;     // TODO: Handle these cases X, etc.
-
             // Validate that transfer happened -- TODO: Check earlier bids were successful transfers?
             var transferSuit = accept.declareBid.suit;
 
+            var transfer = accept.Index >= 2 ? accept.History[accept.Index - 2] : null;
+            var ntOpening = GetNtOpening(transfer);
+            var ntMin = ntOpening?.Points.Min > 0 ? ntOpening.Points.Min : 15;
+            var ntMax = ntOpening?.Points.Max < 37 ? ntOpening.Points.Max : 17;
+            var acceptInviteMin = responderRebid.Points.Max < 37 ? 25 - responderRebid.Points.Max : ntMin + 1;
+
             if (rebid.bid == BidBase.Pass)
             {
-                rebid.Points.Max = 15;
+                rebid.Points.Max = (responderRebid.declareBid.level == 3 && responderRebid.declareBid.suit == Suit.Unknown)
+                    ? ntMax
+                    : acceptInviteMin - 1;
                 rebid.HandShape[transferSuit].Min = 2;
                 rebid.HandShape[transferSuit].Max = 2;
                 rebid.BidPointType = BidPointType.Hcp;
                 return;
             }
+
+            if (rebid.declareBid == null)
+                return;     // TODO: Handle these cases X, etc.
             
             if (rebid.declareBid.suit == transferSuit)
             {
                 if (rebid.declareBid.level == 3)
                 {
-                    rebid.Points.Min = 15;
-                    rebid.Points.Max = 15;
+                    rebid.Points.Min = ntMin;
+                    rebid.Points.Max = acceptInviteMin - 1;
                     rebid.BidPointType = BidPointType.Hcp;
                     rebid.HandShape[transferSuit].Min = 3;
                     rebid.Description = $"Sign-off at partscore; 3+ {transferSuit}";
@@ -215,8 +233,10 @@ namespace Trickster.Bots
                 }
                 if (rebid.declareBid.level == 4)
                 {
-                    rebid.Points.Min = (responderRebid.declareBid.level == 3 && responderRebid.declareBid.suit == Suit.Unknown) ? 15 : 16;
-                    rebid.Points.Max = 17;
+                    rebid.Points.Min = (responderRebid.declareBid.level == 3 && responderRebid.declareBid.suit == Suit.Unknown)
+                        ? ntMin
+                        : acceptInviteMin;
+                    rebid.Points.Max = ntMax;
                     rebid.BidPointType = BidPointType.Hcp;
                     rebid.HandShape[transferSuit].Min = 3;
                     rebid.Description = $"Sign-off at game; 3+ {transferSuit}";
@@ -226,8 +246,8 @@ namespace Trickster.Bots
 
             if (rebid.declareBid.suit == Suit.Unknown && rebid.declareBid.level == 3)
             {
-                rebid.Points.Min = 16;
-                rebid.Points.Max = 17;
+                rebid.Points.Min = acceptInviteMin;
+                rebid.Points.Max = ntMax;
                 rebid.BidPointType = BidPointType.Hcp;
                 rebid.HandShape[transferSuit].Max = 2;
                 rebid.HandShape[transferSuit].Min = 2;
@@ -235,6 +255,11 @@ namespace Trickster.Bots
                 return;
             }
 
+        }
+
+        private static InterpretedBid GetNtOpening(InterpretedBid transfer)
+        {
+            return transfer?.Index >= 2 ? transfer.History[transfer.Index - 2] : null;
         }
     }
 }

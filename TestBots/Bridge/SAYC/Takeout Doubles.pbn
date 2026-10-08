@@ -1,0 +1,51 @@
+[Event "Doubler with 22+ balanced and stoppers bids game in notrump after a forced advance"]
+[Deal "W:- - - AKQ.AJ84.AT.AKJ9"]
+[Auction "W"]
+Pass Pass 1S X
+Pass 2C 2D 3NT
+
+[Event "Doubler with 18-20 balanced and a stopper bids 1NT"]
+[Deal "W:- - - A8.KQJ9.AQ7.K984"]
+[Auction "W"]
+Pass Pass 1C X
+Pass 1D Pass 1NT
+
+[Event "Minimum takeout double with only 3 cards in an unbid minor"]
+[Deal "W:- - - KJ84.7.AQ5.K9632"]
+[Auction "W"]
+Pass Pass 1H X
+
+[Event "Takeout double with only 3 cards in the unbid major when no suit overcall fits"]
+[Deal "W:- - - K84.72.AQ54.KJ62"]
+[Auction "W"]
+Pass Pass 1H X
+
+[Event "With only 3 cards in the unbid major, overcall a good 5-card minor rather than double"]
+[Deal "W:- - - K84.72.AKJ95.Q62"]
+[Auction "W"]
+Pass Pass 1H 2D
+
+[Event "With 4 cards in the unbid major, double rather than overcall a 5-card minor"]
+[Deal "W:- - - K843.7.AKJ95.Q62"]
+[Auction "W"]
+Pass Pass 1H X
+
+[Event "Balanced 15-18 with a stopper overcalls 1NT rather than doubling"]
+[Deal "W:- - - AQ65.K7.KJ74.Q54"]
+[Auction "W"]
+Pass Pass 1H 1NT
+
+[Event "Balanced 15-18 without a stopper doubles rather than overcalling 1NT"]
+[Deal "W:- - - AQ65.72.KJ74.KQ5"]
+[Auction "W"]
+Pass Pass 1H X
+
+[Event "Advancer with no 4-card unbid suit bids the cheapest 3-card major"]
+[Deal "W:- - - Q84.J73.962.8743"]
+[Auction "W"]
+1C X Pass 1H
+
+[Event "Advancer with no 4-card unbid suit bids the 3-card unbid major"]
+[Deal "W:- - - Q84.J873.962.743"]
+[Auction "W"]
+1H X Pass 1S

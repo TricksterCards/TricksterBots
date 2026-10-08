@@ -32,3 +32,22 @@ Pass Pass
 1NT Pass 2C Pass
 2D Pass 2NT Pass
 Pass Pass
+
+[Event "1NT - Stayman - Hearts shown - Raise with 4 hearts instead of 2NT"]
+[Deal "N:- - KJ63.Q852.K63.94 -"]
+[Auction "N"]
+1NT Pass 2C Pass
+2H Pass 3H
+
+[Event "1NT - Stayman - Hearts shown - 2S shows 4 spades and denies 4 hearts"]
+[Deal "N:- - KJ63.Q85.K63.942 -"]
+[Auction "N"]
+1NT Pass 2C Pass
+2H Pass 2S
+
+[Event "1NT - Stayman - Hearts shown - 2NT implies 4 spades, so accept in spades"]
+[Deal "N:KQ65.AJ74.K3.KJ2 - - -"]
+[Auction "N"]
+1NT Pass 2C Pass
+2H Pass 2NT Pass
+4S

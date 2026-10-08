@@ -1,0 +1,31 @@
+[Event "West should leave partner's preemptive heart game"]
+[Deal "N:- - - KJ9532.A6.Q.QJ87"]
+[Auction "N"]
+3C 4H Pass Pass
+
+[Event "New suit advance is forcing in Acol (unlike SAYC)"]
+[Deal "N:- - A96543.AK4.Q654. -"]
+[Auction "N"]
+Pass 1NT 2S Pass
+3C Pass 3D -
+
+[Event "Weak advancer without support passes rather than bid 2NT over a 2-level overcall"]
+[Deal "S:Q54.972.T5.QJ976 - - -"]
+[Auction "S"]
+Pass 1S 2D X
+Pass
+
+[Event "Balanced 11-12 HCP advancer with a stopper jumps to 2NT"]
+[Deal "N:- - - K4.AJ5.QT84.Q973"]
+[Auction "N"]
+1H 1S Pass 2NT
+
+[Event "Balanced 13-16 HCP advancer with a stopper bids 3NT"]
+[Deal "N:- - - K4.AQ5.KJ84.Q973"]
+[Auction "N"]
+1H 1S Pass 3NT
+
+[Event "Simple raise advance"]
+[Deal "S:- - - KJT.J98642.QJ.86"]
+[Auction "S"]
+1D 1S 2C 2S

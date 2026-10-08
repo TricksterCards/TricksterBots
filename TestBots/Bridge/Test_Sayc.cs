@@ -1732,6 +1732,8 @@ namespace TestBots
                     {
                         "AJ93.T874.K3.Q75", "P", "P 1C P 1H P 1N P 4H", "Both"
                     }, // deal 17957643975053861560971898729953, N should jump straight to game, knowing his partner has at least 2 hearts.
+                    // FIXME: in SAYC a jump to 4C in the fourth suit would be a splinter (club shortness), which doesn't fit AKQ8 of Clubs;
+                    // 3C (fourth suit forcing) or 3N seem more appropriate here.
                     new[] { "AKQ8.KJ7.T8.AQ87", "4C", "1H P 1S P 2D P", "N-S" }, // deal 16286079713409328537740982237218, W can bid 1S, even with 19+ points.
                     new[]
                     {

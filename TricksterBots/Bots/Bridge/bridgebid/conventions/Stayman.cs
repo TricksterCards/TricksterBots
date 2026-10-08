@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -22,7 +23,9 @@ namespace Trickster.Bots
         {
             if (CanUseStayman(bid)) return InterpretStayman(bid);
 
-            if (CanUseAlternateStayman(bid)) return InterpretCuebidStayman(bid.History[bid.Index - 1], bid);
+            //  Acol plays "system off" over a suit overcall of 1NT, so no cuebid-Stayman substitute
+            if (bid.Options.bidding != BridgeBiddingScheme.Acol && CanUseAlternateStayman(bid))
+                return InterpretCuebidStayman(bid.History[bid.Index - 1], bid);
 
             if (bid.Index >= 4 && bid.History[bid.Index - 2].BidConvention == BidConvention.Stayman)
             {
@@ -155,14 +158,30 @@ namespace Trickster.Bots
                 return false;
 
             var opening = rebid.History[rebid.Index - 6];
+            var stayman = rebid.History[rebid.Index - 4];
+
+            //  Stayman over 2NT (or higher) already promised game values, so honor that minimum when bidding game
+            var gameMin = stayman.declareBid.level >= 3
+                ? Math.Min(stayman.Points.Min, rebid.GamePoints - opening.Points.Min)
+                : rebid.GamePoints - opening.Points.Min;
 
             if (rebid.declareBid.level <= 3 && BridgeBot.IsMajor(rebid.declareBid.suit) && rebid.declareBid.suit != answer.declareBid.suit)
             {
-                //  show a 5-card major by bidding it (implies 4 of the other major)
                 var otherMajor = rebid.declareBid.suit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
-                rebid.HandShape[rebid.declareBid.suit].Min = 5;
-                rebid.HandShape[otherMajor].Min = 4;
-                rebid.Description = $"5+ {rebid.declareBid.suit} and 4+ {otherMajor}";
+                if (BridgeBot.IsMajor(answer.declareBid.suit))
+                {
+                    //  after opener shows the other major: 4 cards at the 2-level, 5+ when jumping
+                    rebid.HandShape[rebid.declareBid.suit].Min = rebid.declareBid.level == 2 ? 4 : 5;
+                    InferOtherMajor(answer, rebid);
+                    rebid.Description = $"{rebid.HandShape[rebid.declareBid.suit].Min}+ {rebid.declareBid.suit}; denies 4 {otherMajor}";
+                }
+                else
+                {
+                    //  show a 5-card major by bidding it (implies 4 of the other major)
+                    rebid.HandShape[rebid.declareBid.suit].Min = 5;
+                    rebid.HandShape[otherMajor].Min = 4;
+                    rebid.Description = $"5+ {rebid.declareBid.suit} and 4+ {otherMajor}";
+                }
 
                 if (rebid.declareBid.level == 2)
                 {
@@ -174,7 +193,7 @@ namespace Trickster.Bots
                 {
                     //  show a game forcing hand by jumping a level
                     rebid.BidMessage = BidMessage.Forcing;
-                    rebid.Points.Min = rebid.GamePoints - opening.Points.Min;
+                    rebid.Points.Min = gameMin;
                 }
 
                 return true;
@@ -183,7 +202,7 @@ namespace Trickster.Bots
             if (rebid.declareBid.level == 3 && BridgeBot.IsMinor(rebid.declareBid.suit))
             {
                 //  (SAYC Booklet): if responder rebids three of either minor, he shows slam interest and at least a five-card suit
-                rebid.Points.Min = InterpretedBid.SmallSlamPoints - opening.Points.Min;
+                rebid.Points.Min = InterpretedBid.SmallSlamPoints - opening.Points.Max;
                 rebid.HandShape[rebid.declareBid.suit].Min = 5;
                 rebid.Description = $"5+ {rebid.declareBid.suit}; slam interest";
                 return true;
@@ -193,13 +212,36 @@ namespace Trickster.Bots
             if (rebid.declareBid.level == 2 && rebid.declareBid.suit == Suit.Unknown)
             {
                 rebid.BidPointType = BidPointType.Hcp;
-                rebid.Points.Min = 8;
-                rebid.Points.Max = 9;
+                rebid.Points.Min = InterpretedBid.InvitationalPoints - opening.Points.Min;
+                rebid.Points.Max = rebid.GamePoints - 1 - opening.Points.Min;
                 rebid.Description = "Inviting game";
+                InferOtherMajor(answer, rebid);
+                return true;
+            }
+
+            if (rebid.declareBid.level == 3 && rebid.declareBid.suit == Suit.Unknown)
+            {
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Points.Min = gameMin;
+                rebid.BidMessage = BidMessage.Signoff;
+                rebid.Description = "Sign-off at game";
+                InferOtherMajor(answer, rebid);
                 return true;
             }
 
             return false;
+        }
+
+        //  Stayman promised a 4-card major, so not raising the one opener showed means holding the other
+        private static void InferOtherMajor(InterpretedBid answer, InterpretedBid rebid)
+        {
+            var shown = answer.declareBid.suit;
+            if (!BridgeBot.IsMajor(shown) || rebid.declareBid.suit == shown)
+                return;
+
+            var other = shown == Suit.Hearts ? Suit.Spades : Suit.Hearts;
+            rebid.HandShape[shown].Max = Math.Min(rebid.HandShape[shown].Max, 3);
+            rebid.HandShape[other].Min = Math.Max(rebid.HandShape[other].Min, 4);
         }
 
         private static bool InterpretStayman(InterpretedBid response)
@@ -220,7 +262,9 @@ namespace Trickster.Bots
             //  2C-2D-3N-4C
             response.BidConvention = BidConvention.Stayman;
             response.BidMessage = BidMessage.Forcing;
-            response.Points.Min = response.declareBid.level <= 2 ? 8 : 4;
+            response.BidPointType = BidPointType.Hcp;
+            //  over a weak NT (Acol), Stayman promises at least invitational values
+            response.Points.Min = response.declareBid.level <= 2 ? (response.Options.bidding == BridgeBiddingScheme.Acol ? 11 : 8) : 4;
             response.Description = "asking for a major";
             response.Priority = 1; // always prefer Stayman over other bids when valid
             response.Validate = hand =>

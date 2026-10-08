@@ -31,6 +31,14 @@ namespace Trickster.Bots
             {
                 //  TODO: advance a notrump overcall
             }
+            else if (overcall.IsPreemptive)
+            {
+                Response.InterpretResponseToPreempt(overcall, advance.History[advance.Index - 1], advance);
+                //  Keep a new-suit advance constructive, even opposite a weak jump overcall.
+                if (advance.declareBid.suit != Suit.Unknown && advance.declareBid.suit != overcall.declareBid.suit &&
+                    advance.declareBid.level < advance.GameLevel)
+                    advance.Points.Min = 11;
+            }
             else
             {
                 AdvanceSuitedOvercall(opening, overcall, advance);
@@ -39,19 +47,22 @@ namespace Trickster.Bots
 
         private static void AdvanceSuitedOvercall(InterpretedBid opening, InterpretedBid overcall, InterpretedBid advance)
         {
-            if (opening.declareBid.suit == overcall.declareBid.suit && opening.declareBid.suit == advance.declareBid.suit)
+            if (opening.declareBid.suit == overcall.declareBid.suit && opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.suit != Suit.Unknown)
             {
                 //  a cuebid advance when overcall was also a cuebid is unknown (for now)
                 //  TODO: Determine if there are conditions where this makes sense
             }
-            else if (opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.level == opening.declareBid.level + 1)
+            else if (opening.declareBid.suit == advance.declareBid.suit && advance.declareBid.level <= 3 && advance.declareBid.level == advance.LowestAvailableLevel(advance.declareBid.suit, true) && advance.declareBid.suit != Suit.Unknown)
             {
                 //  cuebid the oppenents' suit to show support with 10+ points
                 advance.BidConvention = BidConvention.Cuebid;
                 advance.BidMessage = BidMessage.Forcing;
-                advance.Points.Min = 10;
+                advance.Points.Min = advance.Options.bidding == BridgeBiddingScheme.Acol ? 11 : 10;
                 advance.HandShape[overcall.declareBid.suit].Min = 3;
-                advance.Description = string.Empty;
+                advance.Description = $"3+ {overcall.declareBid.suit} (usually)";
+
+                if (BridgeBot.IsMajor(overcall.declareBid.suit))
+                    advance.BidPointType = BidPointType.Dummy;
             }
             else if (overcall.declareBid.suit == advance.declareBid.suit)
             {
@@ -60,10 +71,13 @@ namespace Trickster.Bots
                 if (advance.declareBid.level == overcall.declareBid.level + 1)
                 {
                     advance.Points.Min = 6;
-                    advance.Points.Max = 9;
+                    advance.Points.Max = advance.Options.bidding == BridgeBiddingScheme.Acol ? 10 : 9;
                     advance.HandShape[advance.declareBid.suit].Min = 3;
                     advance.HandShape[advance.declareBid.suit].Max = 3;
                     advance.Description = $"Raise; 3+ {advance.declareBid.suit}";
+
+                    if (BridgeBot.IsMajor(advance.declareBid.suit))
+                        advance.BidPointType = BidPointType.Dummy;
                 }
 
                 //  0-9 points = jump raise with 4-card support, e.g. (1C)-1H-(P)-3H
@@ -94,22 +108,39 @@ namespace Trickster.Bots
                     advance.Validate = hand => false;
                 }
                 //  advancing in notrump, e.g. (1C)-1H-(P)-1N
-                else if (advance.declareBid.level == overcall.declareBid.level)
+                else if (advance.declareBid.level == 1)
                 {
+                    advance.BidPointType = BidPointType.Hcp;
                     advance.Points.Min = 6;
                     advance.Points.Max = 10;
                     advance.IsBalanced = true;
                     advance.Description = $"stopper in {opening.declareBid.suit}";
                     advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
                 }
-                else if (advance.declareBid.level == overcall.declareBid.level + 1)
+                //  e.g. (1C)-1H-(P)-2N or (1S)-2D-(X)-2N
+                else if (advance.declareBid.level == 2)
                 {
+                    advance.BidPointType = BidPointType.Hcp;
                     advance.Points.Min = 11;
                     advance.Points.Max = 12;
                     advance.IsBalanced = true;
                     advance.Description = $"stopper in {opening.declareBid.suit}";
                     advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
                 }
+                //  e.g. (1C)-1H-(P)-3N or (1S)-2D-(P)-3N
+                else if (advance.declareBid.level == 3)
+                {
+                    advance.BidPointType = BidPointType.Hcp;
+                    advance.Points.Min = 13;
+                    advance.Points.Max = 16;
+                    advance.IsBalanced = true;
+                    advance.Description = $"stopper in {opening.declareBid.suit}";
+                    advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
+                }
+            }
+            else if (advance.declareBid.suit == opening.declareBid.suit)
+            {
+                //  TODO: a jump cuebid of opener's suit (e.g. splinter or strong raise) is unknown (for now)
             }
             else
             {
@@ -118,6 +149,9 @@ namespace Trickster.Bots
                 advance.HandShape[advance.declareBid.suit].Min = 5;
                 advance.IsGood = true;
                 advance.Description = $"5+ {advance.declareBid.suit}";
+
+                if (advance.Options.bidding == BridgeBiddingScheme.Acol)
+                    advance.BidMessage = BidMessage.Forcing;
             }
         }
     }

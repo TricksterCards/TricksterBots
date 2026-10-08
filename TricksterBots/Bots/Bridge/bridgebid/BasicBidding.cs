@@ -38,6 +38,28 @@ namespace Trickster.Bots
             return dummyPoints;
         }
 
+        public static int ComputeFitPoints(Hand hand, Suit trump, bool asDummy)
+        {
+            //  revalue once a trump fit is known: declarer adds length + side shortness, dummy adds side shortness only
+            var counts = CountsBySuit(hand);
+            var points = ComputeHighCardPoints(hand);
+            if (!asDummy)
+                points += ComputeDistributionPoints(hand);
+
+            var fullDummyValue = asDummy && counts[trump] >= 4;
+            foreach (var suit in BasicSuits.Where(s => s != trump))
+            {
+                if (counts[suit] == 0)
+                    points += fullDummyValue ? 5 : 3;
+                else if (counts[suit] == 1)
+                    points += fullDummyValue ? 3 : 2;
+                else if (counts[suit] == 2 && asDummy)
+                    points += 1;
+            }
+
+            return points;
+        }
+
         public static int ComputeHighCardPoints(IReadOnlyList<Card> hand)
         {
             var highCardPoints = 0;
@@ -106,11 +128,11 @@ namespace Trickster.Bots
             return CountsBySuit(hand).Values.OrderByDescending(c => c).ToList()[3] == 3;
         }
 
-        public static bool IsGoodSuit(Hand hand, Suit suit)
+        public static bool IsGoodSuit(Hand hand, Suit suit, int minimum)
         {
-            //  TODO: should we consider a hand "good" if we have more than the minimum count (requires extra argument)?
-            //if (minimum > 0 && CountsBySuit(hand)[suit] > minimum)
-            //    return true;
+            //  consider a hand "good" if we have more than the minimum count
+            if (minimum > 0 && CountsBySuit(hand)[suit] > minimum)
+                return true;
 
             //  otherwise if we have two of the top three Honors or three of the top five Honors in a suit, then it is considered "good"
             return hand.Count(c => c.suit == suit && c.rank >= Rank.Queen) >= 2 || hand.Count(c => c.suit == suit && c.rank >= Rank.Ten) >= 3;

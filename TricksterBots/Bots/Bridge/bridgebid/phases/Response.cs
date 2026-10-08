@@ -56,7 +56,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static void InterpretCuebidResponse(InterpretedBid opening, InterpretedBid response)
+        internal static void InterpretCuebidResponse(InterpretedBid opening, InterpretedBid response)
         {
             // From "Competitive Bidding" section on page 7 of ACBL SAYC System Booklet
             // https://web2.acbl.org/documentlibrary/play/SP3%20(bk)%20single%20pages.pdf
@@ -269,7 +269,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static void InterpretResponseTo2NT(InterpretedBid response)
+        internal static void InterpretResponseTo2NT(InterpretedBid response)
         {
             switch (response.declareBid.level)
             {
@@ -360,7 +360,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static void InterpretResponseTo3NT(InterpretedBid response)
+        internal static void InterpretResponseTo3NT(InterpretedBid response)
         {
             if (response.declareBid.level > 4)
                 return;
@@ -410,6 +410,7 @@ namespace Trickster.Bots
                             response.Points.Max = 10;
                             response.HandShape[opening.declareBid.suit].Max = 2;
                             response.Description = $"Any distribution; 0-2 {opening.declareBid.suit}";
+                            RequireStopperInOvercall(overcall, response);
 
                             break;
                     }
@@ -582,10 +583,22 @@ namespace Trickster.Bots
                         case Suit.Spades:
                             response.Points.Min = 6;
                             response.BidMessage = BidMessage.Forcing;
-                            response.HandShape[response.declareBid.suit].Min =
-                                BridgeBot.IsMajor(response.declareBid.suit) && NegativeDouble.CanUseAfter(opening, overcall) ? 5 : 4;
+                            var otherMajor = response.declareBid.suit == Suit.Spades ? Suit.Hearts : Suit.Spades;
+                            var negativeDoubleAvailable = BridgeBot.IsMajor(response.declareBid.suit) && NegativeDouble.CanUseAfter(opening, overcall);
+                            var otherMajorUnbid = negativeDoubleAvailable && overcall.declareBid.suit != otherMajor;
+                            //  a negative double showing only this major needs 5+ to bid it; one showing both majors leaves 4 for a 1M bid
+                            response.HandShape[response.declareBid.suit].Min = negativeDoubleAvailable && !otherMajorUnbid ? 5 : 4;
                             response.SetHandShapeMaxesOfOtherSuits(response.declareBid.suit, 6);
                             response.Description = $"{response.HandShape[response.declareBid.suit].Min}+ {response.declareBid.suit}";
+                            if (otherMajorUnbid)
+                            {
+                                //  with 4-4 in the majors, make a negative double instead
+                                response.Validate = hand =>
+                                {
+                                    var counts = BasicBidding.CountsBySuit(hand);
+                                    return counts[response.declareBid.suit] > 4 || counts[otherMajor] < 4;
+                                };
+                            }
                             break;
 
                         //  1C-1N
@@ -596,6 +609,7 @@ namespace Trickster.Bots
                             response.IsBalanced = true;
                             response.NoFourCardMajors();
                             response.Description = "no 4-card major";
+                            RequireStopperInOvercall(overcall, response);
                             break;
                     }
 
@@ -705,7 +719,17 @@ namespace Trickster.Bots
             }
         }
 
-        private static void InterpretResponseToPreempt(InterpretedBid opening, InterpretedBid overcall, InterpretedBid response)
+        internal static void RequireStopperInOvercall(InterpretedBid overcall, InterpretedBid response)
+        {
+            if (!overcall.bidIsDeclare || overcall.declareBid.suit == Suit.Unknown)
+                return;
+
+            var suit = overcall.declareBid.suit;
+            response.Description += $"; stopper in {suit}";
+            response.Validate = hand => BasicBidding.HasStopper(hand, suit);
+        }
+
+        internal static void InterpretResponseToPreempt(InterpretedBid opening, InterpretedBid overcall, InterpretedBid response)
         {
             if (response.bid == BidBase.Pass)
                 response.Description = "Unsuitable hand to continue";
@@ -770,7 +794,7 @@ namespace Trickster.Bots
             }
         }
 
-        private static bool IsCuebidResponse(InterpretedBid overcall, InterpretedBid response)
+        internal static bool IsCuebidResponse(InterpretedBid overcall, InterpretedBid response)
         {
             return overcall.bidIsDeclare &&
                    response.bidIsDeclare &&
