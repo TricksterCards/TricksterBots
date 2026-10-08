@@ -44,3 +44,23 @@ Pass 1D Pass 2C
 [Auction "W"]
 Pass Pass 1C X
 Pass 1D Pass 2H
+
+[Event "Minimum takeout double with only 3 cards in an unbid minor"]
+[Deal "W:- - - KJ84.7.AQ5.K9632"]
+[Auction "W"]
+Pass Pass 1H X
+
+[Event "Takeout double with only 3 cards in the unbid major when no suit overcall fits"]
+[Deal "W:- - - K84.72.AQ54.KJ62"]
+[Auction "W"]
+Pass Pass 1H X
+
+[Event "With only 3 cards in the unbid major, overcall a good 5-card minor rather than double"]
+[Deal "W:- - - K84.72.AKJ95.Q62"]
+[Auction "W"]
+Pass Pass 1H 2D
+
+[Event "Advancer with no 4-card unbid suit bids the cheapest 3-card major"]
+[Deal "W:- - - Q84.J73.962.8743"]
+[Auction "W"]
+1C X Pass 1H

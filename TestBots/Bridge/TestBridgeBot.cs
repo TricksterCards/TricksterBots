@@ -65,6 +65,38 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow(BridgeBiddingScheme.SAYC, "1H", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1H", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points)")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1C", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points)")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1C Pass 1D", "X", "Takeout double; 4+ Hearts and Spades (13+ dummy points)")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1H X Pass", "1S", "3+ Spades (usually 4+) (0-8 points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1H X Pass", "1S", "3+ Spades (usually 4+) (0-8 points)")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1C X 1H", "1S", "4+ Spades (0-8 points)")]
+        public void TakeoutDoubleExplanations(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)
+        {
+            var options = new BridgeOptions { bidding = scheme };
+            var bot = new BridgeBot(options, Suit.Unknown);
+            var calls = history.Split(' ').Select(GetBid).ToList();
+            var players = Enumerable.Range(0, 4).Select(seat => new PlayerBase
+            {
+                Seat = seat,
+                BidHistory = calls.Where((_, i) => i % 4 == seat).ToList()
+            }).ToList();
+            var state = new SuggestBidState<BridgeOptions>
+            {
+                dealerSeat = 0,
+                legalBids = new List<BidBase> { new BidBase(GetBid(bid)) },
+                options = options,
+                player = players[calls.Count % 4],
+                players = players
+            };
+
+            var legalBids = bot.DescribeLegalBids(state);
+            Assert.AreEqual(expectedDescription, legalBids[0].explanation.Description);
+        }
+
+        [TestMethod]
         public void BasicTests()
         {
             var bot = new BridgeBot(new BridgeOptions(), Suit.Unknown);

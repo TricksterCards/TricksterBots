@@ -113,13 +113,29 @@ namespace Trickster.Bots
                         if (lowestAvailableLevel < gameLevel - 1)
                             advance.Points.Max = 8;
 
+                        //  usually 4+ cards, but when forced to bid (no interference) bid the best 3-card suit without a 4-card unbid suit
+                        var isForced = advance.History[advance.Index - 1].bid == BidBase.Pass;
                         advance.HandShape[advance.declareBid.suit].Min = 4;
-                        advance.Description = $"4+ {advance.declareBid.suit}";
+                        if (isForced)
+                            advance.HandShape[advance.declareBid.suit].MinMatch = 3;
+                        advance.Description = isForced ? $"3+ {advance.declareBid.suit} (usually 4+)" : $"4+ {advance.declareBid.suit}";
                         advance.Validate = hand =>
                         {
                             var counts = BasicBidding.CountsBySuit(hand);
-                            var maxCount = counts.Where(kvp => !bidSuits.Contains(kvp.Key)).Max(kvp => kvp.Value);
-                            return counts[advance.declareBid.suit] == maxCount;
+                            var unbidCounts = counts.Where(kvp => !bidSuits.Contains(kvp.Key)).ToList();
+                            var maxCount = unbidCounts.Max(kvp => kvp.Value);
+                            if (counts[advance.declareBid.suit] != maxCount)
+                                return false;
+
+                            if (maxCount >= 4)
+                                return true;
+
+                            //  with only 3-card unbid suits, prefer a major, then the cheapest suit
+                            var preferredSuit = unbidCounts.Where(kvp => kvp.Value == maxCount).Select(kvp => kvp.Key)
+                                .OrderBy(s => BridgeBot.IsMajor(s) ? 0 : 1)
+                                .ThenBy(s => BridgeBot.suitRank[s])
+                                .First();
+                            return advance.declareBid.suit == preferredSuit;
                         };
                     }
                     else if (advance.declareBid.level == lowestAvailableLevel + 1 && advance.declareBid.level <= 3)
@@ -164,18 +180,30 @@ namespace Trickster.Bots
                 return false;
 
             var bidSuits = SuitRank.stdSuits.Where(s =>
-                opening.bidIsDeclare && opening.declareBid.suit == s || response != null && response.bidIsDeclare && response.declareBid.suit == s);
-            var unbidSuits = SuitRank.stdSuits.Where(s => !bidSuits.Contains(s));
+                    opening.bidIsDeclare && opening.declareBid.suit == s || response != null && response.bidIsDeclare && response.declareBid.suit == s)
+                .OrderBy(s => BridgeBot.suitRank[s]).ToList();
+            var unbidSuits = SuitRank.stdSuits.Where(s => !bidSuits.Contains(s)).OrderBy(s => BridgeBot.suitRank[s]).ToList();
+            var unbidMajors = unbidSuits.Where(BridgeBot.IsMajor).ToList();
 
-            //  handle takeout doubles worth 13+ dummy points
-            //  shows 4+ support in unbid suits and 0-2 shortness in bid suits
+            //  handle takeout doubles worth 13+ dummy points with 0-2 cards in the opponents' suit(s)
             overcall.Points.Min = 13;
             overcall.BidPointType = BidPointType.Dummy;
             overcall.BidConvention = BidConvention.TakeoutDouble;
             overcall.BidMessage = BidMessage.Forcing;
             foreach (var s in bidSuits) overcall.HandShape[s].Max = 2;
-            foreach (var s in unbidSuits) overcall.HandShape[s].Min = 4;
-            overcall.Description = "4+ cards in every unbid suit";
+
+            if (unbidSuits.Count == 3)
+            {
+                //  over a single suit, show 3+ cards in each unbid suit (usually 4+ in the unbid majors, see Validate below)
+                foreach (var s in unbidSuits) overcall.HandShape[s].Min = 3;
+                overcall.Description = $"3+ in each unbid suit";
+            }
+            else
+            {
+                //  over two suits, show 4+ cards in both unbid suits
+                foreach (var s in unbidSuits) overcall.HandShape[s].Min = 4;
+                overcall.Description = $"4+ {string.Join(" and ", unbidSuits)}";
+            }
 
             //  still double with 4+ cards in another unbid major, to look for a major fit
             bool prefersSuitOvercall(Hand hand)
@@ -187,19 +215,33 @@ namespace Trickster.Bots
                 );
             }
 
-            overcall.Validate = hand => !prefersSuitOvercall(hand);
-            overcall.AlternateMatches = hand =>
+            //  with only 3 cards in the unbid major(s), prefer a natural overcall in a 5+ card suit when one fits
+            bool prefersNaturalOvercall(Hand hand)
             {
-                if (prefersSuitOvercall(hand))
+                var counts = BasicBidding.CountsBySuit(hand);
+                if (unbidMajors.Count == 0 || unbidMajors.Any(s => counts[s] >= 4))
                     return false;
 
-                //  if we can bid 1NT (balanced; 15-18 HCP) we'll defer to that instead
+                return unbidSuits.Any(s => counts[s] >= 5 && new InterpretedBid(
+                    new DeclareBid(overcall.LowestAvailableLevel(s, true), s), overcall.History, overcall.Index, overcall.Options).Match(hand));
+            }
+
+            //  if we can overcall 1NT (balanced; 15-18 HCP; stopper in the opponents' suits) we'll defer to that instead
+            bool prefersNotrumpOvercall(Hand hand)
+            {
                 var hcp = BasicBidding.ComputeHighCardPoints(hand);
-                if (15 <= hcp && hcp <= 18 && overcall.LowestAvailableLevel(Suit.Unknown, true) == 1 && BasicBidding.IsBalanced(hand))
+                return 15 <= hcp && hcp <= 18 && overcall.LowestAvailableLevel(Suit.Unknown, true) == 1 && BasicBidding.IsBalanced(hand) &&
+                       HasStoppers(hand, bidSuits);
+            }
+
+            overcall.Validate = hand => !prefersSuitOvercall(hand) && !prefersNotrumpOvercall(hand) && !prefersNaturalOvercall(hand);
+            overcall.AlternateMatches = hand =>
+            {
+                if (prefersSuitOvercall(hand) || prefersNotrumpOvercall(hand))
                     return false;
 
                 //  otherwise a takeout double can also show 18+ points (too strong for a simple overcall)
-                var points = hcp + BasicBidding.ComputeDistributionPoints(hand);
+                var points = BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
                 return 18 <= points;
             };
 
