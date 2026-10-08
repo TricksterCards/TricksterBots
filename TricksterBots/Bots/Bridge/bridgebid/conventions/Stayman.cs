@@ -158,6 +158,12 @@ namespace Trickster.Bots
                 return false;
 
             var opening = rebid.History[rebid.Index - 6];
+            var stayman = rebid.History[rebid.Index - 4];
+
+            //  Stayman over 2NT (or higher) already promised game values, so honor that minimum when bidding game
+            var gameMin = stayman.declareBid.level >= 3
+                ? Math.Min(stayman.Points.Min, rebid.GamePoints - opening.Points.Min)
+                : rebid.GamePoints - opening.Points.Min;
 
             if (rebid.declareBid.level <= 3 && BridgeBot.IsMajor(rebid.declareBid.suit) && rebid.declareBid.suit != answer.declareBid.suit)
             {
@@ -187,7 +193,7 @@ namespace Trickster.Bots
                 {
                     //  show a game forcing hand by jumping a level
                     rebid.BidMessage = BidMessage.Forcing;
-                    rebid.Points.Min = rebid.GamePoints - opening.Points.Min;
+                    rebid.Points.Min = gameMin;
                 }
 
                 return true;
@@ -216,7 +222,7 @@ namespace Trickster.Bots
             if (rebid.declareBid.level == 3 && rebid.declareBid.suit == Suit.Unknown)
             {
                 rebid.BidPointType = BidPointType.Hcp;
-                rebid.Points.Min = rebid.GamePoints - opening.Points.Min;
+                rebid.Points.Min = gameMin;
                 rebid.BidMessage = BidMessage.Signoff;
                 rebid.Description = "Sign-off at game";
                 InferOtherMajor(answer, rebid);
