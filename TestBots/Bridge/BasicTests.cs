@@ -188,7 +188,7 @@
             {
                 history = new[] { "1♣", "Pass", "1♥", "Pass", "2♥", "Pass" },
                 hand = "AS5S AHQHTH9H QC7C3C2C JD3D2D", // 13 HCP
-                bid = "3NT", // game values opposite the raise (13-15); we used to bid 4S (wrong), then Pass (misses game)
+                bid = "4♥", // SAYC: opener's single raise of responder's 1-level major shows 4-card support (rarely 3), so bid game in the major (3NT would also leave Diamonds unstopped)
                 type = "Responder Rebid"
             },
 

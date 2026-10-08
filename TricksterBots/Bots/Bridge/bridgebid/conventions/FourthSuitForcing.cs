@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -47,11 +48,27 @@ namespace Trickster.Bots
             if (bidSuits.Count < 3 || bidSuits.Contains(rebid.declareBid.suit))
                 return false;
 
-            //  TODO: determine when we should actually bid FSF
             rebid.Points.Min = 13;
             rebid.BidConvention = BidConvention.FourthSuitForcing;
             rebid.BidMessage = BidMessage.Forcing;
-            rebid.Validate = hand => false;
+
+            //  only the cheapest bid in the fourth suit (above the 1-level, where it's natural) is FSF;
+            //  use it when game values have no natural spot: no 3NT (stopper/shape) and no known 8-card major fit
+            var suit = rebid.declareBid.suit;
+            if (rebid.declareBid.level != Math.Max(2, rebid.LowestAvailableLevel(suit)))
+            {
+                rebid.Validate = hand => false;
+                return true;
+            }
+
+            var partnerSummary = new InterpretedBid.PlayerSummary(rebid.History, rebid.Index - 2);
+            var notrumpValidator = ResponderRebid.NotrumpValidator(rebid);
+            rebid.Validate = hand =>
+            {
+                var counts = BasicBidding.CountsBySuit(hand);
+                return !notrumpValidator(hand) && !SuitRank.stdSuits.Any(s =>
+                    BridgeBot.IsMajor(s) && partnerSummary.HandShape[s].Min > 0 && counts[s] + partnerSummary.HandShape[s].Min >= 8);
+            };
 
             return true;
         }
@@ -101,6 +118,37 @@ namespace Trickster.Bots
         {
             if (!rebid.bidIsDeclare)
                 return;
+
+            var suit = rebid.declareBid.suit;
+            if (suit != Suit.Unknown && rebid.declareBid.level < rebid.GameLevel && rebid.declareBid.level == rebid.LowestAvailableLevel(suit))
+            {
+                //  after FSF, natural bids below game don't stop short of game values (no invitational cap);
+                //  a known major fit is left to the normal game/invite logic
+                var partnerSummary = new InterpretedBid.PlayerSummary(rebid.History, rebid.Index - 2);
+                var partnerMinOfSuit = partnerSummary.HandShape[suit].Min;
+                var playerMinOfSuit = new InterpretedBid.PlayerSummary(rebid.History, rebid.Index - 4).HandShape[suit].Min;
+
+                if (partnerMinOfSuit >= 3 && BridgeBot.IsMinor(suit))
+                {
+                    rebid.BidPointType = BidPointType.Dummy;
+                    rebid.HandShape[suit].Min = 8 - partnerMinOfSuit;
+                    rebid.Description = $"Support; {rebid.HandShape[suit].Min}+ {suit}";
+                }
+                else if (playerMinOfSuit > 0 && partnerMinOfSuit == 0)
+                {
+                    rebid.HandShape[suit].Min = 6;
+                    rebid.Description = $"6+ {suit}";
+                }
+                else
+                {
+                    ResponderRebid.TryPlaceContract(rebid);
+                    return;
+                }
+
+                rebid.Points.Min = InterpretedBid.InvitationalPoints - partnerSummary.Points.Min;
+                rebid.BidMessage = BidMessage.Forcing;
+                return;
+            }
 
             ResponderRebid.TryPlaceContract(rebid);
         }
