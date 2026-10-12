@@ -322,12 +322,14 @@ namespace Trickster.Bots
             if (state.legalCards.Count == 1)
                 return state.legalCards.First();
 
+            var auction = new AuctionInfo(this, state);
+
             if (IsOpeningLead(state))
-                return SuggestDefensiveLead(state);
+                return SuggestDefensiveLead(state, auction);
 
             var isDefensiveLead = state.trick.Count == 0 && state.player.Bid == BridgeBid.Defend;
             if (isDefensiveLead)
-                return SuggestDefensiveLeadAfterFirstTrick(state);
+                return SuggestDefensiveLeadAfterFirstTrick(state, auction);
 
             var isSecondHandDefensivePlay = state.trick.Count == 1 && state.player.Bid == BridgeBid.Defend;
             if (isSecondHandDefensivePlay)
@@ -558,12 +560,12 @@ namespace Trickster.Bots
             return nonTrumpCards.OrderByDescending(c => nonTrumpCards.Count(c1 => EffectiveSuit(c1) == c.suit)).ThenBy(RankSort).First();
         }
 
-        private Card SuggestDefensiveLead(SuggestCardState<BridgeOptions> state)
+        private Card SuggestDefensiveLead(SuggestCardState<BridgeOptions> state, AuctionInfo auction)
         {
             if (state.trumpSuit == Suit.Unknown)
-                return SuggestDefensiveLeadInNoTrump(state);
+                return SuggestDefensiveLeadInNoTrump(state, auction);
 
-            return SuggestDefensiveLeadInSuit(state, state.legalCards);
+            return SuggestDefensiveLeadInSuit(state, auction, state.legalCards);
         }
 
         private List<List<Card>> GetBrokenSequences(IReadOnlyList<Card> cards, IReadOnlyList<Card> played, int minLength = 0, int minTopRank = 0, int minRank = 0)
@@ -571,17 +573,39 @@ namespace Trickster.Bots
             return GetSequences(cards, played, minLength, minTopRank, minRank, gap: 1);
         }
 
-        private int FindDealerSeat(SuggestCardState<BridgeOptions> state)
+        private static int FindDealerSeat(IReadOnlyList<PlayerBase> players)
         {
             // since dealer is first to bid
             // if bid counts are equal, dealer is the player whose last bid wasn't pass
             // otherwise dealer is offset by the number of players who bid one more than others
             // e.g. if three players bid twice, and one bid three times, then dealer is to the right of the player whose last bid wasn't pass
-            var bids = state.players.Select(p => p.BidHistory.Count);
+            var bids = players.Select(p => p.BidHistory.Count);
             var maxBids = bids.Max();
             var nMaxBids = bids.Count(b => b == maxBids);
-            var lastNonPassBidderSeat = state.players.Where(p => p.BidHistory.Last() != BidBase.Pass).Select(p => p.Seat).First();
+            var lastNonPassBidderSeat = players.Where(p => p.BidHistory.Any() && p.BidHistory.Last() != BidBase.Pass).Select(p => p.Seat).FirstOrDefault();
             return (4 + lastNonPassBidderSeat - nMaxBids) % 4;
+        }
+
+        //  auction details needed during card play, computed at most once per SuggestNextCard call (and only if used)
+        private sealed class AuctionInfo
+        {
+            private readonly Lazy<int> dealerSeat;
+            private readonly Lazy<List<InterpretedBid>> interpretedHistory;
+
+            public AuctionInfo(BridgeBot bot, SuggestCardState<BridgeOptions> state)
+            {
+                dealerSeat = new Lazy<int>(() => FindDealerSeat(state.players));
+                interpretedHistory = new Lazy<List<InterpretedBid>>(() =>
+                {
+                    var players = new PlayersCollectionBase(bot, state.players);
+                    var history = new BridgeBidHistory(players, DealerSeat);
+                    return InterpretedBid.InterpretHistory(history, new BridgeBotOptions(bot.options));
+                });
+            }
+
+            public int DealerSeat => dealerSeat.Value;
+
+            public IReadOnlyList<InterpretedBid> InterpretedHistory => interpretedHistory.Value;
         }
 
         private Dictionary<Suit, List<Card>> GetCardsBySuit(IReadOnlyList<Card> cards)
@@ -589,28 +613,25 @@ namespace Trickster.Bots
             return cards.GroupBy(EffectiveSuit).ToDictionary(g => g.Key, g => g.OrderByDescending(RankSort).ToList());
         }
 
-        private InterpretedBid.PlayerSummary GetPlayerSummary(SuggestCardState<BridgeOptions> state, int playerSeat)
+        private static InterpretedBid.PlayerSummary GetPlayerSummary(AuctionInfo auction, int playerSeat)
         {
-            var botOptions = new BridgeBotOptions(options);
-            var dealerSeat = FindDealerSeat(state);
-            var players = new PlayersCollectionBase(this, state.players);
-            var history = new BridgeBidHistory(players, dealerSeat);
-            var interpretedHistory = InterpretedBid.InterpretHistory(history, botOptions);
+            var dealerSeat = auction.DealerSeat;
+            var interpretedHistory = auction.InterpretedHistory;
             var firstPlayerBidIndex = (4 + playerSeat - dealerSeat) % 4;
             var nPlayerExtraBids = (interpretedHistory.Count - 1 - firstPlayerBidIndex) / 4;
             var lastPlayerBidIndex = firstPlayerBidIndex + 4 * nPlayerExtraBids;
             return new InterpretedBid.PlayerSummary(interpretedHistory, lastPlayerBidIndex);
         }
 
-        private List<Card> GetCardsInPartnersBestBidSuit(SuggestCardState<BridgeOptions> state, Dictionary<Suit, List<Card>> legalCardsBySuit)
+        private List<Card> GetCardsInPartnersBestBidSuit(SuggestCardState<BridgeOptions> state, AuctionInfo auction, Dictionary<Suit, List<Card>> legalCardsBySuit)
         {
             if (options.variation == BridgeVariation.Mini)
                 return new List<Card>();
 
             var partner = GetPartner(state);
-            var summary = GetPlayerSummary(state, partner.Seat);
+            var summary = GetPlayerSummary(auction, partner.Seat);
             var legalHandShapes = summary.HandShape.Where(hs => legalCardsBySuit.ContainsKey(hs.Key));
-            var bestBidSuitLength = legalHandShapes.Max(hs => hs.Value.Min);
+            var bestBidSuitLength = legalHandShapes.Any() ? legalHandShapes.Max(hs => hs.Value.Min) : 0;
 
             // Should we exclude any suits with less than a 4-card minimum (as those don't indicate a strong suit for partner)? Probably.
             if (bestBidSuitLength < 3)
@@ -631,7 +652,7 @@ namespace Trickster.Bots
         {
             var partner = GetPartner(state);
             var cardsPlayedByTrick = GetCardsPlayedByTrick(state.cardsPlayedInOrder, state.players.Count);
-            var partnersFirstLedTrick = cardsPlayedByTrick.FirstOrDefault(t => t.First().seat == partner.Seat);
+            var partnersFirstLedTrick = cardsPlayedByTrick.FirstOrDefault(t => t.Any() && t.First().seat == partner.Seat);
             var partnersFirstLedSuit = partnersFirstLedTrick?.First().card.suit;
 
             if (partnersFirstLedSuit.HasValue && legalCardsBySuit.ContainsKey(partnersFirstLedSuit.Value))
@@ -640,10 +661,10 @@ namespace Trickster.Bots
             return new List<Card>();
         }
 
-        private List<Card> GetCardsInPartnersSuit(SuggestCardState<BridgeOptions> state, Dictionary<Suit, List<Card>> legalCardsBySuit)
+        private List<Card> GetCardsInPartnersSuit(SuggestCardState<BridgeOptions> state, AuctionInfo auction, Dictionary<Suit, List<Card>> legalCardsBySuit)
         {
             // Give preference to partner's suit from the auction (instead of what they led)
-            var cards = GetCardsInPartnersBestBidSuit(state, legalCardsBySuit);
+            var cards = GetCardsInPartnersBestBidSuit(state, auction, legalCardsBySuit);
             if (cards.Count > 0)
                 return cards;
 
@@ -664,7 +685,7 @@ namespace Trickster.Bots
             var dummyHasTrump = dummyHand.Any(c => c.suit == state.trumpSuit);
             var dummyCardsBySuit = GetCardsBySuit(dummyHand)
                 // Don't pick trump as a weak suit
-                .Where(s => s.Key != trump)
+                .Where(s => s.Key != state.trumpSuit)
                 // Only suits with no honors and fewer than 5 cards are considered "weak"
                 .Where(s => s.Value.Count < 5 && s.Value.All(c => c.rank < Rank.Ten))
                 // Avoid helping dummy get void in a suit if they still have trump
@@ -745,27 +766,22 @@ namespace Trickster.Bots
             return sequences.Where(seq => seq.Count >= minLength && RankSort(seq.First()) >= minTopRank).ToList();
         }
 
-        private List<Suit> GetUnbidSuits(SuggestCardState<BridgeOptions> state)
+        private List<Suit> GetUnbidSuits(AuctionInfo auction)
         {
             if (options.variation == BridgeVariation.Mini)
                 return new List<Suit>();
 
-            var botOptions = new BridgeBotOptions(options);
-            var dealerSeat = FindDealerSeat(state);
-            var players = new PlayersCollectionBase(this, state.players);
-            var history = new BridgeBidHistory(players, dealerSeat);
-            var interpretedHistory = InterpretedBid.InterpretHistory(history, botOptions);
-            var unbidSuits = SuitRank.stdSuits.Where(suit => interpretedHistory.All(b => b.HandShape[suit].Min <= 2));
+            var unbidSuits = SuitRank.stdSuits.Where(suit => auction.InterpretedHistory.All(b => b.HandShape[suit].Min <= 2));
             return unbidSuits.ToList();
         }
 
-        private List<Suit> GetOpponentsShownSuits(SuggestCardState<BridgeOptions> state)
+        private List<Suit> GetOpponentsShownSuits(SuggestCardState<BridgeOptions> state, AuctionInfo auction)
         {
             if (options.variation == BridgeVariation.Mini)
                 return new List<Suit>();
 
-            var declarerSummary = GetPlayerSummary(state, GetDeclarer(state).Seat);
-            var dummySummary = GetPlayerSummary(state, GetDummy(state).Seat);
+            var declarerSummary = GetPlayerSummary(auction, GetDeclarer(state).Seat);
+            var dummySummary = GetPlayerSummary(auction, GetDummy(state).Seat);
             return SuitRank.stdSuits.Where(suit => declarerSummary.HandShape[suit].Min >= 3 || dummySummary.HandShape[suit].Min >= 3).ToList();
         }
 
@@ -923,7 +939,7 @@ namespace Trickster.Bots
                 return LeadPartnersFirstLedSuit(cardsInSuit);
         }
 
-        private Card SuggestDefensiveLeadInNoTrump(SuggestCardState<BridgeOptions> state)
+        private Card SuggestDefensiveLeadInNoTrump(SuggestCardState<BridgeOptions> state, AuctionInfo auction)
         {
             // Opening Leads: Notrump
 
@@ -937,7 +953,7 @@ namespace Trickster.Bots
                 return matches.First().First();
 
             // Avoid suits declarer or dummy have shown, unless they've shown every suit we hold
-            var opponentsShownSuits = GetOpponentsShownSuits(state);
+            var opponentsShownSuits = GetOpponentsShownSuits(state, auction);
             var candidateSuits = cardsBySuit.Keys.Where(s => !opponentsShownSuits.Contains(s)).ToList();
             if (candidateSuits.Count == 0)
                 candidateSuits = cardsBySuit.Keys.ToList();
@@ -974,7 +990,7 @@ namespace Trickster.Bots
             // lead the suit if you have three or more (same rules as for suit contracts) or we're past the opening lead
             // TODO: If you have two and five or fewer points,
             // lead partner’s suit unless you have a 5+ card suit with 3 honor sequence, lead that
-            var cardsInPartnersSuit = GetCardsInPartnersSuit(state, cardsBySuit);
+            var cardsInPartnersSuit = GetCardsInPartnersSuit(state, auction, cardsBySuit);
             if (cardsInPartnersSuit.Count >= 3 || (!IsOpeningLead(state) && cardsInPartnersSuit.Any()))
                 return LeadPartnersSuit(state, cardsInPartnersSuit);
 
@@ -1006,7 +1022,7 @@ namespace Trickster.Bots
             return cardsInBestSuit.Count() > 1 ? cardsInBestSuit[1] : cardsInBestSuit.First();
         }
 
-        private Card SuggestDefensiveLeadInSuit(SuggestCardState<BridgeOptions> state, IReadOnlyList<Card> legalCards)
+        private Card SuggestDefensiveLeadInSuit(SuggestCardState<BridgeOptions> state, AuctionInfo auction, IReadOnlyList<Card> legalCards)
         {
             // Leads: Suits
 
@@ -1047,7 +1063,7 @@ namespace Trickster.Bots
 
             // Lead partner’s bid/led suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
             // Lead highest of partner’s bid/led suit, we're okay leading a suit with an Ace here
-            var cardsInPartnersSuit = GetCardsInPartnersSuit(state, cardsBySuit);
+            var cardsInPartnersSuit = GetCardsInPartnersSuit(state, auction, cardsBySuit);
             if (cardsInPartnersSuit.Any())
                 return LeadPartnersSuit(state, cardsInPartnersSuit);
 
@@ -1060,7 +1076,7 @@ namespace Trickster.Bots
             // Preference to lead unbid suits. Low from K or Q better than low from J, generally
             // Generally better to lead from three small than away from an honor
             // Avoid leading from honour doubletons (Kx, Qx, Jx)
-            var unbidSuits = GetUnbidSuits(state).Where(s => s != state.trumpSuit && cardsBySuit.ContainsKey(s) && cardsBySuit[s].Count > 0);
+            var unbidSuits = GetUnbidSuits(auction).Where(s => s != state.trumpSuit && cardsBySuit.ContainsKey(s) && cardsBySuit[s].Count > 0);
 
             // Prefer dummy's weakest suit (if after opening lead)
             var dummysWeakestSuit = GetDummysWeakestSuit(state);
@@ -1088,7 +1104,7 @@ namespace Trickster.Bots
             return IsAcol ? LeadFromSuitAcol(cards, isNoTrump: false) : LeadAceOrLowOrFourthBest(cards);
         }
 
-        private Card SuggestDefensiveLeadAfterFirstTrick(SuggestCardState<BridgeOptions> state)
+        private Card SuggestDefensiveLeadAfterFirstTrick(SuggestCardState<BridgeOptions> state, AuctionInfo auction)
         {
             // General principle: if you have a trick that is now good as the defender,
             // and it is the "setting trick" aka the trick to defeat the contract,
@@ -1114,7 +1130,7 @@ namespace Trickster.Bots
             // * Give priority to returning partner's suit (especially in NT),
             // * unless you have a sequence of your own
             // * (if neither works, leading dummy's weakest suit is a good fallback)
-            return SuggestDefensiveLead(state);
+            return SuggestDefensiveLead(state, auction);
         }
 
         private Card SuggestDefensiveDiscard(SuggestCardState<BridgeOptions> state)
