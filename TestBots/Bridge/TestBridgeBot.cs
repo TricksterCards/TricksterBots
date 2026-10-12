@@ -96,6 +96,29 @@ namespace TestBots
             Assert.AreEqual(expectedDescription, legalBids[0].explanation.Description);
         }
 
+        //  the same hand can call for a different lead depending on the bidding scheme's lead conventions
+        [TestMethod]
+        [DataRow(BridgeBiddingScheme.SAYC, "H3", "N:K75.863.Q94.AT92 - - -", "4S", "", DisplayName = "SAYC: low from three small")]
+        [DataRow(BridgeBiddingScheme.Acol, "H8", "N:K75.863.Q94.AT92 - - -", "4S", "", DisplayName = "Acol: top from three small")]
+        [DataRow(BridgeBiddingScheme.SAYC, "H2", "N:K7.8642.Q93.AT52 - - -", "4S", "", DisplayName = "SAYC: 4th highest from four small")]
+        [DataRow(BridgeBiddingScheme.Acol, "H6", "N:K7.8642.Q93.AT52 - - -", "4S", "", DisplayName = "Acol: 2nd highest from four small")]
+        [DataRow(BridgeBiddingScheme.SAYC, "S6", "N:AJT63.K74.863.52 - - -", "3NT", "", DisplayName = "SAYC: 4th highest from AJ10xx against NT")]
+        [DataRow(BridgeBiddingScheme.Acol, "SJ", "N:AJT63.K74.863.52 - - -", "3NT", "", DisplayName = "Acol: J from AJ10xx against NT")]
+        [DataRow(BridgeBiddingScheme.SAYC, "H3", "S:- - J72.963.Q942.872 -", "1NT", "S 1H 1NT Pass Pass Pass", DisplayName = "SAYC: low from three small in partner's suit")]
+        [DataRow(BridgeBiddingScheme.Acol, "H9", "S:- - J72.963.Q942.872 -", "1NT", "S 1H 1NT Pass Pass Pass", DisplayName = "Acol: top from three small in partner's suit")]
+        [DataRow(BridgeBiddingScheme.SAYC, "H3", "S:- - 752.9863.Q94.J72 -", "4S", "S 1D 1S Pass 4S Pass Pass Pass", DisplayName = "SAYC: ignore partner's 1D opening")]
+        [DataRow(BridgeBiddingScheme.Acol, "D4", "S:- - 752.9863.Q94.J72 -", "4S", "S 1D 1S Pass 4S Pass Pass Pass", DisplayName = "Acol: lead partner's 1D opening")]
+        public void DefensiveLeadsByScheme(BridgeBiddingScheme scheme, string expected, string deal, string contract, string auction)
+        {
+            var auctionTokens = auction.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var auctionTags = auctionTokens.Length > 0 ? $"[Auction \"{auctionTokens[0]}\"]\n{string.Join(" ", auctionTokens.Skip(1))}\n" : string.Empty;
+            var pbn = $"[Event \"Lead\"]\n[Deal \"{deal}\"]\n[Contract \"{contract}\"]\n{auctionTags}[Play \"N\"]\n{expected} - - -\n";
+            var test = PTN.ImportTests(pbn, new BridgeOptions()).Single(t => !string.IsNullOrEmpty(t.play));
+
+            var failure = RunPlayTest(test, new BridgeOptions { bidding = scheme });
+            Assert.IsNull(failure, failure);
+        }
+
         [TestMethod]
         public void BasicTests()
         {
@@ -327,9 +350,15 @@ namespace TestBots
                         if (failure != null)
                             failures.Add($"{filename}: {failure}");
                     }
+                    else if (!string.IsNullOrEmpty(test.play))
+                    {
+                        var failure = RunPlayTest(test, new BridgeOptions { bidding = BridgeBiddingScheme.Acol });
+                        if (failure != null)
+                            failures.Add($"{filename}: {failure}");
+                    }
                     else
                     {
-                        failures.Add($"{filename}: '{test.type}' must have an expected bid.");
+                        failures.Add($"{filename}: '{test.type}' must have either an expected bid or expected play.");
                     }
                 }
             }
@@ -509,7 +538,7 @@ namespace TestBots
                 return null;
         }
 
-        private static string RunPlayTest(BasicTest test)
+        private static string RunPlayTest(BasicTest test, BridgeOptions options = null)
         {
             var contract = GetContract(test);
             var cardsPlayedInOrder = "";
@@ -594,7 +623,7 @@ namespace TestBots
             players = players.OrderBy(p => (4 + p.Seat - nextSeat) % 4).ToArray();
 
             {
-                var bot = GetBot(contract.suit);
+                var bot = GetBot(options ?? new BridgeOptions(), contract.suit);
                 var trickLength = test.plays.Length % 4;
                 var trick = string.Join("", test.plays.Skip(test.plays.Length - trickLength));
                 var cardState = new TestCardState<BridgeOptions>(bot, players, trick) {

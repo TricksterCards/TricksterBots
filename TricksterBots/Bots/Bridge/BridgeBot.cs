@@ -617,9 +617,10 @@ namespace Trickster.Bots
                 return new List<Card>();
 
             // Exclude if we're only going off partner opening with 1C or 1D (as those are weak)
+            // Acol 1C and 1D openings promise 4+ cards, so those are real suits worth leading
             var partnerDeclareBids = partner.BidHistory.Where(b => DeclareBid.Is(b)).Select(b => new DeclareBid(b));
             var firstPartnerDeclareBid = partnerDeclareBids.FirstOrDefault();
-            if (partnerDeclareBids.Count() == 1 && firstPartnerDeclareBid.level == 1 && (firstPartnerDeclareBid.suit == Suit.Clubs || firstPartnerDeclareBid.suit == Suit.Diamonds))
+            if (!IsAcol && partnerDeclareBids.Count() == 1 && firstPartnerDeclareBid.level == 1 && (firstPartnerDeclareBid.suit == Suit.Clubs || firstPartnerDeclareBid.suit == Suit.Diamonds))
                 return new List<Card>();
 
             var bestBidSuits = legalHandShapes.Where(hs => hs.Value.Min == bestBidSuitLength).Select(hs => hs.Key);
@@ -758,6 +759,52 @@ namespace Trickster.Bots
             return unbidSuits.ToList();
         }
 
+        private List<Suit> GetOpponentsShownSuits(SuggestCardState<BridgeOptions> state)
+        {
+            if (options.variation == BridgeVariation.Mini)
+                return new List<Suit>();
+
+            var declarerSummary = GetPlayerSummary(state, GetDeclarer(state).Seat);
+            var dummySummary = GetPlayerSummary(state, GetDummy(state).Seat);
+            return SuitRank.stdSuits.Where(suit => declarerSummary.HandShape[suit].Min >= 3 || dummySummary.HandShape[suit].Min >= 3).ToList();
+        }
+
+        private static int RankSuitForPassiveLead(List<Card> cards)
+        {
+            // Lower is better: three+ small, then K/Q/J-headed suits, then a small doubleton,
+            // then an ace-headed suit (where we lead the ace), and honour doubletons last
+            var top = cards[0].rank;
+            if (cards.Count >= 3)
+            {
+                if (top < Rank.Ten)
+                    return 0;
+                if (top == Rank.King)
+                    return 1;
+                if (top == Rank.Queen)
+                    return 2;
+                if (top != Rank.Ace)
+                    return 3;
+            }
+
+            if (top < Rank.Ten)
+                return 4;
+
+            if (top == Rank.Ace)
+                return 5;
+
+            return 6;
+        }
+
+        private Suit BestSuitForPassiveLead(Dictionary<Suit, List<Card>> cardsBySuit, IEnumerable<Suit> suits)
+        {
+            return suits
+                .OrderBy(s => RankSuitForPassiveLead(cardsBySuit[s]))
+                .ThenByDescending(s => cardsBySuit[s].Count)
+                .ThenBy(s => cardsBySuit[s][0].rank)
+                .Select(s => (Suit?)s)
+                .FirstOrDefault() ?? Suit.Unknown;
+        }
+
         private bool DummyHasLongGoodSideSuit(SuggestCardState<BridgeOptions> state)
         {
             // If dummy has a long side suit that will be good, like AKQxx,
@@ -785,8 +832,60 @@ namespace Trickster.Bots
             return cards.Count > 3 ? cards[3] : cards.Last();
         }
 
-        private Card LeadPartnersBestBidSuit(List<Card> cardsInSuit)
+        private bool IsAcol => options.bidding == BridgeBiddingScheme.Acol;
+
+        private Card LeadFromSuitAcol(List<Card> cards, bool isNoTrump)
         {
+            // EBU Standard English leads (cards are sorted high to low):
+            // * never underlead an Ace against a suit contract
+            // * top of a doubleton
+            // * with an honour (10 or higher): low from three, fourth highest from four or more
+            // * without an honour: top from three small ("top of nothing"), second highest from four or more
+            if (!isNoTrump && cards[0].rank == Rank.Ace)
+                return cards[0];
+
+            if (cards.Count <= 2)
+                return cards[0];
+
+            if (cards[0].rank >= Rank.Ten)
+                return cards.Count > 3 ? cards[3] : cards.Last();
+
+            return cards.Count > 3 ? cards[1] : cards[0];
+        }
+
+        private Card GetInteriorSequenceLead(Dictionary<Suit, List<Card>> cardsBySuit, IReadOnlyList<Card> played, bool allowAceHeaded)
+        {
+            // Lead the top of an interior sequence: J from KJ10 or AJ10, 10 from K109, Q109 or A109.
+            // The top honour must not touch the sequence below it (otherwise it's a regular sequence).
+            foreach (var suitCards in cardsBySuit.Where(sc => sc.Key != trump).Select(sc => sc.Value))
+            {
+                if (suitCards.Count < 3)
+                    continue;
+
+                var top = suitCards[0];
+                if (top.rank < Rank.Queen || (!allowAceHeaded && top.rank == Rank.Ace))
+                    continue;
+
+                var second = suitCards[1];
+                var third = suitCards[2];
+                if (second.rank != Rank.Jack && second.rank != Rank.Ten)
+                    continue;
+
+                var topAdjusted = AdjustedRank(top, played);
+                var secondAdjusted = AdjustedRank(second, played);
+                var thirdAdjusted = AdjustedRank(third, played);
+                if (topAdjusted - secondAdjusted > 1 && secondAdjusted - thirdAdjusted == 1)
+                    return second;
+            }
+
+            return null;
+        }
+
+        private Card LeadPartnersBestBidSuit(List<Card> cardsInSuit, bool isNoTrump)
+        {
+            if (IsAcol)
+                return LeadFromSuitAcol(cardsInSuit, isNoTrump);
+
             // Lead partner’s bid suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
             if (cardsInSuit.Count == 2)
                 return cardsInSuit.First();
@@ -819,7 +918,7 @@ namespace Trickster.Bots
         private Card LeadPartnersSuit(SuggestCardState<BridgeOptions> state, List<Card> cardsInSuit)
         {
             if (IsOpeningLead(state))
-                return LeadPartnersBestBidSuit(cardsInSuit);
+                return LeadPartnersBestBidSuit(cardsInSuit, state.trumpSuit == Suit.Unknown);
             else
                 return LeadPartnersFirstLedSuit(cardsInSuit);
         }
@@ -837,12 +936,34 @@ namespace Trickster.Bots
             if (matches.Any())
                 return matches.First().First();
 
+            // Avoid suits declarer or dummy have shown, unless they've shown every suit we hold
+            var opponentsShownSuits = GetOpponentsShownSuits(state);
+            var candidateSuits = cardsBySuit.Keys.Where(s => !opponentsShownSuits.Contains(s)).ToList();
+            if (candidateSuits.Count == 0)
+                candidateSuits = cardsBySuit.Keys.ToList();
+            var longestCandidateLength = candidateSuits.Max(s => cardsBySuit[s].Count);
+
+            // A long suit is a better lead than a short broken or interior sequence,
+            // so only consider sequences in 4+ card suits unless we don't have a 5+ card suit
+            bool IsSequenceSuitLongEnough(Suit s) => suitCounts[s] >= 4 || longestCandidateLength < 5;
+
             // If you have a broken sequence(KQ10),
             // lead the top.
-            var brokenSequences = GetBrokenSequences(state.legalCards, state.cardsPlayed, minLength: 3, minRank: (int)Rank.Ten);
+            var brokenSequences = GetBrokenSequences(state.legalCards, state.cardsPlayed, minLength: 3, minRank: (int)Rank.Ten)
+                .Where(seq => IsSequenceSuitLongEnough(EffectiveSuit(seq[0])))
+                .ToList();
             var nonKJT = brokenSequences.Where(seq => seq[0].rank != Rank.King || seq[1].rank != Rank.Jack || seq[2].rank != Rank.Ten);
             if (nonKJT.Any())
                 return nonKJT.First().First();
+
+            // Acol (EBU Standard English) also leads the top of an interior sequence (J from KJ10/AJ10, 10 from K109/Q109/A109)
+            if (IsAcol)
+            {
+                var sequenceCardsBySuit = cardsBySuit.Where(sc => IsSequenceSuitLongEnough(sc.Key)).ToDictionary(sc => sc.Key, sc => sc.Value);
+                var interiorSequenceLead = GetInteriorSequenceLead(sequenceCardsBySuit, state.cardsPlayed, allowAceHeaded: true);
+                if (interiorSequenceLead != null)
+                    return interiorSequenceLead;
+            }
 
             // If you have KJT,
             // lead the J
@@ -858,16 +979,17 @@ namespace Trickster.Bots
                 return LeadPartnersSuit(state, cardsInPartnersSuit);
 
             // If partner hasn’t bid or led,
-            // lead fourth best card from longest / strongest (HCP) suit.
+            // lead fourth best card from longest / strongest (HCP) suit that the opponents haven't shown.
             // If longest strongest suit has no 10 or higher,
             // lead 2nd highest from that suit
-            var maxSuitLength = cardsBySuit.Max(sc => sc.Value.Count());
-            var longestSuits = cardsBySuit
-                .Where(sc => sc.Value.Count() == maxSuitLength)
+            // When the opponents haven't shown any suit (e.g. 1NT - 3NT), prefer a major between equal-length suits
+            var opponentsShowedNoSuit = options.variation != BridgeVariation.Mini && opponentsShownSuits.Count == 0;
+            var bestSuit = candidateSuits
+                .Where(s => cardsBySuit[s].Count == longestCandidateLength)
+                .OrderByDescending(s => opponentsShowedNoSuit && IsMajor(s))
                 // Tie-break by determining stronger suit (most HCP)
-                .OrderByDescending(sc => BasicBidding.ComputeHighCardPoints(sc.Value))
-                .Select(sc => sc.Key);
-            var bestSuit = longestSuits.First();
+                .ThenByDescending(s => BasicBidding.ComputeHighCardPoints(cardsBySuit[s]))
+                .First();
 
             // Prefer dummy's weakest suit (if after opening lead)
             var dummysWeakestSuit = GetDummysWeakestSuit(state);
@@ -875,6 +997,9 @@ namespace Trickster.Bots
                 bestSuit = dummysWeakestSuit;
 
             var cardsInBestSuit = cardsBySuit[bestSuit];
+            if (IsAcol)
+                return LeadFromSuitAcol(cardsInBestSuit, isNoTrump: true);
+
             if (cardsInBestSuit.First().rank >= Rank.Ten)
                 return cardsBySuit[bestSuit].Count() < 4 ? cardsInBestSuit.Last() : cardsInBestSuit[3];
 
@@ -911,6 +1036,15 @@ namespace Trickster.Bots
             if (nonDoubletonTwoCardSequencesWithoutAce.Any())
                 return nonDoubletonTwoCardSequencesWithoutAce.First().First();
 
+            // Acol (EBU Standard English) also leads the top of an interior sequence (J from KJ10, 10 from K109/Q109),
+            // but never underleads an Ace against a suit contract
+            if (IsAcol)
+            {
+                var interiorSequenceLead = GetInteriorSequenceLead(cardsBySuit, state.cardsPlayed, allowAceHeaded: false);
+                if (interiorSequenceLead != null)
+                    return interiorSequenceLead;
+            }
+
             // Lead partner’s bid/led suit: high from two, low from three or fourth best from 4 or 5(4th best leads).
             // Lead highest of partner’s bid/led suit, we're okay leading a suit with an Ace here
             var cardsInPartnersSuit = GetCardsInPartnersSuit(state, cardsBySuit);
@@ -925,28 +1059,33 @@ namespace Trickster.Bots
             // Do not lead suit with ace unless leading ace
             // Preference to lead unbid suits. Low from K or Q better than low from J, generally
             // Generally better to lead from three small than away from an honor
-            // Lead low from three card suits, 4th from four or five card suits
-            var unbidSuits = GetUnbidSuits(state).Where(s => cardsBySuit.ContainsKey(s) && cardsBySuit[s].Count > 0);
+            // Avoid leading from honour doubletons (Kx, Qx, Jx)
+            var unbidSuits = GetUnbidSuits(state).Where(s => s != state.trumpSuit && cardsBySuit.ContainsKey(s) && cardsBySuit[s].Count > 0);
 
             // Prefer dummy's weakest suit (if after opening lead)
             var dummysWeakestSuit = GetDummysWeakestSuit(state);
             if (dummysWeakestSuit != Suit.Unknown && cardsBySuit.Any(sc => sc.Key == dummysWeakestSuit))
                 unbidSuits = new List<Suit>() { dummysWeakestSuit };
 
-            var unbidSuitsWithoutAce = unbidSuits.Where(s => cardsBySuit[s][0].rank != Rank.Ace);
-            var unbidSuitsWithThreeSmall = unbidSuitsWithoutAce.Where(s => cardsBySuit[s].Count >= 3 && cardsBySuit[s][0].rank < Rank.Ten);
-            if (unbidSuitsWithThreeSmall.Any())
-                return LeadAceOrLowOrFourthBest(cardsBySuit[unbidSuitsWithThreeSmall.First()]);
-            if (unbidSuitsWithoutAce.Any())
-                return LeadAceOrLowOrFourthBest(cardsBySuit[unbidSuitsWithoutAce.First()]);
-            if (unbidSuits.Any())
-                return LeadAceOrLowOrFourthBest(cardsBySuit[unbidSuits.First()]);
+            var bestUnbidSuit = BestSuitForPassiveLead(cardsBySuit, unbidSuits);
+            if (bestUnbidSuit != Suit.Unknown)
+                return LeadFromSuit(cardsBySuit[bestUnbidSuit]);
 
             // TODO Advanced:
             // With a weak hand on your right(ie a preempt),
             // it’s ok to lead more aggressively(low from an honor, or even a random ace)
 
-            return LeadAceOrLowOrFourthBest(cardsBySuit.First().Value);
+            // Otherwise pick the safest non-trump suit, leading trump only if that's all we have
+            var bestNonTrumpSuit = BestSuitForPassiveLead(cardsBySuit, cardsBySuit.Keys.Where(s => s != state.trumpSuit));
+            if (bestNonTrumpSuit != Suit.Unknown)
+                return LeadFromSuit(cardsBySuit[bestNonTrumpSuit]);
+
+            return LeadFromSuit(cardsBySuit.First().Value);
+        }
+
+        private Card LeadFromSuit(List<Card> cards)
+        {
+            return IsAcol ? LeadFromSuitAcol(cards, isNoTrump: false) : LeadAceOrLowOrFourthBest(cards);
         }
 
         private Card SuggestDefensiveLeadAfterFirstTrick(SuggestCardState<BridgeOptions> state)
