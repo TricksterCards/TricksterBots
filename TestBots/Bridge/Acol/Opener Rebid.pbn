@@ -148,3 +148,27 @@ Pass 1C Pass 1H
 [Auction "S"]
 1S Pass 2S Pass
 3S
+
+[Event "Show second suit before rebidding own suit"]
+[Deal "S:32.A87652..AK732 - - -"]
+[Auction "S"]
+1H Pass 1S 2D
+3C
+
+[Event "Rebid a 6-card major over a 3-level overcall rather than bid a new suit at the 4-level"]
+[Deal "S:32.A87652..AK732 - - -"]
+[Auction "S"]
+1H Pass 1S 3D
+3H
+
+[Event "Bid game in a 6-card major over a 4-level overcall rather than bid a new suit at the 5-level"]
+[Deal "S:32.A87652..AK732 - - -"]
+[Auction "S"]
+1H Pass 1S 4D
+4H
+
+[Event "Pass over a 5-level overcall rather than bid a new suit at the 6-level"]
+[Deal "S:32.A87652..AK732 - - -"]
+[Auction "S"]
+1H Pass 1S 5D
+Pass
