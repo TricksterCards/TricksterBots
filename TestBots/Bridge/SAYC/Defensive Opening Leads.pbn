@@ -71,3 +71,51 @@ Pass 4S Pass Pass
 Pass
 [Play "E"]
 C5 - - -
+
+% Suit selection
+
+[Event "Opening Lead in NT avoids Declarer's Bid Suit"]
+[Deal "E:- - - Q8642.K953.J4.72"]
+[Contract "3NT"]
+[Auction "E"]
+1S   Pass 3NT  Pass
+Pass Pass
+[Play "N"]
+H3 - - -
+
+[Event "Opening Lead in NT prefers a Major after 1NT-3NT"]
+[Deal "W:- Q852.73.KJ64.953 - -"]
+[Contract "3NT"]
+[Auction "W"]
+1NT  Pass 3NT  Pass
+Pass Pass
+[Play "N"]
+S2 - - -
+
+[Event "Opening Lead in NT prefers a 5-Card Suit over a 3-Card Broken Sequence"]
+[Deal "N:KQT.J8652.743.92 - - -"]
+[Contract "3NT"]
+[Play "N"]
+H5 - - -
+
+[Event "Opening Lead in NT from 3-Card Broken Sequence with a Flat Hand"]
+[Deal "N:KQT.J862.743.952 - - -"]
+[Contract "3NT"]
+[Play "N"]
+SK - - -
+
+[Event "Opening Lead in Suit prefers Kxxx over Qx Doubleton"]
+[Deal "N:752.Q6.K843.J962 - - -"]
+[Contract "4S"]
+[Play "N"]
+D3 - - -
+
+[Event "Opening Lead in Suit when Every Suit was Bid"]
+[Deal "W:- - - 8.Q73.K962.J8543"]
+[Contract "4S"]
+[Auction "W"]
+1C   Pass 1D   Pass
+1H   Pass 1S   Pass
+4S   Pass Pass Pass
+[Play "S"]
+D2 - - -
