@@ -165,13 +165,70 @@ namespace Trickster.Bots
 
         private static void InterpretResponseTo1NT(InterpretedBid response)
         {
-            //  TODO (SAYC Booklet):
+            //  (SAYC Booklet):
             //  If an opponent bids over your 1NT opener (except double), conventional responses like Stayman and transfers are “off.”
             //  Bids are natural except for a cuebid, which may be used with game forcing strength as a substitute for Stayman. 
             //  
             //  If the opponents intervene over a conventional response, bids carry the same meaning as if there were no intervention.
             //  A bid says, “I’m bidding voluntarily, so I have a real fit with you.”
 
+            if (InterpretNewSuitOver1NTOvercall(response))
+                return;
+
+            InterpretUncontestedResponseTo1NT(response);
+            RequireStoppersForNTOver1NTOvercall(response);
+        }
+
+        //  suits the opponent has shown by overcalling our 1NT (natural, or both suits of a two-suited Cappelletti bid)
+        private static Suit[] SuitsShownByOvercall(InterpretedBid overcall)
+        {
+            if (!overcall.bidIsDeclare)
+                return new Suit[0];
+
+            return SuitRank.stdSuits.Where(s => overcall.HandShape[s].Min >= 4 ||
+                                                s == overcall.declareBid.suit && overcall.BidConvention != BidConvention.Cappelletti).ToArray();
+        }
+
+        //  1N-(2D)-3S, 1N-(3D)-3S: after the opponents show a suit, a new suit at the 3-level is natural and game forcing
+        internal static bool InterpretNewSuitOver1NTOvercall(InterpretedBid response)
+        {
+            var opening = response.History[response.Index - 2];
+            var overcall = response.History[response.Index - 1];
+            var suit = response.declareBid.suit;
+            var shownSuits = SuitsShownByOvercall(overcall);
+            if (shownSuits.Length == 0 || response.declareBid.level != 3 || suit == Suit.Unknown || suit == overcall.declareBid.suit || shownSuits.Contains(suit))
+                return false;
+
+            response.BidMessage = BidMessage.Forcing;
+            response.Points.Min = opening.GamePoints - opening.Points.Min;
+            response.HandShape[suit].Min = 5;
+            response.Description = $"5+ {suit}; game forcing";
+            return true;
+        }
+
+        //  1N-(2D)-2N, 1N-(3D)-3N: natural notrump bids after the opponents show a suit promise a stopper in it
+        internal static void RequireStoppersForNTOver1NTOvercall(InterpretedBid response)
+        {
+            if (!response.bidIsDeclare || response.declareBid.suit != Suit.Unknown || response.declareBid.level > 3)
+                return;
+
+            var suits = SuitsShownByOvercall(response.History[response.Index - 1]);
+            if (suits.Length == 0)
+                return;
+
+            HandValidator hasStoppers = hand => suits.All(s => BasicBidding.HasStopper(hand, s));
+            var validate = response.Validate;
+            response.Validate = hand => hasStoppers(hand) && (validate == null || validate(hand));
+            var alternateMatches = response.AlternateMatches;
+            if (alternateMatches != null)
+                response.AlternateMatches = hand => hasStoppers(hand) && alternateMatches(hand);
+
+            var stopperDescription = $"stopper in {string.Join(" and ", suits)}";
+            response.Description = string.IsNullOrEmpty(response.Description) ? stopperDescription : $"{response.Description}; {stopperDescription}";
+        }
+
+        private static void InterpretUncontestedResponseTo1NT(InterpretedBid response)
+        {
             switch (response.declareBid.level)
             {
                 case 2:

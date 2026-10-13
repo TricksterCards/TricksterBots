@@ -40,3 +40,13 @@ Pass Pass
 [Auction "N"]
 1NT 2H 3NT Pass
 Pass Pass
+
+[Event "Game-forcing new suit over interference"]
+[Deal "N:- - 752.K4.AQ.KJ9632 -"]
+[Auction "N"]
+1NT 2S 3C
+
+[Event "Show a forcing new suit rather than 3NT without a stopper"]
+[Deal "N:- - 752.KQ4.AJ.KJ963 -"]
+[Auction "N"]
+1NT 2S 3C
