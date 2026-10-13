@@ -38,6 +38,10 @@ namespace Trickster.Bots
 
         public int Priority = 100;
 
+        internal SlamAsk SlamAsk = SlamAsk.None;
+
+        internal Suit SlamAskSuit = Suit.Unknown;
+
         public InterpretedBid()
         {
         }
@@ -267,10 +271,16 @@ namespace Trickster.Bots
 
         private bool InterpretConventions()
         {
+            if (LeadDirectingDouble.Interpret(this))
+                return true;
+
             if (ArtificialInquiry.Interpret(this))
                 return true;
 
             if (Blackwood.Interpret(this))
+                return true;
+
+            if (SlamTry.Interpret(this))
                 return true;
 
             if (Options.withCappelletti && Cappelletti.Interpret(this))
@@ -346,9 +356,7 @@ namespace Trickster.Bots
                         OpenerRebid.Interpret(this);
                     break;
                 case BidPhase.OvercallRebid:
-                    if (isAcol)
-                        AcolOvercallRebid.Interpret(this);
-                    //  else: TODO: OvercallRebid.Interpret(this);
+                    OvercallRebid.Interpret(this);
                     break;
                 case BidPhase.ResponderRebid:
                     ResponderRebid.Interpret(this);
@@ -359,6 +367,8 @@ namespace Trickster.Bots
                 case BidPhase.Unknown:
                     if (LaterRebid.Applies(this))
                         LaterRebid.Interpret(this);
+                    else if (Balancing.Applies(this))
+                        Balancing.Interpret(this);
                     break;
             }
         }

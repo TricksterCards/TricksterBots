@@ -48,7 +48,18 @@ namespace Trickster.Bots
             //  Acol uses a 23+ threshold for the strong 2C opening
             opening.Points.Min = opening.Options.bidding == BridgeBiddingScheme.Acol ? 23 : 22;
             opening.Description = string.Empty;
-            //  TODO: opening.AlternateMatches = (hand, ibid) => BridgeBot.CountTricks(hand) >= 9;
+            //  balanced hands count HCP only (20-21 HCP opens 2NT)
+            var minPoints = opening.Points.Min;
+            opening.Validate = hand => !BasicBidding.IsBalanced(hand) || BasicBidding.ComputeHighCardPoints(hand) >= minPoints;
+            //  (SAYC Booklet) or the equivalent in playing strength: 10 tricks with a major suit, 11 with a minor
+            if (opening.Options.bidding != BridgeBiddingScheme.Acol)
+                opening.AlternateMatches = hand =>
+                {
+                    var counts = BasicBidding.CountsBySuit(hand);
+                    var longest = SuitRank.stdSuits.OrderByDescending(s => counts[s]).First();
+                    var tricksNeeded = BridgeBot.IsMajor(longest) ? 10 : 11;
+                    return BasicBidding.ComputeHighCardPoints(hand) >= 12 && BasicBidding.CountPlayingTricks(hand, longest) >= tricksNeeded;
+                };
 
             return true;
         }
@@ -82,6 +93,22 @@ namespace Trickster.Bots
                 }
                 else if (rebid.declareBid.level == 4)
                 {
+                    if (response.bidIsDeclare && response.declareBid.suit != Suit.Unknown && response.BidConvention == BidConvention.None)
+                    {
+                        //  2C-2H-4N
+                        //  2C-2S-4N
+                        //  2C-3C-4N
+                        //  2C-3D-4N
+                        //  once partner has shown a real suit, 4NT asks for Aces
+                        var suit = response.declareBid.suit;
+                        rebid.BidConvention = BidConvention.Blackwood;
+                        rebid.BidMessage = BidMessage.Forcing;
+                        rebid.Points.Min = InterpretedBid.SmallSlamPoints - response.Points.Min;
+                        rebid.HandShape[suit].Min = 3;
+                        rebid.Description = "asking for Aces";
+                        return;
+                    }
+
                     //  2C-**-4N
                     rebid.BidPointType = BidPointType.Hcp;
                     rebid.Points.Min = 28;
@@ -208,10 +235,11 @@ namespace Trickster.Bots
                         {
                             //  2C-2D-2H-3H
                             //  2C-2D-2S-3S
+                            //  (with a weak hand, jump straight to game instead: "fast arrival")
                             responderRebid.BidPointType = BidPointType.Dummy;
                             responderRebid.BidMessage = BidMessage.Forcing;
                             // TODO: Adjust min points to indicate slam interest
-                            responderRebid.Points.Min = 5;
+                            responderRebid.Points.Min = 6;
                             responderRebid.HandShape[responderRebid.declareBid.suit].Min = 3;
                             responderRebid.Description = $"3+ {responderRebid.declareBid.suit}";
                         }
@@ -240,10 +268,12 @@ namespace Trickster.Bots
                 }
                 else if (responderRebid.declareBid.suit == rebid.declareBid.suit && responderRebid.declareBid.level == responderRebid.GameLevel)
                 {
+                    //  fast arrival: 3+ card support for a major, 4+ for a minor
+                    var isMajor = BridgeBot.IsMajor(responderRebid.declareBid.suit);
                     responderRebid.BidPointType = BidPointType.Dummy;
-                    responderRebid.Points.Max = 4;
-                    responderRebid.HandShape[responderRebid.declareBid.suit].Min = 4;
-                    responderRebid.Description = $"4 {responderRebid.declareBid.suit}; no slam interest";
+                    responderRebid.Points.Max = isMajor ? 5 : 4;
+                    responderRebid.HandShape[responderRebid.declareBid.suit].Min = isMajor ? 3 : 4;
+                    responderRebid.Description = $"{(isMajor ? 3 : 4)}+ {responderRebid.declareBid.suit}; no slam interest";
                 }
             }
         }

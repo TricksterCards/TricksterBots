@@ -45,12 +45,17 @@ namespace Trickster.Bots
             advance.BidMessage = BidMessage.Signoff;
             advance.Points.Max = 10;
             advance.Description = $"Preference for {suit}";
-            //  with equal length, prefer the cheaper suit
+            //  with equal length, prefer a major (cheaper game), otherwise the cheaper suit
             advance.Validate = hand =>
             {
                 var counts = BasicBidding.CountsBySuit(hand);
-                return counts[suit] > counts[otherSuit] ||
-                       counts[suit] == counts[otherSuit] && BridgeBot.suitRank[suit] < BridgeBot.suitRank[otherSuit];
+                if (counts[suit] != counts[otherSuit])
+                    return counts[suit] > counts[otherSuit];
+
+                if (BridgeBot.IsMajor(suit) != BridgeBot.IsMajor(otherSuit))
+                    return BridgeBot.IsMajor(suit);
+
+                return BridgeBot.suitRank[suit] < BridgeBot.suitRank[otherSuit];
             };
         }
 

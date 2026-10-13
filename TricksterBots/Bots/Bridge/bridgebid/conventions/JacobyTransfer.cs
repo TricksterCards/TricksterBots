@@ -59,6 +59,8 @@ namespace Trickster.Bots
             //  2C-2D-3N-4H
             response.BidConvention = BidConvention.JacobyTransfer;
             response.BidMessage = BidMessage.Forcing;
+            //  with a 5+ card major, transfer rather than bidding the suit directly
+            response.Priority = 95;
             var transferSuit = response.declareBid.suit == Suit.Diamonds ? Suit.Hearts : Suit.Spades;
             response.HandShape[transferSuit].Min = 5;
             response.Description = $" to {response.declareBid.level}{Card.SuitSymbol(transferSuit)}; 5+ {transferSuit}";
@@ -113,7 +115,19 @@ namespace Trickster.Bots
             // Validate that transfer happened
             var transferSuit = transfer.declareBid.suit == Suit.Diamonds ? Suit.Hearts : Suit.Spades;
             if (accept.declareBid.suit != transferSuit)
+            {
+                //  partner didn't complete the transfer: with a 6-card suit and game values, bid game in it anyway
+                if (rebid.bidIsDeclare && rebid.declareBid.suit == transferSuit && rebid.declareBid.level == rebid.GameLevel)
+                {
+                    var opening = GetNtOpening(transfer);
+                    rebid.Points.Min = 25 - (opening?.Points.Min > 0 ? opening.Points.Min : 15);
+                    rebid.HandShape[transferSuit].Min = 6;
+                    rebid.BidMessage = BidMessage.Signoff;
+                    rebid.Description = $"Sign-off at game; 6+ {transferSuit}";
+                }
+
                 return;
+            }
 
             var ntOpening = GetNtOpening(transfer);
             var ntMin = ntOpening?.Points.Min > 0 ? ntOpening.Points.Min : 15;
@@ -133,11 +147,12 @@ namespace Trickster.Bots
 
             if (transferSuit == rebid.declareBid.suit)
             {
+                //  a 6-card suit adds length points
                 if (rebid.declareBid.level == 3)
                 {
                     rebid.Points.Min = InterpretedBid.InvitationalPoints - ntMin;
                     rebid.Points.Max = 25 - 1 - ntMin;
-                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.BidPointType = BidPointType.Distribution;
                     rebid.HandShape[transferSuit].Min = 6;
                     rebid.Description = $"Inviting game; 6+ {transferSuit}";
                     return;
@@ -158,11 +173,62 @@ namespace Trickster.Bots
                     else
                     {
                         rebid.Points.Min = Math.Max(0, 25 - ntMin);
-                        rebid.BidPointType = BidPointType.Hcp;
+                        rebid.BidPointType = BidPointType.Distribution;
                         rebid.HandShape[transferSuit].Min = 6;
                         rebid.Description = $"Sign-off at game; 6+ {transferSuit}";
                     }
                 }
+                return;
+            }
+
+            var otherMajor = transferSuit == Suit.Hearts ? Suit.Spades : Suit.Hearts;
+            if (rebid.declareBid.suit == otherMajor)
+            {
+                //  5-5 in the majors
+                rebid.HandShape[transferSuit].Min = 5;
+                rebid.HandShape[otherMajor].Min = 5;
+                rebid.Priority = 95;
+                if (transferSuit == Suit.Hearts && rebid.declareBid.level == 2)
+                {
+                    //  1N-2D-2H-2S: invitational
+                    rebid.Points.Min = InterpretedBid.InvitationalPoints - ntMin;
+                    rebid.Points.Max = 25 - 1 - ntMin;
+                    rebid.Description = "Inviting game; 5-5 in the majors";
+                }
+                else if (transferSuit == Suit.Spades && rebid.declareBid.level == 3)
+                {
+                    //  1N-2H-2S-3H: game forcing with slam interest
+                    rebid.BidMessage = BidMessage.GameForcing;
+                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.Points.Min = 31 - ntMax;
+                    rebid.Description = "Game forcing; 5-5 in the majors and slam interest";
+                }
+                else if (transferSuit == Suit.Spades && rebid.declareBid.level == 4)
+                {
+                    //  1N-2H-2S-4H: choice of major-suit games
+                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.Points.Min = 25 - ntMin;
+                    rebid.Points.Max = 31 - ntMax - 1;
+                    rebid.Description = "Choice of games; 5-5 in the majors";
+                }
+                else
+                {
+                    rebid.Validate = hand => false;
+                }
+
+                return;
+            }
+
+            if (BridgeBot.IsMinor(rebid.declareBid.suit) && rebid.declareBid.level == 3)
+            {
+                //  1N-2D-2H-3C/3D, 1N-2H-2S-3C/3D: natural and game forcing
+                rebid.BidMessage = BidMessage.GameForcing;
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Points.Min = 25 - ntMin;
+                rebid.HandShape[rebid.declareBid.suit].Min = 5;
+                rebid.HandShape[transferSuit].Min = 5;
+                rebid.Priority = 95;
+                rebid.Description = $"Game forcing; 5+ {transferSuit} and 5+ {rebid.declareBid.suit}";
                 return;
             }
 

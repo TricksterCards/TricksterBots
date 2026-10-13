@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -35,6 +36,43 @@ namespace Trickster.Bots
 
             if (bid.Index >= 6 && bid.History[bid.Index - 4].BidConvention == BidConvention.Stayman) return InterpretResponderRebid(bid);
 
+            if (bid.Index >= 8 && bid.History[bid.Index - 6].BidConvention == BidConvention.Stayman) return InterpretOpenerSecondRebid(bid);
+
+            return false;
+        }
+
+        //  1N-2C-2H-2N/3N: responder denied hearts but promised a 4-card major, so opener shows 4 spades too
+        private static bool InterpretOpenerSecondRebid(InterpretedBid bid)
+        {
+            var answer = bid.History[bid.Index - 4];
+            var rebid = bid.History[bid.Index - 2];
+            if (!bid.bidIsDeclare || !answer.bidIsDeclare || !rebid.bidIsDeclare || bid.History[bid.Index - 1].bid != BidBase.Pass ||
+                answer.declareBid.suit != Suit.Hearts || rebid.declareBid.suit != Suit.Unknown || bid.declareBid.suit != Suit.Spades)
+                return false;
+
+            var opening = bid.History[bid.Index - 8];
+            bid.HandShape[Suit.Spades].Min = 4;
+            //  prefer the known 4-4 spade fit to notrump
+            bid.Priority = 90;
+            if (rebid.declareBid.level == 2 && bid.declareBid.level == 3)
+            {
+                //  minimum: decline the invitation, but play in the fit
+                bid.BidPointType = BidPointType.Hcp;
+                bid.Points.Max = (opening.Points.Min + opening.Points.Max) / 2 - 1;
+                bid.Description = "4 Spades; minimum";
+                return true;
+            }
+
+            if (bid.declareBid.level == 4 && (rebid.declareBid.level == 3 || rebid.declareBid.level == 2))
+            {
+                bid.BidPointType = BidPointType.Hcp;
+                if (rebid.declareBid.level == 2)
+                    bid.Points.Min = (opening.Points.Min + opening.Points.Max) / 2;
+                bid.BidMessage = BidMessage.Signoff;
+                bid.Description = "4 Spades; game";
+                return true;
+            }
+
             return false;
         }
 
@@ -49,6 +87,10 @@ namespace Trickster.Bots
 
             if (!opening.bidIsDeclare || opening.declareBid.suit != Suit.Unknown)
                 return false;
+
+            //  SAYC plays "systems on" over partner's natural 1NT overcall
+            if (bid.BidPhase == BidPhase.Advance)
+                return opening.BidPhase == BidPhase.Overcall && opening.declareBid.level == 1 && bid.Options.bidding != BridgeBiddingScheme.Acol;
 
             if (bid.BidPhase != BidPhase.Response && bid.BidPhase != BidPhase.ResponderRebid)
                 return false;
@@ -109,6 +151,29 @@ namespace Trickster.Bots
 
         private static void InterpretOpenerRebid(InterpretedBid bid)
         {
+            var interference = bid.History[bid.Index - 1];
+
+            if (bid.bid == BridgeBid.Double && interference.bidIsDeclare && interference.declareBid.suit != Suit.Unknown)
+            {
+                //  1N-(P)-2C-(2H)-X: penalty, with length and strength in their suit
+                var theirSuit = interference.declareBid.suit;
+                bid.Priority = 90;
+                bid.Description = $"Penalty; 4+ good {theirSuit}";
+                bid.Validate = hand => BasicBidding.CountsBySuit(hand)[theirSuit] >= 4 &&
+                                       hand.Count(c => c.suit == theirSuit && c.rank >= Rank.Queen) >= 2;
+                return;
+            }
+
+            if (bid.bid == BridgeBid.Redouble && interference.bid == BridgeBid.Double)
+            {
+                //  1N-(P)-2C-(X)-XX: strong clubs, happy to play 2C redoubled
+                bid.Priority = 90;
+                bid.HandShape[Suit.Clubs].Min = 4;
+                bid.Description = "Strong Clubs";
+                bid.Validate = hand => hand.Count(c => c.suit == Suit.Clubs && c.rank >= Rank.Queen) >= 2;
+                return;
+            }
+
             if (!bid.bidIsDeclare)
                 return;
 
@@ -202,9 +267,13 @@ namespace Trickster.Bots
             if (rebid.declareBid.level == 3 && BridgeBot.IsMinor(rebid.declareBid.suit))
             {
                 //  (SAYC Booklet): if responder rebids three of either minor, he shows slam interest and at least a five-card suit
-                rebid.Points.Min = InterpretedBid.SmallSlamPoints - opening.Points.Max;
+                var shownMajor = BridgeBot.IsMajor(answer.declareBid.suit) ? answer.declareBid.suit : Suit.Unknown;
+                rebid.Points.Min = 31 - opening.Points.Max;
                 rebid.HandShape[rebid.declareBid.suit].Min = 5;
+                rebid.Priority = 90;
                 rebid.Description = $"5+ {rebid.declareBid.suit}; slam interest";
+                //  with a fit for opener's major, that's the trump suit instead
+                rebid.Validate = hand => shownMajor == Suit.Unknown || BasicBidding.CountsBySuit(hand)[shownMajor] < 4;
                 return true;
             }
 
@@ -265,13 +334,28 @@ namespace Trickster.Bots
             response.BidPointType = BidPointType.Hcp;
             //  over a weak NT (Acol), Stayman promises at least invitational values
             response.Points.Min = response.declareBid.level <= 2 ? (response.Options.bidding == BridgeBiddingScheme.Acol ? 11 : 8) : 4;
+            var ntBid = response.History[response.Index - 2];
+            var ntMax = ntBid.Points.Max < 37 ? ntBid.Points.Max : 17;
+            //  opposite a strong 2NT (e.g. 2C-2D-2N), even 3 HCP is enough for game
+            if (response.declareBid.level == 3)
+                response.Points.Min = Math.Max(3, 25 - ntMax);
+            //  over a notrump overcall, Stayman also needs invitational values for the overcall's range
+            if (response.BidPhase == BidPhase.Advance)
+                response.Points.Min = 25 - response.History[response.Index - 2].Points.Max;
             response.Description = "asking for a major";
             response.Priority = 1; // always prefer Stayman over other bids when valid
+            //  (SAYC Booklet) Stayman followed by 3 of a minor shows slam interest, so a long minor with slam values also starts with Stayman
+            var minorSlamHcp = 31 - ntMax;
             response.Validate = hand =>
             {
                 //  we should have 4H or 4S (any more and we'll use a transfer instead)
                 var counts = BasicBidding.CountsBySuit(hand);
-                return counts[Suit.Hearts] == 4 || counts[Suit.Spades] == 4;
+                if (counts[Suit.Hearts] == 4 || counts[Suit.Spades] == 4)
+                    return true;
+
+                return response.Options.bidding != BridgeBiddingScheme.Acol && counts[Suit.Hearts] < 5 && counts[Suit.Spades] < 5 &&
+                       SuitRank.stdSuits.Any(s => BridgeBot.IsMinor(s) && counts[s] >= 5 && Overcall.SuitQuality(hand, s) >= 8) &&
+                       BasicBidding.ComputeHighCardPoints(hand) >= minorSlamHcp;
             };
 
             return true;

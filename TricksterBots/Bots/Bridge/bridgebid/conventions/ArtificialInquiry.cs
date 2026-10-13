@@ -24,13 +24,14 @@ namespace Trickster.Bots
             // 2D-2N-3N
             // 2H-2N-3N
             // 2S-2N-3N
+            //  (a maximum counts the long suit: 9-10 HCP plus 2-3 length points)
             if (rebid.declareBid.suit == Suit.Unknown)
             {
                 if (rebid.declareBid.level == 3)
                 {
-                    rebid.Points.Min = 9;
-                    rebid.Points.Max = 10;
-                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.Points.Min = 11;
+                    rebid.Points.Max = 13;
+                    rebid.BidPointType = BidPointType.Distribution;
                     rebid.Description = "Maximum";
                 }
             }
@@ -53,9 +54,9 @@ namespace Trickster.Bots
             else
             {
                 //  new suit shows maximum and a feature (Ace or protected King/Queen) in that suit
-                rebid.Points.Min = 9;
-                rebid.Points.Max = 10;
-                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Points.Min = 11;
+                rebid.Points.Max = 13;
+                rebid.BidPointType = BidPointType.Distribution;
                 rebid.Description = $"Maximum with Ace/King/Queen in {rebid.declareBid.suit}";
                 rebid.Validate = hand =>
                 {

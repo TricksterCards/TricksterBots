@@ -86,9 +86,11 @@ namespace Trickster.Bots
                     //  1H-2N-4D
                     //  1S-2N-4C
                     //  1S-2N-4D
+                    //  (SAYC Booklet) a good 5-card second suit
                     answer.BidConvention = BidConvention.AnswerJacoby2NT;
                     answer.HandShape[answer.declareBid.suit].Min = 5;
                     answer.HandShape[opening.declareBid.suit].Min = 5;
+                    answer.IsGood = true;
                     answer.Description = $"5+ {answer.declareBid.suit}";
                     answer.Priority = 1;
                 }
