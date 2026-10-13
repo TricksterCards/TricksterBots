@@ -36,3 +36,10 @@ Pass Pass 1NT Pass
 [Auction "W"]
 Pass 2NT Pass 3C
 Pass 3S Pass 3NT
+
+[Event "Go to game after an invitation"]
+[Deal "N:743.KJT9.KJT6.54 - - -"]
+[Auction "N"]
+Pass Pass 1H Pass
+2H Pass 3H Pass
+4H

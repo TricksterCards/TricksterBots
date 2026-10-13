@@ -355,6 +355,11 @@ namespace Trickster.Bots
             };
         }
 
+        internal static bool IsInvitation(InterpretedBid bid)
+        {
+            return new Context(bid).IsInvitation;
+        }
+
         private static int GamePoints(Suit suit)
         {
             return suit == Suit.Unknown ? 25 : BridgeBot.IsMajor(suit) ? 26 : 29;

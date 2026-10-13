@@ -210,6 +210,9 @@ namespace Trickster.Bots
                 //  (3NT does not require a balanced partner; with game values and no fit it's the standard spot,
                 //  and suit games still rank higher when a fit is known)
                 bid.Points.Min = bid.GamePoints - partnerSummary.Points.Min;
+                //  accept partner's invitation with the top half of the range we've already shown
+                if (playerSummary.Points.Max < 37 && LaterRebid.IsInvitation(bid))
+                    bid.Points.Min = Math.Min(bid.Points.Min, (playerSummary.Points.Min + playerSummary.Points.Max + 1) / 2);
                 bid.BidMessage = BidMessage.Signoff;
                 bid.Description = "Sign-off at game";
 
