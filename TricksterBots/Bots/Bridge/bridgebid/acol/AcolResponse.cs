@@ -344,7 +344,8 @@ namespace Trickster.Bots
                     }
                     else if (response.declareBid.suit != openSuit && IsOverNTOvercall(overcall))
                     {
-                        //  1x-(1N)-2y: natural and non-forcing; stronger hands double
+                        //  1x-(1N)-2y: natural and non-forcing (5-8 HCP); weaker hands pass, stronger hands double
+                        response.Points.Min = 5;
                         response.Points.Max = 8;
                         response.BidPointType = BidPointType.Hcp;
                         response.HandShape[response.declareBid.suit].Min = 5;
