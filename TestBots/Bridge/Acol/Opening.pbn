@@ -63,3 +63,8 @@ Pass 3D Pass -
 [Auction "N"]
 Pass Pass 1C 1NT
 Pass
+
+[Event "Preempt 3S with a 7-card suit rather than open 1S (few quick tricks)"]
+[Deal "N:QJT8652..J865.KQ - - -"]
+[Auction "N"]
+3S Pass Pass Pass
