@@ -1,0 +1,176 @@
+%
+% Defensive leads using EBU Standard English conventions
+%
+
+% Against notrump
+
+[Event "Acol NT Lead: 2nd highest from a weak suit"]
+[Deal "N:8652.KJ4.Q93.A72 - - -"]
+[Contract "3NT"]
+[Play "N"]
+S6 - - -
+
+[Event "Acol NT Lead: 4th highest from a strong suit"]
+[Deal "N:K9753.Q42.J84.A6 - - -"]
+[Contract "3NT"]
+[Play "N"]
+S5 - - -
+
+[Event "Acol NT Lead: J from AJ10 interior sequence"]
+[Deal "N:AJT63.K74.863.52 - - -"]
+[Contract "3NT"]
+[Play "N"]
+SJ - - -
+
+[Event "Acol NT Lead: 10 from Q109 interior sequence"]
+[Deal "N:QT94.K73.J85.A62 - - -"]
+[Contract "3NT"]
+[Play "N"]
+ST - - -
+
+[Event "Acol NT Lead: 10 from K109 interior sequence"]
+[Deal "N:KT95.Q73.J84.A62 - - -"]
+[Contract "3NT"]
+[Play "N"]
+ST - - -
+
+[Event "Acol NT Lead: Top from three small in partner's suit"]
+[Deal "S:- - J72.963.Q942.872 -"]
+[Contract "1NT"]
+[Auction "S"]
+1H   1NT Pass Pass
+Pass
+[Play "N"]
+H9 - - -
+
+% Against suit contracts
+
+[Event "Acol Suit Lead: Top from three small"]
+[Deal "N:K75.863.Q94.AT92 - - -"]
+[Contract "4S"]
+[Play "N"]
+H8 - - -
+
+[Event "Acol Suit Lead: 2nd highest from four small"]
+[Deal "N:K7.8642.Q93.AT52 - - -"]
+[Contract "4S"]
+[Play "N"]
+H6 - - -
+
+[Event "Acol Suit Lead: Low from three to an honour"]
+[Deal "N:K752.Q63.A94.AT5 - - -"]
+[Contract "4S"]
+[Play "N"]
+H3 - - -
+
+[Event "Acol Suit Lead: 4th highest from a suit with an honour"]
+[Deal "N:75.K8632.A94.AT5 - - -"]
+[Contract "4S"]
+[Play "N"]
+H3 - - -
+
+[Event "Acol Suit Lead: Top of a doubleton"]
+[Deal "N:K752.96.A94.AT52 - - -"]
+[Contract "4S"]
+[Play "N"]
+H9 - - -
+
+[Event "Acol Suit Lead: Ace from AK"]
+[Deal "N:752.AK6.Q943.J72 - - -"]
+[Contract "4S"]
+[Play "N"]
+HA - - -
+
+[Event "Acol Suit Lead: J from KJ10"]
+[Deal "N:752.KJT4.Q93.872 - - -"]
+[Contract "4S"]
+[Play "N"]
+HJ - - -
+
+[Event "Acol Suit Lead: Don't underlead AJ10"]
+[Deal "N:752.AJT4.Q83.872 - - -"]
+[Contract "4S"]
+[Play "N"]
+C8 - - -
+
+[Event "Acol Suit Lead: Partner's 1D opening shows a real suit"]
+[Deal "S:- - 752.9863.Q94.J72 -"]
+[Contract "4S"]
+[Auction "S"]
+1D   1S   Pass 4S
+Pass Pass Pass
+[Play "N"]
+D4 - - -
+
+[Event "Acol Suit Lead: Top from three small in partner's suit"]
+[Deal "S:- - 752.Q863.943.J72 -"]
+[Contract "4S"]
+[Auction "S"]
+1D   1S   Pass 4S
+Pass Pass Pass
+[Play "N"]
+D9 - - -
+
+% Leads after the first trick follow the same rules
+
+[Event "Acol Lead on Defense: Top from three small after trick 1"]
+[Deal "N:752.AK6.863.J972 - - -"]
+[Contract "4S"]
+[Play "N"]
+HA H2 H3 H4
+D8 -  -  -
+
+[Event "Acol: Prefer first defensive lead from longer suit"]
+[Deal "S:AQJ.T8752.7643.9 - - -"]
+[Declarer "E"]
+[Contract "2NT"]
+[Play "S"]
+H5 - - -
+
+% Suit selection
+
+[Event "Opening Lead in NT avoids Declarer's Bid Suit"]
+[Deal "E:- - - Q8642.K953.J4.72"]
+[Contract "3NT"]
+[Auction "E"]
+1S   Pass 3NT  Pass
+Pass Pass
+[Play "N"]
+H3 - - -
+
+[Event "Opening Lead in NT prefers a Major after 1NT-3NT"]
+[Deal "W:- Q852.73.KJ64.953 - -"]
+[Contract "3NT"]
+[Auction "W"]
+1NT  Pass 3NT  Pass
+Pass Pass
+[Play "N"]
+S2 - - -
+
+[Event "Opening Lead in NT prefers a 5-Card Suit over a 3-Card Broken Sequence"]
+[Deal "N:KQT.J8652.743.92 - - -"]
+[Contract "3NT"]
+[Play "N"]
+H5 - - -
+
+[Event "Opening Lead in NT from 3-Card Broken Sequence with a Flat Hand"]
+[Deal "N:KQT.J862.743.952 - - -"]
+[Contract "3NT"]
+[Play "N"]
+SK - - -
+
+[Event "Opening Lead in Suit prefers Kxxx over Qx Doubleton"]
+[Deal "N:752.Q6.K843.J962 - - -"]
+[Contract "4S"]
+[Play "N"]
+D3 - - -
+
+[Event "Opening Lead in Suit when Every Suit was Bid"]
+[Deal "W:- - - 8.Q73.K962.J8543"]
+[Contract "4S"]
+[Auction "W"]
+1C   Pass 1D   Pass
+1H   Pass 1S   Pass
+4S   Pass Pass Pass
+[Play "S"]
+D2 - - -
