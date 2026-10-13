@@ -48,9 +48,15 @@ namespace Trickster.Bots
             if (bidSuits.Count < 3 || bidSuits.Contains(rebid.declareBid.suit))
                 return false;
 
-            rebid.Points.Min = 13;
+            var partnerSummary = new InterpretedBid.PlayerSummary(rebid.History, rebid.Index - 2);
+
+            //  game values opposite partner's shown minimum (less is needed opposite a reverse, where FSF is also the clearest start)
+            var partnerReversed = partnerSummary.Points.Min >= 16;
+            rebid.Points.Min = partnerReversed ? Math.Max(9, 25 - partnerSummary.Points.Min) : 13;
             rebid.BidConvention = BidConvention.FourthSuitForcing;
             rebid.BidMessage = BidMessage.Forcing;
+            if (partnerReversed)
+                rebid.Priority = 90;
 
             //  only the cheapest bid in the fourth suit (above the 1-level, where it's natural) is FSF;
             //  use it when game values have no natural spot: no 3NT (stopper/shape) and no known 8-card major fit
@@ -61,7 +67,6 @@ namespace Trickster.Bots
                 return true;
             }
 
-            var partnerSummary = new InterpretedBid.PlayerSummary(rebid.History, rebid.Index - 2);
             var notrumpValidator = ResponderRebid.NotrumpValidator(rebid);
             rebid.Validate = hand =>
             {
@@ -85,8 +90,9 @@ namespace Trickster.Bots
 
             if (rebid.declareBid.suit == response.declareBid.suit && BridgeBot.IsMajor(response.declareBid.suit))
             {
-                //  show delayed 3-card support for a major
+                //  show delayed 3-card support for a major (the first priority)
                 rebid.HandShape[rebid.declareBid.suit].Min = 3;
+                rebid.Priority = 90;
                 rebid.Description = $"3 {rebid.declareBid.suit}";
             }
             else if (rebid.declareBid.suit == opening.declareBid.suit)
@@ -108,8 +114,21 @@ namespace Trickster.Bots
             }
             else if (rebid.declareBid.suit == Suit.Unknown && rebid.declareBid.level == rebid.LowestAvailableLevel(rebid.declareBid.suit))
             {
+                //  minimum with a stopper
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Points.Max = 14;
                 rebid.HandShape[responderRebid.declareBid.suit].Min = 1;
                 rebid.Description = $"Stopper in {responderRebid.declareBid.suit}";
+                rebid.Validate = hand => BasicBidding.HasStopper(hand, responderRebid.declareBid.suit);
+            }
+            else if (rebid.declareBid.suit == Suit.Unknown && rebid.declareBid.level == 3 &&
+                     rebid.LowestAvailableLevel(rebid.declareBid.suit) == 2)
+            {
+                //  extra values with a stopper: jump to game
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Points.Min = 15;
+                rebid.BidMessage = BidMessage.Signoff;
+                rebid.Description = $"Extra values; stopper in {responderRebid.declareBid.suit}";
                 rebid.Validate = hand => BasicBidding.HasStopper(hand, responderRebid.declareBid.suit);
             }
         }
@@ -120,6 +139,21 @@ namespace Trickster.Bots
                 return;
 
             var suit = rebid.declareBid.suit;
+            var opening = rebid.Index >= 10 ? rebid.History[rebid.Index - 10] : rebid.History[0];
+            var openerAnswer = rebid.History[rebid.Index - 2];
+            if (BridgeBot.IsMajor(suit) && rebid.Index >= 10 && opening.bidIsDeclare && suit == opening.declareBid.suit && openerAnswer.bidIsDeclare &&
+                openerAnswer.declareBid.suit == suit && rebid.declareBid.level == rebid.GameLevel)
+            {
+                //  opener rebid his major after FSF (showing extra length), so a doubleton is enough support for game
+                var partnerSummary = new InterpretedBid.PlayerSummary(rebid.History, rebid.Index - 2);
+                rebid.Points.Min = rebid.GamePoints - partnerSummary.Points.Min;
+                rebid.BidMessage = BidMessage.Signoff;
+                rebid.HandShape[suit].Min = 2;
+                rebid.Priority = 90;
+                rebid.Description = $"Sign-off at game; 2+ {suit}";
+                return;
+            }
+
             if (suit != Suit.Unknown && rebid.declareBid.level < rebid.GameLevel && rebid.declareBid.level == rebid.LowestAvailableLevel(suit))
             {
                 //  after FSF, natural bids below game don't stop short of game values (no invitational cap);

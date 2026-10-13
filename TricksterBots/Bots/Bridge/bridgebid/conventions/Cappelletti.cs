@@ -35,6 +35,13 @@ namespace Trickster.Bots
 
         private static void Advance2C(InterpretedBid advance)
         {
+            if (advance.bid == BidBase.Pass && advance.History[advance.Index - 1].bid == BridgeBid.Double)
+            {
+                //  (1N)-2C-(X)-P
+                advance.Description = "No preference; bid your suit";
+                return;
+            }
+
             if (advance.bid == BidBase.Pass)
             {
                 //  (1N)-2C-(P)-P
@@ -341,11 +348,12 @@ namespace Trickster.Bots
             {
                 //  (1N)-X
                 //  (1N)-P-(P)-X
+                //  usually balanced, but any hand too strong for the other Cappelletti calls will do
                 overcall.BidConvention = BidConvention.Cappelletti;
                 overcall.BidPointType = BidPointType.Hcp;
                 overcall.Points.Min = 15;
-                overcall.IsBalanced = true;
                 overcall.Description = "equivalent to 1NT opening bid";
+                overcall.Validate = hand => BasicBidding.IsBalanced(hand) || BasicBidding.ComputeHighCardPoints(hand) >= 17;
             }
             else if (overcall.bidIsDeclare)
             {
@@ -413,8 +421,30 @@ namespace Trickster.Bots
 
         private static void InterpretRebid(InterpretedBid overcall, InterpretedBid advance, InterpretedBid rebid)
         {
+            var doubledAndPassed = overcall.bidIsDeclare && overcall.declareBid.suit == Suit.Clubs && advance.bid == BidBase.Pass &&
+                                   rebid.History[advance.Index - 1].bid == BridgeBid.Double;
+
+            if (doubledAndPassed && rebid.bid == BidBase.Pass)
+            {
+                //  (1N)-2C-(X)-P-(P)-P
+                rebid.HandShape[Suit.Clubs].Min = 6;
+                rebid.Description = "6+ Clubs";
+                return;
+            }
+
             if (!rebid.bidIsDeclare)
                 return;
+
+            if (doubledAndPassed && rebid.declareBid.suit != Suit.Unknown && rebid.declareBid.suit != Suit.Clubs &&
+                rebid.declareBid.level == rebid.LowestAvailableLevel(rebid.declareBid.suit, true))
+            {
+                //  (1N)-2C-(X)-P-(P)-2D
+                //  (1N)-2C-(X)-P-(P)-2H
+                //  (1N)-2C-(X)-P-(P)-2S
+                rebid.HandShape[rebid.declareBid.suit].Min = 6;
+                rebid.Description = $"6+ {rebid.declareBid.suit}";
+                return;
+            }
 
             if (advance.BidConvention == BidConvention.Waiting)
                 if (rebid.declareBid.suit != Suit.Unknown && rebid.declareBid.level == rebid.LowestAvailableLevel(rebid.declareBid.suit))

@@ -1,10 +1,42 @@
-﻿using System.Linq;
+using System;
+using System.Linq;
 using Trickster.cloud;
 
 namespace Trickster.Bots
 {
     internal class Opening
     {
+        //  3rd seat: open light (11+ HCP) with a good suit; 4th seat: the Rule of 15 (HCP + spades) for marginal hands
+        private static void ApplySeatRules(InterpretedBid opening)
+        {
+            var suit = opening.declareBid.suit;
+            var minLength = opening.HandShape[suit].Min;
+            var suitValidate = opening.Validate;
+
+            if (opening.Index == 2)
+            {
+                var previous = opening.AlternateMatches;
+                opening.AlternateMatches = hand =>
+                {
+                    if (previous != null && previous(hand))
+                        return true;
+
+                    var counts = BasicBidding.CountsBySuit(hand);
+                    return BasicBidding.ComputeHighCardPoints(hand) >= 11 && counts[suit] >= Math.Max(4, minLength) &&
+                           BasicBidding.IsGoodSuit(hand, suit, 0) && counts[Suit.Hearts] <= opening.HandShape[Suit.Hearts].Max &&
+                           counts[Suit.Spades] <= opening.HandShape[Suit.Spades].Max && (suitValidate == null || suitValidate(hand));
+                };
+            }
+            else if (opening.Index == 3)
+            {
+                opening.Validate = hand =>
+                {
+                    var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                    return (suitValidate == null || suitValidate(hand)) && (hcp >= 14 || hcp + BasicBidding.CountsBySuit(hand)[Suit.Spades] >= 15);
+                };
+            }
+        }
+
         public static void Interpret(InterpretedBid opening)
         {
             if (opening.bid == BidBase.Pass)
@@ -111,6 +143,9 @@ namespace Trickster.Bots
                             break;
                     }
 
+                    if (db.suit != Suit.Unknown && opening.BidPhase == BidPhase.Opening)
+                        ApplySeatRules(opening);
+
                     break;
 
                 case 2:
@@ -211,12 +246,13 @@ namespace Trickster.Bots
                         case Suit.Spades:
                             if (opening.Index < 3)
                             {
-                                //  preempt only if we're not in 4th seat
+                                //  preempt only if we're not in 4th seat (an 8-card suit is better preempted than opened at the 1-level)
                                 opening.Points.Min = 5;
                                 opening.Points.Max = 11;
                                 opening.BidPointType = BidPointType.Hcp;
                                 opening.IsGood = true;
                                 opening.IsPreemptive = true;
+                                opening.Priority = 90;
                                 opening.Description = $"8-card {db.suit} suit";
                                 opening.HandShape[db.suit].Min = 8;
                             }

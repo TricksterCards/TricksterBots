@@ -21,3 +21,18 @@ Pass Pass
 [Auction "W"]
 Pass 1NT Pass 3NT
 Pass Pass Pass
+
+[Event "Strong response to 1NT"]
+[Deal "S:- - AKT72.KJ.63.A872 -"]
+[Auction "S"]
+1NT 3D 3S
+
+[Event "Bid 3NT over interference with a stopper"]
+[Deal "S:- - K52.KQ4.QJ5.J963 -"]
+[Auction "S"]
+1NT 2S 3NT
+
+[Event "Show a forcing new suit rather than 3NT without a stopper"]
+[Deal "S:- - 752.KQ4.QJ.KJ963 -"]
+[Auction "S"]
+1NT 2S 3C

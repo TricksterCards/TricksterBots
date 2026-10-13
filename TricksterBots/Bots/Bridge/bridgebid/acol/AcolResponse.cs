@@ -136,6 +136,16 @@ namespace Trickster.Bots
 
         private static void InterpretResponseTo1NT(InterpretedBid response)
         {
+            //  "system off" over a suit overcall: natural bids (3-level new suits forcing; notrump needs a stopper)
+            if (Response.InterpretNewSuitOver1NTOvercall(response))
+                return;
+
+            InterpretUncontestedResponseTo1NT(response);
+            Response.RequireStoppersForNTOver1NTOvercall(response);
+        }
+
+        private static void InterpretUncontestedResponseTo1NT(InterpretedBid response)
+        {
             switch (response.declareBid.level)
             {
                 case 2:

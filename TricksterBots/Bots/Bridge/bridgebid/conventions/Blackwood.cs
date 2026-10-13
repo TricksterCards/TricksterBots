@@ -1,4 +1,5 @@
-﻿using Trickster.cloud;
+﻿using System.Linq;
+using Trickster.cloud;
 
 namespace Trickster.Bots
 {
@@ -20,12 +21,9 @@ namespace Trickster.Bots
 
         private static bool InterpretRebid(InterpretedBid bid)
         {
-            if (!bid.bidIsDeclare)
-                return false;
-
             var db = bid.declareBid;
 
-            if (db.level == 5 && db.suit == Suit.Unknown)
+            if (bid.bidIsDeclare && db.level == 5 && db.suit == Suit.Unknown)
             {
                 bid.BidConvention = BidConvention.Blackwood;
                 bid.Description = "asking for Kings";
@@ -33,7 +31,54 @@ namespace Trickster.Bots
                 return true;
             }
 
-            return false;
+            var answer = bid.History[bid.Index - 2];
+            if (answer.BidConvention != BidConvention.AnswerBlackwood || bid.History[bid.Index - 1].bid != BidBase.Pass)
+                return false;
+
+            //  place the contract based on how many Aces our side is missing
+            var trump = SlamTry.TrumpSuit(bid);
+            var partnerAces = answer.Aces;
+            int Missing(Hand hand)
+            {
+                var myAces = hand.Count(c => c.rank == Rank.Ace);
+                //  "0 or 4" is resolved by our own Ace count
+                var theirs = partnerAces.Count == 1 ? partnerAces[0] : myAces > 0 ? 0 : 4;
+                return 4 - myAces - theirs;
+            }
+
+            var answerIsTrump = answer.bidIsDeclare && answer.declareBid.suit == trump;
+
+            if (bid.bid == BidBase.Pass)
+            {
+                bid.Description = "Sign-off; missing 2+ Aces";
+                bid.Validate = hand => answerIsTrump && Missing(hand) >= 2;
+                return true;
+            }
+
+            if (!bid.bidIsDeclare || db.suit != trump)
+            {
+                bid.Validate = hand => false;
+                return true;
+            }
+
+            bid.BidMessage = BidMessage.Signoff;
+            if (db.level == 5)
+            {
+                bid.Description = "Sign-off; missing 2+ Aces";
+                bid.Validate = hand => Missing(hand) >= 2;
+            }
+            else if (db.level == 6)
+            {
+                bid.Description = "Small slam";
+                bid.Validate = hand => Missing(hand) <= 1;
+            }
+            else
+            {
+                //  TODO: bid a grand slam when we can count 13 tricks
+                bid.Validate = hand => false;
+            }
+
+            return true;
         }
 
         private static void InterpretResponse(InterpretedBid bid)

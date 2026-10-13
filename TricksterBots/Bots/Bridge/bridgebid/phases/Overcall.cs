@@ -6,6 +6,57 @@ namespace Trickster.Bots
 {
     internal class Overcall
     {
+        //  stronger hands start with a takeout double
+        public const int MaxOvercallHcp = 17;
+
+        //  in the balancing (pass-out) seat we "borrow" about 3 points from partner
+        public const int BalancingAdjustment = 3;
+
+        //  a two-suited overcall naming both suits describes 5-5 shape better than bidding just one of them
+        private const int TwoSuitedPriority = 90;
+
+        //  (1X)-P-(P)-?
+        public static bool IsPassOutSeat(InterpretedBid overcall)
+        {
+            return overcall.Index >= 3 && overcall.History[overcall.Index - 1].bid == BidBase.Pass &&
+                   overcall.History[overcall.Index - 2].bid == BidBase.Pass && overcall.History[overcall.Index - 3].bidIsDeclare;
+        }
+
+        //  SAYC balancing ranges (Acol keeps its own agreements)
+        public static bool IsBalancing(InterpretedBid overcall)
+        {
+            return overcall.Options.bidding != BridgeBiddingScheme.Acol && IsPassOutSeat(overcall);
+        }
+
+        public static int MaxSuitOvercallHcp(InterpretedBid overcall)
+        {
+            return IsBalancing(overcall) ? MaxOvercallHcp - BalancingAdjustment : MaxOvercallHcp;
+        }
+
+        //  count distribution toward the minimum, but cap simple overcalls by HCP (too strong hands double first)
+        private static int OvercallPoints(Hand hand, int maxHcp)
+        {
+            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+            return hcp > maxHcp ? hcp : System.Math.Min(hcp + BasicBidding.ComputeDistributionPoints(hand), maxHcp);
+        }
+
+        //  when balancing, a 15-17 hand that is unsuitable for a double (short in an unbid major) still overcalls
+        private static int BalancingOvercallPoints(InterpretedBid overcall, Hand hand, int maxHcp)
+        {
+            var hcp = BasicBidding.ComputeHighCardPoints(hand);
+            if (maxHcp < hcp && hcp <= MaxOvercallHcp && IsShortInUnbidMajor(overcall, hand))
+                return maxHcp;
+
+            return OvercallPoints(hand, maxHcp);
+        }
+
+        public static bool IsShortInUnbidMajor(InterpretedBid overcall, Hand hand)
+        {
+            var bidSuits = overcall.SuitsBid;
+            var counts = BasicBidding.CountsBySuit(hand);
+            return SuitRank.stdSuits.Any(s => BridgeBot.IsMajor(s) && !bidSuits.Contains(s) && counts[s] <= 1);
+        }
+
         public static void Interpret(InterpretedBid overcall)
         {
             if (overcall.bid == BidBase.Pass)
@@ -35,6 +86,7 @@ namespace Trickster.Bots
                 //  cuebid case
                 overcall.BidConvention = BidConvention.MichaelsCuebid;
                 overcall.BidMessage = BidMessage.Forcing;
+                overcall.Priority = TwoSuitedPriority;
 
                 //  keep bots below game when using Michaels for now to minimize risky bids
                 //  TODO: are there good reasons to use this at higher levels?
@@ -68,11 +120,19 @@ namespace Trickster.Bots
                     overcall.HandShape[Suit.Clubs].Max = 8;
                     overcall.HandShape[Suit.Diamonds].Max = 8;
 
-                    //  validate matched hands have 5+ cards in a minor
+                    //  validate matched hands have 5+ cards in a minor; with a longer minor, prefer overcalling the major when possible
                     overcall.Validate = hand =>
                     {
                         var counts = BasicBidding.CountsBySuit(hand);
-                        return isBelowGame && (counts[Suit.Clubs] >= 5 || counts[Suit.Diamonds] >= 5);
+                        var minor = counts[Suit.Clubs] >= counts[Suit.Diamonds] ? Suit.Clubs : Suit.Diamonds;
+                        if (!isBelowGame || counts[minor] < 5)
+                            return false;
+
+                        if (counts[otherMajor] >= counts[minor])
+                            return true;
+
+                        var natural = new DeclareBid(overcall.LowestAvailableLevel(otherMajor, true), otherMajor);
+                        return !new InterpretedBid(natural, overcall.History, overcall.Index, overcall.Options).Match(hand);
                     };
 
                     overcall.Description = $"5-5 in {otherMajor} & a minor";
@@ -96,8 +156,10 @@ namespace Trickster.Bots
                         case Suit.Hearts:
                         case Suit.Spades:
                             var isAcol = overcall.Options.bidding == BridgeBiddingScheme.Acol;
+                            var maxHcp = MaxSuitOvercallHcp(overcall);
                             overcall.Points.Min = 7;
-                            overcall.Points.Max = 17;
+                            overcall.Points.Max = maxHcp;
+                            overcall.PointCounter = hand => BalancingOvercallPoints(overcall, hand, maxHcp);
                             overcall.Description = isAcol ? $"5+ {db.suit}; suit quality 7+ if under 12 HCP" : $"5+ {db.suit}; good if under 12 HCP";
                             overcall.HandShape[db.suit].Min = 5;
                             overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
@@ -120,6 +182,13 @@ namespace Trickster.Bots
                             overcall.BidPointType = BidPointType.Hcp;
                             overcall.Points.Min = 15;
                             overcall.Points.Max = 18;
+                            if (IsBalancing(overcall))
+                            {
+                                //  (1X)-P-(P)-1N
+                                overcall.Points.Min = 11;
+                                overcall.Points.Max = 14;
+                            }
+
                             overcall.IsBalanced = true;
                             overcall.Description = string.Empty;
                             return;
@@ -143,12 +212,19 @@ namespace Trickster.Bots
                             //  (1S)-2H
                             if (db.level == lowestLevel)
                             {
-                                overcall.Points.Min = 13;
-                                overcall.Points.Max = 17;
+                                //  opening values with a good 5-card suit, or a good 6-card suit with 10+ HCP (less when balancing)
+                                var adjust = IsBalancing(overcall) ? BalancingAdjustment : 0;
+                                var maxHcp = MaxSuitOvercallHcp(overcall);
+                                overcall.Points.Min = 10 - adjust;
+                                overcall.Points.Max = maxHcp;
+                                overcall.PointCounter = hand => BalancingOvercallPoints(overcall, hand, maxHcp);
                                 overcall.HandShape[db.suit].Min = 5;
                                 overcall.IsGood = true;
                                 overcall.Description = $"5+ {db.suit}";
                                 overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
+                                overcall.Validate = hand => BalancingOvercallPoints(overcall, hand, maxHcp) >= 13 - adjust ||
+                                                            BasicBidding.ComputeHighCardPoints(hand) >= (adjust > 0 ? 6 : 10) &&
+                                                            BasicBidding.CountsBySuit(hand)[db.suit] >= 6 && BasicBidding.IsGoodSuit(hand, db.suit, 6);
                             }
                             //  (1C)-2D
                             //  (1C)-2H
@@ -178,10 +254,25 @@ namespace Trickster.Bots
             //  (1S)-2N
             if (db.suit == Suit.Unknown && db.level == 2 && lowestLevel == 1)
             {
+                var opening = overcall.History.First(b => b.bid != BidBase.Pass);
+                if (IsPassOutSeat(overcall) && opening.bidIsDeclare && opening.declareBid.suit != Suit.Unknown)
+                {
+                    //  (1X)-P-(P)-2N is natural in the balancing seat
+                    var openingSuit = opening.declareBid.suit;
+                    overcall.BidPointType = BidPointType.Hcp;
+                    overcall.Points.Min = 19;
+                    overcall.Points.Max = 21;
+                    overcall.IsBalanced = true;
+                    overcall.Description = $"stopper in {openingSuit}";
+                    overcall.Validate = hand => BasicBidding.HasStopper(hand, openingSuit);
+                    return;
+                }
+
                 //  a jump overcall of 2NT shows at least 5–5 in the lowest two unbid suits.
                 overcall.BidConvention = BidConvention.UnusualNotrump;
                 overcall.BidMessage = BidMessage.Forcing;
                 overcall.Points.Min = 8;
+                overcall.Priority = TwoSuitedPriority;
 
                 var bidSuits = overcall.SuitsBid;
                 var twoLow = SuitRank.stdSuits.Where(s => !bidSuits.Contains(s)).OrderBy(s => BridgeBot.suitRank[s]).Take(2).ToList();
