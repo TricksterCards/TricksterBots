@@ -97,6 +97,8 @@ namespace TestBots
         [DataRow(BridgeBiddingScheme.Acol, "1C 1D 1S", "3S", "Unknown bid")]
         [DataRow(BridgeBiddingScheme.SAYC, "1C 1D 1S", "2S", "Unknown bid")]
         [DataRow(BridgeBiddingScheme.Acol, "1C 1D Pass", "1S", "Good 5+ Spades (6+ points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "Pass Pass 1D Pass Pass 1H 3D", "3H", "Competitive raise; 4+ Hearts (6-12 dummy points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C 1H 2C", "3H", "Jump raise; 4+ Hearts (0-9 dummy points)")]
         public void AdvanceExplanations(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)
         {
             AssertExplanation(scheme, history, bid, expectedDescription);
@@ -109,6 +111,7 @@ namespace TestBots
         [DataRow(BridgeBiddingScheme.Acol, "1C X Pass", "1H")]
         [DataRow(BridgeBiddingScheme.Acol, "1D 1S 2D Pass Pass", "3C")]
         [DataRow(BridgeBiddingScheme.Acol, "1C X 1S 2H Pass", "3H")]
+        [DataRow(BridgeBiddingScheme.Acol, "Pass Pass 1D Pass Pass 1H 3D", "3H")]
         public void HistoryExplanationsMatchLegalBidExplanations(BridgeBiddingScheme scheme, string history, string bid)
         {
             var options = new BridgeOptions { bidding = scheme };

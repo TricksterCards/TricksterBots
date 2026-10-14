@@ -107,8 +107,25 @@ namespace Trickster.Bots
                         advance.BidPointType = BidPointType.Dummy;
                 }
 
+                //  when interference takes away the simple raise, raising at the cheapest level isn't a jump; it's competitive
+                //  and also covers invitational hands since the cuebid is now beyond it, e.g. P-(P)-1D-(P)-P-1H-(3D)-3H
+                var cheapestLevel = advance.LowestAvailableLevel(advance.declareBid.suit, true);
+                var isCompetitiveRaise = advance.declareBid.level == cheapestLevel &&
+                                         advance.declareBid.level > overcall.declareBid.level + 1 &&
+                                         advance.declareBid.level < advance.GameLevel;
+                if (isCompetitiveRaise)
+                {
+                    advance.Points.Min = 6 + adjust;
+                    advance.Points.Max = (advance.Options.bidding == BridgeBiddingScheme.Acol ? 12 : 11) + adjust;
+                    advance.HandShape[advance.declareBid.suit].Min = 4;
+                    advance.Description = $"Competitive raise; 4+ {advance.declareBid.suit}";
+
+                    if (BridgeBot.IsMajor(advance.declareBid.suit))
+                        advance.BidPointType = BidPointType.Dummy;
+                }
+
                 //  0-9 points = jump raise with 4+ card support, e.g. (1C)-1H-(P)-3H (preemptive; stronger hands cuebid)
-                if (advance.declareBid.level == overcall.declareBid.level + 2)
+                if (advance.declareBid.level == overcall.declareBid.level + 2 && !isCompetitiveRaise)
                 {
                     advance.Points.Max = 9;
                     if (isBalancing)
@@ -130,7 +147,7 @@ namespace Trickster.Bots
 
                 //  0-9 points = preemptive double-jump raise of a minor to the 4-level with extra shape
                 //  (5-card support with a void, or 6+ card support), e.g. (1C)-1D-(P)-4D
-                if (isMinor && advance.declareBid.level == 4 && advance.declareBid.level > overcall.declareBid.level + 2)
+                if (isMinor && advance.declareBid.level == 4 && advance.declareBid.level > overcall.declareBid.level + 2 && !isCompetitiveRaise)
                 {
                     advance.Points.Max = 9;
                     advance.HandShape[suit].Min = 5;

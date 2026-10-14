@@ -66,3 +66,9 @@ Pass 1C 1D 1S
 [Deal "E:- - - KQ983.T75.832.K4"]
 [Auction "E"]
 1C 1D 1S 1NT
+
+[Event "Advancer competes to the 3-level with 4-card support after interference takes away the simple raise"]
+[Deal "S:- - - AQT5.9863.J5.KJ4"]
+[Auction "S"]
+Pass Pass 1D Pass
+Pass 1H 3D 3H
