@@ -107,9 +107,7 @@ namespace Trickster.Bots
                     bid.BidMessage = BidMessage.Signoff;
                     bid.Description = "Accept invitation";
                 }
-                else if (isCheapest && level == 3 && BridgeBot.IsMajor(suit) && suit != context.PartnerStrain &&
-                         !context.OpponentSuits.Contains(suit) && context.Partner.HandShape[suit].Min >= 4 &&
-                         context.PartnerBidNaturally(suit))
+                else if (isCheapest && level == 3 && CanShowDelayedSupport(context))
                 {
                     //  delayed 3-card support lets partner choose between 3NT and the major (partner's bid suit may be 5+)
                     bid.Points.Min = GamePoints(Suit.Unknown) - context.PartnerInviteValue(Suit.Unknown);
@@ -134,6 +132,17 @@ namespace Trickster.Bots
 
             if (context.PartnerForced && isCheapest)
             {
+                //  after partner's forcing new suit, show 3-card support for partner's 4-card major (e.g. 1H 1S 2H 3C 3S)
+                if (level < bid.GameLevel && CanShowDelayedSupport(context) && context.Partner.HandShape[suit].Min == 4 &&
+                    context.Me.HandShape[suit].Min == 0)
+                {
+                    bid.HandShape[suit].Min = 3;
+                    bid.HandShape[suit].Max = 3;
+                    bid.BidMessage = BidMessage.Forcing;
+                    bid.Description = $"3 {suit}; delayed support";
+                    return;
+                }
+
                 if (suit != Suit.Unknown)
                     PreferLongestFit(context);
                 bid.Description = level == bid.GameLevel ? "Game" : "Natural";
@@ -141,6 +150,13 @@ namespace Trickster.Bots
             }
 
             PlaceContract(context, isCheapest);
+        }
+
+        private static bool CanShowDelayedSupport(Context context)
+        {
+            var suit = context.Bid.declareBid.suit;
+            return BridgeBot.IsMajor(suit) && suit != context.PartnerStrain && !context.OpponentSuits.Contains(suit) &&
+                   context.Partner.HandShape[suit].Min >= 4 && context.PartnerBidNaturally(suit);
         }
 
         private static void PlaceContract(Context context, bool isCheapest)

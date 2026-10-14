@@ -37,3 +37,10 @@ Pass 3H Pass Pass
 Pass 1S Pass 2C
 Pass 2S Pass 3H
 Pass 3S
+
+[Event "Show delayed 3-card support for responder's major after a forcing new suit without a stopper in the unbid suit"]
+[Deal "E:- QJ4.AJ986.987.A3 - -"]
+[Auction "E"]
+Pass 1H Pass 1S
+Pass 2H Pass 3C
+Pass 3S
