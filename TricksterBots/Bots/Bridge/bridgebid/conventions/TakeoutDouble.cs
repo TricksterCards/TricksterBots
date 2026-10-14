@@ -673,13 +673,14 @@ namespace Trickster.Bots
 
             if (suit == ourSuit && BridgeBot.IsMajor(suit) && level == 4)
             {
-                //  1M-(X)-4M: preemptive with 5+ trumps
+                //  1M-(X)-4M: preemptive with a 10+ card fit (5+ trumps opposite a 5-card major, 6+ opposite Acol's 4-card major)
+                var minTrumps = 10 - opening.HandShape[suit].Min;
                 response.BidPointType = BidPointType.Hcp;
                 response.Points.Max = 9;
-                response.HandShape[suit].Min = 5;
+                response.HandShape[suit].Min = minTrumps;
                 response.IsPreemptive = true;
                 response.Priority = 80;
-                response.Description = $"5+ {suit}";
+                response.Description = $"{minTrumps}+ {suit}";
                 return true;
             }
 

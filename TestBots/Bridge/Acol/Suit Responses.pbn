@@ -138,3 +138,8 @@ Pass Pass Pass 1H
 [Deal "S:- - 963.T.QJT953.862 -"]
 [Auction "S"]
 1H X 3D
+
+[Event "Weak hand with 5-card support makes a preemptive 3-level raise over a takeout double (9-card fit opposite a 4-card major)"]
+[Deal "E:- - - 6.98742.QJ8.9753"]
+[Auction "E"]
+Pass 1H X 3H

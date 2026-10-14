@@ -360,6 +360,12 @@ namespace Trickster.Bots
                         response.BidPointType = BridgeBot.IsMajor(openSuit) ? BidPointType.Dummy : BidPointType.Hcp;
                         response.HandShape[response.declareBid.suit].Min = minCardsInSuit;
                         response.Description = $"Single raise; {minCardsInSuit}+ {response.declareBid.suit}";
+                        //  1M-(X)-2M: exactly an 8-card fit; with a 9+ card fit, make the preemptive jump raise instead
+                        if (overcall.BidConvention == BidConvention.TakeoutDouble && BridgeBot.IsMajor(openSuit))
+                        {
+                            response.HandShape[response.declareBid.suit].Max = minCardsInSuit;
+                            response.Description = $"Single raise; {minCardsInSuit} {response.declareBid.suit}";
+                        }
                     }
                     else if (BridgeBot.suitRank[response.declareBid.suit] < BridgeBot.suitRank[openSuit])
                     {
