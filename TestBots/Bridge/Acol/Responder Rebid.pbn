@@ -49,3 +49,9 @@ Pass Pass 1H Pass
 [Auction "S"]
 1D Pass 1H 1S
 2NT Pass 3NT
+
+[Event "Raise to 3NT opposite opener's strong 2NT rebid after a 2-over-1 response"]
+[Deal "S:- - 64.8543.AQ7.AJ93 -"]
+[Auction "S"]
+1S Pass 2C Pass
+2NT Pass 3NT

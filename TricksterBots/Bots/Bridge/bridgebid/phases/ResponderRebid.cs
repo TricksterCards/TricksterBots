@@ -170,7 +170,8 @@ namespace Trickster.Bots
                 //  a new suit by responder is FORCING (unless opener rebid 1NT and responder's second suit is a non-jump bid that is lower ranking than responder's first suit)
                 bid.BidMessage = BidMessage.Forcing;
                 bid.Points.Min = bid.GamePoints - partnerSummary.Points.Min;
-                bid.HandShape[bid.declareBid.suit].Min = 4;
+                //  if partner has denied 4 cards in the suit, it takes more length to find a fit
+                bid.HandShape[bid.declareBid.suit].Min = Math.Max(4, 8 - partnerSummary.HandShape[bid.declareBid.suit].Max);
                 bid.Description = "New suit";
                 return;
             }

@@ -228,6 +228,12 @@ namespace Trickster.Bots
                     rebid.IsBalanced = true;
                     rebid.Description = "double jump";
                 }
+
+                //  Acol opens 1H with both majors, and a 1S opener with 4 hearts shows them rather than rebid notrump
+                //  (unless the opponents bid hearts, when notrump may just show a stopper)
+                if (rebid.IsBalanced && opening.declareBid.suit == Suit.Spades &&
+                    !rebid.History.Take(rebid.Index).Any(b => (rebid.Index - b.Index) % 2 == 1 && b.bidIsDeclare && b.declareBid.suit == Suit.Hearts))
+                    rebid.HandShape[Suit.Hearts].Max = 3;
             }
             else if (response.bidIsDeclare && rebid.declareBid.suit == response.declareBid.suit)
             {
