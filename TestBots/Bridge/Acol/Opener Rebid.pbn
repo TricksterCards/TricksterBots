@@ -107,6 +107,12 @@ Pass 3D
 1H Pass 2C Pass
 2S
 
+[Event "Rebid 2NT with 15-16 balanced after a 2-over-1 response rather than raise the minor"]
+[Deal "S:K973.AJ.KJ5.K864 - - -"]
+[Auction "S"]
+1S Pass 2C Pass
+2NT
+
 [Event "Rebid a strong lower-ranking second suit at the 3-level"]
 [Deal "S:- AK982.86.K.AJ763 - -"]
 [Auction "S"]

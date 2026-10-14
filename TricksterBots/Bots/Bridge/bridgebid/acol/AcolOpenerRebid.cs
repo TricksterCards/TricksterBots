@@ -275,6 +275,10 @@ namespace Trickster.Bots
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.Description = $"Double jump raise; 4+ {rebid.declareBid.suit}";
                 }
+
+                //  a balanced hand too strong for a weak 1NT rebids notrump rather than raise a minor (keeping 3NT in view)
+                if (!isPushedUp && BridgeBot.IsMinor(rebid.declareBid.suit) && rebid.declareBid.level <= lowestAvailableLevel + 2)
+                    rebid.Validate = hand => !BasicBidding.IsBalanced(hand) || BasicBidding.ComputeHighCardPoints(hand) < 15;
             }
             else if (rebid.declareBid.suit == opening.declareBid.suit)
             {
