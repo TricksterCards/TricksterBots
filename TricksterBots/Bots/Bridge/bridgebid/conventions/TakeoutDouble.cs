@@ -337,7 +337,7 @@ namespace Trickster.Bots
             {
                 //  over a single suit, show 3+ cards in each unbid suit (usually 4+ in the unbid majors, see Validate below)
                 foreach (var s in unbidSuits) overcall.HandShape[s].Min = 3;
-                overcall.Description = $"3+ in each unbid suit";
+                overcall.Description = $"3+ in unbid suits";
             }
             else
             {
