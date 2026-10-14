@@ -65,11 +65,12 @@ namespace TestBots
         }
 
         [TestMethod]
-        [DataRow(BridgeBiddingScheme.SAYC, "1H", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points)")]
-        [DataRow(BridgeBiddingScheme.Acol, "1H", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points)")]
-        [DataRow(BridgeBiddingScheme.SAYC, "1C", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points)")]
-        [DataRow(BridgeBiddingScheme.Acol, "1C", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points)")]
-        [DataRow(BridgeBiddingScheme.SAYC, "1C Pass 1D", "X", "Takeout double; 4+ Hearts and Spades (13+ dummy points)")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1H", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points), or 18+ HCP")]
+        [DataRow(BridgeBiddingScheme.Acol, "1H", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points), or 18+ HCP")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1C", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points), or 18+ HCP")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C", "X", "Takeout double; 3+ in each unbid suit (13+ dummy points), or 18+ HCP")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1C Pass 1D", "X", "Takeout double; 4+ Hearts and Spades (13+ dummy points), or 18+ HCP")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1H Pass Pass", "X", "Takeout double; 3+ in each unbid suit (10+ dummy points), or 15+ HCP")]
         [DataRow(BridgeBiddingScheme.SAYC, "1H X Pass", "1S", "3+ Spades (usually 4+) (0-8 points)")]
         [DataRow(BridgeBiddingScheme.Acol, "1H X Pass", "1S", "3+ Spades (usually 4+) (0-8 points)")]
         [DataRow(BridgeBiddingScheme.SAYC, "1C X 1H", "1S", "4+ Spades (0-8 points)")]

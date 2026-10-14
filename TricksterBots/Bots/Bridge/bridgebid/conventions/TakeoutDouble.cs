@@ -323,6 +323,8 @@ namespace Trickster.Bots
             overcall.BidMessage = BidMessage.Forcing;
             foreach (var s in bidSuits) overcall.HandShape[s].Max = 2;
 
+            //  the double can also show a hand too strong for a simple overcall (see AlternateMatches below)
+            overcall.AlternateDescription = $"{maxOvercallHcp + 1}+ HCP";
             if (unbidSuits.Count == 3)
             {
                 //  over a single suit, show 3+ cards in each unbid suit (usually 4+ in the unbid majors, see Validate below)
