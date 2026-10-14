@@ -44,3 +44,17 @@ Pass 3S
 Pass 1H Pass 1S
 Pass 2H Pass 3C
 Pass 3S
+
+[Event "Choose 3NT over a 4-3 major fit after opener's delayed support when holding the unbid suit"]
+[Deal "E:- QJ4.AJ986.987.A3 - A763.T.AK2.KQJ65"]
+[Auction "E"]
+Pass 1H Pass 1S
+Pass 2H Pass 3C
+Pass 3S Pass 3NT
+
+[Event "Settle in a 4-3 major fit after opener's delayed support without a stopper in the unbid suit"]
+[Deal "E:- QJ4.AJ986.987.A3 - AK63.T.432.AKQJ6"]
+[Auction "E"]
+Pass 1H Pass 1S
+Pass 2H Pass 3C
+Pass 3S Pass 4S
