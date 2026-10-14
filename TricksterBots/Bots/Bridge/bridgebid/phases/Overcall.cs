@@ -182,7 +182,7 @@ namespace Trickster.Bots
                             overcall.Points.Min = 7;
                             overcall.Points.Max = maxHcp;
                             overcall.PointCounter = hand => BalancingOvercallPoints(overcall, hand, maxHcp);
-                            overcall.Description = isAcol ? $"5+ {db.suit}; suit quality 7+ if under 12 HCP" : $"5+ {db.suit}; good if under 12 HCP";
+                            overcall.Description = isAcol ? $"5+ {db.suit}; 2 honors if under 12 HCP" : $"5+ {db.suit}; good if under 12 HCP";
                             overcall.HandShape[db.suit].Min = 5;
                             overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
                             //  with opening values any 5-card suit will do at the 1-level, unless 1NT describes the hand better
