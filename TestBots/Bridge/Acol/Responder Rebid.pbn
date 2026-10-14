@@ -55,3 +55,9 @@ Pass Pass 1H Pass
 [Auction "S"]
 1S Pass 2C Pass
 2NT Pass 3NT
+
+[Event "Pass opener's competitive raise to game after a negative double"]
+[Deal "W:- - - K964.J876.Q63.Q4"]
+[Auction "W"]
+Pass 1C 1D X
+3D 4S Pass Pass

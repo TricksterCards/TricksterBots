@@ -331,6 +331,17 @@ namespace TestBots
             Assert.AreEqual(expected, BidString(bot.SuggestBid(state).value));
         }
 
+        //  Acol auctions where only the final bid is checked (earlier bids by the same hand may differ from the bot's choice)
+        [TestMethod]
+        [DataRow("4♠", "K964.J876.Q63.Q4", "Pass 1C 1D 1H 3D 3S Pass", DisplayName = "Raise opener's forcing 3-level new suit to game with 4-card support")]
+        [DataRow("Pass", "K964.J876.Q63.Q4", "Pass 1C 1D 1H 3D 4S Pass", DisplayName = "Pass opener's jump to game in a new major rather than bid past game")]
+        public void AcolFinalBid(string expected, string hand, string auction)
+        {
+            var bot = new BridgeBot(new BridgeOptions { bidding = BridgeBiddingScheme.Acol }, Suit.Unknown);
+            var history = new BridgeBidHistory(auction.Split(' ').Select(GetBid));
+            Assert.AreEqual(expected, BidString(bot.SuggestBid(history, ParseHand(hand)).value));
+        }
+
         private static Hand ParseHand(string hand)
         {
             const string suitLetters = "SHDC";

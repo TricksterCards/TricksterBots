@@ -184,3 +184,15 @@ Pass
 [Auction "S"]
 1H X 2D Pass
 Pass
+
+[Event "Bid a new higher-ranking suit at the 3-level (forcing) after interference rather than jump to game without a known fit"]
+[Deal "W:- AJ75.A93.J.AKJT3 - -"]
+[Auction "W"]
+Pass 1C 1D 1H
+3D 3S
+
+[Event "Raise a major shown by a negative double to game with extra values after a preemptive raise"]
+[Deal "W:- AJ75.A93.J.AKJT3 - -"]
+[Auction "W"]
+Pass 1C 1D X
+3D 4S

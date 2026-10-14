@@ -362,6 +362,15 @@ namespace Trickster.Bots
                     rebid.Description = $"Double jump rebid; 7+ {rebid.declareBid.suit}";
                 }
             }
+            else if (isPushedUp && response.BidConvention == BidConvention.NegativeDouble && response.HandShape[rebid.declareBid.suit].Min >= 4)
+            {
+                //  1C-(1D)-X-(3D)-3S/4S: bidding a major shown by the negative double is a competitive raise, not a new suit
+                if (CompetitiveRebid(rebid, cheapestLevel, 4, "raise"))
+                {
+                    rebid.BidPointType = BidPointType.Dummy;
+                    rebid.Priority = 50;
+                }
+            }
             else
             {
                 //  new suit
@@ -401,6 +410,21 @@ namespace Trickster.Bots
                     //  ensure we don't use a reverse with a flat (4-3-3-3) hand
                     rebid.Validate = hand => !BasicBidding.IsFlat(hand);
                 }
+                else if (isPushedUp && response.bidIsDeclare && !isOpponentsSuit &&
+                    rebid.declareBid.level == cheapestLevel && rebid.declareBid.level == 3 &&
+                    BridgeBot.suitRank[rebid.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit])
+                {
+                    //  1C-(1D)-1H-(3D)-3S: a free bid in a higher-ranking suit at the 3-level shows reverse values and is forcing
+                    //  (with 4-4 we'd have opened the higher suit, except 4-4 majors opens 1H)
+                    var newSuit = rebid.declareBid.suit;
+                    var openingSuit = opening.declareBid.suit;
+                    rebid.Points.Min = 16;
+                    rebid.Points.Max = 21;
+                    rebid.BidMessage = BidMessage.Forcing;
+                    rebid.HandShape[newSuit].Min = 4;
+                    rebid.HandShape[openingSuit].Min = openingSuit == Suit.Hearts && newSuit == Suit.Spades ? 4 : 5;
+                    rebid.Description = $"New suit; 4+ {newSuit} and {rebid.HandShape[openingSuit].Min}+ {openingSuit}";
+                }
                 else if (rebid.declareBid.level == cheapestLevel &&
                     rebid.declareBid.level >= 3 &&
                     rebid.declareBid.level <= 4 &&
@@ -433,9 +457,9 @@ namespace Trickster.Bots
                         };
                     }
                 }
-                else if (rebid.declareBid.level == cheapestLevel + 1 && rebid.declareBid.level <= 4)
+                else if (rebid.declareBid.level == cheapestLevel + 1 && rebid.declareBid.level <= 4 && rebid.declareBid.level < rebid.GameLevel)
                 {
-                    //  jump shift in a new suit (19-21)
+                    //  jump shift in a new suit (19-21); a jump to game in a new major is not a forcing jump shift
                     rebid.Points.Min = 19;
                     rebid.Points.Max = 21;
                     rebid.BidMessage = BidMessage.Forcing;
