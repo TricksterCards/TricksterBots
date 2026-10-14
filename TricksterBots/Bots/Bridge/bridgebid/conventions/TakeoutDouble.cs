@@ -291,6 +291,14 @@ namespace Trickster.Bots
                         advance.Points.Min = 12 + adjust;
                         advance.HandShape[advance.declareBid.suit].Min = minCards;
                         advance.Description = $"{minCards}+ {advance.declareBid.suit}";
+                        //  play in the longer of two unbid majors (or minors)
+                        var isMajor = BridgeBot.IsMajor(advance.declareBid.suit);
+                        advance.Validate = hand =>
+                        {
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return SuitRank.stdSuits.Where(s => !bidSuits.Contains(s) && BridgeBot.IsMajor(s) == isMajor)
+                                .All(s => counts[s] <= counts[advance.declareBid.suit]);
+                        };
                     }
                 }
             }

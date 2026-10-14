@@ -29,3 +29,8 @@ Pass
 [Deal "S:- - - KJT.J98642.QJ.86"]
 [Auction "S"]
 1D 1S 2C 2S
+
+[Event "Advancer with game values and 6-5 in the majors bids game in the longer major"]
+[Deal "W:- - - KJT542.AK942.7.9"]
+[Auction "W"]
+1C X Pass 4S
