@@ -93,20 +93,20 @@ namespace Trickster.Bots
             else if (overcall.declareBid.suit == advance.declareBid.suit)
             {
                 //  advancing with support
-                //  6-9 points = raise with 3-card support, e.g. (1C)-1H-(P)-2H
+                //  6-9 points (6-10 in Acol) = raise with 3+ card support, e.g. (1C)-1H-(P)-2H
+                //  (weak hands with 4+ support prefer the preemptive jump raise)
                 if (advance.declareBid.level == overcall.declareBid.level + 1)
                 {
                     advance.Points.Min = 6 + adjust;
                     advance.Points.Max = (advance.Options.bidding == BridgeBiddingScheme.Acol ? 10 : 9) + adjust;
                     advance.HandShape[advance.declareBid.suit].Min = 3;
-                    advance.HandShape[advance.declareBid.suit].Max = isBalancing ? 4 : 3;
                     advance.Description = $"Raise; 3+ {advance.declareBid.suit}";
 
                     if (BridgeBot.IsMajor(advance.declareBid.suit))
                         advance.BidPointType = BidPointType.Dummy;
                 }
 
-                //  0-9 points = jump raise with 4-card support, e.g. (1C)-1H-(P)-3H (preemptive; stronger hands cuebid)
+                //  0-9 points = jump raise with 4+ card support, e.g. (1C)-1H-(P)-3H (preemptive; stronger hands cuebid)
                 if (advance.declareBid.level == overcall.declareBid.level + 2)
                 {
                     advance.Points.Max = 9;
@@ -118,19 +118,44 @@ namespace Trickster.Bots
                     }
 
                     advance.HandShape[advance.declareBid.suit].Min = 4;
-                    advance.HandShape[advance.declareBid.suit].Max = 4;
                     advance.Description = $"Jump raise; 4+ {advance.declareBid.suit}";
 
                     if (BridgeBot.IsMajor(advance.declareBid.suit))
                         advance.BidPointType = BidPointType.Dummy;
                 }
 
-                //  0-9 points = bid game with 5+ card support, 
-                if (advance.declareBid.level == (BridgeBot.IsMajor(advance.declareBid.suit) ? 4 : 5))
+                var suit = advance.declareBid.suit;
+                var isMinor = !BridgeBot.IsMajor(suit);
+
+                //  0-9 points = preemptive double-jump raise of a minor to the 4-level with extra shape
+                //  (5-card support with a void, or 6+ card support), e.g. (1C)-1D-(P)-4D
+                if (isMinor && advance.declareBid.level == 4 && advance.declareBid.level > overcall.declareBid.level + 2)
                 {
                     advance.Points.Max = 9;
-                    advance.HandShape[advance.declareBid.suit].Min = 5;
-                    advance.Description = $"5+ {advance.declareBid.suit}";
+                    advance.HandShape[suit].Min = 5;
+                    advance.Description = $"Preemptive raise; 5+ {suit}";
+                    advance.Validate = hand =>
+                    {
+                        var counts = BasicBidding.CountsBySuit(hand);
+                        return counts[suit] >= 6 || SuitRank.stdSuits.Any(s => counts[s] == 0);
+                    };
+                }
+
+                //  0-9 points = bid game with 5+ card support in a major, or 6+ card support and a singleton or void in a minor
+                if (advance.declareBid.level == (isMinor ? 5 : 4))
+                {
+                    advance.Points.Max = 9;
+                    advance.HandShape[suit].Min = isMinor ? 6 : 5;
+                    advance.Description = $"{advance.HandShape[suit].Min}+ {suit}";
+
+                    if (isMinor)
+                    {
+                        advance.Validate = hand =>
+                        {
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            return SuitRank.stdSuits.Any(s => counts[s] <= 1);
+                        };
+                    }
                 }
             }
             else if (advance.declareBid.suit == Suit.Unknown)
@@ -178,6 +203,10 @@ namespace Trickster.Bots
             {
                 //  TODO: a jump cuebid of opener's suit (e.g. splinter or strong raise) is unknown (for now)
             }
+            else if (IsFitJump(opening, overcall, advance))
+            {
+                InterpretFitJump(overcall, advance);
+            }
             else
             {
                 //  advancing in a new suit (without jumping), e.g. (1C)-1H-(P)-1S
@@ -192,6 +221,34 @@ namespace Trickster.Bots
                 if (advance.Options.bidding == BridgeBiddingScheme.Acol)
                     advance.BidMessage = BidMessage.Forcing;
             }
+        }
+
+        //  modern Acol: a single jump in an unbid suit by an advancer who passed before the opening can't be strong,
+        //  so it shows a good 5+ card suit with support for partner's overcall, e.g. P-(1C)-1D-(1S)-3H
+        private static bool IsFitJump(InterpretedBid opening, InterpretedBid overcall, InterpretedBid advance)
+        {
+            if (advance.Options.bidding != BridgeBiddingScheme.Acol || !advance.bidIsDeclare || advance.declareBid.suit == Suit.Unknown)
+                return false;
+
+            var passedBeforeOpening = advance.Index >= 4 && advance.Index - 4 < opening.Index && advance.History[advance.Index - 4].bid == BidBase.Pass;
+            if (!passedBeforeOpening || advance.SuitsBid.Contains(advance.declareBid.suit))
+                return false;
+
+            return advance.declareBid.level <= 3 && advance.declareBid.level == advance.LowestAvailableLevel(advance.declareBid.suit, true) + 1;
+        }
+
+        private static void InterpretFitJump(InterpretedBid overcall, InterpretedBid advance)
+        {
+            var suit = advance.declareBid.suit;
+            var overcallSuit = overcall.declareBid.suit;
+
+            advance.Points.Min = 8;
+            advance.Points.Max = 12;
+            advance.HandShape[suit].Min = 5;
+            advance.HandShape[overcallSuit].Min = 4;
+            advance.Description = $"Fit jump; 5+ {suit} with 4+ {overcallSuit}";
+            //  values should be concentrated in the suit we're showing (two of the top five honors)
+            advance.Validate = hand => hand.Count(c => c.suit == suit && c.rank >= Rank.Ten) >= 2;
         }
     }
 }

@@ -178,3 +178,9 @@ Pass
 [Deal "N:- - - K4.AQ5.KJ84.Q973"]
 [Auction "N"]
 1H 1S Pass 3NT
+
+[Event "Advancer of a balancing overcall with 5-card support and simple raise values makes a simple raise"]
+[Deal "S:- Q84.K83.K9876.75 - -"]
+[Auction "S"]
+1C Pass Pass 1D
+Pass 2D
