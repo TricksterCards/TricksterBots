@@ -90,10 +90,15 @@ namespace Trickster.Bots
             var cheapestLevel = rebid.LowestAvailableLevel(rebid.declareBid.suit, true);
             var isPushedUp = rebid.declareBid.suit != Suit.Unknown && cheapestLevel > lowestAvailableLevel;
             //  a new suit by opener after a non-jump 2-level response is natural and forcing, never a reverse
+            //  (not after a 1NT overcall or a takeout double, where responder's 2-level new suit is non-forcing)
             var afterTwoOverOne = response.bidIsDeclare && response.declareBid.level == 2 &&
                 response.declareBid.suit != Suit.Unknown &&
                 BridgeBot.suitRank[response.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit] &&
-                !AcolResponse.IsOverNTOvercall(rebid.History[rebid.Index - 3]);
+                !AcolResponse.IsOverNTOvercall(rebid.History[rebid.Index - 3]) &&
+                rebid.History[rebid.Index - 3].BidConvention != BidConvention.TakeoutDouble;
+            //  1x-(X)-2y is non-forcing (6-9), so raising it needs extra values
+            var raiseAdjust = rebid.History[rebid.Index - 3].BidConvention == BidConvention.TakeoutDouble &&
+                response.BidMessage != BidMessage.Forcing && response.Points.Max <= 9 ? 3 : 0;
 
             if (Response.IsCuebidResponse(rebid.History[rebid.Index - 3], response))
             {
@@ -243,10 +248,10 @@ namespace Trickster.Bots
                 {
                     //  minimum raise (12-15)
                     rebid.BidPointType = BidPointType.Dummy;
-                    rebid.Points.Min = 12;
-                    rebid.Points.Max = 15;
+                    rebid.Points.Min = 12 + raiseAdjust;
+                    rebid.Points.Max = 15 + raiseAdjust;
                     rebid.HandShape[rebid.declareBid.suit].Min = minSupport;
-                    rebid.Description = $"Minimum raise; {minSupport}+ {rebid.declareBid.suit}";
+                    rebid.Description = $"{(raiseAdjust > 0 ? "Invitational" : "Minimum")} raise; {minSupport}+ {rebid.declareBid.suit}";
 
                     //  prefer supporting a known 8-card major fit over other minimum rebids
                     if (BridgeBot.IsMajor(rebid.declareBid.suit))
@@ -256,8 +261,8 @@ namespace Trickster.Bots
                 {
                     //  jump raise (16-18)
                     rebid.BidPointType = BidPointType.Dummy;
-                    rebid.Points.Min = 16;
-                    rebid.Points.Max = 18;
+                    rebid.Points.Min = 16 + raiseAdjust;
+                    rebid.Points.Max = 18 + raiseAdjust;
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.Description = $"Jump raise; 4+ {rebid.declareBid.suit}";
                 }
@@ -265,8 +270,8 @@ namespace Trickster.Bots
                 {
                     //  double jump raise (19-21)
                     rebid.BidPointType = BidPointType.Dummy;
-                    rebid.Points.Min = 19;
-                    rebid.Points.Max = 21;
+                    rebid.Points.Min = 19 + raiseAdjust;
+                    rebid.Points.Max = 21 + raiseAdjust;
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.Description = $"Double jump raise; 4+ {rebid.declareBid.suit}";
                 }

@@ -673,11 +673,26 @@ namespace Trickster.Bots
                 return true;
             }
 
+            var isAcol = response.Options.bidding == BridgeBiddingScheme.Acol;
+
+            if (isAcol && suit != ourSuit && suit != Suit.Unknown && level == 2 && level == lowestAvailableLevel)
+            {
+                //  Acol 1X-(X)-2Y: natural and non-forcing; stronger hands redouble first
+                response.BidPointType = BidPointType.Hcp;
+                response.Points.Min = 6;
+                response.Points.Max = 9;
+                response.HandShape[suit].Min = 5;
+                response.Description = $"5+ {suit}; non-forcing";
+                if (BridgeBot.IsMajor(ourSuit))
+                    response.Validate = hand => BasicBidding.CountsBySuit(hand)[ourSuit] < 8 - opening.HandShape[ourSuit].Min;
+                return true;
+            }
+
             if (suit != ourSuit && suit != Suit.Unknown && level == lowestAvailableLevel + 1 && level <= 3)
             {
-                //  1X-(X)-jump shift: weak with a long suit
+                //  1X-(X)-jump shift: weak with a long suit (Acol: weaker than a non-forcing 2-level new suit)
                 response.BidPointType = BidPointType.Hcp;
-                response.Points.Max = 9;
+                response.Points.Max = isAcol ? 5 : 9;
                 response.HandShape[suit].Min = 6;
                 response.IsGood = true;
                 response.IsPreemptive = true;

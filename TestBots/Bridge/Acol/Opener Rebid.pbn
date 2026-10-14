@@ -172,3 +172,9 @@ Pass 1C Pass 1H
 [Auction "S"]
 1H Pass 1S 5D
 Pass
+
+[Event "Pass a non-forcing new suit over a takeout double with a minimum rather than reverse or raise"]
+[Deal "S:AJ52.A7532.Q72.5 - - -"]
+[Auction "S"]
+1H X 2D Pass
+Pass
