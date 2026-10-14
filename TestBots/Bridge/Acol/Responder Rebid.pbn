@@ -43,3 +43,9 @@ Pass 3S Pass 3NT
 Pass Pass 1H Pass
 2H Pass 3H Pass
 4H
+
+[Event "Raise to 3NT opposite opener's strong 2NT rebid after an overcall"]
+[Deal "S:- - KJ74.K642.QT3.QJ -"]
+[Auction "S"]
+1D Pass 1H 1S
+2NT Pass 3NT

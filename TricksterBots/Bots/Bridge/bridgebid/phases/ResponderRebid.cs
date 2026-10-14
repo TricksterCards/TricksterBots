@@ -160,6 +160,11 @@ namespace Trickster.Bots
                 return;
             }
 
+            //  bidding the opponents' suit is a cuebid, not a natural new suit (leave it uninterpreted rather than show length)
+            if (!isNT && partnerMinOfSuit < 3 && playerMinOfSuit < 3 && bid.History.Take(bid.Index)
+                    .Any(b => (bid.Index - b.Index) % 2 == 1 && b.bidIsDeclare && b.declareBid.suit == bid.declareBid.suit))
+                return;
+
             if (!isNT && bid.declareBid.level < 4 && partnerMinOfSuit < 3 && playerMinOfSuit < 3)
             {
                 //  a new suit by responder is FORCING (unless opener rebid 1NT and responder's second suit is a non-jump bid that is lower ranking than responder's first suit)
