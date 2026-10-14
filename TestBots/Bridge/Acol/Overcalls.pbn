@@ -14,6 +14,11 @@
 [Auction "N"]
 Pass 1H 1S
 
+[Event "Length in opener's suit passes rather than bidding it again"]
+[Deal "N:- - - JT43.AKQ83.K2.73"]
+[Auction "N"]
+1H Pass 1S Pass
+
 [Event "Very weak 6-5 hand does not bid Unusual 2NT"]
 [Deal "E:- 7.3.87632.QJT764 - -"]
 [Auction "E"]

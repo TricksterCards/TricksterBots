@@ -55,6 +55,11 @@ Pass 3D Pass 5D
 Pass Pass 1S 2NT
 Pass 3C Pass 5C
 
+[Event "Length in opener's suit passes rather than bidding it again"]
+[Deal "N:- - - JT43.AKQ83.K2.73"]
+[Auction "N"]
+1H Pass 1S Pass
+
 [Event "Avoid advancing an overcall without support"]
 [Deal "W:- J984.KJ5.8643.64 - -"]
 [Auction "W"]
