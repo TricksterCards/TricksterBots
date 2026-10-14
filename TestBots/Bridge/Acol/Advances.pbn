@@ -61,3 +61,8 @@ Pass 1C 1D 1S
 [Deal "S:- - - K8.K83.A976.7532"]
 [Auction "S"]
 1C 1D 1S 2D
+
+[Event "Balanced advancer with stoppers in both opponents' suits prefers 1NT to raising a minor overcall"]
+[Deal "E:- - - KQ983.T75.832.K4"]
+[Auction "E"]
+1C 1D 1S 1NT

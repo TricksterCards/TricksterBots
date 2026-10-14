@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -160,6 +161,10 @@ namespace Trickster.Bots
             }
             else if (advance.declareBid.suit == Suit.Unknown)
             {
+                var stopperSuits = OpponentsSuits(opening, overcall, advance);
+                var stopperDescription = $"stopper{(stopperSuits.Count > 1 ? "s" : "")} in {string.Join(" and ", stopperSuits)}";
+                bool hasStoppers(Hand hand) => stopperSuits.All(s => BasicBidding.HasStopper(hand, s));
+
                 if (advance.declareBid.level == 4)
                 {
                     advance.BidConvention = BidConvention.Blackwood;
@@ -175,8 +180,12 @@ namespace Trickster.Bots
                     advance.Points.Min = 6 + adjust;
                     advance.Points.Max = 10 + adjust;
                     advance.IsBalanced = true;
-                    advance.Description = $"stopper in {opening.declareBid.suit}";
-                    advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
+                    advance.Description = stopperDescription;
+                    advance.Validate = hasStoppers;
+
+                    //  with stoppers, notrump is more descriptive than raising a minor (3NT is likelier than 5m)
+                    if (!BridgeBot.IsMajor(overcall.declareBid.suit))
+                        advance.Priority = 95;
                 }
                 //  e.g. (1C)-1H-(P)-2N or (1S)-2D-(X)-2N
                 else if (advance.declareBid.level == 2)
@@ -185,8 +194,8 @@ namespace Trickster.Bots
                     advance.Points.Min = 11 + adjust;
                     advance.Points.Max = 12 + adjust;
                     advance.IsBalanced = true;
-                    advance.Description = $"stopper in {opening.declareBid.suit}";
-                    advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
+                    advance.Description = stopperDescription;
+                    advance.Validate = hasStoppers;
                 }
                 //  e.g. (1C)-1H-(P)-3N or (1S)-2D-(P)-3N
                 else if (advance.declareBid.level == 3)
@@ -195,13 +204,17 @@ namespace Trickster.Bots
                     advance.Points.Min = 13 + adjust;
                     advance.Points.Max = 16 + adjust;
                     advance.IsBalanced = true;
-                    advance.Description = $"stopper in {opening.declareBid.suit}";
-                    advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);
+                    advance.Description = stopperDescription;
+                    advance.Validate = hasStoppers;
                 }
             }
             else if (advance.declareBid.suit == opening.declareBid.suit)
             {
                 //  TODO: a jump cuebid of opener's suit (e.g. splinter or strong raise) is unknown (for now)
+            }
+            else if (OpponentsSuits(opening, overcall, advance).Contains(advance.declareBid.suit))
+            {
+                //  a cuebid of responder's suit is unknown since its meaning depends on partnership agreement, e.g. (1C)-1D-(1S)-2S
             }
             else if (IsFitJump(opening, overcall, advance))
             {
@@ -221,6 +234,19 @@ namespace Trickster.Bots
                 if (advance.Options.bidding == BridgeBiddingScheme.Acol)
                     advance.BidMessage = BidMessage.Forcing;
             }
+        }
+
+        //  the opponents' natural suits: opener's suit plus any new suit bid by responder, e.g. (1C)-1D-(1S)-1N needs clubs and spades
+        private static List<Suit> OpponentsSuits(InterpretedBid opening, InterpretedBid overcall, InterpretedBid advance)
+        {
+            var suits = new List<Suit> { opening.declareBid.suit };
+            var interference = advance.History[advance.Index - 1];
+            if (interference.bidIsDeclare && interference.BidConvention == BidConvention.None &&
+                interference.declareBid.suit != Suit.Unknown && interference.declareBid.suit != overcall.declareBid.suit &&
+                !suits.Contains(interference.declareBid.suit))
+                suits.Add(interference.declareBid.suit);
+
+            return suits;
         }
 
         //  modern Acol: a single jump in an unbid suit by an advancer who passed before the opening can't be strong,

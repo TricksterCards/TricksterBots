@@ -76,6 +76,23 @@ namespace TestBots
         [DataRow(BridgeBiddingScheme.SAYC, "1C X 1H", "1S", "4+ Spades (0-8 points)")]
         public void TakeoutDoubleExplanations(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)
         {
+            AssertExplanation(scheme, history, bid, expectedDescription);
+        }
+
+        [TestMethod]
+        [DataRow(BridgeBiddingScheme.Acol, "1C 1D 1S", "1NT", "Balanced; stoppers in Clubs and Spades (6-10 HCP)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C 1D Pass", "1NT", "Balanced; stopper in Clubs (6-10 HCP)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C 1D 1S", "2S", "Unknown bid")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C 1D 1S", "3S", "Unknown bid")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1C 1D 1S", "2S", "Unknown bid")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C 1D Pass", "1S", "Good 5+ Spades (6+ points)")]
+        public void AdvanceExplanations(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)
+        {
+            AssertExplanation(scheme, history, bid, expectedDescription);
+        }
+
+        private static void AssertExplanation(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)
+        {
             var options = new BridgeOptions { bidding = scheme };
             var bot = new BridgeBot(options, Suit.Unknown);
             var calls = history.Split(' ').Select(GetBid).ToList();
