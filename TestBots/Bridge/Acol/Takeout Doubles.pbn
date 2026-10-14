@@ -64,3 +64,9 @@ Pass Pass 1H 2D
 [Deal "W:- - - Q84.J73.962.8743"]
 [Auction "W"]
 1C X Pass 1H
+
+[Event "Passed-hand advancer with 9 HCP and four hearts makes a free bid at the cheapest level over interference"]
+[Deal "W:- - J87.KT83.KT3.Q63 -"]
+[Auction "W"]
+Pass Pass Pass 1C
+X 1S 2H

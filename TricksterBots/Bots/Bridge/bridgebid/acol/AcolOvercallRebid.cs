@@ -52,7 +52,7 @@ namespace Trickster.Bots
             if (suit == Suit.Unknown || rebid.declareBid.level > 4 || rebid.declareBid.level != rebid.LowestAvailableLevel(suit, true))
                 return;
 
-            var bidSuits = rebid.History.Where(b => b.bidIsDeclare).Select(b => b.declareBid.suit).ToList();
+            var bidSuits = rebid.SuitsBid;
 
             if (suit == overcall.declareBid.suit)
             {

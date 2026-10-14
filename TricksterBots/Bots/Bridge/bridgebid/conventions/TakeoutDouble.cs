@@ -198,7 +198,10 @@ namespace Trickster.Bots
             else
             {
                 var gameLevel = BridgeBot.IsMajor(advance.declareBid.suit) ? 4 : 5;
-                var bidSuits = advance.History.Where(b => b.bidIsDeclare).Select(b => b.declareBid.suit).Distinct().ToList();
+                var bidSuits = advance.SuitsBid;
+                //  if RHO bid over the double, we're no longer forced to bid, and jumps are measured from their bid
+                var isFreeBid = advance.History[advance.Index - 1].bidIsDeclare;
+                lowestAvailableLevel = advance.LowestAvailableLevel(advance.declareBid.suit, true);
                 //  length in the opponents' suits doesn't help us
                 advance.PointCounter = hand => BasicBidding.ComputeHighCardPoints(hand) + SuitRank.stdSuits
                     .Where(s => !bidSuits.Contains(s)).Select(s => BasicBidding.CountsBySuit(hand)[s]).Where(n => n >= 5).Sum(n => n - 4);
@@ -229,10 +232,6 @@ namespace Trickster.Bots
                 {
                     if (advance.declareBid.level == lowestAvailableLevel)
                     {
-                        //  0-8 points: bid at the cheapest level (but don't cap points if we're at the game level)
-                        if (lowestAvailableLevel < gameLevel - 1)
-                            advance.Points.Max = 8 + adjust;
-
                         //  over a doubled game, pass is a reasonable (penalty) option, so only pull with a long suit and some values
                         if (lowestAvailableLevel >= 5)
                         {
@@ -242,12 +241,42 @@ namespace Trickster.Bots
                             return;
                         }
 
-                        //  usually 4+ cards, but when forced to bid (no interference) bid the best 3-card suit without a 4-card unbid suit
-                        var isForced = advance.History[advance.Index - 1].bid == BidBase.Pass;
-                        advance.HandShape[advance.declareBid.suit].Min = 4;
-                        if (isForced)
-                            advance.HandShape[advance.declareBid.suit].MinMatch = 3;
-                        advance.Description = isForced ? $"3+ {advance.declareBid.suit} (usually 4+)" : $"4+ {advance.declareBid.suit}";
+                        if (isFreeBid)
+                        {
+                            //  a free bid shows values, and more as the level rises: 6-9 points at the 1-2 level, 8-11 at the 3-level, 10+ in game
+                            if (lowestAvailableLevel <= 2)
+                            {
+                                advance.Points.Min = 6 + adjust;
+                                advance.Points.Max = 9 + adjust;
+                            }
+                            else if (lowestAvailableLevel < gameLevel)
+                            {
+                                advance.Points.Min = 8 + adjust;
+                                advance.Points.Max = 11 + adjust;
+                            }
+                            else
+                            {
+                                advance.Points.Min = 10 + adjust;
+                            }
+
+                            var minCards = lowestAvailableLevel >= 3 && !BridgeBot.IsMajor(advance.declareBid.suit) ? 5 : 4;
+                            advance.HandShape[advance.declareBid.suit].Min = minCards;
+                            advance.Description = $"{minCards}+ {advance.declareBid.suit}";
+                        }
+                        else
+                        {
+                            //  0-8 points: bid at the cheapest level (but don't cap points if we're at the game level)
+                            if (lowestAvailableLevel < gameLevel - 1)
+                                advance.Points.Max = 8 + adjust;
+
+                            //  usually 4+ cards, but when forced to bid (no interference) bid the best 3-card suit without a 4-card unbid suit
+                            var isForced = advance.History[advance.Index - 1].bid == BidBase.Pass;
+                            advance.HandShape[advance.declareBid.suit].Min = 4;
+                            if (isForced)
+                                advance.HandShape[advance.declareBid.suit].MinMatch = 3;
+                            advance.Description = isForced ? $"3+ {advance.declareBid.suit} (usually 4+)" : $"4+ {advance.declareBid.suit}";
+                        }
+
                         advance.Validate = hand =>
                         {
                             var counts = BasicBidding.CountsBySuit(hand);
@@ -269,9 +298,9 @@ namespace Trickster.Bots
                     }
                     else if (advance.declareBid.level == lowestAvailableLevel + 1 && advance.declareBid.level <= 3)
                     {
-                        //  9-11 points: make an invitational bid by jumping a level
-                        advance.Points.Min = 9 + adjust;
-                        advance.Points.Max = 11 + adjust;
+                        //  9-11 points (10-12 after interference, where a simple free bid shows 6-9): make an invitational bid by jumping a level
+                        advance.Points.Min = (isFreeBid ? 10 : 9) + adjust;
+                        advance.Points.Max = (isFreeBid ? 12 : 11) + adjust;
                         advance.HandShape[advance.declareBid.suit].Min = 4;
                         advance.Description = $"4+ {advance.declareBid.suit}; inviting game";
                     }
@@ -470,8 +499,18 @@ namespace Trickster.Bots
         private static bool IsInvitationalSuitAdvance(InterpretedBid advance)
         {
             var adjust = AdvanceAdjustment(advance.History[advance.Index - 2]);
-            return advance.declareBid.suit != Suit.Unknown && advance.BidConvention == BidConvention.None && advance.Points.Min == 9 + adjust &&
-                   advance.Points.Max == 11 + adjust;
+            //  9-11 without interference, 10-12 over a free bid
+            return advance.declareBid.suit != Suit.Unknown && advance.BidConvention == BidConvention.None &&
+                   (advance.Points.Min == 9 + adjust && advance.Points.Max == 11 + adjust || advance.Points.Min == 10 + adjust && advance.Points.Max == 12 + adjust);
+        }
+
+        //  a constructive bid at the cheapest level after RHO bid over the double (e.g. (1C) X (1S) 2H)
+        private static bool IsFreeSuitAdvance(InterpretedBid advance)
+        {
+            var level = advance.declareBid.level;
+            return advance.declareBid.suit != Suit.Unknown && advance.BidConvention == BidConvention.None && !advance.IsPreemptive &&
+                   advance.History[advance.Index - 1].bidIsDeclare && advance.Points.Min > 0 && level < advance.GameLevel &&
+                   level == advance.LowestAvailableLevel(advance.declareBid.suit, true);
         }
 
         private static List<Suit> OpponentSuits(InterpretedBid rebid)
@@ -525,10 +564,36 @@ namespace Trickster.Bots
                     return;
 
                 rebid.BidPointType = BidPointType.Dummy;
-                rebid.Points.Min = 15;
+                rebid.Points.Min = 24 - (advance.Points.Min - AdvanceAdjustment(advance.History[advance.Index - 2]));
                 rebid.HandShape[suit].Min = 4;
                 rebid.BidMessage = BidMessage.Signoff;
                 rebid.Description = "Accept invitation";
+                return;
+            }
+
+            if (IsFreeSuitAdvance(advance))
+            {
+                //  advancer showed values (6-9 at the 1-2 level, 8-11 at the 3-level), so raise to game with enough for ~23+ between us, or invite with a little less
+                var gamePoints = 23 - (advance.Points.Min - AdvanceAdjustment(advance.History[advance.Index - 2]));
+                if (level == rebid.GameLevel)
+                {
+                    rebid.Points.Min = gamePoints;
+                    rebid.BidMessage = BidMessage.Signoff;
+                    rebid.Description = $"4+ {suit}";
+                }
+                else if (level == rebid.LowestAvailableLevel(suit, true))
+                {
+                    rebid.Points.Min = gamePoints - 3;
+                    rebid.Points.Max = gamePoints - 1;
+                    rebid.Description = $"4+ {suit}; inviting game";
+                }
+                else
+                {
+                    return;
+                }
+
+                rebid.BidPointType = BidPointType.Dummy;
+                rebid.HandShape[suit].Min = 4;
                 return;
             }
 

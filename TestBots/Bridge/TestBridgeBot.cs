@@ -73,7 +73,18 @@ namespace TestBots
         [DataRow(BridgeBiddingScheme.SAYC, "1H Pass Pass", "X", "Takeout double; 3+ in unbid suits (10+ dummy points), or 15+ HCP")]
         [DataRow(BridgeBiddingScheme.SAYC, "1H X Pass", "1S", "3+ Spades (usually 4+) (0-8 points)")]
         [DataRow(BridgeBiddingScheme.Acol, "1H X Pass", "1S", "3+ Spades (usually 4+) (0-8 points)")]
-        [DataRow(BridgeBiddingScheme.SAYC, "1C X 1H", "1S", "4+ Spades (0-8 points)")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1C X 1H", "1S", "4+ Spades (6-9 points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X Pass", "2H", "4+ Hearts; inviting game (9-11 points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "Pass Pass Pass 1C X 1S", "2H", "4+ Hearts (6-9 points)")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1C X 1S", "2H", "4+ Hearts (6-9 points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X 1S", "3H", "4+ Hearts; inviting game (10-12 points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X 2S", "3H", "4+ Hearts (8-11 points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X 2S", "3D", "5+ Diamonds (8-11 points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X 3S", "4H", "4+ Hearts (10+ points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X 1S 2H Pass", "3H", "4+ Hearts; inviting game (14-16 dummy points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X 1S 2H Pass", "4H", "4+ Hearts (17+ dummy points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X 1S 3H Pass", "4H", "Accept invitation (14+ dummy points)")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X Pass 2H Pass", "4H", "Accept invitation (15+ dummy points)")]
         public void TakeoutDoubleExplanations(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)
         {
             AssertExplanation(scheme, history, bid, expectedDescription);
@@ -89,6 +100,41 @@ namespace TestBots
         public void AdvanceExplanations(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)
         {
             AssertExplanation(scheme, history, bid, expectedDescription);
+        }
+
+        //  a bid already in the auction should be described the same way it was when it was a legal bid
+        [TestMethod]
+        [DataRow(BridgeBiddingScheme.Acol, "Pass Pass Pass 1C X 1S", "2H")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1C X 1S", "2H")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X Pass", "1H")]
+        [DataRow(BridgeBiddingScheme.Acol, "1D 1S 2D Pass Pass", "3C")]
+        [DataRow(BridgeBiddingScheme.Acol, "1C X 1S 2H Pass", "3H")]
+        public void HistoryExplanationsMatchLegalBidExplanations(BridgeBiddingScheme scheme, string history, string bid)
+        {
+            var options = new BridgeOptions { bidding = scheme };
+            var bot = new BridgeBot(options, Suit.Unknown);
+            var calls = history.Split(' ').Select(GetBid).ToList();
+            var bidder = calls.Count % 4;
+            var players = Enumerable.Range(0, 4).Select(seat => new PlayerBase
+            {
+                Seat = seat,
+                BidHistory = calls.Where((_, i) => i % 4 == seat).ToList()
+            }).ToList();
+            var state = new SuggestBidState<BridgeOptions>
+            {
+                dealerSeat = 0,
+                legalBids = new List<BidBase> { new BidBase(GetBid(bid)) },
+                options = options,
+                player = players[bidder],
+                players = players
+            };
+
+            var legalDescription = bot.DescribeLegalBids(state)[0].explanation.Description;
+            Assert.AreNotEqual("Unknown bid", legalDescription);
+
+            players[bidder].BidHistory.Add(GetBid(bid));
+            var historyDescription = bot.DescribeBidHistoryBySeat(state)[bidder].Last().explanation.Description;
+            Assert.AreEqual(legalDescription, historyDescription);
         }
 
         private static void AssertExplanation(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)

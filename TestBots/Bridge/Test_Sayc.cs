@@ -1424,8 +1424,7 @@ namespace TestBots
                     // Responding with an intervening bid
                     // Was 3S; both are valid SAYC: Free 1S valid
                     new[] { "T874.876.6.AK863", "1S", "1D X 1H" }, // p120, h20
-                    // Was 1S; both are valid SAYC: Jump invite with 9 valid
-                    new[] { "A73.7642.K7.Q986", "2S", "1D X 1H" }, // p120, h21
+                    new[] { "A73.7642.K7.Q986", "1S", "1D X 1H" }, // p120, h21 (a free bid at the cheapest level shows 6-9)
                     new[] { "A73.7642.K7.KJ86", "2S", "1D X 1H" }, // p120 (modified h21 to have 10-12hcp)
                     // new [] {"KT65 A7 2 AQ8642", "P", "1D X 1H"},  // p120, h22 "book says cuebid opponent"s suit", which?
 
