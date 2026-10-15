@@ -29,3 +29,46 @@ Pass
 [Deal "S:- - - KJT.J98642.QJ.86"]
 [Auction "S"]
 1D 1S 2C 2S
+
+[Event "Advancer with game values and 6-5 in the majors bids game in the longer major"]
+[Deal "W:- - - KJT542.AK942.7.9"]
+[Auction "W"]
+1C X Pass 4S
+
+[Event "Passed-hand advancer with a fit for partner's overcall and a good side suit makes a fit jump"]
+[Deal "E:8.KJ832.A9876.75 - - -"]
+[Auction "E"]
+Pass 1C 1D 1S
+3H
+
+[Event "Weak advancer with 5-card support for a minor overcall makes a preemptive jump raise"]
+[Deal "E:8.K832.A9876.752 - - -"]
+[Auction "E"]
+Pass 1C 1D 1S
+3D
+
+[Event "Weak advancer with 6-card support for a minor overcall raises preemptively to the 4-level"]
+[Deal "S:- - - 932.J8.Q98762.75"]
+[Auction "S"]
+1C 1D 1S 4D
+
+[Event "Very distributional weak advancer with 6-card support and a singleton raises a minor overcall to game"]
+[Deal "S:- - - 8.9643.Q98762.75"]
+[Auction "S"]
+1C 1D 1S 5D
+
+[Event "Advancer with 10 points and 4-card support (too strong to preempt, too weak to cuebid) makes a simple raise"]
+[Deal "S:- - - K8.K83.A976.7532"]
+[Auction "S"]
+1C 1D 1S 2D
+
+[Event "Balanced advancer with stoppers in both opponents' suits prefers 1NT to raising a minor overcall"]
+[Deal "E:- - - KQ983.T75.832.K4"]
+[Auction "E"]
+1C 1D 1S 1NT
+
+[Event "Advancer competes to the 3-level with 4-card support after interference takes away the simple raise"]
+[Deal "S:- - - AQT5.9863.J5.KJ4"]
+[Auction "S"]
+Pass Pass 1D Pass
+Pass 1H 3D 3H

@@ -59,6 +59,28 @@ namespace Trickster.Bots
 
         public static void Interpret(InterpretedBid overcall)
         {
+            InterpretBid(overcall);
+
+            //  never make a natural bid in opener's suit when opener has shown 4+ cards in it
+            if (overcall.BidConvention == BidConvention.None && IsOpenersLongSuit(overcall))
+            {
+                overcall.AlternateMatches = null;
+                overcall.Validate = hand => false;
+            }
+        }
+
+        private static bool IsOpenersLongSuit(InterpretedBid overcall)
+        {
+            if (!overcall.bidIsDeclare || overcall.declareBid.suit == Suit.Unknown)
+                return false;
+
+            var suit = overcall.declareBid.suit;
+            var opening = overcall.History.Take(overcall.Index).FirstOrDefault(b => b.bidIsDeclare);
+            return opening != null && opening.declareBid.suit == suit && opening.HandShape[suit].Min >= 4;
+        }
+
+        private static void InterpretBid(InterpretedBid overcall)
+        {
             if (overcall.bid == BidBase.Pass)
             {
                 overcall.Description = "Unsuitable hand for an overcall";
@@ -80,7 +102,7 @@ namespace Trickster.Bots
                 cueSuits.Add(opponentsPreviousBid.declareBid.suit);
 
             //  check for a cuebid (bidding opponent's suit at the lowest available level)
-            //  Note: if the opponents have bid multiple suits then a cuebid is considered natural
+            //  Note: if the opponents have bid multiple suits then a cuebid is considered natural (but see Interpret)
             if (cueSuits.Count == 1 && cueSuits.Contains(db.suit) && db.level == lowestLevel)
             {
                 //  cuebid case
@@ -160,7 +182,7 @@ namespace Trickster.Bots
                             overcall.Points.Min = 7;
                             overcall.Points.Max = maxHcp;
                             overcall.PointCounter = hand => BalancingOvercallPoints(overcall, hand, maxHcp);
-                            overcall.Description = isAcol ? $"5+ {db.suit}; suit quality 7+ if under 12 HCP" : $"5+ {db.suit}; good if under 12 HCP";
+                            overcall.Description = isAcol ? $"5+ {db.suit}; 2 honors if under 12 HCP" : $"5+ {db.suit}; good if under 12 HCP";
                             overcall.HandShape[db.suit].Min = 5;
                             overcall.AlternateMatches = hand => IsStrongSuitOvercall(overcall, hand, db.suit);
                             //  with opening values any 5-card suit will do at the 1-level, unless 1NT describes the hand better

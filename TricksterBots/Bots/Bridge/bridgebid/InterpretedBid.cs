@@ -34,6 +34,9 @@ namespace Trickster.Bots
 
         public string AlternatePoints = string.Empty;
 
+        //  a different kind of hand that also makes this bid, appended after the points (e.g. "18+ HCP")
+        public string AlternateDescription = string.Empty;
+
         public readonly BridgeBotOptions Options;
 
         public int Priority = 100;
@@ -149,8 +152,9 @@ namespace Trickster.Bots
                 var pointTypeString = BidPointType == BidPointType.Hcp ? "HCP" : BidPointType == BidPointType.Dummy ? "dummy points" : "points";
                 var alternateString = string.IsNullOrEmpty(AlternatePoints) ? string.Empty : " or " + AlternatePoints;
                 var pointsString = Points.Min <= 0 && Points.Max >= 37 ? string.Empty : $" ({Points.Min}{maxPointsString} {pointTypeString}{alternateString})";
+                var alternateDescriptionString = string.IsNullOrEmpty(AlternateDescription) ? string.Empty : ", or " + AlternateDescription;
 
-                return conventionString + distribution + goodString + Description + preemptString + pointsString;
+                return conventionString + distribution + goodString + Description + preemptString + pointsString + alternateDescriptionString;
             }
         }
 

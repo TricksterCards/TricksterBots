@@ -160,12 +160,18 @@ namespace Trickster.Bots
                 return;
             }
 
+            //  bidding the opponents' suit is a cuebid, not a natural new suit (leave it uninterpreted rather than show length)
+            if (!isNT && partnerMinOfSuit < 3 && playerMinOfSuit < 3 && bid.History.Take(bid.Index)
+                    .Any(b => (bid.Index - b.Index) % 2 == 1 && b.bidIsDeclare && b.declareBid.suit == bid.declareBid.suit))
+                return;
+
             if (!isNT && bid.declareBid.level < 4 && partnerMinOfSuit < 3 && playerMinOfSuit < 3)
             {
                 //  a new suit by responder is FORCING (unless opener rebid 1NT and responder's second suit is a non-jump bid that is lower ranking than responder's first suit)
                 bid.BidMessage = BidMessage.Forcing;
                 bid.Points.Min = bid.GamePoints - partnerSummary.Points.Min;
-                bid.HandShape[bid.declareBid.suit].Min = 4;
+                //  if partner has denied 4 cards in the suit, it takes more length to find a fit
+                bid.HandShape[bid.declareBid.suit].Min = Math.Max(4, 8 - partnerSummary.HandShape[bid.declareBid.suit].Max);
                 bid.Description = "New suit";
                 return;
             }
@@ -210,6 +216,9 @@ namespace Trickster.Bots
                 //  (3NT does not require a balanced partner; with game values and no fit it's the standard spot,
                 //  and suit games still rank higher when a fit is known)
                 bid.Points.Min = bid.GamePoints - partnerSummary.Points.Min;
+                //  accept partner's invitation with the top half of the range we've already shown
+                if (playerSummary.Points.Max < 37 && LaterRebid.IsInvitation(bid))
+                    bid.Points.Min = Math.Min(bid.Points.Min, (playerSummary.Points.Min + playerSummary.Points.Max + 1) / 2);
                 bid.BidMessage = BidMessage.Signoff;
                 bid.Description = "Sign-off at game";
 

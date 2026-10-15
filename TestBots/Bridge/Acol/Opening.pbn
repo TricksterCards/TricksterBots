@@ -58,3 +58,13 @@ Pass 3D Pass -
 [Auction "N"]
 1S Pass Pass Pass
 
+[Event "Passed responder should pass again with 1 HCP"]
+[Deal "N:J6543.973.T8743. - - -"]
+[Auction "N"]
+Pass Pass 1C 1NT
+Pass
+
+[Event "Preempt 3S with a 7-card suit rather than open 1S (few quick tricks)"]
+[Deal "N:QJT8652..J865.KQ - - -"]
+[Auction "N"]
+3S Pass Pass Pass

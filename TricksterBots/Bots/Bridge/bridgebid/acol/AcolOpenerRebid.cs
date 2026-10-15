@@ -86,11 +86,19 @@ namespace Trickster.Bots
         private static void RebidSuitOpening(InterpretedBid opening, InterpretedBid response, InterpretedBid rebid)
         {
             var lowestAvailableLevel = rebid.LowestAvailableLevel(rebid.declareBid.suit);
+            //  the cheapest level after any interference; when an overcall pushes this up, jumps are measured from here
+            var cheapestLevel = rebid.LowestAvailableLevel(rebid.declareBid.suit, true);
+            var isPushedUp = rebid.declareBid.suit != Suit.Unknown && cheapestLevel > lowestAvailableLevel;
             //  a new suit by opener after a non-jump 2-level response is natural and forcing, never a reverse
+            //  (not after a 1NT overcall or a takeout double, where responder's 2-level new suit is non-forcing)
             var afterTwoOverOne = response.bidIsDeclare && response.declareBid.level == 2 &&
                 response.declareBid.suit != Suit.Unknown &&
                 BridgeBot.suitRank[response.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit] &&
-                !AcolResponse.IsOverNTOvercall(rebid.History[rebid.Index - 3]);
+                !AcolResponse.IsOverNTOvercall(rebid.History[rebid.Index - 3]) &&
+                rebid.History[rebid.Index - 3].BidConvention != BidConvention.TakeoutDouble;
+            //  1x-(X)-2y is non-forcing (6-9), so raising it needs extra values
+            var raiseAdjust = rebid.History[rebid.Index - 3].BidConvention == BidConvention.TakeoutDouble &&
+                response.BidMessage != BidMessage.Forcing && response.Points.Max <= 9 ? 3 : 0;
 
             if (Response.IsCuebidResponse(rebid.History[rebid.Index - 3], response))
             {
@@ -220,6 +228,12 @@ namespace Trickster.Bots
                     rebid.IsBalanced = true;
                     rebid.Description = "double jump";
                 }
+
+                //  Acol opens 1H with both majors, and a 1S opener with 4 hearts shows them rather than rebid notrump
+                //  (unless the opponents bid hearts, when notrump may just show a stopper)
+                if (rebid.IsBalanced && opening.declareBid.suit == Suit.Spades &&
+                    !rebid.History.Take(rebid.Index).Any(b => (rebid.Index - b.Index) % 2 == 1 && b.bidIsDeclare && b.declareBid.suit == Suit.Hearts))
+                    rebid.HandShape[Suit.Hearts].Max = 3;
             }
             else if (response.bidIsDeclare && rebid.declareBid.suit == response.declareBid.suit)
             {
@@ -227,14 +241,23 @@ namespace Trickster.Bots
                 //  (a 2-level major response promised 5, so a 3-card raise is enough)
                 var minSupport = Math.Min(Math.Max(8 - response.HandShape[rebid.declareBid.suit].Min, 3), 4);
 
-                if (rebid.declareBid.level == lowestAvailableLevel)
+                if (isPushedUp)
+                {
+                    if (CompetitiveRebid(rebid, cheapestLevel, minSupport, "raise"))
+                    {
+                        rebid.BidPointType = BidPointType.Dummy;
+                        if (BridgeBot.IsMajor(rebid.declareBid.suit))
+                            rebid.Priority = 50;
+                    }
+                }
+                else if (rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  minimum raise (12-15)
                     rebid.BidPointType = BidPointType.Dummy;
-                    rebid.Points.Min = 12;
-                    rebid.Points.Max = 15;
+                    rebid.Points.Min = 12 + raiseAdjust;
+                    rebid.Points.Max = 15 + raiseAdjust;
                     rebid.HandShape[rebid.declareBid.suit].Min = minSupport;
-                    rebid.Description = $"Minimum raise; {minSupport}+ {rebid.declareBid.suit}";
+                    rebid.Description = $"{(raiseAdjust > 0 ? "Invitational" : "Minimum")} raise; {minSupport}+ {rebid.declareBid.suit}";
 
                     //  prefer supporting a known 8-card major fit over other minimum rebids
                     if (BridgeBot.IsMajor(rebid.declareBid.suit))
@@ -244,8 +267,8 @@ namespace Trickster.Bots
                 {
                     //  jump raise (16-18)
                     rebid.BidPointType = BidPointType.Dummy;
-                    rebid.Points.Min = 16;
-                    rebid.Points.Max = 18;
+                    rebid.Points.Min = 16 + raiseAdjust;
+                    rebid.Points.Max = 18 + raiseAdjust;
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.Description = $"Jump raise; 4+ {rebid.declareBid.suit}";
                 }
@@ -253,16 +276,24 @@ namespace Trickster.Bots
                 {
                     //  double jump raise (19-21)
                     rebid.BidPointType = BidPointType.Dummy;
-                    rebid.Points.Min = 19;
-                    rebid.Points.Max = 21;
+                    rebid.Points.Min = 19 + raiseAdjust;
+                    rebid.Points.Max = 21 + raiseAdjust;
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.Description = $"Double jump raise; 4+ {rebid.declareBid.suit}";
                 }
+
+                //  a balanced hand too strong for a weak 1NT rebids notrump rather than raise a minor (keeping 3NT in view)
+                if (!isPushedUp && BridgeBot.IsMinor(rebid.declareBid.suit) && rebid.declareBid.level <= lowestAvailableLevel + 2)
+                    rebid.Validate = hand => !BasicBidding.IsBalanced(hand) || BasicBidding.ComputeHighCardPoints(hand) < 15;
             }
             else if (rebid.declareBid.suit == opening.declareBid.suit)
             {
                 //  rebidding opener's suit shows extra length
-                if (rebid.declareBid.level == lowestAvailableLevel)
+                if (isPushedUp)
+                {
+                    CompetitiveRebid(rebid, cheapestLevel, 6, "rebid");
+                }
+                else if (rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  minimum rebid (12-15) with 5+ cards
                     rebid.Points.Min = 12;
@@ -331,9 +362,20 @@ namespace Trickster.Bots
                     rebid.Description = $"Double jump rebid; 7+ {rebid.declareBid.suit}";
                 }
             }
+            else if (isPushedUp && response.BidConvention == BidConvention.NegativeDouble && response.HandShape[rebid.declareBid.suit].Min >= 4)
+            {
+                //  1C-(1D)-X-(3D)-3S/4S: bidding a major shown by the negative double is a competitive raise, not a new suit
+                if (CompetitiveRebid(rebid, cheapestLevel, 4, "raise"))
+                {
+                    rebid.BidPointType = BidPointType.Dummy;
+                    rebid.Priority = 50;
+                }
+            }
             else
             {
                 //  new suit
+                var isOpponentsSuit = rebid.History.Take(rebid.Index)
+                    .Any(b => (rebid.Index - b.Index) % 2 == 1 && b.bidIsDeclare && b.declareBid.suit == rebid.declareBid.suit);
                 if (rebid.declareBid.level == 1 ||
                     rebid.declareBid.level == 2 &&
                     (BridgeBot.suitRank[rebid.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit] || afterTwoOverOne))
@@ -368,9 +410,26 @@ namespace Trickster.Bots
                     //  ensure we don't use a reverse with a flat (4-3-3-3) hand
                     rebid.Validate = hand => !BasicBidding.IsFlat(hand);
                 }
-                else if (rebid.declareBid.level == lowestAvailableLevel &&
+                else if (isPushedUp && response.bidIsDeclare && !isOpponentsSuit &&
+                    rebid.declareBid.level == cheapestLevel && rebid.declareBid.level == 3 &&
+                    BridgeBot.suitRank[rebid.declareBid.suit] > BridgeBot.suitRank[opening.declareBid.suit])
+                {
+                    //  1C-(1D)-1H-(3D)-3S: a free bid in a higher-ranking suit at the 3-level shows reverse values and is forcing
+                    //  (with 4-4 we'd have opened the higher suit, except 4-4 majors opens 1H)
+                    var newSuit = rebid.declareBid.suit;
+                    var openingSuit = opening.declareBid.suit;
+                    rebid.Points.Min = 16;
+                    rebid.Points.Max = 21;
+                    rebid.BidMessage = BidMessage.Forcing;
+                    rebid.HandShape[newSuit].Min = 4;
+                    rebid.HandShape[openingSuit].Min = openingSuit == Suit.Hearts && newSuit == Suit.Spades ? 4 : 5;
+                    rebid.Description = $"New suit; 4+ {newSuit} and {rebid.HandShape[openingSuit].Min}+ {openingSuit}";
+                }
+                else if (rebid.declareBid.level == cheapestLevel &&
                     rebid.declareBid.level >= 3 &&
-                    BridgeBot.suitRank[rebid.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit])
+                    rebid.declareBid.level <= 4 &&
+                    BridgeBot.suitRank[rebid.declareBid.suit] < BridgeBot.suitRank[opening.declareBid.suit] &&
+                    !isOpponentsSuit)
                 {
                     // Acol's 1S-2H-3C rebid is a forcing second suit:
                     // 5+ cards in the opening suit and 4+ cards in the new suit.
@@ -380,10 +439,27 @@ namespace Trickster.Bots
                     rebid.HandShape[rebid.declareBid.suit].Min = 4;
                     rebid.HandShape[opening.declareBid.suit].Min = 5;
                     rebid.Description = $"New suit; 4+ {rebid.declareBid.suit} and 5+ {opening.declareBid.suit}";
+
+                    //  1H-1S-(2D)-3C: only the overcall pushed us to the 3-level, so this free bid shows extra values
+                    //  or a 5-5+ two-suiter whose playing strength makes up for fewer points (not forcing opposite a 6+ response)
+                    //  (at the 4-level, e.g. 1H-1S-(3D)-4C, it still needs genuine extra values and remains forcing)
+                    if (isPushedUp && rebid.declareBid.level == 3)
+                    {
+                        var newSuit = rebid.declareBid.suit;
+                        var openingSuit = opening.declareBid.suit;
+                        rebid.BidMessage = BidMessage.Invitational;
+                        rebid.Description = $"Extra values or 5-5+; 4+ {newSuit} and 5+ {openingSuit}";
+                        rebid.AlternateMatches = hand =>
+                        {
+                            var counts = BasicBidding.CountsBySuit(hand);
+                            var points = BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
+                            return counts[newSuit] >= 5 && counts[openingSuit] >= 5 && points <= rebid.Points.Max;
+                        };
+                    }
                 }
-                else if (rebid.declareBid.level == lowestAvailableLevel + 1)
+                else if (rebid.declareBid.level == cheapestLevel + 1 && rebid.declareBid.level <= 4 && rebid.declareBid.level < rebid.GameLevel)
                 {
-                    //  jump shift in a new suit (19-21)
+                    //  jump shift in a new suit (19-21); a jump to game in a new major is not a forcing jump shift
                     rebid.Points.Min = 19;
                     rebid.Points.Max = 21;
                     rebid.BidMessage = BidMessage.Forcing;
@@ -391,6 +467,36 @@ namespace Trickster.Bots
                     rebid.Description = $"Jump shift; 4+ {rebid.declareBid.suit}";
                 }
             }
+        }
+
+        //  once an overcall has pushed the cheapest level up, a raise or rebid of a known suit is competitive:
+        //  the cheapest bid below game shows a minimum (12-15), a jump to game shows extra values (16-18),
+        //  and game when it is the cheapest bid needs some extra playing strength (14-18); higher bids are left uninterpreted
+        private static bool CompetitiveRebid(InterpretedBid rebid, int cheapestLevel, int minLength, string kind)
+        {
+            var suit = rebid.declareBid.suit;
+            var level = rebid.declareBid.level;
+
+            if (level == cheapestLevel && level < rebid.GameLevel)
+            {
+                rebid.Points.Min = 12;
+                rebid.Points.Max = 15;
+                rebid.Description = $"Competitive {kind}; {minLength}+ {suit}";
+            }
+            else if (level == rebid.GameLevel && level <= cheapestLevel + 1)
+            {
+                rebid.Points.Min = level == cheapestLevel ? 14 : 16;
+                rebid.Points.Max = 18;
+                rebid.BidMessage = BidMessage.Signoff;
+                rebid.Description = $"Competitive {kind} to game; {minLength}+ {suit}";
+            }
+            else
+            {
+                return false;
+            }
+
+            rebid.HandShape[suit].Min = minLength;
+            return true;
         }
     }
 }

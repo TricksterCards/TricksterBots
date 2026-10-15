@@ -487,6 +487,11 @@ namespace Trickster.Bots
                 .Select(hs => hs.Key)
                 .FirstOrDefault();
 
+            //  if partner's forcing bid already reached game in our fit, there's no need to bid higher
+            var partnerLast = history[nHistory - 2];
+            if (partnerLast.bidIsDeclare && partnerLast.declareBid.suit == suit && partnerLast.declareBid.level >= partnerLast.GameLevel)
+                return legalBids.First(b => b.value == BidBase.Pass);
+
             //  bid either our fit, or NT at the lowest available level
             return legalBids.FirstOrDefault(b => b.why.bidIsDeclare && b.why.declareBid.suit == suit);
         }

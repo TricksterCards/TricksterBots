@@ -39,6 +39,9 @@ namespace Trickster.Bots
                             var counts = BasicBidding.CountsBySuit(hand);
                             var topCounts = counts.Values.OrderByDescending(v => v).ToList();
                             var total = hcp + topCounts[0] + topCounts[1];
+                            //  a 7+ card suit without 2 quick tricks lacks the defence for a 1-level opening; preempt instead
+                            if (topCounts[0] >= 7 && CountHalfQuickTricks(hand) < 4)
+                                return false;
                             //  still validate if we match the correct hand shape to ensure we pick the right suit
                             return total >= 20 && counts[opening.declareBid.suit] >= opening.HandShape[opening.declareBid.suit].Min &&
                                    (opening.Validate == null || opening.Validate(hand));
@@ -240,6 +243,28 @@ namespace Trickster.Bots
 
                     break;
             }
+        }
+
+        //  quick tricks counted in halves: AK = 4, AQ = 3, A = 2, KQ = 2, Kx = 1
+        private static int CountHalfQuickTricks(Hand hand)
+        {
+            var total = 0;
+
+            foreach (var suit in SuitRank.stdSuits)
+            {
+                var ranks = hand.Where(c => c.suit == suit).Select(c => c.rank).ToList();
+                var hasAce = ranks.Contains(Rank.Ace);
+                var hasKing = ranks.Contains(Rank.King);
+                var hasQueen = ranks.Contains(Rank.Queen);
+
+                if (hasAce && hasKing) total += 4;
+                else if (hasAce && hasQueen) total += 3;
+                else if (hasAce) total += 2;
+                else if (hasKing && hasQueen) total += 2;
+                else if (hasKing && ranks.Count > 1) total += 1;
+            }
+
+            return total;
         }
 
         //  open the longest suit; with equal-length suits prefer the higher-ranking,

@@ -36,3 +36,28 @@ Pass Pass 1NT Pass
 [Auction "W"]
 Pass 2NT Pass 3C
 Pass 3S Pass 3NT
+
+[Event "Go to game after an invitation"]
+[Deal "N:743.KJT9.KJT6.54 - - -"]
+[Auction "N"]
+Pass Pass 1H Pass
+2H Pass 3H Pass
+4H
+
+[Event "Raise to 3NT opposite opener's strong 2NT rebid after an overcall"]
+[Deal "S:- - KJ74.K642.QT3.QJ -"]
+[Auction "S"]
+1D Pass 1H 1S
+2NT Pass 3NT
+
+[Event "Raise to 3NT opposite opener's strong 2NT rebid after a 2-over-1 response"]
+[Deal "S:- - 64.8543.AQ7.AJ93 -"]
+[Auction "S"]
+1S Pass 2C Pass
+2NT Pass 3NT
+
+[Event "Pass opener's competitive raise to game after a negative double"]
+[Deal "W:- - - K964.J876.Q63.Q4"]
+[Auction "W"]
+Pass 1C 1D X
+3D 4S Pass Pass

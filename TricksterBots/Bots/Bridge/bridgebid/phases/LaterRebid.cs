@@ -107,9 +107,7 @@ namespace Trickster.Bots
                     bid.BidMessage = BidMessage.Signoff;
                     bid.Description = "Accept invitation";
                 }
-                else if (isCheapest && level == 3 && BridgeBot.IsMajor(suit) && suit != context.PartnerStrain &&
-                         !context.OpponentSuits.Contains(suit) && context.Partner.HandShape[suit].Min >= 4 &&
-                         context.PartnerBidNaturally(suit))
+                else if (isCheapest && level == 3 && CanShowDelayedSupport(context))
                 {
                     //  delayed 3-card support lets partner choose between 3NT and the major (partner's bid suit may be 5+)
                     bid.Points.Min = GamePoints(Suit.Unknown) - context.PartnerInviteValue(Suit.Unknown);
@@ -134,6 +132,17 @@ namespace Trickster.Bots
 
             if (context.PartnerForced && isCheapest)
             {
+                //  after partner's forcing new suit, show 3-card support for partner's 4-card major (e.g. 1H 1S 2H 3C 3S)
+                if (level < bid.GameLevel && CanShowDelayedSupport(context) && context.Partner.HandShape[suit].Min == 4 &&
+                    context.Me.HandShape[suit].Min == 0)
+                {
+                    bid.HandShape[suit].Min = 3;
+                    bid.HandShape[suit].Max = 3;
+                    bid.BidMessage = BidMessage.Forcing;
+                    bid.Description = $"3 {suit}; delayed support";
+                    return;
+                }
+
                 if (suit != Suit.Unknown)
                     PreferLongestFit(context);
                 bid.Description = level == bid.GameLevel ? "Game" : "Natural";
@@ -141,6 +150,13 @@ namespace Trickster.Bots
             }
 
             PlaceContract(context, isCheapest);
+        }
+
+        private static bool CanShowDelayedSupport(Context context)
+        {
+            var suit = context.Bid.declareBid.suit;
+            return BridgeBot.IsMajor(suit) && suit != context.PartnerStrain && !context.OpponentSuits.Contains(suit) &&
+                   context.Partner.HandShape[suit].Min >= 4 && context.PartnerBidNaturally(suit);
         }
 
         private static void PlaceContract(Context context, bool isCheapest)
@@ -266,18 +282,7 @@ namespace Trickster.Bots
             {
                 bid.BidPointType = BidPointType.Hcp;
                 bid.Priority = NotrumpPriority;
-                var opponentSuits = context.OpponentSuits;
-                //  (partner's natural notrump already promised the unbid suits)
-                var partnerBidNotrump = context.PartnerBidNaturally(Suit.Unknown);
-                var unbidSuits = SuitRank.stdSuits.Where(s => !partnerBidNotrump && !context.OurSuits.Contains(s) && !opponentSuits.Contains(s)).ToList();
-                bid.Validate = hand =>
-                {
-                    //  with only one suit left unbid, notrump promises a stopper in it;
-                    //  otherwise just avoid shortness in a suit nobody has bid unless it's a stopper (e.g. a singleton Ace)
-                    var counts = BasicBidding.CountsBySuit(hand);
-                    return opponentSuits.All(s => BasicBidding.HasStopper(hand, s)) &&
-                           unbidSuits.All(s => (unbidSuits.Count > 1 && counts[s] >= 2) || BasicBidding.HasStopper(hand, s));
-                };
+                bid.Validate = NotrumpStoppers(context);
                 return true;
             }
 
@@ -285,11 +290,27 @@ namespace Trickster.Bots
             if (partnerLength > 0)
             {
                 //  partner's delayed 3-card support offered a choice of games, so a 4-3 fit will do at game
-                var required = partnerLength == 3 && context.Partner.HandShape[suit].Max == 3 && bid.declareBid.level == bid.GameLevel ? 4 : 8 - partnerLength;
+                var isDelayedSupportGame = partnerLength == 3 && context.Partner.HandShape[suit].Max == 3 && bid.declareBid.level == bid.GameLevel;
+                var required = isDelayedSupportGame ? 4 : 8 - partnerLength;
                 bid.HandShape[suit].Min = Math.Max(1, required);
                 SetPointCounter(context, suit);
                 if (BridgeBot.IsMajor(suit))
                     bid.Priority = MajorFitPriority;
+
+                //  but with only a 4-3 fit, choose 3NT if we can stop the suit partner couldn't (shortness is fine only opposite partner's long suit)
+                var last = bid.LastDeclareBid;
+                if (isDelayedSupportGame && (last.level < 3 || last.level == 3 && last.suit != Suit.Unknown))
+                {
+                    var notrump = NotrumpStoppers(context);
+                    var partnerLongSuits = SuitRank.stdSuits.Where(s => context.Partner.HandShape[s].Min >= 5).ToList();
+                    bid.Validate = hand =>
+                    {
+                        var counts = BasicBidding.CountsBySuit(hand);
+                        var suitsNotrump = notrump(hand) && SuitRank.stdSuits.All(s => counts[s] >= 2 || partnerLongSuits.Contains(s));
+                        return counts[suit] > 4 || !suitsNotrump;
+                    };
+                }
+
                 return true;
             }
 
@@ -301,6 +322,22 @@ namespace Trickster.Bots
             }
 
             return false;
+        }
+
+        private static HandValidator NotrumpStoppers(Context context)
+        {
+            var opponentSuits = context.OpponentSuits;
+            //  (partner's natural notrump already promised the unbid suits)
+            var partnerBidNotrump = context.PartnerBidNaturally(Suit.Unknown);
+            var unbidSuits = SuitRank.stdSuits.Where(s => !partnerBidNotrump && !context.OurSuits.Contains(s) && !opponentSuits.Contains(s)).ToList();
+            return hand =>
+            {
+                //  with only one suit left unbid, notrump promises a stopper in it;
+                //  otherwise just avoid shortness in a suit nobody has bid unless it's a stopper (e.g. a singleton Ace)
+                var counts = BasicBidding.CountsBySuit(hand);
+                return opponentSuits.All(s => BasicBidding.HasStopper(hand, s)) &&
+                       unbidSuits.All(s => (unbidSuits.Count > 1 && counts[s] >= 2) || BasicBidding.HasStopper(hand, s));
+            };
         }
 
         private static void SetPointCounter(Context context, Suit trump)
@@ -346,13 +383,19 @@ namespace Trickster.Bots
             //  a major-suit game (even a 4-3 fit) is preferred to a minor-suit fit
             if (BridgeBot.IsMajor(suit) && bid.declareBid.level == bid.GameLevel)
                 otherSuits = otherSuits.Where(BridgeBot.IsMajor).ToList();
+            var validate = bid.Validate;
             bid.Validate = hand =>
             {
                 var counts = BasicBidding.CountsBySuit(hand);
                 var combined = counts[suit] + partnerShape[suit].Min;
                 //  only a real (8+ card) fit elsewhere outweighs rebidding our own long suit
-                return otherSuits.All(s => counts[s] + partnerShape[s].Min <= Math.Max(combined, 7));
+                return otherSuits.All(s => counts[s] + partnerShape[s].Min <= Math.Max(combined, 7)) && (validate == null || validate(hand));
             };
+        }
+
+        internal static bool IsInvitation(InterpretedBid bid)
+        {
+            return new Context(bid).IsInvitation;
         }
 
         private static int GamePoints(Suit suit)

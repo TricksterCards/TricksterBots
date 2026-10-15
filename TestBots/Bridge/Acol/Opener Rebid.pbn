@@ -107,6 +107,12 @@ Pass 3D
 1H Pass 2C Pass
 2S
 
+[Event "Rebid 2NT with 15-16 balanced after a 2-over-1 response rather than raise the minor"]
+[Deal "S:K973.AJ.KJ5.K864 - - -"]
+[Auction "S"]
+1S Pass 2C Pass
+2NT
+
 [Event "Rebid a strong lower-ranking second suit at the 3-level"]
 [Deal "S:- AK982.86.K.AJ763 - -"]
 [Auction "S"]
@@ -148,3 +154,45 @@ Pass 1C Pass 1H
 [Auction "S"]
 1S Pass 2S Pass
 3S
+
+[Event "Show second suit before rebidding own suit"]
+[Deal "S:32.A87652..AK732 - - -"]
+[Auction "S"]
+1H Pass 1S 2D
+3C
+
+[Event "Rebid a 6-card major over a 3-level overcall rather than bid a new suit at the 4-level"]
+[Deal "S:32.A87652..AK732 - - -"]
+[Auction "S"]
+1H Pass 1S 3D
+3H
+
+[Event "Bid game in a 6-card major over a 4-level overcall rather than bid a new suit at the 5-level"]
+[Deal "S:32.A87652..AK732 - - -"]
+[Auction "S"]
+1H Pass 1S 4D
+4H
+
+[Event "Pass over a 5-level overcall rather than bid a new suit at the 6-level"]
+[Deal "S:32.A87652..AK732 - - -"]
+[Auction "S"]
+1H Pass 1S 5D
+Pass
+
+[Event "Pass a non-forcing new suit over a takeout double with a minimum rather than reverse or raise"]
+[Deal "S:AJ52.A7532.Q72.5 - - -"]
+[Auction "S"]
+1H X 2D Pass
+Pass
+
+[Event "Bid a new higher-ranking suit at the 3-level (forcing) after interference rather than jump to game without a known fit"]
+[Deal "W:- AJ75.A93.J.AKJT3 - -"]
+[Auction "W"]
+Pass 1C 1D 1H
+3D 3S
+
+[Event "Raise a major shown by a negative double to game with extra values after a preemptive raise"]
+[Deal "W:- AJ75.A93.J.AKJT3 - -"]
+[Auction "W"]
+Pass 1C 1D X
+3D 4S
