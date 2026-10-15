@@ -1629,6 +1629,9 @@ namespace Trickster.Bots
                 if (lowestBossCard != null)
                     return lowestBossCard;
 
+                //  if we're third to play and the opponents are winning - play just high enough to win (ducking concedes the trick)
+                if (!isPartnerTakingTrick && trick.Count == players.Count - 2 && minimumWinner != null)
+                    return minimumWinner;
             }
             else if (legalCards.Any(IsTrump))
             {

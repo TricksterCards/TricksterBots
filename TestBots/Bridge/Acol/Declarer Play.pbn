@@ -1,0 +1,14 @@
+%
+% Declarer play (declarer and dummy)
+%
+
+% Third hand: if the opponents are winning the trick, play just high enough to win
+% (ducking concedes the trick; covering either wins or forces out a higher card)
+
+[Event "Declarer Play: Dummy plays third hand high enough to beat RHO"]
+[Deal "N:- QT873.K7.AKQ7.K4 - K54.A9852.T864.3"]
+[Declarer "E"]
+[Contract "4S"]
+[Play "S"]
+HT H2 H3 HK
+SJ SK -  S3
