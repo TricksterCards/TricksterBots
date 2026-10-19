@@ -364,14 +364,8 @@ namespace Trickster.Bots
                 return;
             }
 
-            bid.PointCounter = hand =>
-            {
-                var counts = BasicBidding.CountsBySuit(hand);
-                var full = asDummy && counts[trump] >= 4;
-                var count = counts[partnerSuit];
-                var wasted = count == 0 ? (full ? 5 : 3) : count == 1 ? (full ? 3 : 2) : count == 2 && asDummy ? 1 : 0;
-                return BasicBidding.ComputeFitPoints(hand, trump, asDummy) - wasted;
-            };
+            var wastedSuits = new[] { partnerSuit };
+            bid.PointCounter = hand => BasicBidding.ComputeFitPoints(hand, trump, asDummy, wastedSuits);
         }
 
         private static void PreferLongestFit(Context context)

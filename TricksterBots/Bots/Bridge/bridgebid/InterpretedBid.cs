@@ -245,18 +245,30 @@ namespace Trickster.Bots
 
         private int ComputePoints(Hand hand)
         {
-            var points = BasicBidding.ComputeHighCardPoints(hand);
             switch (BidPointType)
             {
                 case BidPointType.Distribution:
-                    return points + BasicBidding.ComputeDistributionPoints(hand);
+                    return BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
                 case BidPointType.Dummy:
-                    return points + BasicBidding.ComputeDummyPoints(hand);
+                    return ComputeDummyFitPoints(hand);
                 case BidPointType.Hcp:
-                    return points;
+                    return BasicBidding.ComputeHighCardPoints(hand);
                 default:
                     throw new Exception("Unknown point type");
             }
+        }
+
+        private int ComputeDummyFitPoints(Hand hand)
+        {
+            //  value the hand as dummy for the suit this bid supports: the bid suit if it shows support, otherwise the suit(s)
+            //  with the most promised length (e.g. partner's suit for a cuebid or 2NT raise, any unbid suit for a takeout double)
+            var supportSuits = SuitRank.stdSuits.Where(s => HandShape[s].Min >= 3).ToList();
+            if (declareBid != null && declareBid.suit != Suit.Unknown && (supportSuits.Count == 0 || supportSuits.Contains(declareBid.suit)))
+                return BasicBidding.ComputeFitPoints(hand, declareBid.suit, true);
+
+            var candidates = supportSuits.Count > 0 ? supportSuits : SuitRank.stdSuits.ToList();
+            var maxMin = candidates.Max(s => HandShape[s].Min);
+            return candidates.Where(s => HandShape[s].Min == maxMin).Max(s => BasicBidding.ComputeFitPoints(hand, s, true));
         }
 
         public void NoFourCardMajors()
