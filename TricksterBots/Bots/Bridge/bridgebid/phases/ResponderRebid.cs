@@ -289,13 +289,7 @@ namespace Trickster.Bots
                         var partnerOpening = bid.History.Take(bid.Index).FirstOrDefault(b => (bid.Index - b.Index) % 4 == 2 && b.bidIsDeclare);
                         var partnerOtherSuits = SuitRank.stdSuits.Where(s => s != trump && partnerSummary.HandShape[s].Min >= 4).ToList();
                         if (partnerOtherSuits.Count > 0 && playerSummary.Points.Max >= 37 && partnerOpening != null && partnerOpening.declareBid.suit != trump)
-                            bid.PointCounter = hand =>
-                            {
-                                var counts = BasicBidding.CountsBySuit(hand);
-                                return BasicBidding.ComputeHighCardPoints(hand) + SuitRank.stdSuits
-                                    .Where(s => s != trump && !partnerOtherSuits.Contains(s))
-                                    .Sum(s => counts[s] == 0 ? 5 : counts[s] == 1 ? 3 : counts[s] == 2 ? 1 : 0);
-                            };
+                            bid.PointCounter = hand => BasicBidding.ComputeFitPoints(hand, trump, true, partnerOtherSuits);
                     }
 
                     if (partnerMinOfSuit > 0)

@@ -150,6 +150,7 @@ namespace Trickster.Bots
                 if (fitSuit != Suit.Unknown && rebid.History[rebid.Index - 4].HandShape[fitSuit].Min >= 4)
                 {
                     rebid.BidPointType = BidPointType.Dummy;
+                    rebid.PointCounter = hand => BasicBidding.ComputeFitPoints(hand, fitSuit, true);
                     rebid.Points.Min = InterpretedBid.SmallSlamPoints - openerMax;
                 }
                 else

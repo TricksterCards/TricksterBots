@@ -565,7 +565,7 @@ namespace Trickster.Bots
                                 response.BidPointType = BidPointType.Dummy;
                                 //  shortness only counts when we have support for partner's major
                                 response.PointCounter = hand => BasicBidding.CountsBySuit(hand)[openingSuit] >= 3
-                                    ? BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDummyPoints(hand)
+                                    ? BasicBidding.ComputeFitPoints(hand, openingSuit, true)
                                     : BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
                                 response.HandShape[response.declareBid.suit].Min = min;
                                 response.Description = $"{min}+ {response.declareBid.suit} (may have 3+ {opening.declareBid.suit})";
@@ -613,7 +613,7 @@ namespace Trickster.Bots
                                 response.Description = $"Limit raise; 3+ {response.declareBid.suit}";
                                 if (isPassedHand)
                                     response.Validate = hand => BasicBidding.CountsBySuit(hand)[raiseSuit] == 3 ||
-                                                                BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDummyPoints(hand) <= 11;
+                                                                BasicBidding.ComputeFitPoints(hand, raiseSuit, true) <= 11;
                             }
                             //  1H-3C
                             //  1H-3D

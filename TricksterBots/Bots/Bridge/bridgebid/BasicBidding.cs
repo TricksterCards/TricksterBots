@@ -21,33 +21,17 @@ namespace Trickster.Bots
             return distributionPoints;
         }
 
-        public static int ComputeDummyPoints(Hand hand)
-        {
-            //  used instead of distribution points when responding to a major suit opening
-            var dummyPoints = 0;
-
-            //  add 5 for each void suit
-            dummyPoints += BasicSuits.Select(suit => hand.Count(c => c.suit == suit)).Where(count => count == 0).Sum(count => 5);
-
-            //  add 3 for each singleton suit
-            dummyPoints += BasicSuits.Select(suit => hand.Count(c => c.suit == suit)).Where(count => count == 1).Sum(count => 3);
-
-            //  add 1 for each doubleton suit
-            dummyPoints += BasicSuits.Select(suit => hand.Count(c => c.suit == suit)).Where(count => count == 2).Sum(count => 1);
-
-            return dummyPoints;
-        }
-
-        public static int ComputeFitPoints(Hand hand, Suit trump, bool asDummy)
+        public static int ComputeFitPoints(Hand hand, Suit trump, bool asDummy, ICollection<Suit> wastedSuits = null)
         {
             //  revalue once a trump fit is known: declarer adds length + side shortness, dummy adds side shortness only
+            //  (shortness in wastedSuits, e.g. opposite partner's side suit, adds nothing)
             var counts = CountsBySuit(hand);
             var points = ComputeHighCardPoints(hand);
             if (!asDummy)
                 points += ComputeDistributionPoints(hand);
 
             var fullDummyValue = asDummy && counts[trump] >= 4;
-            foreach (var suit in BasicSuits.Where(s => s != trump))
+            foreach (var suit in BasicSuits.Where(s => s != trump && (wastedSuits == null || !wastedSuits.Contains(s))))
             {
                 if (counts[suit] == 0)
                     points += fullDummyValue ? 5 : 3;
