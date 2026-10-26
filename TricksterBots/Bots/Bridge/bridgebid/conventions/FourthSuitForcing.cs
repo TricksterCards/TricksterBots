@@ -186,11 +186,6 @@ namespace Trickster.Bots
             }
 
             ResponderRebid.TryPlaceContract(rebid);
-
-            //  opener couldn't stop the fourth suit, so holding it ourselves 3NT is the natural spot,
-            //  even with shortness in opener's long suit (a misfit is a reason to play notrump, not to avoid it)
-            if (suit == Suit.Unknown && rebid.declareBid.level == rebid.GameLevel && rebid.Validate != null)
-                rebid.Validate = ResponderRebid.NotrumpValidator(rebid, allowShortnessInPartnersLongSuits: true);
         }
     }
 }

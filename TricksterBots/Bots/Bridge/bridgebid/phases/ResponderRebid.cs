@@ -223,9 +223,10 @@ namespace Trickster.Bots
                 bid.BidMessage = BidMessage.Signoff;
                 bid.Description = "Sign-off at game";
 
-                //  opposite an unbalanced partner, 3NT needs a balanced-ish hand and the unbid/opponents' suits stopped
+                //  opposite an unbalanced partner, 3NT needs the unbid/opponents' suits stopped and no shortness,
+                //  except in partner's long suit (a misfit is a reason to play notrump, not to avoid it)
                 if (isNT && !partnerSummary.IsBalanced)
-                    bid.Validate = NotrumpValidator(bid);
+                    bid.Validate = NotrumpValidator(bid, allowShortnessInPartnersLongSuits: true);
 
                 //  after partner's natural 2NT jump rebid (18-19 balanced), prefer 3NT to five of a minor
                 var partnerLast = bid.History[bid.Index - 2];
@@ -243,12 +244,17 @@ namespace Trickster.Bots
                 bid.IsBalanced = isNT && partnerSummary.IsBalanced;
                 if (isNT && !partnerSummary.IsBalanced)
                 {
-                    //  (but a known major fit comes first)
-                    var stoppers = NotrumpValidator(bid);
+                    //  (but a known major fit comes first; a singleton in partner's long suit is tolerable, though not a void,
+                    //  and with a 6-card suit of our own, rebid it instead)
+                    var stoppers = NotrumpValidator(bid, allowShortnessInPartnersLongSuits: true);
                     bid.Priority = 95;
                     bid.Validate = hand =>
                     {
                         var counts = BasicBidding.CountsBySuit(hand);
+                        var hasShortness = SuitRank.stdSuits.Any(s => counts[s] < 2);
+                        if (hasShortness && SuitRank.stdSuits.Any(s => counts[s] == 0 || counts[s] >= 6))
+                            return false;
+
                         return stoppers(hand) && !SuitRank.stdSuits.Any(s => BridgeBot.IsMajor(s) && partnerSummary.HandShape[s].Min > 0 &&
                                                                              counts[s] + partnerSummary.HandShape[s].Min >= 8);
                     };

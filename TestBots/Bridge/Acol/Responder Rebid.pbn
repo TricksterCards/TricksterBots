@@ -61,3 +61,9 @@ Pass Pass 1H Pass
 [Auction "W"]
 Pass 1C 1D X
 3D 4S Pass Pass
+
+[Event "With game values and a misfit, responder bids 3NT despite a singleton in opener's rebid suit"]
+[Deal "S:- - AQ85.KJ6.4.KQ932 -"]
+[Auction "S"]
+1D Pass 1S Pass
+2D Pass 3NT

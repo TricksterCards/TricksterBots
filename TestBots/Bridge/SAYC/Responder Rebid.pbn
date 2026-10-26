@@ -12,3 +12,15 @@
 2C Pass 2D Pass
 2H Pass 3NT
 
+[Event "With game values and a misfit, responder bids 3NT despite a singleton in opener's rebid suit"]
+[Deal "S:- - KQ742.4.AJ5.QJ83 -"]
+[Auction "S"]
+1H Pass 1S Pass
+2H Pass 3NT
+
+[Event "With invitational values and a misfit, responder bids 2NT despite a singleton in opener's rebid suit"]
+[Deal "S:- - KJ85.QT4.7.AJ832 -"]
+[Auction "S"]
+1D Pass 1S Pass
+2D Pass 2NT
+
