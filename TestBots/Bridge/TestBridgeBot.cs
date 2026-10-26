@@ -111,6 +111,16 @@ namespace TestBots
             AssertExplanation(scheme, history, bid, expectedDescription);
         }
 
+        [TestMethod]
+        [DataRow(BridgeBiddingScheme.SAYC, "1S 3D 4D Pass", "4NT", "Blackwood; asking for Aces")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1S Pass 3H Pass", "3NT", "Balanced; no fit (12-19 HCP)")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1S Pass 3H Pass", "4NT", "Unknown bid")]
+        [DataRow(BridgeBiddingScheme.SAYC, "1D 1S 2C Pass", "2NT", "Balanced; minimum; stopper in Spades (12-14 HCP)")]
+        public void OpenerRebidExplanations(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)
+        {
+            AssertExplanation(scheme, history, bid, expectedDescription);
+        }
+
         //  a bid already in the auction should be described the same way it was when it was a legal bid
         [TestMethod]
         [DataRow(BridgeBiddingScheme.Acol, "Pass Pass Pass 1C X 1S", "2H")]

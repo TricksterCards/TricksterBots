@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Trickster.cloud;
 
 namespace Trickster.Bots
@@ -101,6 +102,38 @@ namespace Trickster.Bots
             rebid.Points.Min = 12;
             rebid.Description = "Penalty; we have the balance of power";
             return true;
+        }
+
+        //  the suits the opponents have bid naturally (artificial bids like Michaels don't show the suit bid)
+        private static List<Suit> TheirSuits(InterpretedBid rebid)
+        {
+            return rebid.History.Take(rebid.Index)
+                .Where(b => (rebid.Index - b.Index) % 2 == 1 && b.bidIsDeclare && b.declareBid.suit != Suit.Unknown && b.BidConvention == BidConvention.None)
+                .Select(b => b.declareBid.suit).Distinct().ToList();
+        }
+
+        private static bool HasStoppersInTheirSuits(InterpretedBid rebid, Hand hand)
+        {
+            return TheirSuits(rebid).All(s => BasicBidding.HasStopper(hand, s));
+        }
+
+        //  after interference, a natural notrump rebid promises a stopper in each suit the opponents have bid
+        //  (AlternateMatches bypasses Validate, so it needs the stoppers too)
+        private static void RequireStoppersInTheirSuits(InterpretedBid rebid)
+        {
+            var theirSuits = TheirSuits(rebid);
+            if (theirSuits.Count == 0)
+                return;
+
+            HandValidator hasStoppers = hand => theirSuits.All(s => BasicBidding.HasStopper(hand, s));
+            var validate = rebid.Validate;
+            rebid.Validate = hand => hasStoppers(hand) && (validate == null || validate(hand));
+            var alternateMatches = rebid.AlternateMatches;
+            if (alternateMatches != null)
+                rebid.AlternateMatches = hand => hasStoppers(hand) && alternateMatches(hand);
+
+            var stopperDescription = $"stopper in {string.Join(" and ", theirSuits)}";
+            rebid.Description = string.IsNullOrEmpty(rebid.Description) ? stopperDescription : $"{rebid.Description}; {stopperDescription}";
         }
 
         //  1X-(suit)-X(penalty)-(P)-?
@@ -225,10 +258,12 @@ namespace Trickster.Bots
                 return;
             }
 
-            if (response.bidIsDeclare && opening.declareBid.suit == response.declareBid.suit &&
-                rebid.declareBid.suit == Suit.Unknown && rebid.declareBid.level == 4)
+            //  partner raised or otherwise showed 3+ support (e.g. a cuebid raise like 1S-(3D)-4D)
+            var partnerShowedFit = response.bidIsDeclare && opening.declareBid.suit == response.declareBid.suit ||
+                                   response.HandShape[opening.declareBid.suit].Min >= 3;
+            if (partnerShowedFit && rebid.declareBid.suit == Suit.Unknown && rebid.declareBid.level == 4)
             {
-                //  1M-2M-4N, 1M-3M-4N: with a fit agreed, 4NT asks for Aces
+                //  1M-2M-4N, 1M-3M-4N, 1S-(3D)-4D-4N: with a fit agreed, 4NT asks for Aces
                 rebid.BidConvention = BidConvention.Blackwood;
                 rebid.BidMessage = BidMessage.Forcing;
                 rebid.Description = "asking for Aces";
@@ -337,9 +372,11 @@ namespace Trickster.Bots
 
                             rebid.Description = "Sign-off at game";
 
-                            //  prefer playing game in notrump for minor suits
-                            if (BridgeBot.IsMinor(rebid.declareBid.suit) && rebid.LowestAvailableLevel(Suit.Unknown, true) <= 3)
-                                rebid.Validate = hand => false;
+                            if (rebid.declareBid.suit == Suit.Unknown)
+                                RequireStoppersInTheirSuits(rebid);
+                            //  prefer playing game in notrump for minor suits (when we can stop their suits)
+                            else if (BridgeBot.IsMinor(rebid.declareBid.suit) && rebid.LowestAvailableLevel(Suit.Unknown, true) <= 3)
+                                rebid.Validate = hand => !HasStoppersInTheirSuits(rebid, hand);
                         }
                     }
                 }
@@ -359,11 +396,14 @@ namespace Trickster.Bots
                         rebid.Description = "Sign-off at game";
 
                         if (BridgeBot.IsMinor(rebid.declareBid.suit) && rebid.LowestAvailableLevel(Suit.Unknown, true) <= 3)
-                            //  prefer playing game in notrump for minor suits
-                            rebid.Validate = hand => false;
+                            //  prefer playing game in notrump for minor suits (when we can stop their suits)
+                            rebid.Validate = hand => !HasStoppersInTheirSuits(rebid, hand);
                         else
                             //  if we're unbalanced, get to game even with a minimum
                             rebid.AlternateMatches = hand => !BasicBidding.IsBalanced(hand);
+
+                        if (rebid.declareBid.suit == Suit.Unknown)
+                            RequireStoppersInTheirSuits(rebid);
                     }
                 }
             }
@@ -383,14 +423,20 @@ namespace Trickster.Bots
                     }
                 }
                 //  rebidding notrump
+                else if (rebid.declareBid.level > 3)
+                {
+                    //  natural rebids stop at 3NT, so 4NT and above aren't part of the ladder (fit-agreed 4NT is Blackwood above)
+                }
                 else if (rebid.declareBid.level == lowestAvailableLevel)
                 {
                     //  minimum: lowest available level (12-14 HCP; with 15-17 we'd have opened 1NT)
+                    //  but when 3NT is already the cheapest notrump (e.g. after a jump shift), it shows any balanced hand
+                    var isOnlyNotrump = lowestAvailableLevel == 3;
                     rebid.BidPointType = BidPointType.Hcp;
                     rebid.Points.Min = 12;
-                    rebid.Points.Max = 14;
+                    rebid.Points.Max = isOnlyNotrump ? 19 : 14;
                     rebid.IsBalanced = true;
-                    rebid.Description = "minimum";
+                    rebid.Description = isOnlyNotrump ? "no fit" : "minimum";
                     //  with a singleton in partner's suit and no other descriptive rebid, 1NT is still the best minimum
                     if (respondedAtOneLevel && rebid.declareBid.level == 1)
                         rebid.AlternateMatches = hand =>
@@ -399,6 +445,7 @@ namespace Trickster.Bots
                             var counts = BasicBidding.CountsBySuit(hand);
                             return hcp >= 12 && hcp <= 14 && counts[responseSuit] == 1 && counts.Values.Max() <= 5 && counts.Values.Count(c => c == 1 || c == 0) == 1;
                         };
+                    RequireStoppersInTheirSuits(rebid);
                 }
                 else if (rebid.declareBid.level == lowestAvailableLevel + 1)
                 {
@@ -410,6 +457,7 @@ namespace Trickster.Bots
                     rebid.Description = "jump";
                     if (respondedAtOneLevel && BridgeBot.IsMajor(responseSuit))
                         rebid.Validate = hand => BasicBidding.CountsBySuit(hand)[responseSuit] < 4;
+                    RequireStoppersInTheirSuits(rebid);
                 }
                 else if (respondedAtOneLevel && rebid.declareBid.level == 3)
                 {
@@ -422,6 +470,7 @@ namespace Trickster.Bots
                     rebid.HandShape[ourSuit].Min = 6;
                     rebid.Description = $"Running {ourSuit}";
                     rebid.Validate = hand => hand.Count(c => c.suit == ourSuit && c.rank >= Rank.Queen) == 3;
+                    RequireStoppersInTheirSuits(rebid);
                 }
             }
             else if (response.bidIsDeclare && rebid.declareBid.suit == response.declareBid.suit)
