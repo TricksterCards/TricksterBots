@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Trickster.cloud;
 
@@ -356,8 +357,9 @@ namespace Trickster.Bots
         }
 
         //  no singleton/void, plus a stopper in every suit our side hasn't bid naturally (including the opponents' suits and
-        //  an artificial fourth suit), unless partner has bid notrump naturally (showing a balanced hand with those stoppers)
-        internal static HandValidator NotrumpValidator(InterpretedBid bid)
+        //  an artificial fourth suit), unless partner has bid notrump naturally (showing a balanced hand with those stoppers);
+        //  optionally, shortness is allowed in a suit where partner has shown 5+ cards
+        internal static HandValidator NotrumpValidator(InterpretedBid bid, bool allowShortnessInPartnersLongSuits = false)
         {
             var ourBids = bid.History.Take(bid.Index).Where(b => (bid.Index - b.Index) % 2 == 0 && b.bidIsDeclare && b.BidConvention == BidConvention.None).ToList();
             if (ourBids.Any(b => (bid.Index - b.Index) % 4 == 2 && b.declareBid.suit == Suit.Unknown))
@@ -365,11 +367,15 @@ namespace Trickster.Bots
 
             var ourSuits = ourBids.Where(b => b.declareBid.suit != Suit.Unknown).Select(b => b.declareBid.suit).ToList();
             var suitsToStop = SuitRank.stdSuits.Where(s => !ourSuits.Contains(s)).ToList();
+            var partnerSummary = new InterpretedBid.PlayerSummary(bid.History, bid.Index - 2);
+            var shortnessAllowed = allowShortnessInPartnersLongSuits
+                ? SuitRank.stdSuits.Where(s => partnerSummary.HandShape[s].Min >= 5).ToList()
+                : new List<Suit>();
 
             return hand =>
             {
                 var counts = BasicBidding.CountsBySuit(hand);
-                return SuitRank.stdSuits.All(s => counts[s] >= 2) && suitsToStop.All(s => BasicBidding.HasStopper(hand, s));
+                return SuitRank.stdSuits.All(s => counts[s] >= 2 || shortnessAllowed.Contains(s)) && suitsToStop.All(s => BasicBidding.HasStopper(hand, s));
             };
         }
     }
