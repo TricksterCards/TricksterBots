@@ -55,6 +55,7 @@ namespace Trickster.Bots
             rebid.Points.Min = partnerReversed ? Math.Max(9, 25 - partnerSummary.Points.Min) : 13;
             rebid.BidConvention = BidConvention.FourthSuitForcing;
             rebid.BidMessage = BidMessage.Forcing;
+            rebid.Description = string.Empty;
             if (partnerReversed)
                 rebid.Priority = 90;
 

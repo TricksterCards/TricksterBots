@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Trickster.cloud;
 
@@ -222,9 +223,10 @@ namespace Trickster.Bots
                 bid.BidMessage = BidMessage.Signoff;
                 bid.Description = "Sign-off at game";
 
-                //  opposite an unbalanced partner, 3NT needs a balanced-ish hand and the unbid/opponents' suits stopped
+                //  opposite an unbalanced partner, 3NT needs the unbid/opponents' suits stopped and no shortness,
+                //  except in partner's long suit (a misfit is a reason to play notrump, not to avoid it)
                 if (isNT && !partnerSummary.IsBalanced)
-                    bid.Validate = NotrumpValidator(bid);
+                    bid.Validate = NotrumpValidator(bid, allowShortnessInPartnersLongSuits: true);
 
                 //  after partner's natural 2NT jump rebid (18-19 balanced), prefer 3NT to five of a minor
                 var partnerLast = bid.History[bid.Index - 2];
@@ -242,12 +244,17 @@ namespace Trickster.Bots
                 bid.IsBalanced = isNT && partnerSummary.IsBalanced;
                 if (isNT && !partnerSummary.IsBalanced)
                 {
-                    //  (but a known major fit comes first)
-                    var stoppers = NotrumpValidator(bid);
+                    //  (but a known major fit comes first; a singleton in partner's long suit is tolerable, though not a void,
+                    //  and with a 6-card suit of our own, rebid it instead)
+                    var stoppers = NotrumpValidator(bid, allowShortnessInPartnersLongSuits: true);
                     bid.Priority = 95;
                     bid.Validate = hand =>
                     {
                         var counts = BasicBidding.CountsBySuit(hand);
+                        var hasShortness = SuitRank.stdSuits.Any(s => counts[s] < 2);
+                        if (hasShortness && SuitRank.stdSuits.Any(s => counts[s] == 0 || counts[s] >= 6))
+                            return false;
+
                         return stoppers(hand) && !SuitRank.stdSuits.Any(s => BridgeBot.IsMajor(s) && partnerSummary.HandShape[s].Min > 0 &&
                                                                              counts[s] + partnerSummary.HandShape[s].Min >= 8);
                     };
@@ -356,8 +363,9 @@ namespace Trickster.Bots
         }
 
         //  no singleton/void, plus a stopper in every suit our side hasn't bid naturally (including the opponents' suits and
-        //  an artificial fourth suit), unless partner has bid notrump naturally (showing a balanced hand with those stoppers)
-        internal static HandValidator NotrumpValidator(InterpretedBid bid)
+        //  an artificial fourth suit), unless partner has bid notrump naturally (showing a balanced hand with those stoppers);
+        //  optionally, shortness is allowed in a suit where partner has shown 5+ cards
+        internal static HandValidator NotrumpValidator(InterpretedBid bid, bool allowShortnessInPartnersLongSuits = false)
         {
             var ourBids = bid.History.Take(bid.Index).Where(b => (bid.Index - b.Index) % 2 == 0 && b.bidIsDeclare && b.BidConvention == BidConvention.None).ToList();
             if (ourBids.Any(b => (bid.Index - b.Index) % 4 == 2 && b.declareBid.suit == Suit.Unknown))
@@ -365,11 +373,15 @@ namespace Trickster.Bots
 
             var ourSuits = ourBids.Where(b => b.declareBid.suit != Suit.Unknown).Select(b => b.declareBid.suit).ToList();
             var suitsToStop = SuitRank.stdSuits.Where(s => !ourSuits.Contains(s)).ToList();
+            var partnerSummary = new InterpretedBid.PlayerSummary(bid.History, bid.Index - 2);
+            var shortnessAllowed = allowShortnessInPartnersLongSuits
+                ? SuitRank.stdSuits.Where(s => partnerSummary.HandShape[s].Min >= 5).ToList()
+                : new List<Suit>();
 
             return hand =>
             {
                 var counts = BasicBidding.CountsBySuit(hand);
-                return SuitRank.stdSuits.All(s => counts[s] >= 2) && suitsToStop.All(s => BasicBidding.HasStopper(hand, s));
+                return SuitRank.stdSuits.All(s => counts[s] >= 2 || shortnessAllowed.Contains(s)) && suitsToStop.All(s => BasicBidding.HasStopper(hand, s));
             };
         }
     }
