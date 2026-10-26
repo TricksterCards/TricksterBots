@@ -34,3 +34,9 @@ Pass 3D
 [Auction "N"]
 1C Pass 2NT Pass
 3NT
+
+[Event "Jump rebid 2NT with 19 HCP even with a 5-card suit"]
+[Deal "N:K2.AQ3.AKJ32.Q32 - - -"]
+[Auction "N"]
+1D Pass 1S Pass
+2NT

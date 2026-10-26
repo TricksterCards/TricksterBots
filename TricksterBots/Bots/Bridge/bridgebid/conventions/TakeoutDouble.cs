@@ -165,6 +165,7 @@ namespace Trickster.Bots
             {
                 if (advance.declareBid.level < 4)
                 {
+                    advance.BidPointType = BidPointType.Hcp;
                     advance.IsBalanced = true;
                     advance.Description = $"stopper in {opening.declareBid.suit}";
                     advance.Validate = hand => BasicBidding.HasStopper(hand, opening.declareBid.suit);

@@ -75,6 +75,11 @@ Pass Pass 1C 1D
 [Auction "E"]
 Pass 1H Pass Pass
 
+[Event "Pass partner's minor with 5 HCP; length points don't make it a 1NT response"]
+[Deal "S:- - Q32.Q32.43.J5432 -"]
+[Auction "S"]
+1D Pass Pass
+
 [Event "Upgrade 5 HCP with a 5-card suit to 1NT over an overcall with a stopper"]
 [Deal "N:- - Q32.32.Q9876.J32 -"]
 [Auction "N"]

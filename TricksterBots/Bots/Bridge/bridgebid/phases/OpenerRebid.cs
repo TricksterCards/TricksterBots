@@ -385,9 +385,10 @@ namespace Trickster.Bots
                 //  rebidding notrump
                 else if (rebid.declareBid.level == lowestAvailableLevel)
                 {
-                    //  minimum: lowest available level (13-15 points)
-                    rebid.Points.Min = 13;
-                    rebid.Points.Max = 15;
+                    //  minimum: lowest available level (12-14 HCP; with 15-17 we'd have opened 1NT)
+                    rebid.BidPointType = BidPointType.Hcp;
+                    rebid.Points.Min = 12;
+                    rebid.Points.Max = 14;
                     rebid.IsBalanced = true;
                     rebid.Description = "minimum";
                     //  with a singleton in partner's suit and no other descriptive rebid, 1NT is still the best minimum
@@ -396,12 +397,13 @@ namespace Trickster.Bots
                         {
                             var hcp = BasicBidding.ComputeHighCardPoints(hand);
                             var counts = BasicBidding.CountsBySuit(hand);
-                            return hcp >= 13 && hcp <= 15 && counts[responseSuit] == 1 && counts.Values.Max() <= 5 && counts.Values.Count(c => c == 1 || c == 0) == 1;
+                            return hcp >= 12 && hcp <= 14 && counts[responseSuit] == 1 && counts.Values.Max() <= 5 && counts.Values.Count(c => c == 1 || c == 0) == 1;
                         };
                 }
                 else if (rebid.declareBid.level == lowestAvailableLevel + 1)
                 {
-                    //  maximum: jump (18-19 points), unless we can raise partner's major
+                    //  maximum: jump (18-19 HCP), unless we can raise partner's major
+                    rebid.BidPointType = BidPointType.Hcp;
                     rebid.Points.Min = 18;
                     rebid.Points.Max = 19;
                     rebid.IsBalanced = true;

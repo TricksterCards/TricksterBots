@@ -748,6 +748,7 @@ namespace Trickster.Bots
                         case Suit.Unknown:
                             response.Points.Min = 6;
                             response.Points.Max = 10;
+                            response.BidPointType = BidPointType.Hcp;
                             response.IsBalanced = true;
                             response.NoFourCardMajors();
                             response.Description = "no 4-card major";
@@ -799,6 +800,7 @@ namespace Trickster.Bots
                         case Suit.Unknown:
                             response.Points.Min = 13;
                             response.Points.Max = 15;
+                            response.BidPointType = BidPointType.Hcp;
                             response.BidMessage = BidMessage.Forcing; // game forcing
                             response.IsBalanced = true;
                             response.NoFourCardMajors();
@@ -852,6 +854,7 @@ namespace Trickster.Bots
                         case Suit.Unknown:
                             response.Points.Min = 16;
                             response.Points.Max = 18;
+                            response.BidPointType = BidPointType.Hcp;
                             response.IsBalanced = true;
                             response.NoFourCardMajors();
                             response.Description = "no 4-card major";
