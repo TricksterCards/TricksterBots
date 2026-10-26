@@ -70,6 +70,21 @@ Pass 1C Pass 1NT
 Pass Pass 1C 1D
 1S
 
+[Event "Pass partner's major with 4 HCP; length points don't make it a 1NT response"]
+[Deal "E:- - - T2.J2.QT9873.J43"]
+[Auction "E"]
+Pass 1H Pass Pass
+
+[Event "Upgrade 5 HCP with a 5-card suit to 1NT over an overcall with a stopper"]
+[Deal "N:- - Q32.32.Q9876.J32 -"]
+[Auction "N"]
+1H 1S 1NT
+
+[Event "Don't upgrade 5 HCP to 1NT over an overcall without a stopper"]
+[Deal "N:- - 432.32.Q9876.QJ2 -"]
+[Auction "N"]
+1H 1S Pass
+
 [Event "No 1NT response over an overcall without a stopper in the overcalled suit"]
 [Deal "N:- - K32.Q53.8642.Q73 -"]
 [Auction "N"]
