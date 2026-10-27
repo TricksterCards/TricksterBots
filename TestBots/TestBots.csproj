@@ -3,40 +3,7 @@
     <Content Include="Bridge\Acol\*.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Bridge\SAYC\1NT Basic.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\1NT Transfers.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\1NT Stayman.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Defensive Opening Leads.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Defensive Play.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Defensive Discards.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\2NT Responses.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Michaels.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Overcalls.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Responder Rebid.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Takeout Doubles.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Blackwood.pbn">
+    <Content Include="Bridge\SAYC\*.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Bridge\Bridgit\Basic.pbn">
@@ -55,18 +22,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Euchre\BidEuchre\Leads.ptn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Response.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Opener Rebid.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Jacoby 2NT.pbn">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bridge\SAYC\Later Rebids.pbn">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />

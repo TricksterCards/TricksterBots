@@ -46,25 +46,88 @@ namespace Trickster.Bots
             }
         }
 
-        //  natural notrump raises of a notrump overcall (Stayman and transfers are handled as conventions)
+        //  natural advances of a notrump overcall (Stayman is handled as a convention)
         private static void AdvanceNotrumpOvercall(InterpretedBid overcall, InterpretedBid advance)
         {
-            if (!advance.bidIsDeclare || advance.declareBid.suit != Suit.Unknown || overcall.declareBid.level != 1 || overcall.Points.Max >= 37)
+            if (!advance.bidIsDeclare || overcall.declareBid.level != 1 || overcall.Points.Max >= 37)
                 return;
+
+            if (advance.declareBid.suit != Suit.Unknown)
+            {
+                AdvanceNotrumpOvercallInSuit(overcall, advance);
+                return;
+            }
 
             advance.BidPointType = BidPointType.Hcp;
             if (advance.declareBid.level == 2)
             {
-                advance.Points.Min = 25 - overcall.Points.Max;
-                advance.Points.Max = 25 - 1 - overcall.Points.Min;
+                var minHcp = 25 - overcall.Points.Max;
+                var maxHcp = 25 - 1 - overcall.Points.Min;
+                advance.Points.Min = minHcp;
+                advance.Points.Max = maxHcp;
                 advance.IsBalanced = true;
                 advance.Description = "Inviting game";
+                //  with no transfers, 2 of a suit is a sign-off and 3 of a major is forcing,
+                //  so a semi-balanced invitational hand (e.g. 5-4-2-2 with a 5-card major) also invites with 2NT
+                advance.AlternateMatches = hand =>
+                {
+                    var hcp = BasicBidding.ComputeHighCardPoints(hand);
+                    var counts = BasicBidding.CountsBySuit(hand);
+                    var lengths = SuitRank.stdSuits.Select(s => counts[s]).ToList();
+                    return hcp >= minHcp && hcp <= maxHcp && lengths.Min() >= 2 && lengths.Max() <= 5;
+                };
             }
             else if (advance.declareBid.level == 3)
             {
                 advance.Points.Min = 25 - overcall.Points.Min;
                 advance.BidMessage = BidMessage.Signoff;
                 advance.Description = "Sign-off at game";
+            }
+        }
+
+        //  (SAYC Booklet) No conventional responses are used by the responder to the 1NT overcall except 2C (Stayman),
+        //  and Acol plays "system off", so new suits are natural: weak at the 2-level, forcing (or invitational in a minor) at the 3-level, and to play at game.
+        private static void AdvanceNotrumpOvercallInSuit(InterpretedBid overcall, InterpretedBid advance)
+        {
+            var suit = advance.declareBid.suit;
+            var opponentSuits = advance.History.Where(b => (advance.Index - b.Index) % 2 == 1 && b.bidIsDeclare).Select(b => b.declareBid.suit);
+            if (advance.History[advance.Index - 1].bid != BidBase.Pass || opponentSuits.Contains(suit))
+                return;
+
+            var ntMin = overcall.Points.Min;
+            var ntMax = overcall.Points.Max;
+            switch (advance.declareBid.level)
+            {
+                case 2:
+                    advance.BidMessage = BidMessage.Signoff;
+                    advance.Points.Max = InterpretedBid.InvitationalPoints - ntMin - 1;
+                    advance.HandShape[suit].Min = 5;
+                    advance.Description = $"5+ {suit}";
+                    break;
+
+                case 3 when BridgeBot.IsMajor(suit):
+                    //  offers a choice between 3NT and 4 of the major
+                    advance.BidMessage = BidMessage.Forcing;
+                    advance.Points.Min = 25 - ntMin;
+                    advance.HandShape[suit].Min = 5;
+                    advance.Description = $"5+ {suit}; game forcing";
+                    break;
+
+                case 3:
+                    advance.Points.Min = InterpretedBid.InvitationalPoints - ntMin;
+                    advance.Points.Max = 25 - ntMin - 1;
+                    advance.IsGood = true;
+                    advance.HandShape[suit].Min = 6;
+                    advance.Description = $"Good 6+ card {suit} suit; inviting 3NT";
+                    break;
+
+                case 4 when BridgeBot.IsMajor(suit):
+                    advance.BidMessage = BidMessage.Signoff;
+                    advance.Points.Min = 25 - ntMin;
+                    advance.Points.Max = 33 - ntMax - 1;
+                    advance.HandShape[suit].Min = 6;
+                    advance.Description = $"Sign-off at game; 6+ {suit}";
+                    break;
             }
         }
 
