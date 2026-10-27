@@ -21,18 +21,22 @@ namespace Trickster.Bots
         {
         }
 
-        private double EstimatedTricks(Hand hand, Suit maybeTrump, bool withJoker)
+        private double EstimatedTricks(Hand hand, Suit maybeTrump, bool withJoker, Card partnerTrump = null)
         {
             //  ensure all suits have at least some value so we never pick Suit.Unknown
             var est = 0.1;
 
             var trumpCards = hand.Where(c => EffectiveSuit(c, maybeTrump) == maybeTrump).ToList();
+            var topTrumpRankSort = RankSort(withJoker ? new Card(Suit.Joker, Rank.High) : new Card(maybeTrump, Rank.Jack), maybeTrump);
+            var nLowTrump = 0;
+
             foreach (var card in trumpCards)
             {
-                var nCardsAbove = trumpCards.Count(c => RankSort(c, maybeTrump) > RankSort(card, maybeTrump));
+                //  a trump known to be in partner's hand (e.g. the up-card when partner deals) fills a gap above our card
+                var nCardsAbove = trumpCards.Count(c => RankSort(c, maybeTrump) > RankSort(card, maybeTrump)) +
+                                  (partnerTrump != null && RankSort(partnerTrump, maybeTrump) > RankSort(card, maybeTrump) ? 1 : 0);
                 var nCardsBelow = trumpCards.Count(c => RankSort(c, maybeTrump) < RankSort(card, maybeTrump));
-                var nRanksAbove = RankSort(withJoker ? new Card(Suit.Joker, Rank.High) : new Card(maybeTrump, Rank.Jack), maybeTrump) -
-                                  RankSort(card, maybeTrump);
+                var nRanksAbove = topTrumpRankSort - RankSort(card, maybeTrump);
                 var nGapsAbove = nRanksAbove - nCardsAbove;
 
                 if (card.rank < Rank.Jack)
@@ -45,6 +49,8 @@ namespace Trickster.Bots
                     est += 0.75;
                 else if (nCardsBelow == nGapsAbove - 2)
                     est += 0.5;
+                else
+                    nLowTrump++;
             }
 
             var offSuitCards = hand.Where(c => EffectiveSuit(c, maybeTrump) != maybeTrump).ToList();
@@ -61,6 +67,9 @@ namespace Trickster.Bots
                 offSuitCards.Any(c1 => offSuitCards.Count < 2 || offSuitCards.Any(c2 => c1 != c2 && EffectiveSuit(c2, maybeTrump) == EffectiveSuit(c1, maybeTrump))))
                 //  if we're one/two-suited with three or more trump, add most of a trick
                 est += 0.75;
+            else if (trumpCards.Count >= 3 && trumpCards.Any(c => RankSort(c, maybeTrump) == topTrumpRankSort))
+                //  otherwise, holding the top trump lets us draw trump early, so low trump still have some value
+                est += 0.25 * nLowTrump;
 
             return est;
         }
@@ -307,6 +316,7 @@ namespace Trickster.Bots
         {
             var highSuit = Suit.Unknown;
             var highEstimate = 0.0;
+            var teamEstimate = 0.0;
 
             if (upCard != null)
             {
@@ -315,8 +325,12 @@ namespace Trickster.Bots
                 if (isDealer)
                     effectiveHand.Add(upCard);
 
-                highEstimate = EstimatedTricks(effectiveHand, EffectiveUpCardSuit(upCard), options.withJoker);
                 highSuit = EffectiveUpCardSuit(upCard);
+                highEstimate = EstimatedTricks(effectiveHand, highSuit, options.withJoker);
+
+                //  if partner is dealing, they'll pick up the up-card, but only count it when partner will play
+                var isPartnerDealing = isTeamDealing && !isDealer;
+                teamEstimate = isPartnerDealing ? EstimatedTricks(effectiveHand, highSuit, options.withJoker, upCard) : highEstimate;
             }
             else
             {
@@ -349,6 +363,8 @@ namespace Trickster.Bots
                         }
                     }
                 }
+
+                teamEstimate = highEstimate;
             }
 
             //  bid alone if we think we'll take at least 4-tricks, so long as we hold the appropriate high cards
@@ -367,7 +383,7 @@ namespace Trickster.Bots
                     return new BidBase((int)EuchreBid.MakeAlone + (int)highSuit);
             }
 
-            if (highEstimate >= (options.take4for1 ? 3.25 : 2.25))
+            if (teamEstimate >= (options.take4for1 ? 3.25 : 2.25))
                 return new BidBase((int)EuchreBid.Make + (int)highSuit);
 
             //  we don't have anything we like, so pass if we can or bid the best we've got

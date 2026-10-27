@@ -431,6 +431,16 @@ namespace TestBots
         }
 
         [TestMethod]
+        [DataRow(   "♣", "TS QH TCACJC", "QC", 2, DisplayName = "Should order up partner when the up-card fills a gap in our trump")]
+        [DataRow(   "♣", "TS QH TCACJC", "QC", 3, DisplayName = "Should order up opponent with the top two trump and a low third trump")]
+        [DataRow("Pass", "9S QH TCACJS", "QC", 3, DisplayName = "Should pass ordering up opponent with a low third trump but without the top trump")]
+        [DataRow("Pass", " 9C 9S 9HAHJD", "QH", 2, DisplayName = "Should still pass a weak three-suited hand when partner deals")]
+        public void TestTakeBidWithDealer(string bid, string hand, string upCard, int dealerSeat)
+        {
+            Assert.AreEqual(bid, GetSuggestedBid(hand, upCard, dealerSeat: dealerSeat));
+        }
+
+        [TestMethod]
         [DataRow("♠ alone", "  AC 9SKSASJS", "TS", false, false, DisplayName = "Should bid alone with four trump and off-suit Ace")]
         [DataRow("♠ alone", "  AC 9SKSJCJS", "TS", false, false, DisplayName = "Should bid alone with four trump and off-suit Ace (case 2)")]
         //  risk of both same suit as Ace being led on first trick AND getting trumped is small
@@ -567,8 +577,9 @@ namespace TestBots
         /// <param name="take4for1">The value to use for EuchreOptions.take4for1</param>
         /// <param name="callForBest">The value to use for EuchreOptions.callForBest</param>
         /// <param name="aloneTake5">The value to use for EuchreOptions.aloneTake5</param>
+        /// <param name="dealerSeat">The dealer's seat (the bidder is always seat 0; use 2 for partner dealing)</param>
         /// <returns>The suggested bid for the first bidder</returns>
-        private static string GetSuggestedBid(string handString, string upCardString, bool take4for1 = false, bool callForBest = false, bool aloneTake5 = false)
+        private static string GetSuggestedBid(string handString, string upCardString, bool take4for1 = false, bool callForBest = false, bool aloneTake5 = false, int dealerSeat = 3)
         {
             handString = handString.Replace(" ", "");
 
@@ -586,7 +597,7 @@ namespace TestBots
                     new TestPlayer(seat: 2),
                     new TestPlayer(seat: 3)
                 ],
-                dealerSeat = 3,
+                dealerSeat = dealerSeat,
                 hand = new Hand(handString),
                 legalBids =
                 [
