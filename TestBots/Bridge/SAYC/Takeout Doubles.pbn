@@ -49,3 +49,8 @@ Pass Pass 1H X
 [Deal "W:- - - Q84.J873.962.743"]
 [Auction "W"]
 1H X Pass 1S
+
+[Event "Advance a takeout double with 1NT holding 10 HCP; length in their suit doesn't make it a 2NT jump"]
+[Deal "W:- - - Q32.K32.K8765.Q2"]
+[Auction "W"]
+1D X Pass 1NT

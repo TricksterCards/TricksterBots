@@ -512,9 +512,21 @@ namespace Trickster.Bots
                             //  1NT response is saying we've got nothing to support the major opening
                             response.Points.Min = 6;
                             response.Points.Max = 10;
+                            response.BidPointType = BidPointType.Hcp;
                             response.HandShape[opening.declareBid.suit].Max = 2;
                             response.Description = $"Any distribution; 0-2 {opening.declareBid.suit}";
                             RequireStopperInOvercall(overcall, response);
+
+                            //  judgement: upgrade a 5 HCP hand with a 5+ card suit (but nothing weaker)
+                            //  AlternateMatches bypasses all other checks, so re-apply the shape and stopper requirements here
+                            var openingSuit = opening.declareBid.suit;
+                            var stopperValidate = response.Validate;
+                            response.AlternateMatches = hand =>
+                            {
+                                var counts = BasicBidding.CountsBySuit(hand);
+                                return BasicBidding.ComputeHighCardPoints(hand) == 5 && counts[openingSuit] <= 2 && counts.Values.Any(n => n >= 5) &&
+                                       (stopperValidate == null || stopperValidate(hand));
+                            };
 
                             break;
                     }
@@ -736,6 +748,7 @@ namespace Trickster.Bots
                         case Suit.Unknown:
                             response.Points.Min = 6;
                             response.Points.Max = 10;
+                            response.BidPointType = BidPointType.Hcp;
                             response.IsBalanced = true;
                             response.NoFourCardMajors();
                             response.Description = "no 4-card major";
@@ -787,6 +800,7 @@ namespace Trickster.Bots
                         case Suit.Unknown:
                             response.Points.Min = 13;
                             response.Points.Max = 15;
+                            response.BidPointType = BidPointType.Hcp;
                             response.BidMessage = BidMessage.Forcing; // game forcing
                             response.IsBalanced = true;
                             response.NoFourCardMajors();
@@ -840,6 +854,7 @@ namespace Trickster.Bots
                         case Suit.Unknown:
                             response.Points.Min = 16;
                             response.Points.Max = 18;
+                            response.BidPointType = BidPointType.Hcp;
                             response.IsBalanced = true;
                             response.NoFourCardMajors();
                             response.Description = "no 4-card major";

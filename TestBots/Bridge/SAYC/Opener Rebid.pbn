@@ -34,3 +34,33 @@ Pass 3D
 [Auction "N"]
 1C Pass 2NT Pass
 3NT
+
+[Event "Jump rebid 2NT with 19 HCP even with a 5-card suit"]
+[Deal "N:K2.AQ3.AKJ32.Q32 - - -"]
+[Auction "N"]
+1D Pass 1S Pass
+2NT
+
+[Event "With a fit shown by partner's cuebid raise, a minimum bids game rather than a natural 4NT"]
+[Deal "N:AQ432.K32.Q2.K32 - - -"]
+[Auction "N"]
+1S 3D 4D Pass
+4S
+
+[Event "After a jump shift, 3NT shows any balanced hand without a fit (not a 4NT jump)"]
+[Deal "N:AK432.32.KQ2.AQ2 - - -"]
+[Auction "N"]
+1S Pass 3H Pass
+3NT
+
+[Event "After a minor raise in competition, play 5 of the minor without a stopper in their suit"]
+[Deal "N:432.AK.AKQ32.K32 - - -"]
+[Auction "N"]
+1D 1S 2D Pass
+5D
+
+[Event "After a minor raise in competition, prefer 3NT with a stopper in their suit"]
+[Deal "N:K32.AK.AKQ32.432 - - -"]
+[Auction "N"]
+1D 1S 2D Pass
+3NT
