@@ -1061,7 +1061,6 @@ namespace TestBots
                     new SaycResult(true, 430, 430),
                     new SaycResult(true, -2, -2),
                     new SaycResult(true, -2, -2),
-                    new SaycResult(true, 420, 420),
                     new SaycResult(true, 412, 412),
                     new SaycResult(true, 422, 422),
                     new SaycResult(true, -2, -2),

@@ -7,7 +7,8 @@ namespace Trickster.Bots
     {
         public static bool CanUseTransfers(InterpretedBid bid)
         {
-            return Stayman.CanUseStayman(bid);
+            //  (SAYC Booklet) No conventional responses are used by the responder to the 1NT overcall except 2C, which is Stayman.
+            return Stayman.CanUseStayman(bid) && bid.BidPhase != BidPhase.Advance;
         }
 
         public static bool Interpret(InterpretedBid bid)

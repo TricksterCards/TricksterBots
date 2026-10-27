@@ -72,3 +72,40 @@ Pass 1C 1D 1S
 [Auction "S"]
 Pass Pass 1D Pass
 Pass 1H 3D 3H
+
+[Event "Advance a 1NT overcall (system off): bid game directly with a long major"]
+[Deal "S:- - - K72.KJT9762.6.T6"]
+[Auction "S"]
+1S 1NT Pass 4H
+
+[Event "Advance a 1NT overcall (system off): a weak hand with a 5-card major signs off in the major"]
+[Deal "S:- - - 863.QJ974.92.T84"]
+[Auction "S"]
+1S 1NT Pass 2H
+
+[Event "Advance a 1NT overcall (system off): 2C is natural"]
+[Deal "S:- - - 84.932.82.QJ9754"]
+[Auction "S"]
+1D 1NT Pass 2C
+
+[Event "Advance a 1NT overcall (system off): a jump to 3 of a major is natural and game forcing"]
+[Deal "S:- - - A84.KQ974.93.852"]
+[Auction "S"]
+1S 1NT Pass 3H
+
+[Event "1NT overcaller passes advancer's natural sign-off, even with a maximum"]
+[Deal "S:- KQ5.AJ4.K82.KJ73 - -"]
+[Auction "S"]
+1C 1NT Pass 2D
+Pass Pass
+
+[Event "1NT overcaller raises advancer's forcing 3H with 3-card support"]
+[Deal "S:- KQ5.AJ4.K82.KJ73 - -"]
+[Auction "S"]
+1C 1NT Pass 3H
+Pass 4H
+[Event "Advance a 1NT overcall (system off): a semi-balanced invitational hand with a 5-card major invites with 2NT"]
+[Deal "S:- J7.T9432.AQ84.J2 - -"]
+[Auction "S"]
+Pass Pass 1C 1NT
+Pass 2NT

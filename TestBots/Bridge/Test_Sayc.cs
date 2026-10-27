@@ -1975,7 +1975,6 @@ namespace TestBots
                     }, // 6-d1f7000aa6b6639e51496f833f, S is forced to bid and should use his 3D minimum rebid.
                     new[] { "JT.73.KQ76542.86", "P", "P 1S 2D" }, // 1-8061f64e2c962eff60f4477962, W Jump-overcalls do not apply if partner bid (can"t say 3H).
                     new[] { "J.QJ.KQ854.AQJ53", "P", "P 1S P 1N P 2H P 2S P", "Both" }, // 4-9f76c5e69bb0e70b260e31d508, N should pass after South"s sign-off.
-                    new[] { "J2.AQ84.T9432.J7", "2N", "P P 1C 1N P 2D P 2H P", "E-W" }, // 6-bc55e0d60e426ab7e8704c97bc, S should invite to game with 2N.
                     new[] { "AK2.AK8.874.QT42", "1N", "1C P 1S", "Both" }, // Indirect 1NT overcalls should be possible.
                     new[] { "6.KQJ985432..AQ8", "2D", "1H P 1S", "N-S" }, // 12-cd97772a869a8f433334c461e6, S should be able to make an indirect overcall of 2D.
                     // Was X; both are valid SAYC: Pass valid

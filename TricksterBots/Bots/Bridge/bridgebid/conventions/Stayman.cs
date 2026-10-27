@@ -88,7 +88,7 @@ namespace Trickster.Bots
             if (!opening.bidIsDeclare || opening.declareBid.suit != Suit.Unknown)
                 return false;
 
-            //  SAYC plays "systems on" over partner's natural 1NT overcall
+            //  (SAYC Booklet) Stayman is the only conventional response to partner's natural 1NT overcall (transfers are off)
             if (bid.BidPhase == BidPhase.Advance)
                 return opening.BidPhase == BidPhase.Overcall && opening.declareBid.level == 1 && bid.Options.bidding != BridgeBiddingScheme.Acol;
 

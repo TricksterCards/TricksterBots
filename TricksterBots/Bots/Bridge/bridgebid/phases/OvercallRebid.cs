@@ -30,7 +30,64 @@ namespace Trickster.Bots
                 return;
             }
 
+            if (overcall.bidIsDeclare && overcall.declareBid.suit == Suit.Unknown &&
+                advance.bidIsDeclare && advance.declareBid.suit != Suit.Unknown && advance.BidConvention == BidConvention.None &&
+                rebid.History[rebid.Index - 1].bid == BidBase.Pass)
+            {
+                RebidAfterNaturalAdvanceOfNotrump(overcall, advance, rebid);
+                return;
+            }
+
             AcolOvercallRebid.Interpret(rebid);
+        }
+
+        //  (1C)-1N-(P)-2D/3H/3D/4H: advancer's natural suit bids after a notrump overcall (see Advance)
+        private static void RebidAfterNaturalAdvanceOfNotrump(InterpretedBid overcall, InterpretedBid advance, InterpretedBid rebid)
+        {
+            var suit = advance.declareBid.suit;
+            if (advance.BidMessage == BidMessage.Signoff)
+            {
+                if (rebid.bid == BidBase.Pass)
+                    rebid.Description = "Accept sign-off";
+                return;
+            }
+
+            if (advance.BidMessage == BidMessage.Forcing)
+            {
+                //  choose between 3NT and 4 of advancer's major
+                if (!rebid.bidIsDeclare)
+                    return;
+
+                if (rebid.declareBid.suit == suit && rebid.declareBid.level == rebid.GameLevel)
+                {
+                    rebid.BidMessage = BidMessage.Signoff;
+                    rebid.HandShape[suit].Min = 3;
+                    rebid.Description = $"Sign-off at game; 3+ {suit}";
+                }
+                else if (rebid.declareBid.suit == Suit.Unknown && rebid.declareBid.level == 3)
+                {
+                    rebid.BidMessage = BidMessage.Signoff;
+                    rebid.HandShape[suit].Max = 2;
+                    rebid.Description = $"Sign-off at game; 0-2 {suit}";
+                }
+
+                return;
+            }
+
+            //  advancer invited 3NT with a good 6-card minor
+            if (rebid.bid == BidBase.Pass)
+            {
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Points.Max = (overcall.Points.Min + overcall.Points.Max) / 2;
+                rebid.Description = "Minimum";
+            }
+            else if (rebid.bidIsDeclare && rebid.declareBid.suit == Suit.Unknown && rebid.declareBid.level == 3)
+            {
+                rebid.BidPointType = BidPointType.Hcp;
+                rebid.Points.Min = (overcall.Points.Min + overcall.Points.Max) / 2 + 1;
+                rebid.BidMessage = BidMessage.Signoff;
+                rebid.Description = "Accept invitation";
+            }
         }
 
         private static bool IsCooperativeDoubleAfterNotrump(InterpretedBid overcall, InterpretedBid advance, InterpretedBid rebid)
