@@ -203,6 +203,26 @@ namespace TestBots
             Assert.IsNull(failure, failure);
         }
 
+        //  declarer uses the auction to place a missing honor: finesse through the opponent who showed values
+        [TestMethod]
+        [DataRow("1S Pass Pass 1NT Pass 3NT Pass Pass Pass", "C5 CJ -  C2", DisplayName = "West opened: lead toward dummy's KJ and finesse the J")]
+        [DataRow("Pass Pass 1S 1NT Pass 3NT Pass Pass Pass", "-  -  -  D4", DisplayName = "East opened: cross to dummy to finesse toward declarer's A10")]
+        public void DeclarerFinessesBasedOnAuction(string auction, string trick2)
+        {
+            var pbn = "[Event \"Two-way finesse\"]\n" +
+                      "[Deal \"W:- 9876.Q32.KQ3.KJ3 - 5432.AK5.A54.AT2\"]\n" +
+                      "[Contract \"3NT\"]\n" +
+                      "[Declarer \"S\"]\n" +
+                      $"[Auction \"W\"]\n{auction}\n" +
+                      "[Play \"W\"]\n" +
+                      "HJ H2 H4 HK\n" +
+                      $"{trick2}\n";
+
+            var failures = PTN.ImportTests(pbn, new BridgeOptions()).Where(t => !string.IsNullOrEmpty(t.play))
+                .Select(t => RunPlayTest(t)).Where(f => f != null).ToList();
+            Assert.AreEqual(0, failures.Count, string.Join("\n", failures));
+        }
+
         [TestMethod]
         public void BasicTests()
         {

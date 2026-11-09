@@ -6,7 +6,7 @@ using TricksterBots.Bots.Bridge;
 
 namespace Trickster.Bots
 {
-    public class BridgeBot : BaseBot<BridgeOptions>
+    public partial class BridgeBot : BaseBot<BridgeOptions>
     {
         internal static readonly Dictionary<Suit, int> suitRank = new Dictionary<Suit, int>
         {
@@ -342,6 +342,9 @@ namespace Trickster.Bots
             var isFourthHandDefensivePlay = state.trick.Count == 3 && state.player.Bid == BridgeBid.Defend;
             if (isFourthHandDefensivePlay)
                 return SuggestFourthHandDefensivePlay(state);
+
+            if (state.player.Bid != BridgeBid.Defend)
+                return SuggestDeclarerPlay(state, auction);
 
             return TryTakeEm(state);
         }
