@@ -1,0 +1,95 @@
+%
+% Declarer Play
+%
+% Every card played by declarer (South) or dummy (North) is validated, so these sequences
+% also cover the follow-up plays needed to keep a multi-trick plan consistent.
+%
+
+% Notrump: with a single stopper in the suit led, hold up per the Rule of 7
+% (7 - 6 combined spades = hold up once), then knock out the ace in our long suit
+% by leading low toward dummy's sequence (dummy plays the cheapest equivalent card).
+
+[Event "Declarer Play: NT hold-up (Rule of 7), then knock out the ace of the long suit"]
+[Deal "N:654.K32.KQJT8.43 - A73.AQ4.432.AK65 -"]
+[Contract "3NT"]
+[Declarer "S"]
+[Play "W"]
+SK S4 S8 S3
+SQ S5 ST SA
+D5 DT -  D2
+
+% Suit contract: draw trump first when we have enough tricks and no ruffs are needed.
+% Also: second hand low when partner (fourth) holds a winner; fourth hand wins as cheaply as possible.
+
+[Event "Declarer Play: Draw trump first"]
+[Deal "N:JT54.KQ4.A54.654 - AKQ32.A32.K32.32 -"]
+[Contract "4S"]
+[Declarer "S"]
+[Play "W"]
+CK C4 C7 C2
+CA C5 C8 C3
+HJ H4 H5 HA
+-  -  -  SA
+
+% Suit contract: when we need ruffs in the short-trump hand (dummy) and drawing trump would use up
+% dummy's trumps, take the ruffs first. Dummy ruffs a club, then cashes its ace to void itself in spades.
+
+[Event "Declarer Play: Ruff losers in the short-trump hand before drawing trump"]
+[Deal "N:A5.987.765432.65 - 432.AKQJT.AK.432 -"]
+[Contract "4H"]
+[Declarer "S"]
+[Play "W"]
+CK C5 C7 C2
+CQ C6 C8 C3
+CA H7 C9 C4
+-  SA -  -
+
+% Finesse: lead low toward dummy's tenace (AQJT5) and insert the cheapest finessing card.
+
+[Event "Declarer Play: Lead toward dummy's tenace and finesse"]
+[Deal "N:432.AQJT5.432.A2 - AK5.432.AK5.KQ43 -"]
+[Contract "3NT"]
+[Declarer "S"]
+[Play "W"]
+SQ S2 S6 SK
+H6 HT -  H2
+
+% Eight ever, nine never: with nine cards missing the queen, play for the drop.
+
+[Event "Declarer Play: Nine cards missing the queen - play for the drop"]
+[Deal "N:432.432.AKJT9.A5 - AK5.AK5.5432.K32 -"]
+[Contract "3NT"]
+[Declarer "S"]
+[Play "W"]
+SQ S2 S6 SK
+D6 DK -  D2
+
+[Event "Declarer Play: Eight cards missing the queen - finesse"]
+[Deal "N:432.432.AKJT9.A5 - AK5.AK5.432.K432 -"]
+[Contract "3NT"]
+[Declarer "S"]
+[Play "W"]
+SQ S2 S6 SK
+D5 D9 -  D2
+
+% Unblock: cash the short side's winners first (lead low to dummy's KQ doubleton, dummy wins with the K).
+
+[Event "Declarer Play: Unblock by playing the short side's winners first"]
+[Deal "N:543.K54.KQ.A5432 - AK2.A32.AJT32.76 -"]
+[Contract "3NT"]
+[Declarer "S"]
+[Play "W"]
+SQ S3 S6 SK
+D4 DK -  D2
+
+% Cross-ruff: when both hands are short in different side suits, cross-ruffing makes more tricks than
+% drawing trump. Cash side winners first (where both hands follow, then where partner can discard).
+
+[Event "Declarer Play: Cash side winners before a cross-ruff"]
+[Deal "N:T987.A5432..9876 - AKQJ..A5432.AK32 -"]
+[Contract "4S"]
+[Declarer "S"]
+[Play "W"]
+CQ C6 C4 CK
+C5 C7 CT CA
+-  -  -  DA
