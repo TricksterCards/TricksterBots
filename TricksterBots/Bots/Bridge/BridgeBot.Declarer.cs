@@ -698,9 +698,23 @@ namespace Trickster.Bots
                     if (partnerWinners.Count == 0 || mine.Count <= Pard(s).Count)
                         return myWinners[0];
 
-                    //  we're the long side and partner's cards are all winners (would block): lead low to them first
-                    if (IsBlockedByPartner(s) && R(mine.Last()) < R(partnerWinners[0]) && !IsWinner(mine.Last()))
-                        return mine.Last();
+                    //  we're the long side and partner's cards are all winners (would block): partner's last card
+                    //  must fall on a trick we win, or we need an entry back to our hand
+                    if (IsBlockedByPartner(s))
+                    {
+                        var theirs = Pard(s);
+                        if (theirs.Count == 1)
+                        {
+                            //  drop partner's singleton under our winner when giving up its trick costs nothing (or we have no entry back)
+                            var drop = mine.LastOrDefault(c => R(c) > R(theirs[0]));
+                            if (drop != null && (mine.All(IsWinner) || !PartnerHasEntryToMe(s)))
+                                return drop;
+                        }
+
+                        //  lead low so partner wins with a high card now, keeping their lowest to be overtaken later
+                        if (R(mine.Last()) < R(theirs[0]))
+                            return mine.Last();
+                    }
 
                     return myWinners[0];
                 }
@@ -985,9 +999,17 @@ namespace Trickster.Bots
                     }
                 }
 
+                //  cards already in the trick aren't outstanding, so equivalence checks must be limited to cards that beat the current winner
                 var candidates = follow.Where(c => R(c) > R(cardTakingTrick)).ToList();
                 if (candidates.Count == 0)
                     return follow.Last();
+
+                //  LHO can neither follow nor ruff, so any card that beats the current winner takes the trick
+                if (LhoCannotFollowOrRuff(s))
+                {
+                    var cheapest = candidates.Last();
+                    return follow.Count <= Pard(s).Count ? HighestEquivalent(cheapest, candidates) : cheapest;
+                }
 
                 var winners = candidates.Where(IsWinner).ToList();
                 var finesse = candidates.Where(c => Beaters(c) == 1).ToList();
@@ -999,17 +1021,18 @@ namespace Trickster.Bots
                     var holder = LikelyHolder(missing);
                     var dropIsBetter = winners.Count > 0 && PreferDrop(s, missing);
                     if (holder != lho.Seat && !dropIsBetter)
-                        return LowestEquivalent(finesseCard, follow);
+                        return LowestEquivalent(finesseCard, candidates);
                 }
 
                 if (winners.Count > 0)
                     return follow.Count <= Pard(s).Count ? HighestEquivalent(winners.Last(), winners) : winners.Last();
 
                 //  force out the opponents' high cards with the bottom of our sequence when developing the suit
+                //  (the sequence may extend below the current winner, but we must still play a card that beats it)
                 var topCandidate = candidates[0];
-                var sequence = follow.Where(c => AreEquivalent(c, topCandidate)).ToList();
-                if (sequence.Count >= 2 && EstimatedTricks(s) > TopTricks(s))
-                    return sequence.Last();
+                var sequenceLength = follow.Count(c => AreEquivalent(c, topCandidate));
+                if (sequenceLength >= 2 && EstimatedTricks(s) > TopTricks(s))
+                    return LowestEquivalent(topCandidate, candidates);
 
                 return follow.Last();
             }
@@ -1044,6 +1067,7 @@ namespace Trickster.Bots
                     return Discard();
 
                 var ourSideWinning = false;
+                var partnerMayBeRuffed = false;
                 switch (trick.Count)
                 {
                     case 1:
@@ -1051,7 +1075,8 @@ namespace Trickster.Bots
                         ourSideWinning = PartnerCanWinFourthByFollowing(s, trick[0]) || PartnerCanRuffFourth(s) && AmMasterTrumpHand;
                         break;
                     case 2:
-                        ourSideWinning = isPartnerTakingTrick && (IsSafeFromLho(cardTakingTrick) || S(cardTakingTrick) == S(trick[0]) && IsWinner(cardTakingTrick));
+                        ourSideWinning = isPartnerTakingTrick && IsSafeFromLho(cardTakingTrick);
+                        partnerMayBeRuffed = isPartnerTakingTrick && !ourSideWinning && lho.VoidSuits.Contains(s);
                         break;
                     case 3:
                         ourSideWinning = isPartnerTakingTrick;
@@ -1063,17 +1088,45 @@ namespace Trickster.Bots
 
                 var highestTrumpInTrick = trick.Where(c => S(c) == trump).Select(R).DefaultIfEmpty(0).Max();
                 var overRuffs = Own(trump).Where(c => R(c) > highestTrumpInTrick).ToList();
+
+                //  partner's card would win unless LHO ruffs it: protect the trick with a trump LHO can't beat
+                if (partnerMayBeRuffed)
+                {
+                    var masterTrump = overRuffs.LastOrDefault(IsWinner);
+                    if (masterTrump != null)
+                        return masterTrump;
+                }
+
                 return overRuffs.Count > 0 ? overRuffs.Last() : Discard();
             }
 
             private Card UnblockOrLow(List<Card> follow, Suit s)
             {
-                //  unblock: if we're the short side and all our cards are higher than partner's remaining cards, play high
                 var partnerCards = Pard(s);
-                if (partnerCards.Count >= follow.Count && partnerCards.Count > 0 && follow.All(IsWinner) && R(follow.Last()) > R(partnerCards[0]))
+
+                //  partner just played their last card in the suit: overtake if leaving them on lead would strand our winners
+                if (partnerCards.Count == 0 && isPartnerTakingTrick && S(cardTakingTrick) == s)
+                {
+                    var overtake = follow.LastOrDefault(c => R(c) > R(cardTakingTrick) && IsWinner(c));
+                    if (overtake != null)
+                    {
+                        var remaining = follow.Where(c => c != overtake).ToList();
+                        if (remaining.Any(IsWinner) && (remaining.All(IsWinner) || !PartnerHasEntryToMe(s)))
+                            return overtake;
+                    }
+                }
+
+                //  unblock: as the short side holding only winners, play high so partner's long side can win the last round
+                if (partnerCards.Count >= follow.Count && partnerCards.Count > 0 && follow.All(IsWinner))
                     return follow[0];
 
                 return follow.Last();
+            }
+
+            //  partner can get back to our hand by leading another suit to one of our winners
+            private bool PartnerHasEntryToMe(Suit s)
+            {
+                return SuitRank.stdSuits.Any(t => t != s && Own(t).Count > 0 && IsWinner(Own(t)[0]) && Pard(t).Any(c => R(c) < R(Own(t)[0])));
             }
 
             //  in second seat: partner (fourth) holds a winner over the led card
@@ -1101,16 +1154,26 @@ namespace Trickster.Bots
                 if (S(card) != ledSuit)
                     return !lho.VoidSuits.Contains(ledSuit) || !Out(trump).Any(o => R(o) > R(card));
 
+                if (LhoCannotFollowOrRuff(ledSuit))
+                    return true;
+
                 if (Out(ledSuit).Any(o => R(o) > R(card)))
                     return false;
 
                 return IsNoTrump || ledSuit == trump || !OpponentsHaveTrump || !lho.VoidSuits.Contains(ledSuit);
             }
 
+            //  LHO is known to be out of the led suit and can't ruff it
+            private bool LhoCannotFollowOrRuff(Suit ledSuit)
+            {
+                return IsKnownVoid(lho, ledSuit) && (IsNoTrump || ledSuit == trump || IsKnownVoid(lho, trump));
+            }
+
             //  notrump hold-up with a single stopper in the opponents' suit (Rule of 7)
             private bool ShouldHoldUp(Suit s)
             {
-                if (!IsNoTrump || !IsOpponent(leaderSeat) || TopTricks(s) != 1 || TotalTopTricks() >= tricksNeeded)
+                //  ducking concedes a trick, so we can't hold up when the opponents already have all the tricks they can afford
+                if (!IsNoTrump || !IsOpponent(leaderSeat) || tricksToSpare <= 0 || TopTricks(s) != 1 || TotalTopTricks() >= tricksNeeded)
                     return false;
 
                 var ourSeats = new[] { me.Seat, partner.Seat };

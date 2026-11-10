@@ -223,6 +223,23 @@ namespace TestBots
             Assert.AreEqual(0, failures.Count, string.Join("\n", failures));
         }
 
+        //  short endings (South declares, West leads first; tricks are separated by '|' and listed in W N E S order)
+        [TestMethod]
+        [DataRow("N:2..KQ.2 - A..AJT. -", "3NT", "S3 S2 S4 SA|D4 DK D5 DT|D7 DQ D6 DA", DisplayName = "Unblock: lead low to the short side's honors, then overtake its last one")]
+        [DataRow("N:A..K.32 - 2..AQJ. -", "3NT", "S3 SA S4 S2|D5 DK D4 DA", DisplayName = "Unblock: overtake partner's singleton honor when there's no entry back")]
+        [DataRow("N:..Q73. - ..862. -", "3NT", "D5 D3 C9 D6|DJ DQ C8 D2", DisplayName = "Third hand wins cheaply when LHO is known void")]
+        [DataRow("N:2..AQT. - A..432. -", "3NT", "S3 S2 S4 SA|DJ DQ D5 D2", DisplayName = "Third hand finesses with a card that beats RHO's card")]
+        [DataRow("N:.AK2.A. - A2..7.2 -", "4S", "D5 DA D6 D7|C3 HA H3 C2|C4 HK H4 SA", DisplayName = "Ruff partner's winner with the master trump when LHO is void")]
+        [DataRow("N:A32... - 54.A.. -", "7NT", "SK SA - -", DisplayName = "Don't hold up when no tricks can be spared")]
+        public void DeclarerPlayEndings(string deal, string contract, string plays)
+        {
+            var pbn = $"[Event \"Ending\"]\n[Deal \"{deal}\"]\n[Contract \"{contract}\"]\n[Declarer \"S\"]\n[Play \"W\"]\n{plays.Replace('|', '\n')}\n";
+
+            var failures = PTN.ImportTests(pbn, new BridgeOptions()).Where(t => !string.IsNullOrEmpty(t.play))
+                .Select(t => RunPlayTest(t)).Where(f => f != null).ToList();
+            Assert.AreEqual(0, failures.Count, string.Join("\n", failures));
+        }
+
         [TestMethod]
         public void BasicTests()
         {
