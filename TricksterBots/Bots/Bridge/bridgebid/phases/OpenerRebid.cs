@@ -531,14 +531,16 @@ namespace Trickster.Bots
                     rebid.HandShape[rebid.declareBid.suit].Min = 6;
                     rebid.Description = $"Minimum rebid; 6+ {rebid.declareBid.suit}";
                     //  after a two-over-one (forcing), rebid a 5-card suit only as a last resort when no other minimum rebid describes the hand
+                    //  (an intentional misdescription: partner should still play this bid as showing 6+)
                     if (respondedTwoOverOne)
-                        rebid.AlternateMatches = hand =>
+                    {
+                        rebid.HandShape[rebid.declareBid.suit].MinMatch = 5;
+                        rebid.Validate = hand =>
                         {
                             var ourSuit = rebid.declareBid.suit;
                             var counts = BasicBidding.CountsBySuit(hand);
-                            var points = BasicBidding.ComputeHighCardPoints(hand) + BasicBidding.ComputeDistributionPoints(hand);
-                            if (counts[ourSuit] != 5 || points < rebid.Points.Min || points > rebid.Points.Max)
-                                return false;
+                            if (counts[ourSuit] >= 6)
+                                return true;
 
                             //  (raising partner's suit counts as an alternative only with 4+ support)
                             return !SuitRank.stdSuits.Concat(new[] { Suit.Unknown }).Where(s => s != ourSuit && (s != responseSuit || counts[s] >= 4)).Any(s =>
@@ -547,6 +549,7 @@ namespace Trickster.Bots
                                 return level <= 3 && new InterpretedBid(new DeclareBid(level, s), rebid.History, rebid.Index, rebid.Options).Match(hand);
                             });
                         };
+                    }
                 }
                 else if (rebid.declareBid.level == lowestAvailableLevel + 1)
                 {

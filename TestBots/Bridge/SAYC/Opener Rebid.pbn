@@ -70,3 +70,9 @@ Pass 3D
 [Auction "W"]
 Pass 1H Pass 2C
 Pass 2D
+
+[Event "After a two-over-one, too strong for a minimum but nothing else fits, rebid a 5-card major"]
+[Deal "N:AQJ3.KQ954.K4.32 - - -"]
+[Auction "N"]
+1H Pass 2C Pass
+2H
