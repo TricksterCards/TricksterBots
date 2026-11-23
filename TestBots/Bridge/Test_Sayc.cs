@@ -781,7 +781,8 @@ namespace TestBots
                     new[] { "KJ643.K3.K975.65", "2N", "1S P 2C P 2D P" }, // p73, h23
 
                     // In SAYC its possible to pass after a minimum rebid, right?
-                    new[] { "AKQJ2.975.53.964", "P", "1H P 2C P 2H P" },
+                    // Was P; both are valid SAYC: 2H shows 6+ hearts, so 10 HCP with a doubleton invites (booklet p4)
+                    new[] { "AKQJ2.975.53.964", "3H", "1H P 2C P 2H P" },
 
                     // This was found via the none-finder.  3S isn"t even FSF, is it?
                     new[] { "Q974.KJT7.J653.J", "4H", "P 1C P 1D P 2N P 3C P 3H P", "Both" }, // 4-c8e6f9057b689eeb42135cc5b0, S

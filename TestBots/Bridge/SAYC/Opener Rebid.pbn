@@ -64,3 +64,9 @@ Pass 3D
 [Auction "N"]
 1D 1S 2D Pass
 3NT
+
+[Event "After a two-over-one, show a non-reversing second suit rather than rebid a 5-card major"]
+[Deal "W:- A93.T9543.AQ985. - -"]
+[Auction "W"]
+Pass 1H Pass 2C
+Pass 2D
