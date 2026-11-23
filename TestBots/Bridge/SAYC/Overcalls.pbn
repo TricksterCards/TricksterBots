@@ -184,3 +184,33 @@ Pass
 [Auction "S"]
 1C Pass Pass 1D
 Pass 2D
+
+[Event "A 3NT overcall of a 3-level preempt is natural (16-21 HCP) with a stopper"]
+[Deal "E:- KQ4.AJ5.KQ8.QJ73 - -"]
+[Auction "E"]
+3D 3NT
+
+[Event "A 3-level overcall of a weak two is natural and sound (13-17 points), not preemptive"]
+[Deal "E:- 54.AKJT98.KQ4.A3 - -"]
+[Auction "E"]
+2S 3H
+
+[Event "A non-jump 4-level overcall of a 3-level preempt is natural with a good 6+ card suit"]
+[Deal "E:- 5.AKQT98.KJ4.A32 - -"]
+[Auction "E"]
+3S 4H
+
+[Event "A balancing 3-level overcall of a preempt is natural with a good suit"]
+[Deal "W:- - - KQJ984.K5.43.Q92"]
+[Auction "W"]
+3D Pass Pass 3S
+
+[Event "A balancing 3NT over a 3-level preempt is natural (16-21 HCP) with a stopper"]
+[Deal "W:- - - AK4.KQ5.K8.KQJ73"]
+[Auction "W"]
+3D Pass Pass 3NT
+
+[Event "A balanced 2NT overcall of a weak two is natural (15-18 HCP) with a stopper, not a strong takeout double"]
+[Deal "E:- AK4.KQ5.KJ8.Q743 - -"]
+[Auction "E"]
+2S 2NT

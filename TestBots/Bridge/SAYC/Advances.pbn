@@ -46,3 +46,19 @@ Pass 3NT
 [Auction "S"]
 Pass Pass 1C 1NT
 Pass 2NT
+
+[Event "Advance a 3NT overcall of a preempt: 3NT shows 16-21 HCP (not 25-27), so bid a small slam, not a grand"]
+[Deal "E:- - - A8.AJT753.A53.AK"]
+[Auction "E"]
+3D 3NT 4C Pass
+Pass X Pass 6H
+
+[Event "Advance a 3-level overcall of a preempt: raise to game with 3-card support and 9+ dummy points"]
+[Deal "E:- - - Q82.KQ95.762.KJ3"]
+[Auction "E"]
+3D 3S Pass 4S
+
+[Event "Advance a 3-level minor overcall of a preempt: bid 3NT with a stopper and 9+ HCP"]
+[Deal "E:- - - K2.K95.A62.J9743"]
+[Auction "E"]
+2S 3C Pass 3NT

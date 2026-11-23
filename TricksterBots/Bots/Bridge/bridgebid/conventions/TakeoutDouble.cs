@@ -399,12 +399,22 @@ namespace Trickster.Bots
             }
 
             //  if we can overcall 1NT (balanced; 15-18 HCP, or 11-14 when balancing; stopper in the opponents' suits) we'll defer to that instead
+            //  (likewise for a natural 2NT or 3NT overcall of a preempt)
             bool prefersNotrumpOvercall(Hand hand)
             {
+                var notrumpLevel = overcall.LowestAvailableLevel(Suit.Unknown, true);
+                if (notrumpLevel > 1)
+                {
+                    if (notrumpLevel > 3 || Bots.Overcall.PreemptBeingOvercalled(overcall) == null)
+                        return false;
+
+                    var notrump = new InterpretedBid(new DeclareBid(notrumpLevel, Suit.Unknown), overcall.History, overcall.Index, overcall.Options);
+                    return notrump.BidConvention == BidConvention.None && notrump.Match(hand);
+                }
+
                 var hcp = BasicBidding.ComputeHighCardPoints(hand);
                 var min = isBalancing ? 11 : 15;
-                return min <= hcp && hcp <= min + 3 && overcall.LowestAvailableLevel(Suit.Unknown, true) == 1 && BasicBidding.IsBalanced(hand) &&
-                       HasStoppers(hand, bidSuits);
+                return min <= hcp && hcp <= min + 3 && BasicBidding.IsBalanced(hand) && HasStoppers(hand, bidSuits);
             }
 
             overcall.Validate = hand => !prefersSuitOvercall(hand) && !prefersNotrumpOvercall(hand) && !prefersNaturalOvercall(hand);
