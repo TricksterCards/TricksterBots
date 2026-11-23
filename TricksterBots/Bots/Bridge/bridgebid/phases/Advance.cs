@@ -40,10 +40,75 @@ namespace Trickster.Bots
                     advance.declareBid.level < advance.GameLevel)
                     advance.Points.Min = 14;
             }
-            else
+            else if (!AdvancePreemptOvercall(overcall, advance))
             {
                 AdvanceSuitedOvercall(opening, overcall, advance);
             }
+        }
+
+        //  advancing a sound suit overcall of a preempt at the 3-level or higher, e.g. (2S)-3H-(P)-? or (3D)-3S-(P)-?
+        //  (other bids, e.g. cuebids or bids beyond game, are unknown for now)
+        private static bool AdvancePreemptOvercall(InterpretedBid overcall, InterpretedBid advance)
+        {
+            if (!advance.bidIsDeclare || overcall.BidConvention != BidConvention.None || overcall.declareBid.level < 3)
+                return false;
+
+            var preempt = Overcall.PreemptBeingOvercalled(overcall);
+            if (preempt == null)
+                return false;
+
+            var adjust = Overcall.IsBalancing(overcall) ? Overcall.BalancingAdjustment : 0;
+            var suit = advance.declareBid.suit;
+            var level = advance.declareBid.level;
+            var overcallSuit = overcall.declareBid.suit;
+
+            if (suit == overcallSuit)
+            {
+                if (level == advance.GameLevel)
+                {
+                    //  e.g. (2S)-3H-(P)-4H or (3D)-3S-(P)-4S
+                    advance.Points.Min = (BridgeBot.IsMajor(suit) || overcall.declareBid.level == 4 ? 9 : 12) + adjust;
+                    advance.HandShape[suit].Min = 3;
+                    advance.BidMessage = BidMessage.Signoff;
+                    advance.Description = $"Raise to game; 3+ {suit}";
+                    if (BridgeBot.IsMajor(suit))
+                        advance.BidPointType = BidPointType.Dummy;
+                }
+                else if (level == overcall.declareBid.level + 1 && level < advance.GameLevel)
+                {
+                    //  e.g. (3C)-3D-(P)-4D
+                    advance.Points.Min = 8 + adjust;
+                    advance.Points.Max = 11 + adjust;
+                    advance.HandShape[suit].Min = 3;
+                    advance.Description = $"Raise; 3+ {suit}";
+                }
+            }
+            else if (suit == Suit.Unknown)
+            {
+                //  e.g. (2S)-3C-(P)-3N
+                if (level == 3)
+                {
+                    var preemptSuit = preempt.declareBid.suit;
+                    advance.BidPointType = BidPointType.Hcp;
+                    advance.Points.Min = 9 + adjust;
+                    advance.BidMessage = BidMessage.Signoff;
+                    advance.Description = $"stopper in {preemptSuit}";
+                    advance.Validate = hand => BasicBidding.HasStopper(hand, preemptSuit);
+                    if (!BridgeBot.IsMajor(overcallSuit))
+                        advance.Priority = 95;
+                }
+            }
+            else if (suit != preempt.declareBid.suit && level == advance.LowestAvailableLevel(suit, true) && level < advance.GameLevel)
+            {
+                //  e.g. (2S)-3C-(P)-3H: a new suit is natural and forcing
+                advance.Points.Min = 10 + adjust;
+                advance.HandShape[suit].Min = 5;
+                advance.IsGood = true;
+                advance.BidMessage = BidMessage.Forcing;
+                advance.Description = $"5+ {suit}";
+            }
+
+            return true;
         }
 
         //  natural advances of a notrump overcall (Stayman is handled as a convention)

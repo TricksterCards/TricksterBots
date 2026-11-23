@@ -57,6 +57,17 @@ namespace Trickster.Bots
             return SuitRank.stdSuits.Any(s => BridgeBot.IsMajor(s) && !bidSuits.Contains(s) && counts[s] <= 1);
         }
 
+        //  (2X)-?, (P)-(3X)-?, (3X)-P-(P)-?: the opponents' preempt opening we're overcalling (directly or in the balancing seat), if any
+        public static InterpretedBid PreemptBeingOvercalled(InterpretedBid overcall)
+        {
+            var opening = overcall.History.Take(overcall.Index).FirstOrDefault(b => b.bid != BidBase.Pass);
+            if (opening == null || !opening.IsPreemptive || !opening.bidIsDeclare || opening.declareBid.suit == Suit.Unknown)
+                return null;
+
+            var distance = overcall.Index - opening.Index;
+            return distance == 1 || distance == 3 && IsPassOutSeat(overcall) ? opening : null;
+        }
+
         public static void Interpret(InterpretedBid overcall)
         {
             InterpretBid(overcall);
@@ -307,12 +318,12 @@ namespace Trickster.Bots
                 return;
             }
 
-            //  (2H)-2N, (3D)-3N, ...: a non-jump notrump overcall of a preempt is natural with a stopper
+            //  (2H)-2N, (3D)-3N, (3D)-P-(P)-3N, ...: a non-jump notrump overcall of a preempt is natural with a stopper
             //  (not the much stronger notrump opening at the same level)
-            if (db.suit == Suit.Unknown && db.level == lowestLevel && (db.level == 2 || db.level == 3) && opponentsLastBid.IsPreemptive &&
-                opponentsLastBid.declareBid.suit != Suit.Unknown)
+            var preempt = PreemptBeingOvercalled(overcall);
+            if (preempt != null && db.suit == Suit.Unknown && db.level == lowestLevel && (db.level == 2 || db.level == 3))
             {
-                var preemptSuit = opponentsLastBid.declareBid.suit;
+                var preemptSuit = preempt.declareBid.suit;
                 overcall.BidPointType = BidPointType.Hcp;
                 overcall.Points.Min = db.level == 2 ? 15 : 16;
                 overcall.Points.Max = db.level == 2 ? 18 : 21;
@@ -322,8 +333,31 @@ namespace Trickster.Bots
                 return;
             }
 
+            //  (2S)-3H, (3D)-3S, (3S)-4H, (3D)-P-(P)-3H, ...: a non-jump suit overcall of a preempt is natural and sound, not preemptive
+            //  (2-level overcalls of a weak two are handled above)
+            if (preempt != null && db.suit != Suit.Unknown && db.suit != preempt.declareBid.suit && db.level == lowestLevel && db.level >= 3)
+            {
+                var adjust = IsBalancing(overcall) ? BalancingAdjustment : 0;
+                overcall.IsGood = true;
+                overcall.HandShape[db.suit].Min = db.level == 3 ? 5 : 6;
+                overcall.Description = $"{overcall.HandShape[db.suit].Min}+ {db.suit}";
+                if (db.level == 3)
+                {
+                    var maxHcp = MaxSuitOvercallHcp(overcall);
+                    overcall.Points.Min = 13 - adjust;
+                    overcall.Points.Max = maxHcp;
+                    overcall.PointCounter = hand => BalancingOvercallPoints(overcall, hand, maxHcp);
+                }
+                else
+                {
+                    //  at game level (or higher) there's no upper limit
+                    overcall.Points.Min = 15 - adjust;
+                }
+
+                return;
+            }
+
             //  jump overcalls are preemptive, showing the same value as an opening bid at the same level
-            //  versus an opening preempt, an overcall in a suit or notrump is natural; a cuebid is Michaels (handled above)
             Opening.Interpret(overcall);
         }
 

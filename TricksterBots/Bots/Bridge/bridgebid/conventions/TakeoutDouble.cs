@@ -405,7 +405,7 @@ namespace Trickster.Bots
                 var notrumpLevel = overcall.LowestAvailableLevel(Suit.Unknown, true);
                 if (notrumpLevel > 1)
                 {
-                    if (notrumpLevel != 3 || !overcall.History[overcall.Index - 1].IsPreemptive)
+                    if (notrumpLevel != 3 || Bots.Overcall.PreemptBeingOvercalled(overcall) == null)
                         return false;
 
                     var notrump = new InterpretedBid(new DeclareBid(notrumpLevel, Suit.Unknown), overcall.History, overcall.Index, overcall.Options);
