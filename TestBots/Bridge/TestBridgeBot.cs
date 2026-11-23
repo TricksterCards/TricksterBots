@@ -99,6 +99,8 @@ namespace TestBots
         [DataRow(BridgeBiddingScheme.Acol, "1C 1D Pass", "1S", "Good 5+ Spades (6+ points)")]
         [DataRow(BridgeBiddingScheme.Acol, "Pass Pass 1D Pass Pass 1H 3D", "3H", "Competitive raise; 4+ Hearts (6-12 dummy points)")]
         [DataRow(BridgeBiddingScheme.Acol, "1C 1H 2C", "3H", "Jump raise; 4+ Hearts (0-9 dummy points)")]
+        [DataRow(BridgeBiddingScheme.SAYC, "2S 3C 3D", "4D", "Unknown bid")]
+        [DataRow(BridgeBiddingScheme.SAYC, "2S 3C 3D", "3NT", "stoppers in Spades and Diamonds (9+ HCP)")]
         public void AdvanceExplanations(BridgeBiddingScheme scheme, string history, string bid, string expectedDescription)
         {
             AssertExplanation(scheme, history, bid, expectedDescription);

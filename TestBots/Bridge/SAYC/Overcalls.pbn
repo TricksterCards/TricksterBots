@@ -209,3 +209,8 @@ Pass 2D
 [Deal "W:- - - AK4.KQ5.K8.KQJ73"]
 [Auction "W"]
 3D Pass Pass 3NT
+
+[Event "A balanced 2NT overcall of a weak two is natural (15-18 HCP) with a stopper, not a strong takeout double"]
+[Deal "E:- AK4.KQ5.KJ8.Q743 - -"]
+[Auction "E"]
+2S 2NT

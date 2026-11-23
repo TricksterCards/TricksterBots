@@ -2155,7 +2155,7 @@ namespace TestBots
                     // Was P; both are valid SAYC: a minimum rebid of a 6-card suit opposite a passed hand is fine
                     new[] { "K5.J86532.K6.AJ8", "2D", "P P P 1D P 1S P", "E-W" }, // 3-8da8bd165934e3c70a93c0da7d, W is already a passed hand, game is remote.
                     new[] { "AKQ76..AT32.AT84", "X", "P P 1N", "N-S" }, // 2-b90e90257d67b07a61f38788dc, N needs to begin with a big-hand double.
-                    new[] { "AT6.KJ864.A4.A42", "X", "P 2H", "E-W" }, // 6-51d4cadbb32cc5caa28fb06553, W should takeout double.
+                    new[] { "AT6.KJ864.A4.A42", "2N", "P 2H", "E-W" }, // 6-51d4cadbb32cc5caa28fb06553, W should show a balanced 15-18 with a heart stopper.
                     new[]
                     {
                         "962.863.KQJ7.KJ7", "2N", "P P 1D 1S X P 2C P", "N-S"

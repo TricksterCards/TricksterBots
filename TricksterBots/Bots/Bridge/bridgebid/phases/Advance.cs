@@ -88,17 +88,18 @@ namespace Trickster.Bots
                 //  e.g. (2S)-3C-(P)-3N
                 if (level == 3)
                 {
-                    var preemptSuit = preempt.declareBid.suit;
+                    var stopperSuits = OpponentsSuits(preempt, overcall, advance);
                     advance.BidPointType = BidPointType.Hcp;
                     advance.Points.Min = 9 + adjust;
                     advance.BidMessage = BidMessage.Signoff;
-                    advance.Description = $"stopper in {preemptSuit}";
-                    advance.Validate = hand => BasicBidding.HasStopper(hand, preemptSuit);
+                    advance.Description = $"stopper{(stopperSuits.Count > 1 ? "s" : "")} in {string.Join(" and ", stopperSuits)}";
+                    advance.Validate = hand => stopperSuits.All(s => BasicBidding.HasStopper(hand, s));
                     if (!BridgeBot.IsMajor(overcallSuit))
                         advance.Priority = 95;
                 }
             }
-            else if (suit != preempt.declareBid.suit && level == advance.LowestAvailableLevel(suit, true) && level < advance.GameLevel)
+            else if (!OpponentsSuits(preempt, overcall, advance).Contains(suit) && level == advance.LowestAvailableLevel(suit, true) &&
+                     level < advance.GameLevel)
             {
                 //  e.g. (2S)-3C-(P)-3H: a new suit is natural and forcing
                 advance.Points.Min = 10 + adjust;
