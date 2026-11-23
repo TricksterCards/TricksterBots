@@ -46,3 +46,9 @@ Pass 3NT
 [Auction "S"]
 Pass Pass 1C 1NT
 Pass 2NT
+
+[Event "Advance a 3NT overcall of a preempt: 3NT shows 16-21 HCP (not 25-27), so bid a small slam, not a grand"]
+[Deal "E:- - - A8.AJT753.A53.AK"]
+[Auction "E"]
+3D 3NT 4C Pass
+Pass X Pass 6H

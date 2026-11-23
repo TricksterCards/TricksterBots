@@ -307,6 +307,21 @@ namespace Trickster.Bots
                 return;
             }
 
+            //  (2H)-2N, (3D)-3N, ...: a non-jump notrump overcall of a preempt is natural with a stopper
+            //  (not the much stronger notrump opening at the same level)
+            if (db.suit == Suit.Unknown && db.level == lowestLevel && (db.level == 2 || db.level == 3) && opponentsLastBid.IsPreemptive &&
+                opponentsLastBid.declareBid.suit != Suit.Unknown)
+            {
+                var preemptSuit = opponentsLastBid.declareBid.suit;
+                overcall.BidPointType = BidPointType.Hcp;
+                overcall.Points.Min = db.level == 2 ? 15 : 16;
+                overcall.Points.Max = db.level == 2 ? 18 : 21;
+                overcall.IsBalanced = true;
+                overcall.Description = $"stopper in {preemptSuit}";
+                overcall.Validate = hand => BasicBidding.HasStopper(hand, preemptSuit);
+                return;
+            }
+
             //  jump overcalls are preemptive, showing the same value as an opening bid at the same level
             //  versus an opening preempt, an overcall in a suit or notrump is natural; a cuebid is Michaels (handled above)
             Opening.Interpret(overcall);

@@ -184,3 +184,8 @@ Pass
 [Auction "S"]
 1C Pass Pass 1D
 Pass 2D
+
+[Event "A 3NT overcall of a 3-level preempt is natural (16-21 HCP) with a stopper"]
+[Deal "E:- KQ4.AJ5.KQ8.QJ73 - -"]
+[Auction "E"]
+3D 3NT
