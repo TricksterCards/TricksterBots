@@ -25,6 +25,13 @@ namespace Trickster.Bots
                     rebid.Description = "Accept penalty double";
                     rebid.Validate = hand => BasicBidding.CountsBySuit(hand)[theirSuit] > 0;
                 }
+                else if (rebid.bid == BidBase.Pass && response.BidMessage == BidMessage.Forcing && rebid.History[rebid.Index - 1].bid == BidBase.Pass)
+                {
+                    //  passing partner's forcing bid shows a minimum (never chosen deliberately, but limits our hand for partner)
+                    rebid.Points.Max = 14;
+                    rebid.Description = "Minimum";
+                    rebid.Validate = hand => false;
+                }
                 //  TODO: handle redouble rebids
             }
             else if (opening.declareBid.suit != Suit.Unknown && IsPartnersPenaltyDouble(response, rebid) &&

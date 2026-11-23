@@ -9,10 +9,45 @@ namespace Trickster.Bots
     {
         public static void Interpret(InterpretedBid rebid)
         {
-            if (SecondCall(rebid))
+            if (SecondCall(rebid) || CompetitiveRaise(rebid))
                 return;
 
             TryPlaceContract(rebid);
+        }
+
+        //  1D-(1H)-1S-(P)-P-(2H)-3D: opener passed our forcing bid, so he's minimum;
+        //  compete in a known fit at the cheapest level, but don't drive to game alone
+        private static bool CompetitiveRaise(InterpretedBid bid)
+        {
+            if (!bid.bidIsDeclare || bid.Index < 6 || bid.Options.bidding == BridgeBiddingScheme.Acol)
+                return false;
+
+            var response = bid.History[bid.Index - 4];
+            var partnerLast = bid.History[bid.Index - 2];
+            if (!bid.History[bid.Index - 1].bidIsDeclare || partnerLast.bid != BidBase.Pass ||
+                response.BidMessage != BidMessage.Forcing || bid.History[bid.Index - 3].bid != BidBase.Pass)
+                return false;
+
+            var suit = bid.declareBid.suit;
+            var partner = new InterpretedBid.PlayerSummary(bid.History, bid.Index - 2);
+            if (suit == Suit.Unknown || partner.HandShape[suit].Min < 3)
+                return false;
+
+            if (bid.declareBid.level >= bid.GameLevel)
+            {
+                bid.Validate = hand => false;
+                return true;
+            }
+
+            if (bid.declareBid.level > 3 || bid.declareBid.level != bid.LowestAvailableLevel(suit, true))
+                return false;
+
+            bid.BidPointType = BidPointType.Hcp;
+            bid.Points.Min = 10;
+            bid.HandShape[suit].Min = 8 - partner.HandShape[suit].Min;
+            bid.BidMessage = BidMessage.Signoff;
+            bid.Description = $"Competing; {bid.HandShape[suit].Min}+ {suit}";
+            return true;
         }
 
         //  responder's second call in an uncontested auction after opener's suit opening and rebid

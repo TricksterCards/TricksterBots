@@ -24,3 +24,9 @@
 1D Pass 1S Pass
 2D Pass 2NT
 
+[Event "After opener passes our forcing response and they compete, raise opener's minor at the cheapest level"]
+[Deal "E:- - AKT74.8.AKT5.JT2 -"]
+[Auction "E"]
+1D 1H 1S Pass
+Pass 2H 3D
+
