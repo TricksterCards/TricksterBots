@@ -525,19 +525,31 @@ namespace Trickster.Bots
                 //  rebidding opener's suit
                 if (rebid.declareBid.level == lowestAvailableLevel)
                 {
-                    //  minimum: lowest available level (13-15 points); after a two-over-one, a 5-card suit will do
-                    var length = respondedTwoOverOne ? 5 : 6;
+                    //  minimum: lowest available level (13-15 points)
                     rebid.Points.Min = 11;
                     rebid.Points.Max = 15;
-                    rebid.HandShape[rebid.declareBid.suit].Min = length;
-                    rebid.Description = $"Minimum rebid; {length}+ {rebid.declareBid.suit}";
-                    //  with only 5 cards, prefer raising partner's two-over-one suit with 4-card support
+                    rebid.HandShape[rebid.declareBid.suit].Min = 6;
+                    rebid.Description = $"Minimum rebid; 6+ {rebid.declareBid.suit}";
+                    //  after a two-over-one (forcing), rebid a 5-card suit only as a last resort when no other minimum rebid describes the hand
+                    //  (an intentional misdescription: partner should still play this bid as showing 6+)
                     if (respondedTwoOverOne)
+                    {
+                        rebid.HandShape[rebid.declareBid.suit].MinMatch = 5;
                         rebid.Validate = hand =>
                         {
+                            var ourSuit = rebid.declareBid.suit;
                             var counts = BasicBidding.CountsBySuit(hand);
-                            return counts[rebid.declareBid.suit] >= 6 || counts[responseSuit] < 4;
+                            if (counts[ourSuit] >= 6)
+                                return true;
+
+                            //  (raising partner's suit counts as an alternative only with 4+ support)
+                            return !SuitRank.stdSuits.Concat(new[] { Suit.Unknown }).Where(s => s != ourSuit && (s != responseSuit || counts[s] >= 4)).Any(s =>
+                            {
+                                var level = rebid.LowestAvailableLevel(s, true);
+                                return level <= 3 && new InterpretedBid(new DeclareBid(level, s), rebid.History, rebid.Index, rebid.Options).Match(hand);
+                            });
                         };
+                    }
                 }
                 else if (rebid.declareBid.level == lowestAvailableLevel + 1)
                 {
